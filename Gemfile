@@ -2,6 +2,10 @@
 
 source 'https://rubygems.org'
 
+group :doc do
+  gem 'yard', '~> 0.9', '>= 0.9.5'
+end # group
+
 group :test do
   gem 'rspec',                       '~> 3.5'
   gem 'rspec-sleeping_king_studios', '~> 2.2', '>= 2.2.1'
