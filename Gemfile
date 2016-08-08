@@ -9,4 +9,7 @@ end # group
 group :test do
   gem 'rspec',                       '~> 3.5'
   gem 'rspec-sleeping_king_studios', '~> 2.2', '>= 2.2.1'
+
+  # Use Rubocop for evaluating and maintaining code quality.
+  gem 'rubocop', '~> 0.42'
 end # group

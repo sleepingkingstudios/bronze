@@ -1,0 +1,55 @@
+AllCops:
+  Include:
+    - 'lib/**/*.rb'
+    - 'spec/**/*.rb'
+  Exclude:
+    - 'tmp/**/*'
+
+Metrics/ModuleLength:
+  Exclude:
+    - 'spec/**/*.rb'
+
+Style/Alias:
+  EnforcedStyle: prefer_alias_method
+
+Style/AlignParameters:
+  EnforcedStyle: with_fixed_indentation
+  IndentationWidth: ~
+
+Style/ClassAndModuleChildren:
+  # Checks the style of children definitions at classes and modules.
+  #
+  # Our preferred style is compact-plus-one, which does not match any of the
+  # existing styles, so we disable this cop.
+  Enabled: false
+
+Style/DotPosition:
+  EnforcedStyle: trailing
+
+Style/EmptyLineBetweenDefs:
+  AllowAdjacentOneLineDefs: true
+
+Style/FrozenStringLiteralComment:
+  # Incompatible with file location comments.
+  Enabled: false
+
+Style/HashSyntax:
+  EnforcedStyle: hash_rockets
+
+Style/MethodDefParentheses:
+  EnforcedStyle: require_no_parentheses_except_multiline
+
+Style/NestedParenthesizedCalls:
+  # This cop is excessively strict, especially in cases where the nested method
+  # call has only one argument, e.g. outer_method(inner_method arg). Adding the
+  # inner parentheses reduces readability.
+  Enabled: false
+
+Style/NumericLiterals:
+  Exclude:
+    - 'spec/**/*.rb'
+
+Style/RaiseArgs:
+  # The "exploded" style causes many false negatives when creating error
+  # messages with non-string arguments.
+  EnforcedStyle: compact
