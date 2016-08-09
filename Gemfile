@@ -7,6 +7,8 @@ group :doc do
 end # group
 
 group :test do
+  gem 'byebug', '~> 9.0', '~> 9.0.5'
+
   gem 'rspec',                       '~> 3.5'
   gem 'rspec-sleeping_king_studios', '~> 2.2', '>= 2.2.1'
 
