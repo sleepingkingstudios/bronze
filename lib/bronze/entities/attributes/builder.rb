@@ -1,6 +1,6 @@
 # lib/bronze/entities/attributes/builder.rb
 
-require 'bronze/entities/attributes'
+require 'bronze/entities/attributes/metadata'
 
 module Bronze::Entities::Attributes
   # Service class to define attributes on an entity.
@@ -40,31 +40,41 @@ module Bronze::Entities::Attributes
     #   define.
     # @param attribute_type [Class] The type of the attribute to define.
     #
+    # @return [Attributes::Metadata] The generated metadata for the attribute.
+    #
     # @raise Builder::Error if the attribute name or attribute type is missing
     #   or invalid.
     def build attribute_name, attribute_type
       validate_attribute_name attribute_name
       validate_attribute_type attribute_type
 
-      define_reader(attribute_name)
-      define_writer(attribute_name)
+      metadata = characterize attribute_name, attribute_type
+
+      define_reader(metadata)
+      define_writer(metadata)
+
+      metadata
     end # method build
 
     private
 
-    def define_reader attribute_name
-      reader_name = attribute_name.intern
+    def characterize attribute_name, attribute_type
+      Bronze::Entities::Attributes::Metadata.new(attribute_name, attribute_type)
+    end # method characterize
 
-      entity_class.send :define_method, reader_name, lambda {
-        @attributes[attribute_name]
+    def define_reader metadata
+      attr_name = metadata.attribute_name
+
+      entity_class.send :define_method, metadata.reader_name, lambda {
+        @attributes[attr_name]
       } # end reader method
     end # method define_reader
 
-    def define_writer attribute_name
-      writer_name = "#{attribute_name}=".intern
+    def define_writer metadata
+      attr_name = metadata.attribute_name
 
-      entity_class.send :define_method, writer_name, lambda { |value|
-        @attributes[attribute_name] = value
+      entity_class.send :define_method, metadata.writer_name, lambda { |value|
+        @attributes[attr_name] = value
       } # end writer method
     end # define_writer
 

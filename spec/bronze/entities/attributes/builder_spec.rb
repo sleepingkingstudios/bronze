@@ -1,6 +1,7 @@
 # spec/bronze/entities/attributes/builder_spec.rb
 
 require 'bronze/entities/attributes/builder'
+require 'bronze/entities/attributes/metadata'
 
 require 'bronze/entities/attributes/examples'
 
@@ -26,6 +27,12 @@ RSpec.describe Bronze::Entities::Attributes::Builder do
   end # describe
 
   describe '#build' do
+    shared_context 'when the attribute has been defined' do
+      before(:example) do
+        instance.build attribute_name, attribute_type
+      end # before example
+    end # shared_context
+
     let(:attribute_name) { :title }
     let(:attribute_type) { String }
 
@@ -56,13 +63,19 @@ RSpec.describe Bronze::Entities::Attributes::Builder do
     end # it
 
     describe 'with a valid attribute name and attribute type' do
-      let(:updated_value) { 'Dream of a Red Chamber' }
+      it 'should return the metadata' do
+        metadata = instance.build attribute_name, attribute_type
 
-      before(:example) do
-        instance.build attribute_name, attribute_type
-      end # before example
+        expect(metadata).to be_a Bronze::Entities::Attributes::Metadata
+        expect(metadata.attribute_name).to be == attribute_name
+        expect(metadata.attribute_type).to be == attribute_type
+      end # it
 
-      include_examples 'should define attribute', :title, String
+      wrap_context 'when the attribute has been defined' do
+        let(:updated_value) { 'Dream of a Red Chamber' }
+
+        include_examples 'should define attribute', :title, String
+      end # wrap_context
     end # describe
   end # describe
 end # describe
