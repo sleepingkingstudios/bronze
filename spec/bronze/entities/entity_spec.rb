@@ -57,8 +57,36 @@ RSpec.describe Bronze::Entities::Entity do
 
         wrap_context 'when the attribute has been defined' do
           let(:expected_value) { attributes.fetch attribute_name }
+          let(:updated_value)  { 'Planet Dreams' }
 
           include_examples 'should define attribute', :title
+
+          context 'when the attribute methods are overwritten' do
+            before(:example) do
+              described_class.send :define_method,
+                attribute_name,
+                lambda {
+                  value = super()
+
+                  value.inspect
+                } # end lambda
+
+              described_class.send :define_method,
+                "#{attribute_name}=",
+                ->(value) { super(value * 2) }
+            end # before example
+
+            it 'should inherit from the base definition' do
+              expect(instance.send attribute_name).
+                to be == attributes[attribute_name].inspect
+
+              expected = (updated_value * 2).inspect
+
+              expect { instance.send "#{attribute_name}=", updated_value }.
+                to change(instance, attribute_name).
+                to be == expected
+            end # it
+          end # describe
         end # wrap_context
       end # describe
     end # wrap_context

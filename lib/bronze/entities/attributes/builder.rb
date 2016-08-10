@@ -53,6 +53,8 @@ module Bronze::Entities::Attributes
       define_reader(metadata)
       define_writer(metadata)
 
+      entity_class.include entity_class_attributes
+
       metadata
     end # method build
 
@@ -65,18 +67,28 @@ module Bronze::Entities::Attributes
     def define_reader metadata
       attr_name = metadata.attribute_name
 
-      entity_class.send :define_method, metadata.reader_name, lambda {
-        @attributes[attr_name]
-      } # end reader method
+      entity_class_attributes.send :define_method,
+        metadata.reader_name,
+        ->() { @attributes[attr_name] }
     end # method define_reader
 
     def define_writer metadata
       attr_name = metadata.attribute_name
 
-      entity_class.send :define_method, metadata.writer_name, lambda { |value|
-        @attributes[attr_name] = value
-      } # end writer method
+      entity_class_attributes.send :define_method,
+        metadata.writer_name,
+        ->(value) { @attributes[attr_name] = value }
     end # define_writer
+
+    def entity_class_attributes
+      return @entity_class_attributes if @entity_class_attributes
+
+      unless entity_class.const_defined?(:Attributes)
+        entity_class.const_set(:Attributes, Module.new)
+      end # unless
+
+      @entity_class_attributes = entity_class::Attributes
+    end # method entity_class_attributes
 
     def raise_error error_message
       raise Builder::Error, error_message, caller[1..-1]
