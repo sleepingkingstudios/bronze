@@ -18,6 +18,16 @@ RSpec.describe Bronze::Entities::Attributes::Builder do
   let(:entity)   { entity_class.new }
   let(:instance) { described_class.new(entity_class) }
 
+  describe '::VALID_OPTIONS' do
+    it { expect(described_class).to have_immutable_constant :VALID_OPTIONS }
+
+    it 'should list the valid options' do
+      expect(described_class::VALID_OPTIONS).to be == %w(
+        default
+      ) # end array
+    end # it
+  end # describe
+
   describe '::new' do
     it { expect(described_class).to be_constructible.with(1).argument }
   end # describe
@@ -28,15 +38,16 @@ RSpec.describe Bronze::Entities::Attributes::Builder do
 
   describe '#build' do
     shared_context 'when the attribute has been defined' do
-      before(:example) do
-        instance.build attribute_name, attribute_type
-      end # before example
+      let!(:metadata) do
+        instance.build attribute_name, attribute_type, attribute_opts
+      end # let!
     end # shared_context
 
     let(:attribute_name) { :title }
     let(:attribute_type) { String }
+    let(:attribute_opts) { {} }
 
-    it { expect(instance).to respond_to(:build).with(2).arguments }
+    it { expect(instance).to respond_to(:build).with(2..3).arguments }
 
     it 'should validate the attribute name', :aggregate_failures do
       expect { instance.build nil, attribute_type }.
@@ -62,6 +73,14 @@ RSpec.describe Bronze::Entities::Attributes::Builder do
           'attribute type must be a Class'
     end # it
 
+    it 'should validate the attribute options' do
+      opts = { :invalid_option => true }
+
+      expect { instance.build attribute_name, attribute_type, opts }.
+        to raise_error described_class::Error,
+          'invalid attribute option :invalid_option'
+    end # it
+
     describe 'with a valid attribute name and attribute type' do
       it 'should return the metadata' do
         metadata = instance.build attribute_name, attribute_type
@@ -75,6 +94,24 @@ RSpec.describe Bronze::Entities::Attributes::Builder do
         let(:updated_value) { 'Dream of a Red Chamber' }
 
         include_examples 'should define attribute', :title, String
+
+        describe 'with a default value' do
+          let(:attribute_opts) { super().merge :default => 'Untitled Book' }
+
+          it { expect(entity.title).to be == attribute_opts[:default] }
+
+          context 'when a value is set' do
+            before(:example) { entity.title = 'The Lay of Beleriand' }
+
+            describe 'with nil' do
+              it 'should set the value to the default' do
+                expect { entity.title = nil }.
+                  to change(entity, :title).
+                  to be == attribute_opts[:default]
+              end # describe
+            end # describe
+          end # context
+        end # describe
       end # wrap_context
     end # describe
   end # describe

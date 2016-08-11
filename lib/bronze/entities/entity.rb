@@ -26,9 +26,13 @@ module Bronze::Entities
     # @return (see Attributes::Builder#build)
     #
     # @raise (see Attributes::Builder#build)
-    def self.attribute attribute_name, attribute_type, _attribute_options = {}
+    def self.attribute attribute_name, attribute_type, attribute_options = {}
       builder  = Bronze::Entities::Attributes::Builder.new(self)
-      metadata = builder.build(attribute_name, attribute_type)
+      metadata = builder.build(
+        attribute_name,
+        attribute_type,
+        attribute_options
+      ) # end build
 
       (@attributes ||= {})[metadata.attribute_name] = metadata
     end # class method attribute
@@ -47,7 +51,9 @@ module Bronze::Entities
     # @param attributes [Hash] The default attributes with which to initialize
     #   the entity. Defaults to an empty hash.
     def initialize attributes = {}
-      @attributes = attributes
+      @attributes = {}
+
+      self.attributes = attributes
     end # constructor
 
     # Merges the values of the attributes. If an attribute is missing, it is not

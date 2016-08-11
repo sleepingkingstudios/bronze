@@ -30,9 +30,9 @@ RSpec.describe Bronze::Entities::Entity do
 
   describe '::attribute' do
     shared_context 'when the attribute has been defined' do
-      before(:example) do
-        described_class.attribute attribute_name, attribute_type
-      end # before example
+      let!(:metadata) do
+        described_class.attribute attribute_name, attribute_type, attribute_opts
+      end # let!
     end # shared_context
 
     it 'should respond to the method' do
@@ -43,6 +43,7 @@ RSpec.describe Bronze::Entities::Entity do
       describe 'with a valid attribute name and attribute type' do
         let(:attribute_name) { :title }
         let(:attribute_type) { String }
+        let(:attribute_opts) { {} }
         let(:attributes)     { super().merge :title => 'The Ramayana' }
 
         it 'should set and return the metadata' do
@@ -61,6 +62,30 @@ RSpec.describe Bronze::Entities::Entity do
 
           include_examples 'should define attribute', :title
 
+          describe 'with :default => lambda' do
+            let(:default) do
+              books_count = 0
+
+              ->() { "Book #{books_count += 1}" }
+            end # let
+            let(:attributes)     { super().merge :title => nil }
+            let(:attribute_opts) { super().merge :default => default }
+            let(:expected)       { ['Book 1', 'Book 2', 'Book 3'] }
+
+            it 'should set the title to the default value' do
+              books = Array.new(3) { described_class.new(attributes) }
+
+              expect(books.map(&:title)).to be == expected
+            end # it
+          end # describe
+
+          describe 'with :default => value' do
+            let(:attributes)     { super().merge :title => nil }
+            let(:attribute_opts) { super().merge :default => 'Untitled Book' }
+
+            it { expect(instance.title).to be == attribute_opts[:default] }
+          end # describe
+
           context 'when the attribute methods are overwritten' do
             before(:example) do
               described_class.send :define_method,
@@ -77,8 +102,10 @@ RSpec.describe Bronze::Entities::Entity do
             end # before example
 
             it 'should inherit from the base definition' do
+              expected = (attributes[attribute_name] * 2).inspect
+
               expect(instance.send attribute_name).
-                to be == attributes[attribute_name].inspect
+                to be == expected
 
               expected = (updated_value * 2).inspect
 
@@ -96,7 +123,8 @@ RSpec.describe Bronze::Entities::Entity do
     it { expect(described_class).to have_reader(:attributes).with_value({}) }
 
     it 'should return a frozen copy of the attributes hash' do
-      metadata = Bronze::Entities::Attributes::Metadata.new(:malicious, Object)
+      metadata =
+        Bronze::Entities::Attributes::Metadata.new(:malicious, Object, {})
 
       expect { described_class.attributes[:bogus] = metadata }.
         to raise_error(RuntimeError)
