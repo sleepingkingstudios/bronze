@@ -2,6 +2,8 @@
 
 require 'bronze/entities/attributes/builder'
 
+require 'bronze/entities/ulid'
+
 module Bronze::Entities
   # Base class for implementing data entities, which store information about
   # business objects without making assumptions about or tying the
@@ -50,6 +52,22 @@ module Bronze::Entities
       end # if-else
     end # class method attributes
 
+    # @!attribute [r] id
+    #   A statistically unique entity identifier string. The id is generated
+    #   automatically when the entity is initialized, and does not change
+    #   thereafter.
+    #
+    #   Ids are sortable as strings in ascending order of generation, so
+    #   entities can be sorted in order of creation by sorting the ids.
+    #
+    #   @return [String] The ULID identifier for the entity.
+    #
+    #   @see Bronze::Entities::Ulid.generate
+    attribute :id,
+      String,
+      :default   => ->() { Bronze::Entities::Ulid.generate },
+      :read_only => true
+
     # @param attributes [Hash] The default attributes with which to initialize
     #   the entity. Defaults to an empty hash.
     def initialize attributes = {}
@@ -95,6 +113,8 @@ module Bronze::Entities
       end # each
     end # method attributes
 
+    # rubocop:disable Metrics/AbcSize
+
     # Sets the values of the attributes. If an attribute is missing, it is
     # restored to its default value, or nil if no default value is set for that
     # attribute. Values that are not valid attributes are discarded.
@@ -108,10 +128,13 @@ module Bronze::Entities
     def attributes= values
       missing = self.class.attributes.keys - values.keys
       missing.each do |key|
-        values[key] = self.class.attributes[key].default_value
+        unless self.class.attributes[key].read_only?
+          values[key] = self.class.attributes[key].default_value
+        end # unless
       end # each
 
       assign values
     end # method attributes=
+    # rubocop:enable Metrics/AbcSize
   end # class
 end # module

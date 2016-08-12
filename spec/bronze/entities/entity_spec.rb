@@ -143,7 +143,11 @@ RSpec.describe Bronze::Entities::Entity do
   end # describe
 
   describe '::attributes' do
-    it { expect(described_class).to have_reader(:attributes).with_value({}) }
+    it 'should define the reader' do
+      expect(described_class).
+        to have_reader(:attributes).
+        with_value(an_instance_of Hash)
+    end # it
 
     it 'should return a frozen copy of the attributes hash' do
       metadata =
@@ -152,11 +156,11 @@ RSpec.describe Bronze::Entities::Entity do
       expect { described_class.attributes[:bogus] = metadata }.
         to raise_error(RuntimeError)
 
-      expect(described_class.attributes).to be == {}
+      expect(described_class.attributes.keys).to contain_exactly :id
     end # it
 
     wrap_context 'when an entity class is defined with attributes' do
-      let(:expected) { [:title, :page_count, :publication_date] }
+      let(:expected) { [:id, :title, :page_count, :publication_date] }
 
       it 'should return the attributes metadata' do
         expect(described_class.attributes.keys).to contain_exactly(*expected)
@@ -203,6 +207,7 @@ RSpec.describe Bronze::Entities::Entity do
       end # let
       let(:expected) do
         hsh = values.dup
+        hsh.update :id => instance.id
         hsh.delete :foreward
         attributes.merge hsh
       end # let
@@ -230,14 +235,31 @@ RSpec.describe Bronze::Entities::Entity do
   end # describe
 
   describe '#attributes' do
-    it { expect(instance).to have_reader(:attributes).with_value({}) }
+    it 'should define the reader' do
+      expect(instance).
+        to have_reader(:attributes).
+        with_value(an_instance_of Hash)
+    end # it
 
     wrap_context 'when an entity class is defined with attributes' do
       let(:expected) do
-        { :title => nil, :page_count => nil, :publication_date => nil }
+        {
+          :id               => an_instance_of(String),
+          :title            => nil,
+          :page_count       => nil,
+          :publication_date => nil
+        } # end hash
       end # let
 
-      it { expect(instance.attributes).to be == expected }
+      it 'should return the attributes' do
+        attributes = instance.attributes
+
+        expect(attributes).to be_a Hash
+        expect(attributes.keys).to be == expected.keys
+        expect(attributes.fetch :id).to match expected.delete(:id)
+
+        expected.each_key { |key| expect(attributes.fetch key).to be nil }
+      end # it
     end # wrap_context
   end # describe
 
@@ -265,6 +287,7 @@ RSpec.describe Bronze::Entities::Entity do
       end # let
       let(:expected) do
         hsh = values.dup
+        hsh.update :id => instance.id
         hsh.delete :foreward
         hsh.merge :publication_date => nil
       end # let
@@ -275,5 +298,30 @@ RSpec.describe Bronze::Entities::Entity do
           to be == expected
       end # it
     end # wrap_context
+  end # describe
+
+  describe '#id' do
+    include_examples 'should define attribute',
+      :id,
+      Bronze::Entities::Ulid,
+      :read_only => true
+
+    it 'should generate a ULID' do
+      ulid = instance.id
+
+      expect(ulid).to be_a String
+      expect(ulid.length).to be == 26
+
+      chars = ulid.split('').uniq
+      chars.each do |char|
+        expect(Bronze::Entities::Ulid::ENCODING).to include char
+      end # each
+    end # it
+
+    it 'should be consistent' do
+      ids = Array.new(3) { instance.id }.uniq
+
+      expect(ids.length).to be 1
+    end # it
   end # describe
 end # describe
