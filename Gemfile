@@ -2,6 +2,7 @@
 
 source 'https://rubygems.org'
 
+gem 'sysrandom', '~> 1.0.0', '>= 1.0.2'
 gem 'thor',      '~> 0.19',  '>= 0.19.1'
 
 group :doc do
