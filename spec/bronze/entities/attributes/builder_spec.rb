@@ -24,6 +24,7 @@ RSpec.describe Bronze::Entities::Attributes::Builder do
     it 'should list the valid options' do
       expect(described_class::VALID_OPTIONS).to be == %w(
         default
+        read_only
       ) # end array
     end # it
   end # describe
@@ -95,7 +96,23 @@ RSpec.describe Bronze::Entities::Attributes::Builder do
 
         include_examples 'should define attribute', :title, String
 
-        describe 'with a default value' do
+        describe 'with :default => lambda' do
+          let(:default) do
+            books_count = 0
+
+            ->() { "Book #{books_count += 1}" }
+          end # let
+          let(:attribute_opts) { super().merge :default => default }
+          let(:expected)       { ['Book 1', 'Book 2', 'Book 3'] }
+
+          it 'should set the title to the default value' do
+            books = Array.new(3) { entity_class.new }
+
+            expect(books.map(&:title)).to be == expected
+          end # it
+        end # describe
+
+        describe 'with :default => value' do
           let(:attribute_opts) { super().merge :default => 'Untitled Book' }
 
           it { expect(entity.title).to be == attribute_opts[:default] }
@@ -111,6 +128,15 @@ RSpec.describe Bronze::Entities::Attributes::Builder do
               end # describe
             end # describe
           end # context
+        end # describe
+
+        describe 'with :read_only => true' do
+          let(:attribute_opts) { super().merge :read_only => true }
+
+          include_examples 'should define attribute',
+            :title,
+            String,
+            :read_only => true
         end # describe
       end # wrap_context
     end # describe

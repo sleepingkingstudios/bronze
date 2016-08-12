@@ -87,6 +87,16 @@ RSpec.describe Bronze::Entities::Attributes::Metadata do
     end # context
   end # describe
 
+  describe '#read_only?' do
+    include_examples 'should have predicate', :read_only?, false
+
+    context 'when the read-only flag is set to true' do
+      let(:attribute_options) { { :read_only => true } }
+
+      it { expect(instance.read_only?).to be true }
+    end # context
+  end # describe
+
   describe '#reader_name' do
     include_examples 'should have reader', :reader_name, lambda {
       be == attribute_name

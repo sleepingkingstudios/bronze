@@ -23,6 +23,8 @@ module Bronze::Entities
     #
     # @param (see Attributes::Builder#build)
     #
+    # @option (see Attributes::Builder#build)
+    #
     # @return (see Attributes::Builder#build)
     #
     # @raise (see Attributes::Builder#build)

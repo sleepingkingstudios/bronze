@@ -8,8 +8,11 @@ module Bronze::Entities::Attributes
     # Error class for handling invalid attribute definitions.
     class Error < ::StandardError; end
 
+    # Provides a list of the valid options for the attribute_options parameter
+    # for Builder#build.
     VALID_OPTIONS = %w(
       default
+      read_only
     ).map(&:freeze).freeze
 
     # @param entity_class [Class] The entity class on which attributes will be
@@ -45,6 +48,14 @@ module Bronze::Entities::Attributes
     # @param attribute_type [Class] The type of the attribute to define.
     # @param attribute_options [Hash] Additional options for building the
     #   attribute.
+    #
+    # @option attribute_options [Object, Proc] :default The default value for
+    #   the attribute. If the attribute value is nil or has not been set, the
+    #   attribute will be set to the default. If the default is a Proc, the
+    #   Proc will be called each time and the attribute set to the return value.
+    #   Otherwise, the attribute will be set to the default value.
+    # @option attribute_options [Boolean] :read_only If true, the writer method
+    #   for the attribute will be set as private. Defaults to false.
     #
     # @return [Attributes::Metadata] The generated metadata for the attribute.
     #
@@ -105,6 +116,10 @@ module Bronze::Entities::Attributes
         lambda { |value|
           @attributes[attr_name] = value.nil? ? metadata.default : value
         } # end lambda
+
+      if metadata.read_only?
+        entity_class_attributes.send :private, metadata.writer_name
+      end # if
     end # define_writer
 
     def entity_class_attributes

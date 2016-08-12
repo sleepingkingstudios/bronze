@@ -84,6 +84,29 @@ RSpec.describe Bronze::Entities::Entity do
             let(:attribute_opts) { super().merge :default => 'Untitled Book' }
 
             it { expect(instance.title).to be == attribute_opts[:default] }
+
+            context 'when a value is set' do
+              let(:attributes) do
+                super().merge :title => 'The Lay of Beleriand'
+              end # let
+
+              describe 'with nil' do
+                it 'should set the value to the default' do
+                  expect { instance.title = nil }.
+                    to change(instance, :title).
+                    to be == attribute_opts[:default]
+                end # describe
+              end # describe
+            end # context
+          end # describe
+
+          describe 'with :read_only => true' do
+            let(:attribute_opts) { super().merge :read_only => true }
+
+            include_examples 'should define attribute',
+              :title,
+              String,
+              :read_only => true
           end # describe
 
           context 'when the attribute methods are overwritten' do

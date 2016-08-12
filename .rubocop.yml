@@ -28,6 +28,9 @@ Style/ClassAndModuleChildren:
 Style/DotPosition:
   EnforcedStyle: trailing
 
+Style/DoubleNegation:
+  Enabled: false
+
 Style/EmptyLineBetweenDefs:
   AllowAdjacentOneLineDefs: true
 

@@ -46,5 +46,10 @@ module Bronze::Entities::Attributes
     def default?
       !@attribute_options[:default].nil?
     end # method default
+
+    # @return [Boolean] True if the attribute is read-only, otherwise false.
+    def read_only?
+      !!@attribute_options[:read_only]
+    end # method read_only?
   end # class
 end # module
