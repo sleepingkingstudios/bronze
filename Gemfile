@@ -2,6 +2,8 @@
 
 source 'https://rubygems.org'
 
+gem 'thor',      '~> 0.19',  '>= 0.19.1'
+
 group :doc do
   gem 'yard', '~> 0.9', '>= 0.9.5'
 end # group

@@ -1,9 +1,11 @@
 AllCops:
   Include:
     - 'lib/**/*.rb'
+    - 'lib/**/*.thor'
     - 'spec/**/*.rb'
   Exclude:
     - 'tmp/**/*'
+    - 'vendor/**/*'
 
 Metrics/ModuleLength:
   Exclude:
@@ -48,8 +50,3 @@ Style/NestedParenthesizedCalls:
 Style/NumericLiterals:
   Exclude:
     - 'spec/**/*.rb'
-
-Style/RaiseArgs:
-  # The "exploded" style causes many false negatives when creating error
-  # messages with non-string arguments.
-  EnforcedStyle: compact
