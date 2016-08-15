@@ -5,6 +5,7 @@ AllCops:
     - 'spec/**/*.rb'
   Exclude:
     - 'tmp/**/*'
+    - 'vendor/**/*'
 
 Metrics/ModuleLength:
   Exclude:
