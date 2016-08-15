@@ -20,7 +20,7 @@ module Bronze
         true
       end # class method exit_on_failure?
 
-      # rubocop:disable Metrics/MethodLength
+      # rubocop:disable Metrics/AbcSize, Metrics/MethodLength
       desc :default, 'Runs the full CI suite.'
       method_option :quiet,
         :aliases => '-q',
@@ -33,13 +33,24 @@ module Bronze
       def default
         failing_steps = []
 
-        rspec_results = spec
+        rspec_results = rspec
 
         if rspec_results['failure_count'].positive?
           failing_steps << :rspec
         end # if
 
-        puts format_rspec_results(rspec_results)
+        rubocop_results = rubocop
+
+        if rubocop_results['offense_count'].positive?
+          failing_steps << :rubocop
+        end # if
+
+        output = "\n"
+        output << format_rspec_results(rspec_results)
+        output << "\n"
+        output << format_rubocop_results(rubocop_results)
+
+        puts output
 
         unless failing_steps.empty?
           array_tools = SleepingKingStudios::Tools::ArrayTools
@@ -51,9 +62,7 @@ module Bronze
       end # method default
       # rubocop:enable Metrics/MethodLength
 
-      # rubocop:disable Metrics/AbcSize
-
-      desc :spec, 'Runs the RSpec test suite.'
+      desc :rspec, 'Runs the RSpec test suite.'
       method_option :quiet,
         :aliases => '-q',
         :desc    => 'Does not write test results to STDOUT.'
@@ -62,7 +71,7 @@ module Bronze
       # documentation formatter.
       #
       # @return [Hash] The spec results.
-      def spec
+      def rspec
         $LOAD_PATH << spec_dir unless $LOAD_PATH.include?(spec_dir)
 
         require 'spec_helper'
@@ -74,21 +83,54 @@ module Bronze
 
         RSpec::Core::Runner.run(args)
 
-        out = JSON.parse File.read(File.join root_dir, 'tmp/ci/rspec.json')
+        results = JSON.parse File.read(File.join root_dir, 'tmp/ci/rspec.json')
 
-        out['summary']
-      end # method spec
+        results['summary']
+      end # method rspec
+
+      desc :rubocop, 'Runs a Rubocop code quality report.'
+      method_option :quiet,
+        :aliases => '-q',
+        :desc    => 'Does not write quality report to STDOUT.'
+      # Runs RuboCop and returns the summary hash. If the --quiet option is not
+      # selected, also prints the quality report to STDOUT using the progress
+      # formatter.
+      #
+      # @return [Hash] The quality summary.
+      def rubocop
+        require 'rubocop'
+
+        cli  = ::RuboCop::CLI.new
+        args = []
+
+        args << '--format' << 'progress' unless options[:quiet]
+        args << '--format' << 'json' << '--out' << 'tmp/ci/rubocop.json'
+
+        cli.run(args)
+
+        output  = File.read(File.join root_dir, 'tmp/ci/rubocop.json')
+        results = JSON.parse output
+
+        results['summary']
+      end # method rubocop
+
       # rubocop:enable Metrics/AbcSize
 
       private
 
       def format_rspec_results results
-        str = 'RSpec:  '
+        str = 'RSpec:   '
         str << "#{results['example_count']} examples"
         str << ', ' << "#{results['failure_count']} failures"
         str << ', ' << "#{results['pending_count']} pending"
         str << " in #{results['duration']} seconds."
       end # method format_rspec_results
+
+      def format_rubocop_results results
+        str = 'RuboCop: '
+        str << "#{results['inspected_file_count']} files inspected"
+        str << ', ' << "#{results['offense_count']} offenses."
+      end # method format_rubocop_results
 
       def root_dir
         @root_dir ||= File.expand_path(__dir__).split('/lib').first
