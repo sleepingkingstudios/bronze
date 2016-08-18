@@ -8,7 +8,7 @@ module Bronze::Repositories
   # in-memory data structure.
   class Query
     # Error class for handling unimplemented abstract query methods. Subclasses
-    # of query must implement these methods as appropriate for the datastore.
+    # of Query must implement these methods as appropriate for the datastore.
     class NotImplementedError < StandardError; end
 
     # Performs a count on the dataset.
