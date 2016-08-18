@@ -51,18 +51,37 @@ module Bronze::Repositories
     end # method insert
     alias_method :create, :insert
 
+    # Updates the specified hash in the datastore.
+    #
+    # @param id [Object] The primary key of the hash to update.
+    # @param attributes [Hash] The values to update.
+    #
+    # @return [Array[Boolean, Hash]] If the update succeeds, returns true and
+    #   an empty array. Otherwise, returns false and an array of error messages.
+    def update id, attributes
+      errors = update_attributes(id, attributes)
+
+      [errors.empty?, errors]
+    end # method update
+
     private
 
     def base_query
-      raise NotImplementedError,
-        "#{self.class.name} does not implement :base_query",
-        caller
+      not_implemented :base_query
     end # method base_query
 
     def insert_attributes _attributes
-      raise NotImplementedError,
-        "#{self.class.name} does not implement :insert_attributes",
-        caller
+      not_implemented :insert_attributes
     end # method insert_attributes
+
+    def not_implemented method_name
+      raise NotImplementedError,
+        "#{self.class.name} does not implement :#{method_name}",
+        caller[1..-1]
+    end # method not_implemented
+
+    def update_attributes _id, _attributes
+      not_implemented :update_attributes
+    end # method update_attributes
   end # class
 end # module

@@ -26,5 +26,15 @@ module Spec
 
       [] # No errors.
     end # method insert_attributes
+
+    def update_attributes id, attributes
+      item = @data.find { |hsh| hsh[:id] == id }
+
+      return ["item not found with id #{id.inspect}"] unless item
+
+      item.update attributes
+
+      []
+    end # method update_attributes
   end # class
 end # class

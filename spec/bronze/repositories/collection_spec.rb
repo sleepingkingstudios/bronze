@@ -46,4 +46,14 @@ RSpec.describe Bronze::Repositories::Collection do
   describe '#name' do
     include_examples 'should have reader', :name, ->() { name }
   end # describe
+
+  describe '#update' do
+    it { expect(instance).to respond_to(:update).with(2).arguments }
+
+    it 'should raise an error' do
+      expect { instance.update(0, {}) }.
+        to raise_error described_class::NotImplementedError,
+          "#{described_class.name} does not implement :update_attributes"
+    end # it
+  end # describe
 end # describe

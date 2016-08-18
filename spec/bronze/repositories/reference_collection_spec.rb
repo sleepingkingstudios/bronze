@@ -7,9 +7,9 @@ RSpec.describe Spec::ReferenceCollection do
   shared_context 'when the collection contains many items' do
     let(:data) do
       [
-        { :title => 'The Fellowship of the Ring' },
-        { :title => 'The Two Towers' },
-        { :title => 'The Return of the King' }
+        { :id => 1, :title => 'The Fellowship of the Ring' },
+        { :id => 1, :title => 'The Two Towers' },
+        { :id => 1, :title => 'The Return of the King' }
       ] # end array
     end # let
   end # shared_context
@@ -59,7 +59,7 @@ RSpec.describe Spec::ReferenceCollection do
     it { expect(instance).to alias_method(:insert).as(:create) }
 
     describe 'with an attributes hash' do
-      let(:attributes) { { :title => 'The Hobbit' } }
+      let(:attributes) { { :id => 0, :title => 'The Hobbit' } }
 
       it 'should insert the hash in the datastore' do
         result = nil
@@ -75,6 +75,86 @@ RSpec.describe Spec::ReferenceCollection do
         expect(item).to be == attributes
       end # it
     end # describe
+
+    wrap_context 'when the collection contains many items' do
+      describe 'with an attributes hash' do
+        let(:attributes) { { :id => 0, :title => 'The Hobbit' } }
+
+        it 'should insert the hash in the datastore' do
+          result = nil
+          errors = nil
+
+          expect { result, errors = instance.insert attributes }.
+            to change(instance, :count).by(1)
+
+          expect(result).to be true
+          expect(errors).to be == []
+
+          item = instance.all.to_a.last
+          expect(item).to be == attributes
+        end # it
+      end # describe
+    end # wrap_context
+  end # describe
+
+  describe '#update' do
+    it { expect(instance).to respond_to(:update).with(2).arguments }
+
+    describe 'with an id and an attributes hash' do
+      let(:id)         { 0 }
+      let(:attributes) { { :author => 'J.R.R. Tolkien' } }
+
+      it 'should return false and an errors array' do
+        result = nil
+        errors = nil
+
+        expect { result, errors = instance.update id, attributes }.
+          not_to change(instance.all, :to_a)
+
+        expect(result).to be false
+        expect(errors).to contain_exactly "item not found with id #{id.inspect}"
+      end # it
+    end # describe
+
+    wrap_context 'when the collection contains many items' do
+      let(:attributes) { { :author => 'J.R.R. Tolkien' } }
+
+      describe 'with an invalid id and an attributes hash' do
+        let(:id) { 0 }
+
+        it 'should return false and an errors array' do
+          result = nil
+          errors = nil
+
+          expect { result, errors = instance.update id, attributes }.
+            not_to change(instance.all, :to_a)
+
+          expect(result).to be false
+          expect(errors).
+            to contain_exactly "item not found with id #{id.inspect}"
+        end # it
+      end # describe
+
+      describe 'with a valid id and an attributes hash' do
+        let(:id) { 1 }
+
+        it 'should return false and an errors array' do
+          result = nil
+          errors = nil
+
+          expect { result, errors = instance.update id, attributes }.
+            not_to change(instance, :count)
+
+          expect(result).to be true
+          expect(errors).to be == []
+
+          item = data.find { |hsh| hsh[:id] == id }
+          attributes.each do |key, value|
+            expect(item[key]).to be == value
+          end # each
+        end # it
+      end # describe
+    end # wrap_context
   end # describe
 
   describe '#name' do
