@@ -1,71 +1,13 @@
 # spec/bronze/repositories/collection_spec.rb
 
 require 'bronze/repositories/collection'
-require 'bronze/repositories/reference_collection'
+require 'bronze/repositories/collection_examples'
 
 RSpec.describe Bronze::Repositories::Collection do
-  let(:name)     { :books }
-  let(:instance) { described_class.new name }
+  include Spec::Repositories::CollectionExamples
 
-  describe '::new' do
-    it { expect(described_class).to be_constructible.with(1).argument }
-  end # describe
+  let(:described_class) { Class.new.send :include, super() }
+  let(:instance)        { described_class.new }
 
-  describe '#all' do
-    it { expect(instance).to respond_to(:all).with(0).arguments }
-
-    it 'should raise an error' do
-      expect { instance.all }.
-        to raise_error described_class::NotImplementedError,
-          "#{described_class.name} does not implement :base_query"
-    end # it
-  end # describe
-
-  describe '#count' do
-    it { expect(instance).to respond_to(:count).with(0).arguments }
-
-    it 'should raise an error' do
-      expect { instance.count }.
-        to raise_error described_class::NotImplementedError,
-          "#{described_class.name} does not implement :base_query"
-    end # it
-  end # describe
-
-  describe '#delete' do
-    it { expect(instance).to respond_to(:delete).with(1).argument }
-
-    it { expect(instance).to alias_method(:delete).as(:destroy) }
-
-    it 'should raise an error' do
-      expect { instance.delete 0 }.
-        to raise_error described_class::NotImplementedError,
-          "#{described_class.name} does not implement :delete_one"
-    end # it
-  end # describe
-
-  describe '#insert' do
-    it { expect(instance).to respond_to(:insert).with(1).argument }
-
-    it { expect(instance).to alias_method(:insert).as(:create) }
-
-    it 'should raise an error' do
-      expect { instance.insert({}) }.
-        to raise_error described_class::NotImplementedError,
-          "#{described_class.name} does not implement :insert_one"
-    end # it
-  end # describe
-
-  describe '#name' do
-    include_examples 'should have reader', :name, ->() { name }
-  end # describe
-
-  describe '#update' do
-    it { expect(instance).to respond_to(:update).with(2).arguments }
-
-    it 'should raise an error' do
-      expect { instance.update(0, {}) }.
-        to raise_error described_class::NotImplementedError,
-          "#{described_class.name} does not implement :update_one"
-    end # it
-  end # describe
+  include_examples 'should implement the Collection interface'
 end # describe

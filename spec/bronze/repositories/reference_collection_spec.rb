@@ -1,9 +1,12 @@
 # spec/bronze/repositories/reference_collection_spec.rb
 
+require 'bronze/repositories/collection_examples'
 require 'bronze/repositories/reference_collection'
 require 'bronze/repositories/reference_query'
 
 RSpec.describe Spec::ReferenceCollection do
+  include Spec::Repositories::CollectionExamples
+
   shared_context 'when the collection contains many items' do
     let(:data) do
       [
@@ -14,18 +17,17 @@ RSpec.describe Spec::ReferenceCollection do
     end # let
   end # shared_context
 
-  let(:name)        { :books }
   let(:data)        { [] }
-  let(:instance)    { described_class.new name, data }
+  let(:instance)    { described_class.new data }
   let(:query_class) { Spec::ReferenceQuery }
 
   describe '::new' do
-    it { expect(described_class).to be_constructible.with(2).arguments }
+    it { expect(described_class).to be_constructible.with(1).argument }
   end # describe
 
-  describe '#all' do
-    it { expect(instance).to respond_to(:all).with(0).arguments }
+  include_examples 'should implement the Collection interface'
 
+  describe '#all' do
     it 'should return a query' do
       query = instance.all
 
@@ -44,8 +46,6 @@ RSpec.describe Spec::ReferenceCollection do
   end # describe
 
   describe '#count' do
-    it { expect(instance).to respond_to(:count).with(0).arguments }
-
     it { expect(instance.count).to be 0 }
 
     wrap_context 'when the collection contains many items' do
@@ -54,10 +54,6 @@ RSpec.describe Spec::ReferenceCollection do
   end # describe
 
   describe '#delete' do
-    it { expect(instance).to respond_to(:delete).with(1).argument }
-
-    it { expect(instance).to alias_method(:delete).as(:destroy) }
-
     describe 'with an id' do
       let(:id) { 0 }
 
@@ -111,10 +107,6 @@ RSpec.describe Spec::ReferenceCollection do
   end # describe
 
   describe '#insert' do
-    it { expect(instance).to respond_to(:insert).with(1).argument }
-
-    it { expect(instance).to alias_method(:insert).as(:create) }
-
     describe 'with an attributes hash' do
       let(:attributes) { { :id => 0, :title => 'The Hobbit' } }
 
@@ -155,8 +147,6 @@ RSpec.describe Spec::ReferenceCollection do
   end # describe
 
   describe '#update' do
-    it { expect(instance).to respond_to(:update).with(2).arguments }
-
     describe 'with an id and an attributes hash' do
       let(:id)         { 0 }
       let(:attributes) { { :author => 'J.R.R. Tolkien' } }
@@ -212,9 +202,5 @@ RSpec.describe Spec::ReferenceCollection do
         end # it
       end # describe
     end # wrap_context
-  end # describe
-
-  describe '#name' do
-    include_examples 'should have reader', :name, ->() { name }
   end # describe
 end # describe
