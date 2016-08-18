@@ -20,5 +20,11 @@ module Spec
     def base_query
       ::Spec::ReferenceQuery.new(@data)
     end # method base_query
+
+    def insert_attributes attributes
+      @data << attributes
+
+      [] # No errors.
+    end # method insert_attributes
   end # class
 end # class

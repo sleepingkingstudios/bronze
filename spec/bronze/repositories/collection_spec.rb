@@ -31,6 +31,18 @@ RSpec.describe Bronze::Repositories::Collection do
     end # it
   end # describe
 
+  describe '#insert' do
+    it { expect(instance).to respond_to(:insert).with(1).argument }
+
+    it { expect(instance).to alias_method(:insert).as(:create) }
+
+    it 'should raise an error' do
+      expect { instance.insert({}) }.
+        to raise_error described_class::NotImplementedError,
+          "#{described_class.name} does not implement :insert_attributes"
+    end # it
+  end # describe
+
   describe '#name' do
     include_examples 'should have reader', :name, ->() { name }
   end # describe

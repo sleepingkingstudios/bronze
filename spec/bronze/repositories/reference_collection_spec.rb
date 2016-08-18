@@ -53,6 +53,30 @@ RSpec.describe Spec::ReferenceCollection do
     end # wrap_context
   end # describe
 
+  describe '#insert' do
+    it { expect(instance).to respond_to(:insert).with(1).argument }
+
+    it { expect(instance).to alias_method(:insert).as(:create) }
+
+    describe 'with an attributes hash' do
+      let(:attributes) { { :title => 'The Hobbit' } }
+
+      it 'should insert the hash in the datastore' do
+        result = nil
+        errors = nil
+
+        expect { result, errors = instance.insert attributes }.
+          to change(instance, :count).by(1)
+
+        expect(result).to be true
+        expect(errors).to be == []
+
+        item = instance.all.to_a.last
+        expect(item).to be == attributes
+      end # it
+    end # describe
+  end # describe
+
   describe '#name' do
     include_examples 'should have reader', :name, ->() { name }
   end # describe

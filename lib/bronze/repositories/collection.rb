@@ -38,6 +38,19 @@ module Bronze::Repositories
       base_query.count
     end # method count
 
+    # Persists the given hash in the datastore.
+    #
+    # @param attributes [Hash] The hash to persist.
+    #
+    # @return [Array[Boolean, Hash]] If the insert succeeds, returns true and
+    #   an empty array. Otherwise, returns false and an array of error messages.
+    def insert attributes
+      errors = insert_attributes(attributes)
+
+      [errors.empty?, errors]
+    end # method insert
+    alias_method :create, :insert
+
     private
 
     def base_query
@@ -45,5 +58,11 @@ module Bronze::Repositories
         "#{self.class.name} does not implement :base_query",
         caller
     end # method base_query
+
+    def insert_attributes _attributes
+      raise NotImplementedError,
+        "#{self.class.name} does not implement :insert_attributes",
+        caller
+    end # method insert_attributes
   end # class
 end # module
