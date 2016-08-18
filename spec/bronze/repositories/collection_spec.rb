@@ -31,6 +31,18 @@ RSpec.describe Bronze::Repositories::Collection do
     end # it
   end # describe
 
+  describe '#delete' do
+    it { expect(instance).to respond_to(:delete).with(1).argument }
+
+    it { expect(instance).to alias_method(:delete).as(:destroy) }
+
+    it 'should raise an error' do
+      expect { instance.delete 0 }.
+        to raise_error described_class::NotImplementedError,
+          "#{described_class.name} does not implement :delete_attributes"
+    end # it
+  end # describe
+
   describe '#insert' do
     it { expect(instance).to respond_to(:insert).with(1).argument }
 

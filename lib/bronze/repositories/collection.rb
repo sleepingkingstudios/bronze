@@ -38,6 +38,19 @@ module Bronze::Repositories
       base_query.count
     end # method count
 
+    # Deletes the specified hash from the datastore.
+    #
+    # @param id [Object] The primary key of the hash to delete.
+    #
+    # @return [Array[Boolean, Hash]] If the update succeeds, returns true and
+    #   an empty array. Otherwise, returns false and an array of error messages.
+    def delete id
+      errors = delete_attributes(id)
+
+      [errors.empty?, errors]
+    end # method delete
+    alias_method :destroy, :delete
+
     # Persists the given hash in the datastore.
     #
     # @param attributes [Hash] The hash to persist.
@@ -69,6 +82,10 @@ module Bronze::Repositories
     def base_query
       not_implemented :base_query
     end # method base_query
+
+    def delete_attributes _id
+      not_implemented :delete_attributes
+    end # method delete_attributes
 
     def insert_attributes _attributes
       not_implemented :insert_attributes

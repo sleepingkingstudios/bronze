@@ -8,8 +8,8 @@ RSpec.describe Spec::ReferenceCollection do
     let(:data) do
       [
         { :id => 1, :title => 'The Fellowship of the Ring' },
-        { :id => 1, :title => 'The Two Towers' },
-        { :id => 1, :title => 'The Return of the King' }
+        { :id => 2, :title => 'The Two Towers' },
+        { :id => 3, :title => 'The Return of the King' }
       ] # end array
     end # let
   end # shared_context
@@ -50,6 +50,63 @@ RSpec.describe Spec::ReferenceCollection do
 
     wrap_context 'when the collection contains many items' do
       it { expect(instance.count).to be == data.count }
+    end # wrap_context
+  end # describe
+
+  describe '#delete' do
+    it { expect(instance).to respond_to(:delete).with(1).argument }
+
+    it { expect(instance).to alias_method(:delete).as(:destroy) }
+
+    describe 'with an id' do
+      let(:id) { 0 }
+
+      it 'should return false and an errors array' do
+        result = nil
+        errors = nil
+
+        expect { result, errors = instance.delete id }.
+          not_to change(instance.all, :to_a)
+
+        expect(result).to be false
+        expect(errors).to contain_exactly "item not found with id #{id.inspect}"
+      end # it
+    end # describe
+
+    wrap_context 'when the collection contains many items' do
+      describe 'with an invalid id' do
+        let(:id) { 0 }
+
+        it 'should return false and an errors array' do
+          result = nil
+          errors = nil
+
+          expect { result, errors = instance.delete id }.
+            not_to change(instance.all, :to_a)
+
+          expect(result).to be false
+          expect(errors).
+            to contain_exactly "item not found with id #{id.inspect}"
+        end # it
+      end # describe
+
+      describe 'with a valid id' do
+        let(:id) { 1 }
+
+        it 'should return true and an empty array' do
+          result = nil
+          errors = nil
+
+          expect { result, errors = instance.delete id }.
+            to change(instance, :count).by(-1)
+
+          expect(result).to be true
+          expect(errors).to be == []
+
+          item = instance.all.to_a.find { |hsh| hsh[:id] == id }
+          expect(item).to be nil
+        end # it
+      end # describe
     end # wrap_context
   end # describe
 
@@ -138,7 +195,7 @@ RSpec.describe Spec::ReferenceCollection do
       describe 'with a valid id and an attributes hash' do
         let(:id) { 1 }
 
-        it 'should return false and an errors array' do
+        it 'should return true and an empty array' do
           result = nil
           errors = nil
 
