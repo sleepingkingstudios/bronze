@@ -45,7 +45,7 @@ module Bronze::Repositories
     # @return [Array[Boolean, Hash]] If the update succeeds, returns true and
     #   an empty array. Otherwise, returns false and an array of error messages.
     def delete id
-      errors = delete_attributes(id)
+      errors = delete_one(id)
 
       [errors.empty?, errors]
     end # method delete
@@ -58,7 +58,7 @@ module Bronze::Repositories
     # @return [Array[Boolean, Hash]] If the insert succeeds, returns true and
     #   an empty array. Otherwise, returns false and an array of error messages.
     def insert attributes
-      errors = insert_attributes(attributes)
+      errors = insert_one(attributes)
 
       [errors.empty?, errors]
     end # method insert
@@ -72,7 +72,7 @@ module Bronze::Repositories
     # @return [Array[Boolean, Hash]] If the update succeeds, returns true and
     #   an empty array. Otherwise, returns false and an array of error messages.
     def update id, attributes
-      errors = update_attributes(id, attributes)
+      errors = update_one(id, attributes)
 
       [errors.empty?, errors]
     end # method update
@@ -83,13 +83,13 @@ module Bronze::Repositories
       not_implemented :base_query
     end # method base_query
 
-    def delete_attributes _id
-      not_implemented :delete_attributes
-    end # method delete_attributes
+    def delete_one _id
+      not_implemented :delete_one
+    end # method delete_one
 
-    def insert_attributes _attributes
-      not_implemented :insert_attributes
-    end # method insert_attributes
+    def insert_one _attributes
+      not_implemented :insert_one
+    end # method insert_one
 
     def not_implemented method_name
       raise NotImplementedError,
@@ -97,8 +97,8 @@ module Bronze::Repositories
         caller[1..-1]
     end # method not_implemented
 
-    def update_attributes _id, _attributes
-      not_implemented :update_attributes
-    end # method update_attributes
+    def update_one _id, _attributes
+      not_implemented :update_one
+    end # method update_one
   end # class
 end # module

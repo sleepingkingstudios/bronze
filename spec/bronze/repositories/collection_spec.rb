@@ -39,7 +39,7 @@ RSpec.describe Bronze::Repositories::Collection do
     it 'should raise an error' do
       expect { instance.delete 0 }.
         to raise_error described_class::NotImplementedError,
-          "#{described_class.name} does not implement :delete_attributes"
+          "#{described_class.name} does not implement :delete_one"
     end # it
   end # describe
 
@@ -51,7 +51,7 @@ RSpec.describe Bronze::Repositories::Collection do
     it 'should raise an error' do
       expect { instance.insert({}) }.
         to raise_error described_class::NotImplementedError,
-          "#{described_class.name} does not implement :insert_attributes"
+          "#{described_class.name} does not implement :insert_one"
     end # it
   end # describe
 
@@ -65,7 +65,7 @@ RSpec.describe Bronze::Repositories::Collection do
     it 'should raise an error' do
       expect { instance.update(0, {}) }.
         to raise_error described_class::NotImplementedError,
-          "#{described_class.name} does not implement :update_attributes"
+          "#{described_class.name} does not implement :update_one"
     end # it
   end # describe
 end # describe

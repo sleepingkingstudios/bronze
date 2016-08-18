@@ -21,7 +21,7 @@ module Spec
       ::Spec::ReferenceQuery.new(@data)
     end # method base_query
 
-    def delete_attributes id
+    def delete_one id
       item = find_item(id)
 
       return ["item not found with id #{id.inspect}"] unless item
@@ -29,19 +29,19 @@ module Spec
       @data.delete_at(@data.index item)
 
       []
-    end # method delete_attributes
+    end # method delete_one
 
     def find_item id
       @data.find { |hsh| hsh[:id] == id }
     end # method find_item
 
-    def insert_attributes attributes
+    def insert_one attributes
       @data << attributes
 
       [] # No errors.
-    end # method insert_attributes
+    end # method insert_one
 
-    def update_attributes id, attributes
+    def update_one id, attributes
       item = find_item(id)
 
       return ["item not found with id #{id.inspect}"] unless item
@@ -49,6 +49,6 @@ module Spec
       item.update attributes
 
       []
-    end # method update_attributes
+    end # method update_one
   end # class
 end # class
