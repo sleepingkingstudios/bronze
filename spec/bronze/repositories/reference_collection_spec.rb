@@ -21,6 +21,10 @@ RSpec.describe Spec::ReferenceCollection do
   let(:instance)    { described_class.new data }
   let(:query_class) { Spec::ReferenceQuery }
 
+  def find_item id
+    instance.all.to_a.find { |hsh| hsh[:id] == id }
+  end # method find_item
+
   describe '::new' do
     it { expect(described_class).to be_constructible.with(1).argument }
   end # describe
@@ -54,152 +58,62 @@ RSpec.describe Spec::ReferenceCollection do
   end # describe
 
   describe '#delete' do
-    describe 'with an id' do
-      let(:id) { 0 }
+    def perform_action
+      instance.delete id
+    end # method perform_action
 
-      it 'should return false and an errors array' do
-        result = nil
-        errors = nil
-
-        expect { result, errors = instance.delete id }.
-          not_to change(instance.all, :to_a)
-
-        expect(result).to be false
-        expect(errors).to contain_exactly "item not found with id #{id.inspect}"
-      end # it
-    end # describe
+    validate_params 'item not found with id 0', :id => 0
 
     wrap_context 'when the collection contains many items' do
-      describe 'with an invalid id' do
-        let(:id) { 0 }
-
-        it 'should return false and an errors array' do
-          result = nil
-          errors = nil
-
-          expect { result, errors = instance.delete id }.
-            not_to change(instance.all, :to_a)
-
-          expect(result).to be false
-          expect(errors).
-            to contain_exactly "item not found with id #{id.inspect}"
-        end # it
-      end # describe
+      validate_params 'item not found with id 0', :id => 0
 
       describe 'with a valid id' do
         let(:id) { 1 }
 
-        it 'should return true and an empty array' do
-          result = nil
-          errors = nil
-
-          expect { result, errors = instance.delete id }.
-            to change(instance, :count).by(-1)
-
-          expect(result).to be true
-          expect(errors).to be == []
-
-          item = instance.all.to_a.find { |hsh| hsh[:id] == id }
-          expect(item).to be nil
-        end # it
+        include_examples 'should delete the item'
       end # describe
     end # wrap_context
   end # describe
 
   describe '#insert' do
+    def perform_action
+      instance.insert attributes
+    end # method perform_action
+
     describe 'with an attributes hash' do
       let(:attributes) { { :id => 0, :title => 'The Hobbit' } }
 
-      it 'should insert the hash in the datastore' do
-        result = nil
-        errors = nil
-
-        expect { result, errors = instance.insert attributes }.
-          to change(instance, :count).by(1)
-
-        expect(result).to be true
-        expect(errors).to be == []
-
-        item = instance.all.to_a.last
-        expect(item).to be == attributes
-      end # it
+      include_examples 'should insert the item'
     end # describe
 
     wrap_context 'when the collection contains many items' do
       describe 'with an attributes hash' do
         let(:attributes) { { :id => 0, :title => 'The Hobbit' } }
 
-        it 'should insert the hash in the datastore' do
-          result = nil
-          errors = nil
-
-          expect { result, errors = instance.insert attributes }.
-            to change(instance, :count).by(1)
-
-          expect(result).to be true
-          expect(errors).to be == []
-
-          item = instance.all.to_a.last
-          expect(item).to be == attributes
-        end # it
+        include_examples 'should insert the item'
       end # describe
     end # wrap_context
   end # describe
 
   describe '#update' do
-    describe 'with an id and an attributes hash' do
-      let(:id)         { 0 }
-      let(:attributes) { { :author => 'J.R.R. Tolkien' } }
+    let(:id)         { 1 }
+    let(:attributes) { {} }
 
-      it 'should return false and an errors array' do
-        result = nil
-        errors = nil
+    def perform_action
+      instance.update id, attributes
+    end # method perform_action
 
-        expect { result, errors = instance.update id, attributes }.
-          not_to change(instance.all, :to_a)
-
-        expect(result).to be false
-        expect(errors).to contain_exactly "item not found with id #{id.inspect}"
-      end # it
-    end # describe
+    validate_params 'item not found with id 0', :id => 0
 
     wrap_context 'when the collection contains many items' do
       let(:attributes) { { :author => 'J.R.R. Tolkien' } }
 
-      describe 'with an invalid id and an attributes hash' do
-        let(:id) { 0 }
-
-        it 'should return false and an errors array' do
-          result = nil
-          errors = nil
-
-          expect { result, errors = instance.update id, attributes }.
-            not_to change(instance.all, :to_a)
-
-          expect(result).to be false
-          expect(errors).
-            to contain_exactly "item not found with id #{id.inspect}"
-        end # it
-      end # describe
+      validate_params 'item not found with id 0', :id => 0
 
       describe 'with a valid id and an attributes hash' do
         let(:id) { 1 }
 
-        it 'should return true and an empty array' do
-          result = nil
-          errors = nil
-
-          expect { result, errors = instance.update id, attributes }.
-            not_to change(instance, :count)
-
-          expect(result).to be true
-          expect(errors).to be == []
-
-          item = data.find { |hsh| hsh[:id] == id }
-          attributes.each do |key, value|
-            expect(item[key]).to be == value
-          end # each
-        end # it
+        include_examples 'should update the item'
       end # describe
     end # wrap_context
   end # describe
