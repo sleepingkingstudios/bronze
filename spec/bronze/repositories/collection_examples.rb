@@ -26,6 +26,20 @@ module Spec::Repositories
       end # class method validate
     end # module
 
+    shared_context 'when many items are defined for the collection' do
+      let(:data) do
+        [
+          { :id => '1', :title => 'The Fellowship of the Ring' },
+          { :id => '2', :title => 'The Two Towers' },
+          { :id => '3', :title => 'The Return of the King' }
+        ] # end array
+      end # let
+    end # shared_context
+
+    shared_context 'when the collection contains many items' do
+      include_context 'when many items are defined for the collection'
+    end # shared_context
+
     shared_examples 'should implement the Collection interface' do
       describe '#all' do
         it { expect(instance).to respond_to(:all).with(0).arguments }
@@ -120,6 +134,69 @@ module Spec::Repositories
           expect(item[key]).to be == value
         end # each
       end # it
+    end # shared_examples
+
+    shared_examples 'should implement #all' do
+      it 'should return a query' do
+        query = instance.all
+
+        expect(query).to be_a query_class
+        expect(query.to_a).to be == []
+      end # it
+
+      wrap_context 'when the collection contains many items' do
+        it 'should return a query' do
+          query = instance.all
+
+          expect(query).to be_a query_class
+          expect(query.to_a).to contain_exactly(*data)
+        end # it
+      end # wrap_context
+    end # shared_examples
+
+    shared_examples 'should implement #count' do
+      it { expect(instance.count).to be 0 }
+
+      wrap_context 'when the collection contains many items' do
+        it { expect(instance.count).to be == data.count }
+      end # wrap_context
+    end # shared_examples
+
+    shared_examples 'should implement #delete' do
+      wrap_context 'when the collection contains many items' do
+        describe 'with a valid id' do
+          let(:id) { '1' }
+
+          include_examples 'should delete the item'
+        end # describe
+      end # wrap_context
+    end # shared_examples
+
+    shared_examples 'should implement #insert' do
+      describe 'with an attributes Hash' do
+        let(:attributes) { { :id => '0', :title => 'The Hobbit' } }
+
+        include_examples 'should insert the item'
+      end # describe
+
+      wrap_context 'when the collection contains many items' do
+        describe 'with an attributes Hash with a new id' do
+          let(:attributes) { { :id => '0', :title => 'The Hobbit' } }
+
+          include_examples 'should insert the item'
+        end # describe
+      end # wrap_context
+    end # shared_examples
+
+    shared_examples 'should implement #update' do
+      wrap_context 'when the collection contains many items' do
+        describe 'with a valid id and a valid attributes hash' do
+          let(:id)         { '3' }
+          let(:attributes) { { :title => 'The Revenge of the Sith' } }
+
+          include_examples 'should update the item'
+        end # describe
+      end # wrap_context
     end # shared_examples
   end # module
 end # module
