@@ -1,11 +1,11 @@
 # lib/bronze/entities/transforms/attributes_transform.rb
 
 require 'set'
-require 'bronze/entities/transforms'
+require 'bronze/entities/transforms/transform'
 
 module Bronze::Entities::Transforms
   # Maps an entity to a data hash using the specified attributes.
-  class AttributesTransform
+  class AttributesTransform < Transform
     class << self
       # Adds the named attribute to the attributes set.
       #
@@ -50,15 +50,15 @@ module Bronze::Entities::Transforms
       self.class.attribute_names
     end # method attribute_names
 
-    # @param entity_class [Class] The class into which data hashes will be
-    #   denormalized.
-    def initialize entity_class
-      @entity_class = entity_class
-    end # constructor
-
-    # @return [Class] The class into which data hashes will be denormalized.
-    attr_reader :entity_class
-
+    # Converts a data hash into an entity instance and sets the value of the
+    # entity attribute to the values of the hash for each specified attribute.
+    # The entity type is defined by the #entity_class method.
+    #
+    # @param attributes [Hash] The hash to convert.
+    #
+    # @return [Bronze::Entities::Entity] The converted entity.
+    #
+    # @see #entity_class.
     def denormalize attributes
       return entity_class.new if attributes.nil?
 
