@@ -13,7 +13,7 @@ RSpec.describe Patina::Repositories::Simple::Collection do
 
     before(:example) do
       data.each do |attributes|
-        instance.insert attributes
+        instance.insert instance.transform.denormalize(attributes)
       end # each
     end # before example
   end # shared_context
@@ -31,20 +31,12 @@ RSpec.describe Patina::Repositories::Simple::Collection do
 
   include_examples 'should implement the Collection interface'
 
-  describe '#all' do
-    include_examples 'should implement #all'
-  end # describe
-
-  describe '#count' do
-    include_examples 'should implement #count'
-  end # describe
+  include_examples 'should implement the Collection methods'
 
   describe '#delete' do
     def perform_action
       instance.delete id
     end # method perform_action
-
-    include_examples 'should implement #delete'
 
     validate_params "id can't be nil", :id => nil
 
@@ -61,8 +53,6 @@ RSpec.describe Patina::Repositories::Simple::Collection do
     def perform_action
       instance.insert attributes
     end # method perform_action
-
-    include_examples 'should implement #insert'
 
     validate_params "data can't be nil", :attributes => nil
 
@@ -94,8 +84,6 @@ RSpec.describe Patina::Repositories::Simple::Collection do
     def perform_action
       instance.update id, attributes
     end # method perform_action
-
-    include_examples 'should implement #update'
 
     validate_params "id can't be nil", :id => nil
 

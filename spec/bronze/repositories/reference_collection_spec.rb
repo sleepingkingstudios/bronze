@@ -21,20 +21,12 @@ RSpec.describe Spec::ReferenceCollection do
 
   include_examples 'should implement the Collection interface'
 
-  describe '#all' do
-    include_examples 'should implement #all'
-  end # describe
-
-  describe '#count' do
-    include_examples 'should implement #count'
-  end # describe
+  include_examples 'should implement the Collection methods'
 
   describe '#delete' do
     def perform_action
       instance.delete id
     end # method perform_action
-
-    include_examples 'should implement #delete'
 
     validate_params 'item not found with id 0', :id => 0
 
@@ -43,23 +35,12 @@ RSpec.describe Spec::ReferenceCollection do
     end # wrap_context
   end # describe
 
-  describe '#insert' do
-    def perform_action
-      instance.insert attributes
-    end # method perform_action
-
-    include_examples 'should implement #insert'
-  end # describe
-
   describe '#update' do
-    let(:id)         { '1' }
     let(:attributes) { {} }
 
     def perform_action
       instance.update id, attributes
     end # method perform_action
-
-    include_examples 'should implement #update'
 
     validate_params 'item not found with id "0"', :id => '0'
 

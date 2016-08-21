@@ -1,5 +1,6 @@
 # lib/bronze/repositories/collection.rb
 
+require 'bronze/entities/transforms/identity_transform'
 require 'bronze/repositories'
 
 module Bronze::Repositories
@@ -14,6 +15,8 @@ module Bronze::Repositories
   #
   # (see AbstractCollection)
   module Collection
+    attr_accessor :transform
+
     # Returns the default query object for the collection.
     #
     # @return [Query] The default query.
@@ -45,8 +48,12 @@ module Bronze::Repositories
     # @return [Array[Boolean, Hash]] If the insert succeeds, returns true and
     #   an empty array. Otherwise, returns false and an array of error messages.
     def insert attributes
-      wrap_errors { insert_one(attributes) }
+      wrap_errors { insert_one(transform.normalize attributes) }
     end # method insert
+
+    def transform
+      @transform ||= Bronze::Entities::Transforms::IdentityTransform.new
+    end # method transform
 
     # Updates the specified hash in the datastore.
     #
@@ -56,7 +63,7 @@ module Bronze::Repositories
     # @return [Array[Boolean, Hash]] If the update succeeds, returns true and
     #   an empty array. Otherwise, returns false and an array of error messages.
     def update id, attributes
-      wrap_errors { update_one(id, attributes) }
+      wrap_errors { update_one(id, transform.normalize(attributes)) }
     end # method update
 
     private

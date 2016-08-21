@@ -1,5 +1,9 @@
 # spec/bronze/repositories/collection_examples.rb
 
+require 'bronze/entities/entity'
+require 'bronze/entities/transforms/attributes_transform'
+require 'bronze/entities/transforms/identity_transform'
+
 module Spec::Repositories
   module CollectionExamples
     extend RSpec::SleepingKingStudios::Concerns::SharedExampleGroup
@@ -40,6 +44,19 @@ module Spec::Repositories
       include_context 'when many items are defined for the collection'
     end # shared_context
 
+    shared_context 'when a transform is set' do
+      let(:transform_class) do
+        Class.new(Bronze::Entities::Transforms::AttributesTransform) do
+          attributes :title, :author
+        end # class
+      end # let
+      let(:transform) do
+        transform_class.new(entity_class)
+      end # let
+
+      before(:example) { instance.transform = transform }
+    end # shared_context
+
     shared_examples 'should implement the Collection interface' do
       describe '#all' do
         it { expect(instance).to respond_to(:all).with(0).arguments }
@@ -55,6 +72,10 @@ module Spec::Repositories
 
       describe '#insert' do
         it { expect(instance).to respond_to(:insert).with(1).argument }
+      end # describe
+
+      describe '#transform' do
+        include_examples 'should have property', :transform
       end # describe
 
       describe '#update' do
@@ -101,11 +122,11 @@ module Spec::Repositories
     end # shared_examples
 
     shared_examples 'should insert the item' do
-      it 'should insert an item' do
+      it 'should insert the item' do
         result = nil
         errors = nil
 
-        expect { result, errors = instance.insert attributes }.
+        expect { result, errors = instance.insert entity }.
           to change(instance, :count).by(1)
 
         expect(result).to be true
@@ -122,7 +143,7 @@ module Spec::Repositories
         result = nil
         errors = nil
 
-        expect { result, errors = instance.update id, attributes }.
+        expect { result, errors = instance.update id, entity }.
           not_to change(instance, :count)
 
         expect(result).to be true
@@ -136,67 +157,149 @@ module Spec::Repositories
       end # it
     end # shared_examples
 
-    shared_examples 'should implement #all' do
-      it 'should return a query' do
-        query = instance.all
+    shared_examples 'should implement the Collection methods' do
+      let(:entity_class) do
+        Class.new(Bronze::Entities::Entity) do
+          attribute :title,  String
+          attribute :author, String
+        end # class
+      end # let
 
-        expect(query).to be_a query_class
-        expect(query.to_a).to be == []
-      end # it
-
-      wrap_context 'when the collection contains many items' do
+      describe '#all' do
         it 'should return a query' do
           query = instance.all
 
           expect(query).to be_a query_class
-          expect(query.to_a).to contain_exactly(*data)
+          expect(query.to_a).to be == []
         end # it
-      end # wrap_context
-    end # shared_examples
 
-    shared_examples 'should implement #count' do
-      it { expect(instance.count).to be 0 }
+        wrap_context 'when the collection contains many items' do
+          it 'should return a query' do
+            query = instance.all
 
-      wrap_context 'when the collection contains many items' do
-        it { expect(instance.count).to be == data.count }
-      end # wrap_context
-    end # shared_examples
-
-    shared_examples 'should implement #delete' do
-      wrap_context 'when the collection contains many items' do
-        describe 'with a valid id' do
-          let(:id) { '1' }
-
-          include_examples 'should delete the item'
-        end # describe
-      end # wrap_context
-    end # shared_examples
-
-    shared_examples 'should implement #insert' do
-      describe 'with an attributes Hash' do
-        let(:attributes) { { :id => '0', :title => 'The Hobbit' } }
-
-        include_examples 'should insert the item'
+            expect(query).to be_a query_class
+            expect(query.to_a).to contain_exactly(*data)
+          end # it
+        end # wrap_context
       end # describe
 
-      wrap_context 'when the collection contains many items' do
-        describe 'with an attributes Hash with a new id' do
+      describe '#count' do
+        it { expect(instance.count).to be 0 }
+
+        wrap_context 'when the collection contains many items' do
+          it { expect(instance.count).to be == data.count }
+        end # wrap_context
+      end # describe
+
+      describe '#delete' do
+        wrap_context 'when the collection contains many items' do
+          describe 'with a valid id' do
+            let(:id) { '1' }
+
+            include_examples 'should delete the item'
+          end # describe
+        end # wrap_context
+      end # describe
+
+      describe '#insert' do
+        let(:entity) { attributes }
+
+        describe 'with an attributes Hash' do
           let(:attributes) { { :id => '0', :title => 'The Hobbit' } }
 
           include_examples 'should insert the item'
         end # describe
-      end # wrap_context
-    end # shared_examples
 
-    shared_examples 'should implement #update' do
-      wrap_context 'when the collection contains many items' do
-        describe 'with a valid id and a valid attributes hash' do
-          let(:id)         { '3' }
-          let(:attributes) { { :title => 'The Revenge of the Sith' } }
+        wrap_context 'when a transform is set' do
+          let(:entity) { entity_class.new(attributes) }
 
-          include_examples 'should update the item'
-        end # describe
-      end # wrap_context
+          describe 'with an entity' do
+            let(:attributes) { { :id => '0', :title => 'The Hobbit' } }
+
+            include_examples 'should insert the item'
+          end # describe
+        end # wrap_context
+
+        wrap_context 'when the collection contains many items' do
+          describe 'with an attributes Hash with a new id' do
+            let(:attributes) { { :id => '0', :title => 'The Hobbit' } }
+
+            include_examples 'should insert the item'
+          end # describe
+
+          wrap_context 'when a transform is set' do
+            let(:entity) { entity_class.new(attributes) }
+
+            describe 'with an entity with a new id' do
+              let(:attributes) { { :id => '0', :title => 'The Hobbit' } }
+
+              include_examples 'should insert the item'
+            end # describe
+          end # wrap_context
+        end # wrap_context
+      end # describe
+
+      describe '#transform' do
+        let(:identity_transform_class) do
+          Bronze::Entities::Transforms::IdentityTransform
+        end # let
+
+        it { expect(instance.transform).to be_a identity_transform_class }
+
+        wrap_context 'when a transform is set' do
+          it { expect(instance.transform).to be == transform }
+        end # wrap_context
+      end # describe
+
+      describe '#transform=' do
+        let(:transform) do
+          Bronze::Entities::Transforms::AttributesTransform.new(entity_class)
+        end # let
+
+        it 'should set the transform' do
+          expect { instance.transform = transform }.
+            to change(instance, :transform).
+            to be transform
+        end # it
+
+        wrap_context 'when a transform is set' do
+          let(:identity_transform_class) do
+            Bronze::Entities::Transforms::IdentityTransform
+          end # let
+
+          describe 'with nil' do
+            it 'should clear the transform' do
+              expect { instance.transform = nil }.
+                to change(instance, :transform).
+                to be_a identity_transform_class
+            end # it
+          end # describe
+        end # wrap_context
+      end # describe
+
+      describe '#update' do
+        let(:entity) { attributes }
+
+        wrap_context 'when the collection contains many items' do
+          describe 'with a valid id and a valid attributes hash' do
+            let(:id)         { '3' }
+            let(:attributes) { { :title => 'The Revenge of the Sith' } }
+
+            include_examples 'should update the item'
+          end # describe
+
+          wrap_context 'when a transform is set' do
+            let(:entity) { entity_class.new(attributes.merge(:id => id)) }
+
+            describe 'with a valid id and a valid attributes hash' do
+              let(:id)         { '3' }
+              let(:attributes) { { :title => 'The Revenge of the Sith' } }
+
+              include_examples 'should update the item'
+            end # describe
+          end # wrap_context
+        end # wrap_context
+      end # describe
     end # shared_examples
   end # module
 end # module
