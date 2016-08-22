@@ -54,7 +54,7 @@ module Spec::Repositories
         transform_class.new(entity_class)
       end # let
 
-      before(:example) { instance.transform = transform }
+      before(:example) { instance.send :transform=, transform }
     end # shared_context
 
     shared_examples 'should implement the Collection interface' do
@@ -75,7 +75,7 @@ module Spec::Repositories
       end # describe
 
       describe '#transform' do
-        include_examples 'should have property', :transform
+        include_examples 'should have reader', :transform
       end # describe
 
       describe '#update' do
@@ -257,7 +257,7 @@ module Spec::Repositories
         end # let
 
         it 'should set the transform' do
-          expect { instance.transform = transform }.
+          expect { instance.send :transform=, transform }.
             to change(instance, :transform).
             to be transform
         end # it
@@ -269,7 +269,7 @@ module Spec::Repositories
 
           describe 'with nil' do
             it 'should clear the transform' do
-              expect { instance.transform = nil }.
+              expect { instance.send :transform=, nil }.
                 to change(instance, :transform).
                 to be_a identity_transform_class
             end # it

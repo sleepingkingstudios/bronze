@@ -15,8 +15,6 @@ module Bronze::Repositories
   #
   # (see AbstractCollection)
   module Collection
-    attr_accessor :transform
-
     # Returns the default query object for the collection.
     #
     # @return [Query] The default query.
@@ -51,6 +49,15 @@ module Bronze::Repositories
       wrap_errors { insert_one(transform.normalize attributes) }
     end # method insert
 
+    # The current transform object. The transform maps the raw data sent to or
+    # returned by the datastore to another object, typically an entity.
+    #
+    # If a transform is set, it will be used to map all entities passed into
+    # persistence methods (e.g. #insert and #update) into into raw data, and to
+    # map all data retrieved via query methods (e.g. #all or #query) into the
+    # respective entities.
+    #
+    # @return [Bronze::Entities::Transform] The transform object.
     def transform
       @transform ||= Bronze::Entities::Transforms::IdentityTransform.new
     end # method transform
@@ -67,6 +74,8 @@ module Bronze::Repositories
     end # method update
 
     private
+
+    attr_writer :transform
 
     def wrap_errors
       errors = yield
