@@ -76,6 +76,12 @@ module Bronze::Entities
       self.attributes = attributes
     end # constructor
 
+    # Compares with the other object and returns true if the other object has
+    # the same class and attributes.
+    def == other
+      self.class == other.class && attributes == other.attributes
+    end # method ==
+
     # Merges the values of the attributes. If an attribute is missing, it is not
     # updated. Values that are not valid attributes are discarded.
     #

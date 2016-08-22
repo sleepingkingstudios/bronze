@@ -183,6 +183,52 @@ RSpec.describe Bronze::Entities::Entity do
     end # wrap_context
   end # describe
 
+  describe '#==' do
+    let(:other_class)      { Class.new(described_class) }
+    let(:other_attributes) { attributes }
+    let(:other_instance)   { other_class.new(other_attributes) }
+
+    include_context 'when an entity class is defined with attributes'
+
+    # rubocop:disable Style/NilComparison
+    describe 'with nil' do
+      it { expect(instance == nil).to be false }
+    end # describe
+    # rubocop:enable Style/NilComparison
+
+    describe 'with an object' do
+      it { expect(instance == Object.new).to be false }
+    end # describe
+
+    describe 'with an attributes hash' do
+      it { expect(instance == attributes).to be false }
+    end # describe
+
+    describe 'with an object with another class and the same attributes' do
+      it { expect(instance == other_instance).to be false }
+    end # describe
+
+    describe 'with an object with the same class and different attributes' do
+      let(:other_instance) { described_class.new({}) }
+
+      it { expect(instance == other_instance).to be false }
+    end # describe
+
+    describe 'with an object with the same class and attributes' do
+      let(:other_instance) do
+        described_class.new(attributes.merge :id => instance.id)
+      end # let
+
+      it { expect(instance == other_instance).to be true }
+    end # describe
+
+    # rubocop:disable Lint/UselessComparison
+    describe 'with the object' do
+      it { expect(instance == instance).to be true }
+    end # describe
+    # rubocop:enable Lint/UselessComparison
+  end # describe
+
   describe '#assign' do
     it { expect(instance).to respond_to(:assign).with(1).argument }
 
