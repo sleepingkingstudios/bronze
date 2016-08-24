@@ -45,7 +45,7 @@ module Bronze::Entities::Transforms
 
     attribute :id
 
-    # (see ::attribute_names)
+    # (see AttributesTransform.attribute_names)
     def attribute_names
       self.class.attribute_names
     end # method attribute_names

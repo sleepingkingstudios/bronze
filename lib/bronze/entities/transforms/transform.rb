@@ -23,7 +23,7 @@ module Bronze::Entities::Transforms
     # Converts an object into an entity instance. The entity type is defined by
     # the #entity_class method.
     #
-    # @param object [Object] The object to convert.
+    # @param _object [Object] The object to convert.
     #
     # @return [Bronze::Entities::Entity] The converted entity.
     #
@@ -36,7 +36,7 @@ module Bronze::Entities::Transforms
 
     # Converts the entity into another object.
     #
-    # @param entity [Bronze::Entities::Entity] The entity to convert.
+    # @param _entity [Bronze::Entities::Entity] The entity to convert.
     #
     # @return [Object] The converted object.
     def normalize _entity
