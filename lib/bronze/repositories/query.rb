@@ -11,6 +11,15 @@ module Bronze::Repositories
     # of Query must implement these methods as appropriate for the datastore.
     class NotImplementedError < StandardError; end
 
+    # The current transform object. The transform maps the raw data returned by
+    # the datastore to another object, typically an entity.
+    #
+    # If a transform is set, it will be used to map all data retrieved from the
+    # datastore into the respective entities.
+    #
+    # @return [Bronze::Entities::Transform] The transform object.
+    attr_reader :transform
+
     # Performs a count on the dataset.
     #
     # @return [Integer] The number of items matching the query.
@@ -25,9 +34,15 @@ module Bronze::Repositories
     #
     # @return [Array[Hash]] The data objects matching the query.
     def to_a
-      raise NotImplementedError,
-        "#{self.class.name} does not implement :to_a",
-        caller
+      find_each { |hsh| transform.denormalize hsh }
     end # method to_a
+
+    private
+
+    def find_each
+      raise NotImplementedError,
+        "#{self.class.name} does not implement :find_each",
+        caller
+    end # method find_each
   end # class
 end # module

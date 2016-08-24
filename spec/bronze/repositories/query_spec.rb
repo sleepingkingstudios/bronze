@@ -25,7 +25,11 @@ RSpec.describe Bronze::Repositories::Query do
     it 'should raise an error' do
       expect { instance.to_a }.
         to raise_error described_class::NotImplementedError,
-          "#{described_class.name} does not implement :to_a"
+          "#{described_class.name} does not implement :find_each"
     end # it
+  end # describe
+
+  describe '#transform' do
+    include_examples 'should have reader', :transform, nil
   end # describe
 end # describe

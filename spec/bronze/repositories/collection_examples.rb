@@ -2,7 +2,7 @@
 
 require 'bronze/entities/entity'
 require 'bronze/entities/transforms/attributes_transform'
-require 'bronze/entities/transforms/identity_transform'
+require 'bronze/entities/transforms/copy_transform'
 
 module Spec::Repositories
   module CollectionExamples
@@ -133,8 +133,9 @@ module Spec::Repositories
         expect(errors).to be == []
 
         item = instance.all.to_a.last
+        hsh  = item.is_a?(Hash) ? item : item.attributes
 
-        expect(item).to be == attributes
+        expect(hsh).to be == attributes
       end # it
     end # shared_examples
 
@@ -150,9 +151,10 @@ module Spec::Repositories
         expect(errors).to be == []
 
         item = find_item(id)
+        hsh  = item.is_a?(Hash) ? item : item.attributes
 
         attributes.each do |key, value|
-          expect(item[key]).to be == value
+          expect(hsh[key]).to be == value
         end # each
       end # it
     end # shared_examples
@@ -174,12 +176,36 @@ module Spec::Repositories
         end # it
 
         wrap_context 'when the collection contains many items' do
+          let(:expected) { data }
+
           it 'should return a query' do
             query = instance.all
 
             expect(query).to be_a query_class
-            expect(query.to_a).to contain_exactly(*data)
+            expect(query.to_a).to contain_exactly(*expected)
           end # it
+
+          it 'should not allow the caller to mutate the collection' do
+            tools = ::SleepingKingStudios::Tools::ObjectTools
+
+            hsh = { :id => '0', :title => 'The Hobbit' }
+            expect { instance.all.to_a << hsh }.
+              not_to change { tools.deep_dup(instance.all.to_a) }
+
+            expect { instance.all.to_a.last[:title] = 'Revenge of the Sith' }.
+              not_to change { tools.deep_dup(instance.all.to_a) }
+          end # it
+
+          wrap_context 'when a transform is set' do
+            let(:expected) { super().map { |hsh| transform.denormalize hsh } }
+
+            it 'should return a query' do
+              query = instance.all
+
+              expect(query).to be_a query_class
+              expect(query.to_a).to contain_exactly(*expected)
+            end # it
+          end # wrap_context
         end # wrap_context
       end # describe
 
@@ -208,6 +234,15 @@ module Spec::Repositories
           let(:attributes) { { :id => '0', :title => 'The Hobbit' } }
 
           include_examples 'should insert the item'
+
+          it 'should not allow the caller to mutate the collection' do
+            tools = ::SleepingKingStudios::Tools::ObjectTools
+
+            instance.insert attributes
+
+            expect { attributes[:title] = 'Bored of the Rings' }.
+              not_to change { tools.deep_dup(instance.all.to_a) }
+          end # it
         end # describe
 
         wrap_context 'when a transform is set' do
@@ -240,11 +275,11 @@ module Spec::Repositories
       end # describe
 
       describe '#transform' do
-        let(:identity_transform_class) do
-          Bronze::Entities::Transforms::IdentityTransform
+        let(:default_transform_class) do
+          Bronze::Entities::Transforms::CopyTransform
         end # let
 
-        it { expect(instance.transform).to be_a identity_transform_class }
+        it { expect(instance.transform).to be_a default_transform_class }
 
         wrap_context 'when a transform is set' do
           it { expect(instance.transform).to be == transform }
@@ -263,15 +298,15 @@ module Spec::Repositories
         end # it
 
         wrap_context 'when a transform is set' do
-          let(:identity_transform_class) do
-            Bronze::Entities::Transforms::IdentityTransform
+          let(:default_transform_class) do
+            Bronze::Entities::Transforms::CopyTransform
           end # let
 
           describe 'with nil' do
             it 'should clear the transform' do
               expect { instance.send :transform=, nil }.
                 to change(instance, :transform).
-                to be_a identity_transform_class
+                to be_a default_transform_class
             end # it
           end # describe
         end # wrap_context

@@ -22,7 +22,15 @@ RSpec.describe Patina::Repositories::Simple::Collection do
   let(:query_class) { Patina::Repositories::Simple::Query }
 
   def find_item id
-    instance.all.to_a.find { |hsh| hsh[:id] == id }
+    items = instance.all.to_a
+
+    if items.empty?
+      nil
+    elsif items.first.is_a?(Hash)
+      items.find { |hsh| hsh[:id] == id }
+    else
+      items.find { |obj| obj.id == id }
+    end # if-elsif-else
   end # method find_item
 
   describe '::new' do
