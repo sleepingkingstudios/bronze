@@ -1,15 +1,15 @@
-# lib/patina/repositories/simple/collection.rb
+# lib/patina/collections/simple/collection.rb
 
-require 'bronze/repositories/collection'
-require 'patina/repositories/simple/query'
+require 'bronze/collections/collection'
+require 'patina/collections/simple/query'
 
-module Patina::Repositories::Simple
-  # Implementation of Bronze::Repositories::Collection for an Array-of-Hashes
+module Patina::Collections::Simple
+  # Implementation of Bronze::Collections::Collection for an Array-of-Hashes
   # in-memory data store.
   #
   # @see Simple::Query
   class Collection
-    include Bronze::Repositories::Collection
+    include Bronze::Collections::Collection
 
     def initialize
       @data = []
@@ -18,7 +18,7 @@ module Patina::Repositories::Simple
     private
 
     def base_query
-      Patina::Repositories::Simple::Query.new(@data, transform)
+      Patina::Collections::Simple::Query.new(@data, transform)
     end # method base_query
 
     def delete_one id

@@ -1,12 +1,12 @@
-# spec/bronze/repositories/reference_collection.rb
+# spec/bronze/collections/reference_collection.rb
 
-require 'bronze/repositories/abstract_collection'
-require 'bronze/repositories/reference_query'
+require 'bronze/collections/abstract_collection'
+require 'bronze/collections/reference_query'
 
 module Spec
-  # A reference implementation of Bronze::Repositories::Collection that uses a
+  # A reference implementation of Bronze::Collections::Collection that uses a
   # Ruby Array as its data source.
-  class ReferenceCollection < Bronze::Repositories::AbstractCollection
+  class ReferenceCollection < Bronze::Collections::AbstractCollection
     # @param data [Array[Hash]] The source data for the collection.
     def initialize data
       @data = data

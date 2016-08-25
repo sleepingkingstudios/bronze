@@ -1,9 +1,9 @@
-# lib/bronze/repositories/collection.rb
+# lib/bronze/collections/collection.rb
 
+require 'bronze/collections'
 require 'bronze/transforms/copy_transform'
-require 'bronze/repositories'
 
-module Bronze::Repositories
+module Bronze::Collections
   # A module for wrapping a set of data from a datastore. The data may be a
   # table or view from a SQL database, a collection of documents from a MongoDB
   # datastore, or a simple array of hashes from an in-memory repository, each of

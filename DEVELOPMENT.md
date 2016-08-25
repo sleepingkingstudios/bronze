@@ -40,8 +40,7 @@ users = database.collection(:users) # Uses hash of basic types.
       /:operation_name.rb
 /lib
   /bronze
-    /entities
-    /repositories
+    /collections
       /collection.rb
       /repository.rb
       /:repository_name
@@ -49,3 +48,4 @@ users = database.collection(:users) # Uses hash of basic types.
         /queries
           /criterion.rb
         /query.rb
+    /entities

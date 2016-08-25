@@ -1,23 +1,20 @@
-# lib/patina/repositories/simple/query.rb
+# spec/bronze/collections/reference_query.rb
 
-require 'bronze/repositories/query'
-require 'patina/repositories/simple'
+require 'bronze/collections/query'
 
-module Patina::Repositories::Simple
-  # Implementation of Bronze::Repositories::Query for an Array-of-Hashes
-  # in-memory data store.
-  #
-  # @see Simple::Collection
-  class Query < Bronze::Repositories::Query
+module Spec
+  # A reference implementation of Bronze::Collections::Query that uses a Ruby
+  # Array as its data source.
+  class ReferenceQuery < Bronze::Collections::Query
     # @param data [Array[Hash]] The source data for the query.
     # @param transform [Bronze::Transforms::Transform] The transform
     #   object to map raw data into entities.
     def initialize data, transform
       @data      = data
       @transform = transform
-    end # method initialize
+    end # constructor
 
-    # (see Bronze::Repositories::Query#count)
+    # (see Query#count)
     def count
       @data.count
     end # method count

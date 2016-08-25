@@ -1,12 +1,12 @@
-# spec/patina/repositories/simple/collection_spec.rb
+# spec/patina/collections/simple/collection_spec.rb
 
-require 'bronze/repositories/collection_examples'
-require 'patina/repositories/simple/collection'
-require 'patina/repositories/simple/query'
+require 'bronze/collections/collection_examples'
+require 'patina/collections/simple/collection'
+require 'patina/collections/simple/query'
 
-RSpec.describe Patina::Repositories::Simple::Collection do
+RSpec.describe Patina::Collections::Simple::Collection do
   extend RSpec::SleepingKingStudios::Concerns::SharedExampleGroup
-  include Spec::Repositories::CollectionExamples
+  include Spec::Collections::CollectionExamples
 
   shared_context 'when the collection contains many items' do
     include_examples 'when many items are defined for the collection'
@@ -19,7 +19,7 @@ RSpec.describe Patina::Repositories::Simple::Collection do
   end # shared_context
 
   let(:instance)    { described_class.new }
-  let(:query_class) { Patina::Repositories::Simple::Query }
+  let(:query_class) { Patina::Collections::Simple::Query }
 
   def find_item id
     items = instance.all.to_a

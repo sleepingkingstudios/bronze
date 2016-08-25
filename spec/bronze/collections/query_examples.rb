@@ -1,6 +1,6 @@
-# spec/bronze/repositories/query_examples.rb
+# spec/bronze/collections/query_examples.rb
 
-module Spec::Repositories
+module Spec::Collections
   module QueryExamples
     extend RSpec::SleepingKingStudios::Concerns::SharedExampleGroup
 

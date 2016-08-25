@@ -1,8 +1,8 @@
-# lib/bronze/repositories/query.rb
+# lib/bronze/collections/query.rb
 
-require 'bronze/repositories'
+require 'bronze/collections'
 
-module Bronze::Repositories
+module Bronze::Collections
   # Abstract class for performing queries against a datastore using a consistent
   # interface, whether it is a SQL database, a Mongoid datastore, or an
   # in-memory data structure.

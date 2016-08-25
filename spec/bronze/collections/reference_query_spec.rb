@@ -1,11 +1,11 @@
-# spec/bronze/repositories/reference_query_spec.rb
+# spec/bronze/collections/reference_query_spec.rb
 
-require 'bronze/repositories/query_examples'
-require 'bronze/repositories/reference_query'
+require 'bronze/collections/query_examples'
+require 'bronze/collections/reference_query'
 require 'bronze/transforms/identity_transform'
 
 RSpec.describe Spec::ReferenceQuery do
-  include Spec::Repositories::QueryExamples
+  include Spec::Collections::QueryExamples
 
   let(:transform) do
     Bronze::Transforms::IdentityTransform.new

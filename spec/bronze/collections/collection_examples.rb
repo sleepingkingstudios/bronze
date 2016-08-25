@@ -1,10 +1,10 @@
-# spec/bronze/repositories/collection_examples.rb
+# spec/bronze/collections/collection_examples.rb
 
 require 'bronze/entities/entity'
 require 'bronze/transforms/attributes_transform'
 require 'bronze/transforms/copy_transform'
 
-module Spec::Repositories
+module Spec::Collections
   module CollectionExamples
     extend RSpec::SleepingKingStudios::Concerns::SharedExampleGroup
 
