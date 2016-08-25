@@ -15,7 +15,7 @@ module Spec
     private
 
     def base_query
-      ::Spec::ReferenceQuery.new(@data)
+      ::Spec::ReferenceQuery.new(@data, transform)
     end # method base_query
 
     def delete_one id

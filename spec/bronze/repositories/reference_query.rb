@@ -7,8 +7,11 @@ module Spec
   # Array as its data source.
   class ReferenceQuery < Bronze::Repositories::Query
     # @param data [Array[Hash]] The source data for the query.
-    def initialize data
-      @data = data
+    # @param transform [Bronze::Transforms::Transform] The transform
+    #   object to map raw data into entities.
+    def initialize data, transform
+      @data      = data
+      @transform = transform
     end # constructor
 
     # (see Query#count)
@@ -16,9 +19,10 @@ module Spec
       @data.count
     end # method count
 
-    # (see Query#to_a)
-    def to_a
-      @data
-    end # method to_a
+    private
+
+    def find_each
+      @data.map { |hsh| yield hsh }
+    end # method find_each
   end # class
 end # module

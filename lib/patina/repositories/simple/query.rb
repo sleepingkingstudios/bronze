@@ -10,8 +10,11 @@ module Patina::Repositories::Simple
   # @see Simple::Collection
   class Query < Bronze::Repositories::Query
     # @param data [Array[Hash]] The source data for the query.
-    def initialize data
-      @data = data
+    # @param transform [Bronze::Transforms::Transform] The transform
+    #   object to map raw data into entities.
+    def initialize data, transform
+      @data      = data
+      @transform = transform
     end # method initialize
 
     # (see Bronze::Repositories::Query#count)
@@ -19,9 +22,10 @@ module Patina::Repositories::Simple
       @data.count
     end # method count
 
-    # (see Bronze::Repositories::Query#to_a)
-    def to_a
-      @data.map { |item| item.dup.freeze }.freeze
-    end # method to_a
+    private
+
+    def find_each
+      @data.map { |hsh| yield hsh }
+    end # method find_each
   end # class
 end # module

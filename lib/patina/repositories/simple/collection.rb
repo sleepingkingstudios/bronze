@@ -18,7 +18,7 @@ module Patina::Repositories::Simple
     private
 
     def base_query
-      Patina::Repositories::Simple::Query.new(@data)
+      Patina::Repositories::Simple::Query.new(@data, transform)
     end # method base_query
 
     def delete_one id

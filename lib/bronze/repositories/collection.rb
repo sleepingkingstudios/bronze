@@ -1,5 +1,6 @@
 # lib/bronze/repositories/collection.rb
 
+require 'bronze/transforms/copy_transform'
 require 'bronze/repositories'
 
 module Bronze::Repositories
@@ -45,8 +46,21 @@ module Bronze::Repositories
     # @return [Array[Boolean, Hash]] If the insert succeeds, returns true and
     #   an empty array. Otherwise, returns false and an array of error messages.
     def insert attributes
-      wrap_errors { insert_one(attributes) }
+      wrap_errors { insert_one(transform.normalize attributes) }
     end # method insert
+
+    # The current transform object. The transform maps the raw data sent to or
+    # returned by the datastore to another object, typically an entity.
+    #
+    # If a transform is set, it will be used to map all entities passed into
+    # persistence methods (e.g. #insert and #update) into into raw data, and to
+    # map all data retrieved via query methods (e.g. #all or #query) into the
+    # respective entities.
+    #
+    # @return [Bronze::Transform] The transform object.
+    def transform
+      @transform ||= Bronze::Transforms::CopyTransform.new
+    end # method transform
 
     # Updates the specified hash in the datastore.
     #
@@ -56,10 +70,12 @@ module Bronze::Repositories
     # @return [Array[Boolean, Hash]] If the update succeeds, returns true and
     #   an empty array. Otherwise, returns false and an array of error messages.
     def update id, attributes
-      wrap_errors { update_one(id, attributes) }
+      wrap_errors { update_one(id, transform.normalize(attributes)) }
     end # method update
 
     private
+
+    attr_writer :transform
 
     def wrap_errors
       errors = yield
