@@ -1,8 +1,8 @@
-# spec/bronze/entities/transforms/attributes_transform_spec.rb
+# spec/bronze/transforms/attributes_transform_spec.rb
 
-require 'bronze/entities/transforms/attributes_transform'
+require 'bronze/transforms/attributes_transform'
 
-RSpec.describe Bronze::Entities::Transforms::AttributesTransform do
+RSpec.describe Bronze::Transforms::AttributesTransform do
   shared_context 'when a transform class is defined' do
     let(:described_class) { Class.new(super()) }
   end # context
@@ -15,10 +15,10 @@ RSpec.describe Bronze::Entities::Transforms::AttributesTransform do
     end # let
   end # context
 
-  let(:entity_class) do
+  let(:object_class) do
     Struct.new(:id, :title, :author, :preface)
   end # let
-  let(:instance) { described_class.new entity_class }
+  let(:instance) { described_class.new object_class }
 
   describe '::new' do
     it { expect(described_class).to be_constructible.with(1).argument }
@@ -100,7 +100,7 @@ RSpec.describe Bronze::Entities::Transforms::AttributesTransform do
   describe '#denormalize' do
     let(:attribute_names) { [:id] }
     let(:expected) do
-      attribute_names.each.with_object(entity_class.new) do |attr_name, entity|
+      attribute_names.each.with_object(object_class.new) do |attr_name, entity|
         entity.send(:"#{attr_name}=", attributes[attr_name])
       end # each
     end # let
@@ -108,11 +108,11 @@ RSpec.describe Bronze::Entities::Transforms::AttributesTransform do
     it { expect(instance).to respond_to(:denormalize).with(1).argument }
 
     describe 'with nil' do
-      it { expect(instance.denormalize nil).to be == entity_class.new }
+      it { expect(instance.denormalize nil).to be == object_class.new }
     end # describe
 
     describe 'with an empty attributes hash' do
-      it { expect(instance.denormalize({})).to be == entity_class.new }
+      it { expect(instance.denormalize({})).to be == object_class.new }
     end # describe
 
     describe 'with an attributes hash' do
@@ -127,7 +127,7 @@ RSpec.describe Bronze::Entities::Transforms::AttributesTransform do
       let(:attribute_names) { [:id, :title, :author, :preface] }
 
       describe 'with an empty attributes hash' do
-        it { expect(instance.denormalize({})).to be == entity_class.new }
+        it { expect(instance.denormalize({})).to be == object_class.new }
       end # describe
 
       describe 'with an attributes hash' do
@@ -140,8 +140,8 @@ RSpec.describe Bronze::Entities::Transforms::AttributesTransform do
     end # wrap_context
   end # describe
 
-  describe '#entity_class' do
-    include_examples 'should have reader', :entity_class, ->() { entity_class }
+  describe '#object_class' do
+    include_examples 'should have reader', :object_class, ->() { object_class }
   end # describe
 
   describe '#normalize' do
@@ -159,13 +159,13 @@ RSpec.describe Bronze::Entities::Transforms::AttributesTransform do
     end # describe
 
     describe 'with an entity with empty attributes' do
-      let(:entity) { entity_class.new }
+      let(:entity) { object_class.new }
 
       it { expect(instance.normalize entity).to be == expected }
     end # describe
 
     describe 'with an entity with set attributes' do
-      let(:entity) { entity_class.new '0', 'The Art of War', 'Sun Tzu' }
+      let(:entity) { object_class.new '0', 'The Art of War', 'Sun Tzu' }
 
       it { expect(instance.normalize entity).to be == expected }
     end # describe
@@ -174,13 +174,13 @@ RSpec.describe Bronze::Entities::Transforms::AttributesTransform do
       let(:attribute_names) { [:id, :title, :author, :preface] }
 
       describe 'with an entity with empty attributes' do
-        let(:entity) { entity_class.new }
+        let(:entity) { object_class.new }
 
         it { expect(instance.normalize entity).to be == expected }
       end # describe
 
       describe 'with an entity with set attributes' do
-        let(:entity) { entity_class.new '0', 'The Art of War', 'Sun Tzu' }
+        let(:entity) { object_class.new '0', 'The Art of War', 'Sun Tzu' }
 
         it { expect(instance.normalize entity).to be == expected }
       end # describe

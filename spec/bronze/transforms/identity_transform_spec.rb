@@ -1,8 +1,8 @@
-# spec/bronze/entities/transforms/identity_transform_spec.rb
+# spec/bronze/transforms/identity_transform_spec.rb
 
-require 'bronze/entities/transforms/identity_transform'
+require 'bronze/transforms/identity_transform'
 
-RSpec.describe Bronze::Entities::Transforms::IdentityTransform do
+RSpec.describe Bronze::Transforms::IdentityTransform do
   let(:instance) { described_class.new }
 
   describe '::new' do

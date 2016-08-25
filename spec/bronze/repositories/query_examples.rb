@@ -20,7 +20,7 @@ module Spec::Repositories
 
     shared_context 'when a transform is set' do
       let(:transform_class) do
-        Class.new(Bronze::Entities::Transforms::AttributesTransform) do
+        Class.new(Bronze::Transforms::AttributesTransform) do
           attributes :title
         end # class
       end # let

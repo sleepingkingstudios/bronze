@@ -1,13 +1,12 @@
-# spec/bronze/entities/transforms/transform_spec.rb
+# spec/bronze/transforms/transform_spec.rb
 
-require 'bronze/entities/transforms/transform'
+require 'bronze/transforms/transform'
 
-RSpec.describe Bronze::Entities::Transforms::Transform do
-  let(:entity_class) { Struct.new(:id) }
-  let(:instance)     { described_class.new entity_class }
+RSpec.describe Bronze::Transforms::Transform do
+  let(:instance) { described_class.new }
 
   describe '::new' do
-    it { expect(described_class).to be_constructible.with(1).argument }
+    it { expect(described_class).to be_constructible.with(0).arguments }
   end # describe
 
   describe '#denormalize' do
@@ -18,10 +17,6 @@ RSpec.describe Bronze::Entities::Transforms::Transform do
         to raise_error described_class::NotImplementedError,
           "#{described_class.name} does not implement :denormalize"
     end # it
-  end # describe
-
-  describe '#entity_class' do
-    include_examples 'should have reader', :entity_class, ->() { entity_class }
   end # describe
 
   describe '#normalize' do

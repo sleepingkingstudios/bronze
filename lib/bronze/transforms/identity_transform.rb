@@ -1,14 +1,10 @@
-# lib/bronze/entities/transforms/identity_transform.rb
+# lib/bronze/transforms/identity_transform.rb
 
-require 'bronze/entities/transforms/transform'
+require 'bronze/transforms/transform'
 
-module Bronze::Entities::Transforms
+module Bronze::Transforms
   # Maps an object to itself.
   class IdentityTransform < Transform
-    def initialize
-      super(nil)
-    end # constructor
-
     # Returns the object that was passed in to the method.
     #
     # @param object [Object] The object to denormalize.

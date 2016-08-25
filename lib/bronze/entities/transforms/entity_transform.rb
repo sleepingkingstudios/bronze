@@ -1,10 +1,19 @@
 # lib/bronze/entities/transforms/entity_transform.rb
 
-require 'bronze/entities/transforms/transform'
+require 'bronze/transforms/transform'
 
 module Bronze::Entities::Transforms
   # Maps an entity to a data hash using the entity's defined attributes.
-  class EntityTransform < Transform
+  class EntityTransform < Bronze::Transforms::Transform
+    # @param entity_class [Class] The class into which data hashes will be
+    #   denormalized.
+    def initialize entity_class
+      @entity_class = entity_class
+    end # constructor
+
+    # @return [Class] The class into which data hashes will be denormalized.
+    attr_reader :entity_class
+
     # Converts a data hash into an entity instance and sets the value of the
     # entity attribute to the values of the hash for each attribute defined by
     # the entity class.

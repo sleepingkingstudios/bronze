@@ -1,14 +1,10 @@
-# lib/bronze/entities/transforms/copy_transform.rb
+# lib/bronze/transforms/copy_transform.rb
 
-require 'bronze/entities/transforms/transform'
+require 'bronze/transforms/transform'
 
-module Bronze::Entities::Transforms
+module Bronze::Transforms
   # Copies the object when denormalizing the object from the datastore.
-  class CopyTransform < Bronze::Entities::Transforms::Transform
-    def initialize
-      super(nil)
-    end # constructor
-
+  class CopyTransform < Bronze::Transforms::Transform
     # Performs a deep copy on the object. This prevents scopes that receive the
     # object from changing the datastore by manipulating the received object.
     #

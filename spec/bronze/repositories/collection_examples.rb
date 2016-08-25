@@ -1,8 +1,8 @@
 # spec/bronze/repositories/collection_examples.rb
 
 require 'bronze/entities/entity'
-require 'bronze/entities/transforms/attributes_transform'
-require 'bronze/entities/transforms/copy_transform'
+require 'bronze/transforms/attributes_transform'
+require 'bronze/transforms/copy_transform'
 
 module Spec::Repositories
   module CollectionExamples
@@ -46,7 +46,7 @@ module Spec::Repositories
 
     shared_context 'when a transform is set' do
       let(:transform_class) do
-        Class.new(Bronze::Entities::Transforms::AttributesTransform) do
+        Class.new(Bronze::Transforms::AttributesTransform) do
           attributes :title, :author
         end # class
       end # let
@@ -276,7 +276,7 @@ module Spec::Repositories
 
       describe '#transform' do
         let(:default_transform_class) do
-          Bronze::Entities::Transforms::CopyTransform
+          Bronze::Transforms::CopyTransform
         end # let
 
         it { expect(instance.transform).to be_a default_transform_class }
@@ -288,7 +288,7 @@ module Spec::Repositories
 
       describe '#transform=' do
         let(:transform) do
-          Bronze::Entities::Transforms::AttributesTransform.new(entity_class)
+          Bronze::Transforms::AttributesTransform.new(entity_class)
         end # let
 
         it 'should set the transform' do
@@ -299,7 +299,7 @@ module Spec::Repositories
 
         wrap_context 'when a transform is set' do
           let(:default_transform_class) do
-            Bronze::Entities::Transforms::CopyTransform
+            Bronze::Transforms::CopyTransform
           end # let
 
           describe 'with nil' do

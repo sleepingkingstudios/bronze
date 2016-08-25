@@ -1,6 +1,6 @@
 # lib/bronze/repositories/collection.rb
 
-require 'bronze/entities/transforms/copy_transform'
+require 'bronze/transforms/copy_transform'
 require 'bronze/repositories'
 
 module Bronze::Repositories
@@ -57,9 +57,9 @@ module Bronze::Repositories
     # map all data retrieved via query methods (e.g. #all or #query) into the
     # respective entities.
     #
-    # @return [Bronze::Entities::Transform] The transform object.
+    # @return [Bronze::Transform] The transform object.
     def transform
-      @transform ||= Bronze::Entities::Transforms::CopyTransform.new
+      @transform ||= Bronze::Transforms::CopyTransform.new
     end # method transform
 
     # Updates the specified hash in the datastore.

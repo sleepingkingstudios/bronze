@@ -7,7 +7,7 @@ module Spec
   # Array as its data source.
   class ReferenceQuery < Bronze::Repositories::Query
     # @param data [Array[Hash]] The source data for the query.
-    # @param transform [Bronze::Entities::Transforms::Transform] The transform
+    # @param transform [Bronze::Transforms::Transform] The transform
     #   object to map raw data into entities.
     def initialize data, transform
       @data      = data

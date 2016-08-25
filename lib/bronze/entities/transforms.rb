@@ -3,7 +3,6 @@
 require 'bronze/entities'
 
 module Bronze::Entities
-  # Namespace for defining entity transforms, objects that map an entity into
-  # another representation of that data.
+  # Namespace for transform objects that map to and from an Entity.
   module Transforms; end
 end # module

@@ -1,8 +1,8 @@
-# spec/bronze/entities/transforms/copy_transform_spec.rb
+# spec/bronze/transforms/copy_transform_spec.rb
 
-require 'bronze/entities/transforms/copy_transform'
+require 'bronze/transforms/copy_transform'
 
-RSpec.describe Bronze::Entities::Transforms::CopyTransform do
+RSpec.describe Bronze::Transforms::CopyTransform do
   let(:instance) { described_class.new }
 
   describe '::new' do

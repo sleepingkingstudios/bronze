@@ -1,10 +1,10 @@
-# lib/bronze/entities/transforms/attributes_transform.rb
+# lib/bronze/transforms/attributes_transform.rb
 
 require 'set'
-require 'bronze/entities/transforms/transform'
+require 'bronze/transforms/transform'
 
-module Bronze::Entities::Transforms
-  # Maps an entity to a data hash using the specified attributes.
+module Bronze::Transforms
+  # Maps an object to a data hash using the specified attributes.
   class AttributesTransform < Transform
     class << self
       # Adds the named attribute to the attributes set.
@@ -23,7 +23,7 @@ module Bronze::Entities::Transforms
       def attribute_names
         @attribute_names ||= Set.new
 
-        if superclass <= Bronze::Entities::Transforms::AttributesTransform
+        if superclass <= Bronze::Transforms::AttributesTransform
           superclass.attribute_names + @attribute_names
         else
           @attribute_names
@@ -45,45 +45,54 @@ module Bronze::Entities::Transforms
 
     attribute :id
 
+    # @param object_class [Class] The class into which data hashes will be
+    #   denormalized.
+    def initialize object_class
+      @object_class = object_class
+    end # constructor
+
+    # @return [Class] The class into which data hashes will be denormalized.
+    attr_reader :object_class
+
     # (see AttributesTransform.attribute_names)
     def attribute_names
       self.class.attribute_names
     end # method attribute_names
 
-    # Converts a data hash into an entity instance and sets the value of the
-    # entity attribute to the values of the hash for each specified attribute.
-    # The entity type is defined by the #entity_class method.
+    # Converts a data hash into an object instance and sets the values of the
+    # object attributes to the values of the hash for each specified attributes.
+    # The object type is defined by the #object_class method.
     #
     # @param attributes [Hash] The hash to convert.
     #
-    # @return [Bronze::Entities::Entity] The converted entity.
+    # @return [Object] The converted object.
     #
-    # @see #entity_class.
+    # @see #object_class.
     def denormalize attributes
-      return entity_class.new if attributes.nil?
+      return object_class.new if attributes.nil?
 
-      entity = entity_class.new
+      object = object_class.new
 
       attribute_names.each do |attr_name|
-        entity.send(:"#{attr_name}=", attributes[attr_name])
+        object.send(:"#{attr_name}=", attributes[attr_name])
       end # each
 
-      entity
+      object
     end # method denormalize
 
-    # Converts the entity into a data hash, with the keys being the specified
-    # attributes and the values being the entity's values for those attributes.
+    # Converts the object into a data hash, with the keys being the specified
+    # attributes and the values being the object's values for those attributes.
     #
-    # @param entity [Bronze::Entities::Entity] The entity to convert.
+    # @param object [Object] The object to convert.
     #
     # @return [Hash] The converted data hash.
-    def normalize entity
-      return {} if entity.nil?
+    def normalize object
+      return {} if object.nil?
 
       hsh = {}
 
       attribute_names.each do |attr_name|
-        hsh[attr_name] = entity.send(attr_name)
+        hsh[attr_name] = object.send(attr_name)
       end # each
 
       hsh
