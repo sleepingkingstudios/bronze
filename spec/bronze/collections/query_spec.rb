@@ -1,10 +1,10 @@
-# spec/bronze/repositories/query_spec.rb
+# spec/bronze/collections/query_spec.rb
 
-require 'bronze/repositories/query'
-require 'bronze/repositories/query_examples'
+require 'bronze/collections/query'
+require 'bronze/collections/query_examples'
 
-RSpec.describe Bronze::Repositories::Query do
-  include Spec::Repositories::QueryExamples
+RSpec.describe Bronze::Collections::Query do
+  include Spec::Collections::QueryExamples
 
   let(:instance) { described_class.new }
 

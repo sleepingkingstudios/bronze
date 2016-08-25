@@ -1,11 +1,11 @@
-# spec/patina/repositories/simple/query_spec.rb
+# spec/patina/collections/simple/query_spec.rb
 
-require 'bronze/repositories/query_examples'
-require 'patina/repositories/simple/query'
+require 'bronze/collections/query_examples'
+require 'patina/collections/simple/query'
 require 'bronze/transforms/identity_transform'
 
-RSpec.describe Patina::Repositories::Simple::Query do
-  include Spec::Repositories::QueryExamples
+RSpec.describe Patina::Collections::Simple::Query do
+  include Spec::Collections::QueryExamples
 
   let(:transform) do
     Bronze::Transforms::IdentityTransform.new

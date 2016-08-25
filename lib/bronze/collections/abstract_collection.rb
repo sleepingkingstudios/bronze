@@ -1,8 +1,8 @@
-# lib/bronze/repositories/abstract_collection.rb
+# lib/bronze/collections/abstract_collection.rb
 
-require 'bronze/repositories/collection'
+require 'bronze/collections/collection'
 
-module Bronze::Repositories
+module Bronze::Collections
   # An abstract class that includes Collection and provides a mock
   # implementation of the required querying and persistence methods. Developers
   # may choose to subclass AbstractCollection or to include Collection in their
@@ -15,7 +15,7 @@ module Bronze::Repositories
     # appropriate for the datastore.
     class NotImplementedError < StandardError; end
 
-    include Bronze::Repositories::Collection
+    include Bronze::Collections::Collection
 
     private
 

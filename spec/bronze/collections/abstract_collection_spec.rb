@@ -1,10 +1,10 @@
-# spec/bronze/repositories/abstract_collection_spec.rb
+# spec/bronze/collections/abstract_collection_spec.rb
 
-require 'bronze/repositories/abstract_collection'
-require 'bronze/repositories/collection_examples'
+require 'bronze/collections/abstract_collection'
+require 'bronze/collections/collection_examples'
 
-RSpec.describe Bronze::Repositories::AbstractCollection do
-  include Spec::Repositories::CollectionExamples
+RSpec.describe Bronze::Collections::AbstractCollection do
+  include Spec::Collections::CollectionExamples
 
   let(:instance) { described_class.new }
 

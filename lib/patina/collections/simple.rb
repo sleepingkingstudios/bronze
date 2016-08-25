@@ -1,9 +1,9 @@
-# lib/patina/repositories/simple.rb
+# lib/patina/collections/simple.rb
 
-require 'patina/repositories'
+require 'patina/collections'
 
-module Patina::Repositories
-  # A basic implementation of Bronze::Repositories::Collection with an in-memory
+module Patina::Collections
+  # A basic implementation of Bronze::Collections::Collection with an in-memory
   # hash data store. Not recommended for production or mission-critical use, but
   # works as a drop-in replacement for a dedicated datastore during development
   # or as a dependency in unit tests.

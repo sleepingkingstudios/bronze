@@ -1,11 +1,11 @@
-# spec/bronze/repositories/reference_collection_spec.rb
+# spec/bronze/collections/reference_collection_spec.rb
 
-require 'bronze/repositories/collection_examples'
-require 'bronze/repositories/reference_collection'
-require 'bronze/repositories/reference_query'
+require 'bronze/collections/collection_examples'
+require 'bronze/collections/reference_collection'
+require 'bronze/collections/reference_query'
 
 RSpec.describe Spec::ReferenceCollection do
-  include Spec::Repositories::CollectionExamples
+  include Spec::Collections::CollectionExamples
 
   let(:data)        { [] }
   let(:instance)    { described_class.new data }
