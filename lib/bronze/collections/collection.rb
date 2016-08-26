@@ -15,6 +15,12 @@ module Bronze::Collections
   #
   # (see AbstractCollection)
   module Collection
+    # @param transform [Bronze::Entities::Transform] The transform object used
+    #   to map collection objects to and from raw data.
+    def initialize transform = nil
+      @transform = transform
+    end # constructor
+
     # Returns the default query object for the collection.
     #
     # @return [Query] The default query.
