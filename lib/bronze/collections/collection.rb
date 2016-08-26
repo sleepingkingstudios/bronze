@@ -2,6 +2,7 @@
 
 require 'bronze/collections'
 require 'bronze/transforms/copy_transform'
+require 'sleeping_king_studios/tools/toolbox/delegator'
 
 module Bronze::Collections
   # A module for wrapping a set of data from a datastore. The data may be a
@@ -15,11 +16,17 @@ module Bronze::Collections
   #
   # (see AbstractCollection)
   module Collection
+    extend SleepingKingStudios::Tools::Toolbox::Delegator
+
     # @param transform [Bronze::Entities::Transform] The transform object used
     #   to map collection objects to and from raw data.
     def initialize transform = nil
       @transform = transform
     end # constructor
+
+    # @!method count
+    #   (see Bronze::Collections::Query#count)
+    delegate :count, :to => :base_query
 
     # Returns the default query object for the collection.
     #
@@ -27,13 +34,6 @@ module Bronze::Collections
     def all
       base_query
     end # method all
-
-    # Performs a count on the dataset.
-    #
-    # @return [Integer] The number of items matching the query.
-    def count
-      base_query.count
-    end # method count
 
     # Deletes the specified hash from the datastore.
     #

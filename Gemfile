@@ -5,7 +5,9 @@ source 'https://rubygems.org'
 gem 'sysrandom', '~> 1.0.0', '>= 1.0.2'
 gem 'thor',      '~> 0.19',  '>= 0.19.1'
 
-gem 'sleeping_king_studios-tools', '>= 0.4.0.rc.0'
+gem 'sleeping_king_studios-tools',
+  :git    => 'https://github.com/sleepingkingstudios/sleeping_king_studios-tools',
+  :branch => 'feature-delegator'
 
 group :doc do
   gem 'yard', '~> 0.9', '>= 0.9.5'
