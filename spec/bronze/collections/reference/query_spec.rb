@@ -1,10 +1,10 @@
 # spec/bronze/collections/reference_query_spec.rb
 
 require 'bronze/collections/query_examples'
-require 'bronze/collections/reference_query'
+require 'bronze/collections/reference/query'
 require 'bronze/transforms/identity_transform'
 
-RSpec.describe Spec::ReferenceQuery do
+RSpec.describe Spec::Reference::Query do
   include Spec::Collections::QueryExamples
 
   let(:transform) do

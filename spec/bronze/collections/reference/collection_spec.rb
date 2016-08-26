@@ -1,15 +1,15 @@
-# spec/bronze/collections/reference_collection_spec.rb
+# spec/bronze/collections/reference/collection_spec.rb
 
 require 'bronze/collections/collection_examples'
-require 'bronze/collections/reference_collection'
-require 'bronze/collections/reference_query'
+require 'bronze/collections/reference/collection'
+require 'bronze/collections/reference/query'
 
-RSpec.describe Spec::ReferenceCollection do
+RSpec.describe Spec::Reference::Collection do
   include Spec::Collections::CollectionExamples
 
   let(:data)        { [] }
   let(:instance)    { described_class.new data }
-  let(:query_class) { Spec::ReferenceQuery }
+  let(:query_class) { Spec::Reference::Query }
 
   def find_item id
     items = instance.all.to_a

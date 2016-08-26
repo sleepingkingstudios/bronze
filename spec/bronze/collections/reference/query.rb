@@ -1,11 +1,11 @@
-# spec/bronze/collections/reference_query.rb
+# spec/bronze/collections/reference/query.rb
 
 require 'bronze/collections/query'
 
-module Spec
+module Spec::Reference
   # A reference implementation of Bronze::Collections::Query that uses a Ruby
   # Array as its data source.
-  class ReferenceQuery < Bronze::Collections::Query
+  class Query < Bronze::Collections::Query
     # @param data [Array[Hash]] The source data for the query.
     # @param transform [Bronze::Transforms::Transform] The transform
     #   object to map raw data into entities.

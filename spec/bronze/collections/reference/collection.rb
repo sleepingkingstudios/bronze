@@ -1,12 +1,12 @@
-# spec/bronze/collections/reference_collection.rb
+# spec/bronze/collections/reference/collection.rb
 
 require 'bronze/collections/abstract_collection'
-require 'bronze/collections/reference_query'
+require 'bronze/collections/reference/query'
 
-module Spec
+module Spec::Reference
   # A reference implementation of Bronze::Collections::Collection that uses a
   # Ruby Array as its data source.
-  class ReferenceCollection < Bronze::Collections::AbstractCollection
+  class Collection < Bronze::Collections::AbstractCollection
     # @param data [Array[Hash]] The source data for the collection.
     def initialize data
       @data = data
@@ -15,7 +15,7 @@ module Spec
     private
 
     def base_query
-      ::Spec::ReferenceQuery.new(@data, transform)
+      ::Spec::Reference::Query.new(@data, transform)
     end # method base_query
 
     def delete_one id
