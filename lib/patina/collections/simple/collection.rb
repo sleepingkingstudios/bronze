@@ -11,7 +11,11 @@ module Patina::Collections::Simple
   class Collection
     include Bronze::Collections::Collection
 
-    def initialize
+    # @param transform [Bronze::Entities::Transform] The transform object used
+    #   to map collection objects to and from raw data.
+    def initialize transform = nil
+      super
+
       @data = []
     end # constructor
 

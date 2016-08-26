@@ -34,7 +34,7 @@ RSpec.describe Patina::Collections::Simple::Collection do
   end # method find_item
 
   describe '::new' do
-    it { expect(described_class).to be_constructible.with(0).arguments }
+    it { expect(described_class).to be_constructible.with(0..1).arguments }
   end # describe
 
   include_examples 'should implement the Collection interface'
@@ -83,6 +83,15 @@ RSpec.describe Patina::Collections::Simple::Collection do
       validate_params 'id already exists',
         :attributes => { :id => '1', :title => 'The Hobbit' }
     end # wrap_context
+  end # describe
+
+  describe '#transform' do
+    context 'when the instance is initialized with a transform' do
+      let(:transform) { Bronze::Transforms::IdentityTransform.new }
+      let(:instance)  { described_class.new transform }
+
+      it { expect(instance.transform).to be transform }
+    end # context
   end # describe
 
   describe '#update' do
