@@ -2,6 +2,11 @@
 
 require 'bronze/collections'
 
+criteria_pattern = File.join(
+  Bronze.gem_path, 'lib', 'bronze', 'collections', 'criteria', '*criterion.rb'
+) # end pattern
+SleepingKingStudios::Tools::CoreTools.require_each(criteria_pattern)
+
 module Bronze::Collections
   # Abstract class for performing queries against a datastore using a consistent
   # interface, whether it is a SQL database, a Mongoid datastore, or an
@@ -29,6 +34,18 @@ module Bronze::Collections
         caller
     end # method count
 
+    # Returns a copy of the query with an added match criteria.
+    #
+    # @param selector [Hash] The properties and values that the returned data
+    #   must match.
+    #
+    # @return [Query] The copied query.
+    def matching selector
+      dup.tap do |query|
+        query.criteria << build_criterion(:match, selector)
+      end # tap
+    end # method matching
+
     # Executes the query, if applicable, and returns the results as an array of
     # attribute hashes.
     #
@@ -37,7 +54,39 @@ module Bronze::Collections
       find_each { |hsh| transform.denormalize hsh }
     end # method to_a
 
+    protected
+
+    def criteria
+      @criteria ||= []
+    end # method criteria
+
     private
+
+    def apply_criteria native_query
+      criteria.each do |criterion|
+        native_query = criterion.call(native_query)
+      end # each
+
+      native_query
+    end # method apply_criteria
+
+    def build_criterion type, *args, &block
+      tools          = SleepingKingStudios::Tools::StringTools
+      criterion_name = "#{tools.camelize(type.to_s)}Criterion"
+
+      unless criteria_namespace.const_defined? criterion_name
+        raise NotImplementedError,
+          "undefined criterion #{criteria_namespace}::#{criterion_name}",
+          caller
+      end # unless
+
+      criterion_class = criteria_namespace.const_get(criterion_name)
+      criterion_class.new(*args, &block)
+    end # method build_criterion
+
+    def criteria_namespace
+      Criteria
+    end # method criteria_namespace
 
     def find_each
       raise NotImplementedError,

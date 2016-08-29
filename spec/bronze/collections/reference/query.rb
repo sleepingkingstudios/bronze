@@ -2,6 +2,12 @@
 
 require 'bronze/collections/query'
 
+criteria_pattern = File.join(
+  Bronze.gem_path, 'spec', 'bronze', 'collections', 'reference', 'criteria',
+  '*criterion.rb'
+) # end pattern
+SleepingKingStudios::Tools::CoreTools.require_each(criteria_pattern)
+
 module Spec::Reference
   # A reference implementation of Bronze::Collections::Query that uses a Ruby
   # Array as its data source.
@@ -16,13 +22,19 @@ module Spec::Reference
 
     # (see Query#count)
     def count
-      @data.count
+      filtered = apply_criteria(@data)
+      filtered.count
     end # method count
 
     private
 
+    def criteria_namespace
+      Spec::Reference::Criteria
+    end # method criteria_namespace
+
     def find_each
-      @data.map { |hsh| yield hsh }
+      filtered = apply_criteria(@data)
+      filtered.map { |hsh| yield hsh }
     end # method find_each
   end # class
 end # module

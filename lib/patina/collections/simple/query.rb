@@ -3,6 +3,12 @@
 require 'bronze/collections/query'
 require 'patina/collections/simple'
 
+criteria_pattern = File.join(
+  Bronze.gem_path, 'lib', 'patina', 'collections', 'simple', 'criteria',
+  '*criterion.rb'
+) # end pattern
+SleepingKingStudios::Tools::CoreTools.require_each(criteria_pattern)
+
 module Patina::Collections::Simple
   # Implementation of Bronze::Collections::Query for an Array-of-Hashes
   # in-memory data store.
@@ -19,13 +25,19 @@ module Patina::Collections::Simple
 
     # (see Bronze::Collections::Query#count)
     def count
-      @data.count
+      filtered = apply_criteria(@data)
+      filtered.count
     end # method count
 
     private
 
+    def criteria_namespace
+      Spec::Reference::Criteria
+    end # method criteria_namespace
+
     def find_each
-      @data.map { |hsh| yield hsh }
+      filtered = apply_criteria(@data)
+      filtered.map { |hsh| yield hsh }
     end # method find_each
   end # class
 end # module

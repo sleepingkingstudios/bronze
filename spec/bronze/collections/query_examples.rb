@@ -1,5 +1,8 @@
 # spec/bronze/collections/query_examples.rb
 
+require 'bronze/collections/criteria/match_criterion'
+require 'bronze/transforms/attributes_transform'
+
 module Spec::Collections
   module QueryExamples
     extend RSpec::SleepingKingStudios::Concerns::SharedExampleGroup
@@ -7,9 +10,36 @@ module Spec::Collections
     shared_context 'when many items are defined for the data' do
       let(:data) do
         [
-          { :id => '1', :title => 'The Fellowship of the Ring' },
-          { :id => '2', :title => 'The Two Towers' },
-          { :id => '3', :title => 'The Return of the King' }
+          {
+            :id     => '1',
+            :title  => 'The Fellowship of the Ring',
+            :author => 'J.R.R. Tolkien'
+          }, # end hash
+          {
+            :id     => '2',
+            :title  => 'The Two Towers',
+            :author => 'J.R.R. Tolkien'
+          }, # end hash
+          {
+            :id     => '3',
+            :title  => 'The Return of the King',
+            :author => 'J.R.R. Tolkien'
+          }, # end hash
+          {
+            :id     => '4',
+            :title  => 'A Princess of Mars',
+            :author => 'Edgar Rice Burroughs'
+          }, # end hash
+          {
+            :id     => '5',
+            :title  => 'The Gods of Mars',
+            :author => 'Edgar Rice Burroughs'
+          }, # end hash
+          {
+            :id     => '6',
+            :title  => 'The Warlord of Mars',
+            :author => 'Edgar Rice Burroughs'
+          }, # end hash
         ] # end array
       end # let
     end # shared_context
@@ -37,6 +67,14 @@ module Spec::Collections
         it { expect(instance).to respond_to(:count).with(0).arguments }
       end # describe
 
+      describe '#criteria' do
+        it { expect(instance).to respond_to(:criteria, true).with(0).arguments }
+      end # describe
+
+      describe '#matching' do
+        it { expect(instance).to respond_to(:matching).with(1).argument }
+      end # describe
+
       describe '#to_a' do
         it { expect(instance).to respond_to(:to_a).with(0).arguments }
       end # describe
@@ -46,12 +84,122 @@ module Spec::Collections
       end # describe
     end # shared_examples
 
+    shared_examples 'should return a copy of the query' do
+      it 'should return a copy of the query' do
+        query = perform_action
+
+        expect(query).to be_a described_class
+        expect(query).not_to be instance
+      end # it
+    end # shared_examples
+
     shared_examples 'should implement the Query methods' do
       describe '#count' do
         it { expect(instance.count).to be 0 }
 
         wrap_context 'when the data contains many items' do
           it { expect(instance.count).to be data.count }
+        end # wrap_context
+      end # describe
+
+      describe '#matching' do
+        let(:criterion_class) do
+          Bronze::Collections::Criteria::MatchCriterion
+        end # let
+        let(:selector) { { :id => '0' } }
+        let(:expected) do
+          data.select { |hsh| hsh >= selector }
+        end # let
+
+        def perform_action
+          instance.matching selector
+        end # method perform_action
+
+        include_examples 'should return a copy of the query'
+
+        it 'should add a match criterion' do
+          expect { instance.matching selector }.
+            to change(instance.send(:criteria), :count).
+            by 1
+
+          criterion = instance.send(:criteria).last
+          expect(criterion).to be_a criterion_class
+          expect(criterion.selector).to be == selector
+        end # it
+
+        wrap_context 'when the data contains many items' do
+          describe 'with an id selector that does not match an item' do
+            let(:selector) { { :id => '0' } }
+
+            it 'should filter the results array' do
+              query = instance.matching(selector)
+
+              expect(query.count).to be 0
+              expect(query.to_a).to be == []
+            end # it
+          end # describe
+
+          describe 'with an id selector that matches an item' do
+            let(:selector) { { :id => '1' } }
+
+            it 'should filter the results array' do
+              query = instance.matching(selector)
+
+              expect(query.count).to be 1
+              expect(query.to_a).to be == expected
+            end # it
+          end # describe
+
+          # rubocop:disable Metrics/LineLength
+          describe 'with an attributes selector that does not match any items' do
+            # rubocop:enable Metrics/LineLength
+            let(:selector) { { :author => 'C.S. Lewis' } }
+
+            it 'should filter the results array' do
+              query = instance.matching(selector)
+
+              expect(query.count).to be 0
+              expect(query.to_a).to be == []
+            end # it
+          end # describe
+
+          describe 'with an attributes selector that matches one item' do
+            let(:selector) { { :title => 'The Two Towers' } }
+
+            it 'should filter the results array' do
+              query = instance.matching(selector)
+
+              expect(query.count).to be 1
+              expect(query.to_a).to be == expected
+            end # it
+          end # describe
+
+          describe 'with an attributes selector that matches many items' do
+            let(:selector) { { :author => 'J.R.R. Tolkien' } }
+
+            it 'should filter the results array' do
+              query = instance.matching(selector)
+
+              expect(query.count).to be expected.count
+              expect(query.to_a).to be == expected
+            end # it
+          end # describe
+
+          describe 'with a multi-attribute selector' do
+            let(:selector) do
+              {
+                :title  => 'A Princess of Mars',
+                :author => 'Edgar Rice Burroughs'
+              } # end hash
+            end # let
+
+            it 'should filter the results array' do
+              query = instance.matching(selector)
+
+              expect(query.count).to be 1
+              expect(query.to_a).to be == expected
+            end # it
+          end # describe
         end # wrap_context
       end # describe
 
