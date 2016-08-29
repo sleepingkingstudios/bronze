@@ -42,10 +42,19 @@ RSpec.describe Bronze::Tasks::Ci do
       str << "#{rubocop_results['inspected_file_count']} files inspected"
       str << ', ' << "#{rubocop_results['offense_count']} offenses."
     end # let
+    let(:simplecov_results) do
+      double(
+        'results',
+        :total_lines   => 100,
+        :covered_lines => 95,
+        :covered_percent => 95.0
+      ) # end double
+    end # let
 
     before(:example) do
       allow(instance).to receive(:rspec).and_return(rspec_results)
       allow(instance).to receive(:rubocop).and_return(rubocop_results)
+      allow(instance).to receive(:simplecov).and_return(simplecov_results)
     end # before example
 
     it { expect(instance).to respond_to(:default).with(0).arguments }

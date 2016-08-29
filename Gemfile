@@ -25,9 +25,4 @@ group :test do
 
   # Use Simplecov to measure code coverages.
   gem 'simplecov', '~> 0.12', :require => false
-  gem 'simplecov-json',
-    '~> 0.2',
-    :git     => 'https://github.com/sleepingkingstudios/simplecov-json',
-    :branch  => 'master',
-    :require => false
 end # group

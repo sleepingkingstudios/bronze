@@ -1,13 +1,4 @@
 GIT
-  remote: https://github.com/sleepingkingstudios/simplecov-json
-  revision: dfdf187383dd7038ed37c8107da57a5d5d3ee759
-  branch: master
-  specs:
-    simplecov-json (0.2)
-      json
-      simplecov
-
-GIT
   remote: https://github.com/sleepingkingstudios/sleeping_king_studios-tools
   revision: dd24a527a5f995fb375c14f32b177037493c70f0
   branch: master
@@ -68,7 +59,6 @@ DEPENDENCIES
   rspec-sleeping_king_studios (~> 2.2, >= 2.2.1)
   rubocop (~> 0.42)
   simplecov (~> 0.12)
-  simplecov-json (~> 0.2)!
   sleeping_king_studios-tools (>= 0.5.0.alpha)!
   sysrandom (~> 1.0.0, >= 1.0.2)
   thor (~> 0.19, >= 0.19.1)

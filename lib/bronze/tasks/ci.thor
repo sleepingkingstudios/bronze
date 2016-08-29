@@ -1,5 +1,13 @@
 # lib/bronze/tasks/ci.thor
 
+require 'simplecov'
+
+unless SimpleCov.running
+  SimpleCov.coverage_dir File.join 'tmp', 'ci'
+  SimpleCov.at_exit {}
+  SimpleCov.start
+end # unless
+
 require 'thor'
 require 'json'
 require 'rspec'
@@ -49,12 +57,14 @@ module Bronze
           failing_steps << :rubocop
         end # if
 
+        simplecov_results = simplecov
+
         output = "\n"
         output << format_rspec_results(rspec_results)
         output << "\n"
         output << format_rubocop_results(rubocop_results)
         output << "\n"
-        output << format_simplecov_results(load_simplecov_results)
+        output << format_simplecov_results(simplecov_results)
 
         puts output
 
@@ -174,32 +184,22 @@ module Bronze
           return str
         end # if
 
-        hsh    = results['metrics']
-        missed = hsh['total_lines'] - hsh['covered_lines']
-        color  =
-          if (hsh['covered_percent'] || 0) < 99.0
-            :yellow
-          else
-            :green
-          end # if-elsif-else
+        missed = results.total_lines - results.covered_lines
+        color  = (results.covered_percent || 0) < 99.0 ? :yellow : :green
 
         str = "#{colorize 'SimpleCov:', color} "
-        str << "#{hsh['total_lines']} lines inspected"
+        str << "#{results.total_lines} lines inspected"
         str << ', ' << "#{missed} lines missed"
-        str << ', ' << "#{format '%0.02f', hsh['covered_percent']}% coverage."
+        str << ', ' << "#{format '%0.02f', results.covered_percent}% coverage."
       end # method format_simplecov_results
-
-      def load_simplecov_results
-        output = File.read(File.join root_dir, 'tmp/ci/coverage.json')
-
-        JSON.parse output
-      rescue Errno::ENOENT
-        nil
-      end # method load_simplecov_results
 
       def root_dir
         @root_dir ||= File.expand_path(__dir__).split('/lib').first
       end # method root_dir
+
+      def simplecov
+        SimpleCov.result
+      end # method simplecov
 
       def spec_dir
         @spec_dir = File.join root_dir, 'spec'

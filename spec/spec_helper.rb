@@ -1,15 +1,10 @@
 # spec/spec_helper.rb
 
-require 'simplecov'
+unless ENV['CI']
+  require 'simplecov'
 
-if ENV['CI']
-  require 'simplecov-json'
-
-  SimpleCov.formatter = SimpleCov::Formatter::JSONFormatter
-  SimpleCov.coverage_dir File.join 'tmp', 'ci'
-end # if
-
-SimpleCov.start
+  SimpleCov.start
+end # unless
 
 require 'rspec/sleeping_king_studios/all'
 require 'byebug'
