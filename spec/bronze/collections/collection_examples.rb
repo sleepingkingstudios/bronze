@@ -33,9 +33,36 @@ module Spec::Collections
     shared_context 'when many items are defined for the collection' do
       let(:data) do
         [
-          { :id => '1', :title => 'The Fellowship of the Ring' },
-          { :id => '2', :title => 'The Two Towers' },
-          { :id => '3', :title => 'The Return of the King' }
+          {
+            :id     => '1',
+            :title  => 'The Fellowship of the Ring',
+            :author => 'J.R.R. Tolkien'
+          }, # end hash
+          {
+            :id     => '2',
+            :title  => 'The Two Towers',
+            :author => 'J.R.R. Tolkien'
+          }, # end hash
+          {
+            :id     => '3',
+            :title  => 'The Return of the King',
+            :author => 'J.R.R. Tolkien'
+          }, # end hash
+          {
+            :id     => '4',
+            :title  => 'A Princess of Mars',
+            :author => 'Edgar Rice Burroughs'
+          }, # end hash
+          {
+            :id     => '5',
+            :title  => 'The Gods of Mars',
+            :author => 'Edgar Rice Burroughs'
+          }, # end hash
+          {
+            :id     => '6',
+            :title  => 'The Warlord of Mars',
+            :author => 'Edgar Rice Burroughs'
+          }, # end hash
         ] # end array
       end # let
     end # shared_context
@@ -72,6 +99,10 @@ module Spec::Collections
 
       describe '#insert' do
         it { expect(instance).to respond_to(:insert).with(1).argument }
+      end # describe
+
+      describe '#matching' do
+        it { expect(instance).to respond_to(:matching).with(1).argument }
       end # describe
 
       describe '#transform' do
@@ -272,6 +303,204 @@ module Spec::Collections
             end # describe
           end # wrap_context
         end # wrap_context
+      end # describe
+
+      describe '#matching' do
+        it 'should return a query' do
+          query = instance.all
+
+          expect(query).to be_a query_class
+          expect(query.to_a).to be == []
+        end # it
+
+        wrap_context 'when the collection contains many items' do
+          let(:expected) do
+            data.select { |hsh| hsh >= selector }
+          end # let
+
+          describe 'with an id selector that does not match an item' do
+            let(:selector) { { :id => '0' } }
+
+            it 'should filter the results array' do
+              query = instance.matching(selector)
+
+              expect(query.count).to be 0
+              expect(query.to_a).to be == []
+            end # it
+          end # describe
+
+          # rubocop:disable Metrics/LineLength
+          describe 'with an attributes selector that does not match any items' do
+            # rubocop:enable Metrics/LineLength
+            let(:selector) { { :author => 'C.S. Lewis' } }
+
+            it 'should filter the results array' do
+              query = instance.matching(selector)
+
+              expect(query.count).to be 0
+              expect(query.to_a).to be == []
+            end # it
+          end # describe
+
+          describe 'with an attributes selector that matches one item' do
+            let(:selector) { { :title => 'The Two Towers' } }
+
+            it 'should filter the results array' do
+              query = instance.matching(selector)
+
+              expect(query.count).to be 1
+              expect(query.to_a).to be == expected
+            end # it
+          end # describe
+
+          describe 'with an attributes selector that matches many items' do
+            let(:selector) { { :author => 'J.R.R. Tolkien' } }
+
+            it 'should filter the results array' do
+              query = instance.matching(selector)
+
+              expect(query.count).to be expected.count
+              expect(query.to_a).to be == expected
+            end # it
+          end # describe
+
+          describe 'with a multi-attribute selector' do
+            let(:selector) do
+              {
+                :title  => 'A Princess of Mars',
+                :author => 'Edgar Rice Burroughs'
+              } # end hash
+            end # let
+
+            it 'should filter the results array' do
+              query = instance.matching(selector)
+
+              expect(query.count).to be 1
+              expect(query.to_a).to be == expected
+            end # it
+          end # describe
+
+          describe 'with a chained selector' do
+            let(:first_selector) do
+              { :title  => 'The Warlord of Mars' }
+            end # let
+            let(:second_selector) do
+              { :author => 'Edgar Rice Burroughs' }
+            end # let
+            let(:expected) do
+              data.select { |hsh| hsh >= first_selector }.
+                select { |hsh| hsh >= second_selector }
+            end # let
+
+            it 'should filter the results array' do
+              query = instance.matching(first_selector)
+              query = query.matching(second_selector)
+
+              expect(query.count).to be 1
+              expect(query.to_a).to be == expected
+            end # it
+          end # describe
+
+          wrap_context 'when a transform is set' do
+            let(:expected) do
+              super().map { |hsh| instance.transform.denormalize hsh }
+            end # let
+
+            describe 'with an id selector that does not match an item' do
+              let(:selector) { { :id => '0' } }
+
+              it 'should filter the results array' do
+                query = instance.matching(selector)
+
+                expect(query.count).to be 0
+                expect(query.to_a).to be == []
+              end # it
+            end # describe
+
+            describe 'with an id selector that matches an item' do
+              let(:selector) { { :id => '1' } }
+
+              it 'should filter the results array' do
+                query = instance.matching(selector)
+
+                expect(query.count).to be 1
+                expect(query.to_a).to be == expected
+              end # it
+            end # describe
+
+            # rubocop:disable Metrics/LineLength
+            describe 'with an attributes selector that does not match any items' do
+              # rubocop:enable Metrics/LineLength
+              let(:selector) { { :author => 'C.S. Lewis' } }
+
+              it 'should filter the results array' do
+                query = instance.matching(selector)
+
+                expect(query.count).to be 0
+                expect(query.to_a).to be == []
+              end # it
+            end # describe
+
+            describe 'with an attributes selector that matches one item' do
+              let(:selector) { { :title => 'The Two Towers' } }
+
+              it 'should filter the results array' do
+                query = instance.matching(selector)
+
+                expect(query.count).to be 1
+                expect(query.to_a).to be == expected
+              end # it
+            end # describe
+
+            describe 'with an attributes selector that matches many items' do
+              let(:selector) { { :author => 'J.R.R. Tolkien' } }
+
+              it 'should filter the results array' do
+                query = instance.matching(selector)
+                expect(query.count).to be expected.count
+                expect(query.to_a).to be == expected
+              end # it
+            end # describe
+
+            describe 'with a multi-attribute selector' do
+              let(:selector) do
+                {
+                  :title  => 'A Princess of Mars',
+                  :author => 'Edgar Rice Burroughs'
+                } # end hash
+              end # let
+
+              it 'should filter the results array' do
+                query = instance.matching(selector)
+
+                expect(query.count).to be 1
+                expect(query.to_a).to be == expected
+              end # it
+            end # describe
+
+            describe 'with a chained selector' do
+              let(:first_selector) do
+                { :title  => 'The Warlord of Mars' }
+              end # let
+              let(:second_selector) do
+                { :author => 'Edgar Rice Burroughs' }
+              end # let
+              let(:expected) do
+                data.select { |hsh| hsh >= first_selector }.
+                  select { |hsh| hsh >= second_selector }.
+                  map { |hsh| instance.transform.denormalize hsh }
+              end # let
+
+              it 'should filter the results array' do
+                query = instance.matching(first_selector)
+                query = query.matching(second_selector)
+
+                expect(query.count).to be 1
+                expect(query.to_a).to be == expected
+              end # it
+            end # describe
+          end # wrap_context
+        end # wrap_example
       end # describe
 
       describe '#transform' do
