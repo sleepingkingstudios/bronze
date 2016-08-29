@@ -34,6 +34,16 @@ module Bronze::Collections
         caller
     end # method count
 
+    # Creates a copy of the query, preserving the criteria and transform but not
+    # any cached data.
+    #
+    # @return [Query]
+    def dup
+      query = super
+      query.criteria = criteria.dup
+      query
+    end # method dup
+
     # Returns a copy of the query with an added match criteria.
     #
     # @param selector [Hash] The properties and values that the returned data
@@ -55,6 +65,8 @@ module Bronze::Collections
     end # method to_a
 
     protected
+
+    attr_writer :criteria
 
     def criteria
       @criteria ||= []

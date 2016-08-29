@@ -32,7 +32,7 @@ module Patina::Collections::Simple
     private
 
     def criteria_namespace
-      Spec::Reference::Criteria
+      Patina::Collections::Simple::Criteria
     end # method criteria_namespace
 
     def find_each

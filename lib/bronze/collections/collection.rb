@@ -55,6 +55,16 @@ module Bronze::Collections
       wrap_errors { insert_one(transform.normalize attributes) }
     end # method insert
 
+    # Returns a copy of the default query object with an added match criteria.
+    #
+    # @param selector [Hash] The properties and values that the returned data
+    #   must match.
+    #
+    # @return [Query] The query with match criteria.
+    def matching selector
+      base_query.matching selector
+    end # method matching
+
     # The current transform object. The transform maps the raw data sent to or
     # returned by the datastore to another object, typically an entity.
     #

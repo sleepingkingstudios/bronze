@@ -46,6 +46,14 @@ RSpec.describe Bronze::Collections::AbstractCollection do
     end # it
   end # describe
 
+  describe '#matching' do
+    it 'should raise an error' do
+      expect { instance.matching({}) }.
+        to raise_error described_class::NotImplementedError,
+          "#{described_class.name} does not implement :base_query"
+    end # it
+  end # describe
+
   describe '#update' do
     it { expect(instance).to respond_to(:update).with(2).arguments }
 
