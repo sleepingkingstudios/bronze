@@ -1,4 +1,33 @@
-# The Apps Structure
+# Development
+
+- NullCollection
+- NullQuery
+- Query
+  - #limit
+  - #matching with non-equality predicates
+    - use block syntax+DSL: |
+
+      query = collection.matching do
+        {
+          :title => not_null,
+          :author => not_equal('Ayn Rand'),
+          :page_count => greater_than(10),
+          :published_at => between(1.year.ago, Time.current)
+        }
+      end # matching
+    - not equal
+    - not null
+    - greater than (or equal to)
+    - less than (or equal to)
+    - between
+    - before (alias less than?)
+    - after (alias greater than?)
+  - #none # returns NullQuery
+  - #one
+- Operation
+- bronze/rails
+
+## The Apps Structure
 
 /apps
   /cartographer # Defining, persisting Location entities.
