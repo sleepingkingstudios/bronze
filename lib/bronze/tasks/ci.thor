@@ -6,6 +6,9 @@ require 'rspec'
 
 require 'bronze/tasks'
 
+# rubocop:disable Metrics/AbcSize, Metrics/ClassLength
+# rubocop:disable Metrics/CyclomaticComplexity, Metrics/MethodLength
+
 module Bronze
   module Tasks
     # Thor tasks for running in a Continuous Integration environment.
@@ -20,7 +23,6 @@ module Bronze
         true
       end # class method exit_on_failure?
 
-      # rubocop:disable Metrics/AbcSize, Metrics/MethodLength
       desc :default, 'Runs the full CI suite.'
       method_option :quiet,
         :aliases => '-q',
@@ -64,7 +66,6 @@ module Bronze
           raise Thor::Error, message, caller
         end # unless
       end # method default
-      # rubocop:enable Metrics/MethodLength
 
       desc :rspec, 'Runs the RSpec test suite.'
       method_option :quiet,
@@ -118,12 +119,34 @@ module Bronze
         results['summary']
       end # method rubocop
 
-      # rubocop:enable Metrics/AbcSize
-
       private
 
+      def colorize str, color
+        code =
+          case color
+          when :red        then 31
+          when :green      then 32
+          when :yellow     then 33
+          when :blue       then 34
+          when :pink       then 35
+          when :light_blue then 36
+          else 0
+          end # case
+
+        "\e[#{code}m#{str}\e[0m"
+      end # method colorize
+
       def format_rspec_results results
-        str = 'RSpec:     '
+        color =
+          if results['failure_count'] > 0
+            :red
+          elsif results['pending_count'] > 0
+            :yellow
+          else
+            :green
+          end # if-elsif-else
+
+        str = "#{colorize 'RSpec:', color}     "
         str << "#{results['example_count']} examples"
         str << ', ' << "#{results['failure_count']} failures"
         str << ', ' << "#{results['pending_count']} pending"
@@ -131,16 +154,36 @@ module Bronze
       end # method format_rspec_results
 
       def format_rubocop_results results
-        str = 'RuboCop:   '
+        color =
+          if results['offense_count'] > 0
+            :red
+          else
+            :green
+          end # if-elsif-else
+
+        str = "#{colorize 'RuboCop:', color}   "
         str << "#{results['inspected_file_count']} files inspected"
         str << ', ' << "#{results['offense_count']} offenses."
       end # method format_rubocop_results
 
       def format_simplecov_results results
+        if results.nil?
+          str = "#{colorize 'SimpleCov:', :red} "
+          str << 'Unable to load code coverage report.'
+
+          return str
+        end # if
+
         hsh    = results['metrics']
         missed = hsh['total_lines'] - hsh['covered_lines']
+        color  =
+          if (hsh['covered_percent'] || 0) < 99.0
+            :yellow
+          else
+            :green
+          end # if-elsif-else
 
-        str = 'SimpleCov: '
+        str = "#{colorize 'SimpleCov:', color} "
         str << "#{hsh['total_lines']} lines inspected"
         str << ', ' << "#{missed} lines missed"
         str << ', ' << "#{format '%0.02f', hsh['covered_percent']}% coverage."
@@ -148,7 +191,10 @@ module Bronze
 
       def load_simplecov_results
         output = File.read(File.join root_dir, 'tmp/ci/coverage.json')
+
         JSON.parse output
+      rescue Errno::ENOENT
+        nil
       end # method load_simplecov_results
 
       def root_dir
@@ -165,3 +211,6 @@ module Bronze
     end # class
   end # module
 end # module
+
+# rubocop:enable Metrics/AbcSize, Metrics/ClassLength
+# rubocop:enable Metrics/CyclomaticComplexity, Metrics/MethodLength

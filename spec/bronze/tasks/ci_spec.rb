@@ -7,21 +7,6 @@ require 'rubocop'
 RSpec.describe Bronze::Tasks::Ci do
   let(:instance) { described_class.new }
 
-  def capture_output
-    old_stdout = $stdout
-    old_stderr = $stderr
-
-    $stdout = StringIO.new('', 'w')
-    $stderr = StringIO.new('', 'w')
-
-    yield
-
-    [$stdout.string, $stderr.string]
-  ensure
-    $stdout = old_stdout
-    $stderr = old_stderr
-  end # method capture_output
-
   describe '::exit_on_failure?' do
     it 'should define the predicate' do
       expect(described_class).
