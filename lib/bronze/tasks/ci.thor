@@ -31,6 +31,8 @@ module Bronze
       #
       # @raise Thor::Error if any step fails.
       def default
+        ENV['CI'] = 'true'
+
         failing_steps = []
 
         rspec_results = rspec
@@ -49,6 +51,8 @@ module Bronze
         output << format_rspec_results(rspec_results)
         output << "\n"
         output << format_rubocop_results(rubocop_results)
+        output << "\n"
+        output << format_simplecov_results(load_simplecov_results)
 
         puts output
 
@@ -119,7 +123,7 @@ module Bronze
       private
 
       def format_rspec_results results
-        str = 'RSpec:   '
+        str = 'RSpec:     '
         str << "#{results['example_count']} examples"
         str << ', ' << "#{results['failure_count']} failures"
         str << ', ' << "#{results['pending_count']} pending"
@@ -127,10 +131,25 @@ module Bronze
       end # method format_rspec_results
 
       def format_rubocop_results results
-        str = 'RuboCop: '
+        str = 'RuboCop:   '
         str << "#{results['inspected_file_count']} files inspected"
         str << ', ' << "#{results['offense_count']} offenses."
       end # method format_rubocop_results
+
+      def format_simplecov_results results
+        hsh    = results['metrics']
+        missed = hsh['total_lines'] - hsh['covered_lines']
+
+        str = 'SimpleCov: '
+        str << "#{hsh['total_lines']} lines inspected"
+        str << ', ' << "#{missed} lines missed"
+        str << ', ' << "#{format '%0.02f', hsh['covered_percent']}% coverage."
+      end # method format_simplecov_results
+
+      def load_simplecov_results
+        output = File.read(File.join root_dir, 'tmp/ci/coverage.json')
+        JSON.parse output
+      end # method load_simplecov_results
 
       def root_dir
         @root_dir ||= File.expand_path(__dir__).split('/lib').first
