@@ -1,8 +1,7 @@
 # Development
 
-- NullCollection
-- NullQuery
 - Query
+  - #exists?
   - #limit
   - #matching with non-equality predicates
     - use block syntax+DSL: |
@@ -22,7 +21,6 @@
     - between
     - before (alias less than?)
     - after (alias greater than?)
-  - #none # returns NullQuery
   - #one
 - Operation
 - bronze/rails
