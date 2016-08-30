@@ -27,6 +27,9 @@ module Bronze::Collections
     # @!method count
     #   (see Bronze::Collections::Query#count)
 
+    # @!method exists?
+    #   (see Bronze::Collections::Query#exists?)
+
     # @!method limit(count)
     #   (see Bronze::Collections::Query#limit)
 
@@ -40,7 +43,7 @@ module Bronze::Collections
 
     # @!method to_a
     #   (see Bronze::Collections::Query#to_a)
-    delegate :count, :limit, :matching, :to_a, :to => :base_query
+    delegate :count, :exists?, :limit, :matching, :to_a, :to => :base_query
 
     # Returns the default query object for the collection.
     #

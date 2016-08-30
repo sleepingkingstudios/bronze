@@ -68,6 +68,10 @@ module Spec::Collections
         it { expect(instance).to respond_to(:criteria, true).with(0).arguments }
       end # describe
 
+      describe '#exists?' do
+        it { expect(instance).to respond_to(:exists?).with(0).arguments }
+      end # describe
+
       describe '#limit' do
         it { expect(instance).to respond_to(:limit).with(1).argument }
       end # describe
@@ -104,6 +108,14 @@ module Spec::Collections
 
         wrap_context 'when the data contains many items' do
           it { expect(instance.count).to be data.count }
+        end # wrap_context
+      end # describe
+
+      describe '#exists?' do
+        it { expect(instance.exists?).to be false }
+
+        wrap_context 'when the data contains many items' do
+          it { expect(instance.exists?).to be true }
         end # wrap_context
       end # describe
 
@@ -321,6 +333,7 @@ module Spec::Collections
         shared_examples 'should return the items matching the criteria' do
           it 'should return the items matching the criteria' do
             expect(query.count).to be expected.count
+            expect(query.exists?).to be(expected.count > 0)
             expect(query.to_a).to be == expected
           end # it
         end # shared_examples

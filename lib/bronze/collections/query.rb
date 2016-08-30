@@ -44,6 +44,13 @@ module Bronze::Collections
       query
     end # method dup
 
+    # Checks if any items exist in the datastore that match the given criteria.
+    #
+    # @return [Boolean] True if there are matching items, otherwise false.
+    def exists?
+      limit(1).count > 0
+    end # method exists?
+
     # Returns a copy of the query with an added limit criteria.
     #
     # @param count [Integer] The maximum number of results to return.
