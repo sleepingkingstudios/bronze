@@ -74,6 +74,16 @@ module Bronze::Collections
       end # tap
     end # method matching
 
+    # If there is exactly one item matching the given criteria, returns the
+    # item; otherwise returns nil.
+    #
+    # @return [Hash, nil] The item, or nil.
+    def one
+      results = limit(2).to_a
+
+      results.count == 1 ? results.first : nil
+    end # method one
+
     # Returns an empty query.
     #
     # @return [NullQuery] The empty query.

@@ -80,6 +80,10 @@ module Spec::Collections
         it { expect(instance).to respond_to(:matching).with(1).argument }
       end # describe
 
+      describe '#one' do
+        it { expect(instance).to respond_to(:one).with(0).arguments }
+      end # describe
+
       describe '#none' do
         it { expect(instance).to respond_to(:none).with(0).arguments }
       end # describe
@@ -288,6 +292,28 @@ module Spec::Collections
               end # it
             end # describe
           end # wrap_context
+        end # wrap_context
+      end # describe
+
+      describe '#one' do
+        it { expect(instance.one).to be nil }
+
+        wrap_context 'when the data contains many items' do
+          it { expect(instance.one).to be nil }
+
+          context 'when the results contain one item' do
+            it 'should return the item' do
+              expect(instance.limit(1).one).to be == data[0]
+            end # it
+
+            wrap_context 'when a transform is set' do
+              let(:expected) { instance.transform.denormalize data[0] }
+
+              it 'should return the item' do
+                expect(instance.limit(1).one).to be == expected
+              end # it
+            end # wrap_context
+          end # context
         end # wrap_context
       end # describe
 

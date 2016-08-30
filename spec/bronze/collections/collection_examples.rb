@@ -96,6 +96,10 @@ module Spec::Collections
         it { expect(instance).to respond_to(:delete).with(1).argument }
       end # describe
 
+      describe '#exists?' do
+        it { expect(instance).to respond_to(:exists?).with(0).arguments }
+      end # describe
+
       describe '#insert' do
         it { expect(instance).to respond_to(:insert).with(1).argument }
       end # describe
@@ -110,6 +114,10 @@ module Spec::Collections
 
       describe '#none' do
         it { expect(instance).to respond_to(:none).with(0).arguments }
+      end # describe
+
+      describe '#one' do
+        it { expect(instance).to respond_to(:one).with(0).arguments }
       end # describe
 
       describe '#to_a' do
