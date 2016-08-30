@@ -1,6 +1,6 @@
 GIT
   remote: https://github.com/sleepingkingstudios/sleeping_king_studios-tools
-  revision: dd24a527a5f995fb375c14f32b177037493c70f0
+  revision: 3bfa5d8bb6d8446437f59bec7f905410ee04c505
   branch: master
   specs:
     sleeping_king_studios-tools (0.5.0.alpha)

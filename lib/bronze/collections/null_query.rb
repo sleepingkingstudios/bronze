@@ -12,6 +12,11 @@ module Bronze::Collections
 
     # rubocop:disable Lint/UnusedMethodArgument
 
+    # (see Query#limit)
+    def limit count
+      self
+    end # method limit
+
     # (see Query#matching)
     def matching selector
       self

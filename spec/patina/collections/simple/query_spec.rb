@@ -10,7 +10,7 @@ RSpec.describe Patina::Collections::Simple::Query do
   let(:transform) do
     Bronze::Transforms::IdentityTransform.new
   end # let
-  let(:data)     { {} }
+  let(:data)     { [] }
   let(:instance) { described_class.new(data, transform) }
 
   describe '::new' do

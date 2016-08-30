@@ -44,6 +44,17 @@ module Bronze::Collections
       query
     end # method dup
 
+    # Returns a copy of the query with an added limit criteria.
+    #
+    # @param count [Integer] The maximum number of results to return.
+    #
+    # @return [Query] The copied query.
+    def limit count
+      dup.tap do |query|
+        query.criteria << build_criterion(:limit, count)
+      end # tap
+    end # method matching
+
     # Returns a copy of the query with an added match criteria.
     #
     # @param selector [Hash] The properties and values that the returned data
