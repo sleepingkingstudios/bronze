@@ -44,6 +44,13 @@ module Bronze::Collections
       query
     end # method dup
 
+    # Executes the query, if applicable, and yields each result to the block.
+    #
+    # @yieldparam hsh [Hash] The current result.
+    def each &block
+      find_each(&block)
+    end # method each
+
     # Checks if any items exist in the datastore that match the given criteria.
     #
     # @return [Boolean] True if there are matching items, otherwise false.
@@ -96,7 +103,7 @@ module Bronze::Collections
     #
     # @return [Array[Hash]] The data objects matching the query.
     def to_a
-      find_each { |hsh| transform.denormalize hsh }
+      [].tap { |ary| find_each { |obj| ary << obj } }
     end # method to_a
 
     protected

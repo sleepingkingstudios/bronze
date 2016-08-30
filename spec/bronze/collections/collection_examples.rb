@@ -96,6 +96,12 @@ module Spec::Collections
         it { expect(instance).to respond_to(:delete).with(1).argument }
       end # describe
 
+      describe '#each' do
+        it 'should define the method' do
+          expect(instance).to respond_to(:each).with(0).arguments.and_a_block
+        end # it
+      end # describe
+
       describe '#exists?' do
         it { expect(instance).to respond_to(:exists?).with(0).arguments }
       end # describe
