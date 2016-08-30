@@ -69,7 +69,7 @@ module Bronze::Collections
     #
     # @return [NullQuery] The empty query.
     def none
-      NullQuery.new
+      base_query.none
     end # method none
 
     # The current transform object. The transform maps the raw data sent to or

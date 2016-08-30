@@ -54,6 +54,14 @@ RSpec.describe Bronze::Collections::AbstractCollection do
     end # it
   end # describe
 
+  describe '#none' do
+    it 'should raise an error' do
+      expect { instance.none }.
+        to raise_error described_class::NotImplementedError,
+          "#{described_class.name} does not implement :base_query"
+    end # it
+  end # describe
+
   describe '#update' do
     it { expect(instance).to respond_to(:update).with(2).arguments }
 
