@@ -9,6 +9,7 @@ module Bronze::Collections::Criteria
     # @param selector [Hash] The selector against which data is compared.
     def initialize selector
       @selector = selector
+      @type     = :filter
     end # method initialize
 
     # @return [Hash] The selector against which data is compared.

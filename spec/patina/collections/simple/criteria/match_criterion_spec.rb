@@ -90,4 +90,8 @@ RSpec.describe Patina::Collections::Simple::Criteria::MatchCriterion do
   describe '#selector' do
     include_examples 'should have reader', :selector, ->() { be == selector }
   end # describe
+
+  describe '#type' do
+    include_examples 'should have reader', :type, :filter
+  end # describe
 end # describe
