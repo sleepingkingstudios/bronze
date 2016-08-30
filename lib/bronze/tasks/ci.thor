@@ -1,10 +1,21 @@
 # lib/bronze/tasks/ci.thor
 
+require 'simplecov'
+
+unless SimpleCov.running
+  SimpleCov.coverage_dir File.join 'tmp', 'ci'
+  SimpleCov.at_exit {}
+  SimpleCov.start
+end # unless
+
 require 'thor'
 require 'json'
 require 'rspec'
 
 require 'bronze/tasks'
+
+# rubocop:disable Metrics/AbcSize, Metrics/ClassLength
+# rubocop:disable Metrics/CyclomaticComplexity, Metrics/MethodLength
 
 module Bronze
   module Tasks
@@ -20,7 +31,6 @@ module Bronze
         true
       end # class method exit_on_failure?
 
-      # rubocop:disable Metrics/AbcSize, Metrics/MethodLength
       desc :default, 'Runs the full CI suite.'
       method_option :quiet,
         :aliases => '-q',
@@ -31,6 +41,8 @@ module Bronze
       #
       # @raise Thor::Error if any step fails.
       def default
+        ENV['CI'] = 'true'
+
         failing_steps = []
 
         rspec_results = rspec
@@ -45,10 +57,14 @@ module Bronze
           failing_steps << :rubocop
         end # if
 
+        simplecov_results = simplecov
+
         output = "\n"
         output << format_rspec_results(rspec_results)
         output << "\n"
         output << format_rubocop_results(rubocop_results)
+        output << "\n"
+        output << format_simplecov_results(simplecov_results)
 
         puts output
 
@@ -60,7 +76,6 @@ module Bronze
           raise Thor::Error, message, caller
         end # unless
       end # method default
-      # rubocop:enable Metrics/MethodLength
 
       desc :rspec, 'Runs the RSpec test suite.'
       method_option :quiet,
@@ -114,12 +129,34 @@ module Bronze
         results['summary']
       end # method rubocop
 
-      # rubocop:enable Metrics/AbcSize
-
       private
 
+      def colorize str, color
+        code =
+          case color
+          when :red        then 31
+          when :green      then 32
+          when :yellow     then 33
+          when :blue       then 34
+          when :pink       then 35
+          when :light_blue then 36
+          else 0
+          end # case
+
+        "\e[#{code}m#{str}\e[0m"
+      end # method colorize
+
       def format_rspec_results results
-        str = 'RSpec:   '
+        color =
+          if results['failure_count'] > 0
+            :red
+          elsif results['pending_count'] > 0
+            :yellow
+          else
+            :green
+          end # if-elsif-else
+
+        str = "#{colorize 'RSpec:', color}     "
         str << "#{results['example_count']} examples"
         str << ', ' << "#{results['failure_count']} failures"
         str << ', ' << "#{results['pending_count']} pending"
@@ -127,14 +164,42 @@ module Bronze
       end # method format_rspec_results
 
       def format_rubocop_results results
-        str = 'RuboCop: '
+        color =
+          if results['offense_count'] > 0
+            :red
+          else
+            :green
+          end # if-elsif-else
+
+        str = "#{colorize 'RuboCop:', color}   "
         str << "#{results['inspected_file_count']} files inspected"
         str << ', ' << "#{results['offense_count']} offenses."
       end # method format_rubocop_results
 
+      def format_simplecov_results results
+        if results.nil?
+          str = "#{colorize 'SimpleCov:', :red} "
+          str << 'Unable to load code coverage report.'
+
+          return str
+        end # if
+
+        missed = results.total_lines - results.covered_lines
+        color  = (results.covered_percent || 0) < 99.0 ? :yellow : :green
+
+        str = "#{colorize 'SimpleCov:', color} "
+        str << "#{results.total_lines} lines inspected"
+        str << ', ' << "#{missed} lines missed"
+        str << ', ' << "#{format '%0.02f', results.covered_percent}% coverage."
+      end # method format_simplecov_results
+
       def root_dir
         @root_dir ||= File.expand_path(__dir__).split('/lib').first
       end # method root_dir
+
+      def simplecov
+        SimpleCov.result
+      end # method simplecov
 
       def spec_dir
         @spec_dir = File.join root_dir, 'spec'
@@ -146,3 +211,6 @@ module Bronze
     end # class
   end # module
 end # module
+
+# rubocop:enable Metrics/AbcSize, Metrics/ClassLength
+# rubocop:enable Metrics/CyclomaticComplexity, Metrics/MethodLength

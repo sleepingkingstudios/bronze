@@ -6,6 +6,7 @@
 /.ruby-version
 
 # Ignore local and generated documentation.
+/coverage
 /doc
 .yardoc
 .yardopts

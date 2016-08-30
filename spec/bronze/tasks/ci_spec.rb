@@ -7,21 +7,6 @@ require 'rubocop'
 RSpec.describe Bronze::Tasks::Ci do
   let(:instance) { described_class.new }
 
-  def capture_output
-    old_stdout = $stdout
-    old_stderr = $stderr
-
-    $stdout = StringIO.new('', 'w')
-    $stderr = StringIO.new('', 'w')
-
-    yield
-
-    [$stdout.string, $stderr.string]
-  ensure
-    $stdout = old_stdout
-    $stderr = old_stderr
-  end # method capture_output
-
   describe '::exit_on_failure?' do
     it 'should define the predicate' do
       expect(described_class).
@@ -57,10 +42,19 @@ RSpec.describe Bronze::Tasks::Ci do
       str << "#{rubocop_results['inspected_file_count']} files inspected"
       str << ', ' << "#{rubocop_results['offense_count']} offenses."
     end # let
+    let(:simplecov_results) do
+      double(
+        'results',
+        :total_lines   => 100,
+        :covered_lines => 95,
+        :covered_percent => 95.0
+      ) # end double
+    end # let
 
     before(:example) do
       allow(instance).to receive(:rspec).and_return(rspec_results)
       allow(instance).to receive(:rubocop).and_return(rubocop_results)
+      allow(instance).to receive(:simplecov).and_return(simplecov_results)
     end # before example
 
     it { expect(instance).to respond_to(:default).with(0).arguments }
