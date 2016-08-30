@@ -93,8 +93,16 @@ module Bronze::Collections
     private
 
     def apply_criteria native_query
-      criteria.each do |criterion|
-        native_query = criterion.call(native_query)
+      tools = ::SleepingKingStudios::Tools::ArrayTools
+
+      filters, rest = tools.bisect(criteria) do |criterion|
+        criterion.type == :filter
+      end # bisect
+
+      [filters, rest].each do |criteria|
+        criteria.each do |criterion|
+          native_query = criterion.call(native_query)
+        end # each
       end # each
 
       native_query

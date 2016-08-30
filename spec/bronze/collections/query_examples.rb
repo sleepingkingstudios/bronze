@@ -316,6 +316,45 @@ module Spec::Collections
           end # wrap_context
         end # wrap_context
       end # describe
+
+      describe 'chaining criteria' do
+        shared_examples 'should return the items matching the criteria' do
+          it 'should return the items matching the criteria' do
+            expect(query.count).to be expected.count
+            expect(query.to_a).to be == expected
+          end # it
+        end # shared_examples
+
+        describe 'with a :limit followed by a :matching' do
+          let(:selector) { { :author => 'Edgar Rice Burroughs' } }
+          let(:count)    { 2 }
+          let(:query)    { instance.limit(count).matching(selector) }
+          let(:expected) do
+            data.select { |hsh| hsh >= selector }[0...count]
+          end # let
+
+          include_examples 'should return the items matching the criteria'
+
+          wrap_context 'when the data contains many items' do
+            include_examples 'should return the items matching the criteria'
+          end # wrap_context
+        end # describe
+
+        describe 'with a :matching followed by a :limit' do
+          let(:selector) { { :author => 'Edgar Rice Burroughs' } }
+          let(:count)    { 2 }
+          let(:query)    { instance.matching(selector).limit(count) }
+          let(:expected) do
+            data.select { |hsh| hsh >= selector }[0...count]
+          end # let
+
+          include_examples 'should return the items matching the criteria'
+
+          wrap_context 'when the data contains many items' do
+            include_examples 'should return the items matching the criteria'
+          end # wrap_context
+        end # describe
+      end # describe
     end # shared_examples
 
     shared_examples 'should implement the Query methods' do
