@@ -68,6 +68,12 @@ module Spec::Collections
         it { expect(instance).to respond_to(:criteria, true).with(0).arguments }
       end # describe
 
+      describe '#each' do
+        it 'should define the method' do
+          expect(instance).to respond_to(:each).with(0).arguments.and_a_block
+        end # it
+      end # describe
+
       describe '#exists?' do
         it { expect(instance).to respond_to(:exists?).with(0).arguments }
       end # describe
@@ -112,6 +118,42 @@ module Spec::Collections
 
         wrap_context 'when the data contains many items' do
           it { expect(instance.count).to be data.count }
+        end # wrap_context
+      end # describe
+
+      describe '#each' do
+        it 'should not yield any items' do
+          yielded = []
+
+          instance.each { |obj| yielded << obj }
+
+          expect(yielded).to be == []
+        end # it
+
+        wrap_context 'when the data contains many items' do
+          let(:expected) { data }
+
+          it 'should yield the items' do
+            yielded = []
+
+            instance.each { |obj| yielded << obj }
+
+            expect(yielded).to contain_exactly(*expected)
+          end # it
+
+          wrap_context 'when a transform is set' do
+            let(:expected) do
+              super().map { |hsh| instance.transform.denormalize hsh }
+            end # let
+
+            it 'should return the results as an array of entities' do
+              yielded = []
+
+              instance.each { |obj| yielded << obj }
+
+              expect(yielded).to contain_exactly(*expected)
+            end # it
+          end # wrap_context
         end # wrap_context
       end # describe
 
