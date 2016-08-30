@@ -1,5 +1,6 @@
 # spec/bronze/collections/collection_examples.rb
 
+require 'bronze/collections/null_query'
 require 'bronze/entities/entity'
 require 'bronze/transforms/attributes_transform'
 require 'bronze/transforms/copy_transform'
@@ -103,6 +104,10 @@ module Spec::Collections
 
       describe '#matching' do
         it { expect(instance).to respond_to(:matching).with(1).argument }
+      end # describe
+
+      describe '#none' do
+        it { expect(instance).to respond_to(:none).with(0).arguments }
       end # describe
 
       describe '#transform' do
@@ -501,6 +506,14 @@ module Spec::Collections
             end # describe
           end # wrap_context
         end # wrap_example
+      end # describe
+
+      describe '#none' do
+        it 'should return a null query' do
+          query = instance.none
+
+          expect(query).to be_a Bronze::Collections::NullQuery
+        end # it
       end # describe
 
       describe '#transform' do

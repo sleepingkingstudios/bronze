@@ -65,6 +65,13 @@ module Bronze::Collections
       base_query.matching selector
     end # method matching
 
+    # Returns an empty query.
+    #
+    # @return [NullQuery] The empty query.
+    def none
+      NullQuery.new
+    end # method none
+
     # The current transform object. The transform maps the raw data sent to or
     # returned by the datastore to another object, typically an entity.
     #

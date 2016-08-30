@@ -56,6 +56,13 @@ module Bronze::Collections
       end # tap
     end # method matching
 
+    # Returns an empty query.
+    #
+    # @return [NullQuery] The empty query.
+    def none
+      NullQuery.new
+    end # method none
+
     # Executes the query, if applicable, and returns the results as an array of
     # attribute hashes.
     #
@@ -107,3 +114,5 @@ module Bronze::Collections
     end # method find_each
   end # class
 end # module
+
+require 'bronze/collections/null_query'
