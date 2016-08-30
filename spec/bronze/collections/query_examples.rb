@@ -8,7 +8,7 @@ module Spec::Collections
   module QueryExamples
     extend RSpec::SleepingKingStudios::Concerns::SharedExampleGroup
 
-    shared_context 'when many items are defined for the data' do
+    shared_context 'when the data contains many items' do
       let(:data) do
         [
           {
@@ -45,10 +45,6 @@ module Spec::Collections
       end # let
     end # shared_context
 
-    shared_context 'when the data contains many items' do
-      include_context 'when many items are defined for the data'
-    end # shared_context
-
     shared_context 'when a transform is set' do
       let(:transform_class) do
         Class.new(Bronze::Transforms::AttributesTransform) do
@@ -72,8 +68,20 @@ module Spec::Collections
         it { expect(instance).to respond_to(:criteria, true).with(0).arguments }
       end # describe
 
+      describe '#exists?' do
+        it { expect(instance).to respond_to(:exists?).with(0).arguments }
+      end # describe
+
+      describe '#limit' do
+        it { expect(instance).to respond_to(:limit).with(1).argument }
+      end # describe
+
       describe '#matching' do
         it { expect(instance).to respond_to(:matching).with(1).argument }
+      end # describe
+
+      describe '#one' do
+        it { expect(instance).to respond_to(:one).with(0).arguments }
       end # describe
 
       describe '#none' do
@@ -98,7 +106,7 @@ module Spec::Collections
       end # it
     end # shared_examples
 
-    shared_examples 'should implement the Query methods' do
+    shared_examples 'should run queries against the datastore' do
       describe '#count' do
         it { expect(instance.count).to be 0 }
 
@@ -107,107 +115,130 @@ module Spec::Collections
         end # wrap_context
       end # describe
 
-      describe '#matching' do
-        let(:criterion_class) do
-          Bronze::Collections::Criteria::MatchCriterion
+      describe '#exists?' do
+        it { expect(instance.exists?).to be false }
+
+        wrap_context 'when the data contains many items' do
+          it { expect(instance.exists?).to be true }
+        end # wrap_context
+      end # describe
+
+      describe '#limit' do
+        shared_examples 'should return the requested number of items' do
+          it 'should return the requested number of items' do
+            query = instance.limit(count)
+
+            expect(query.count).to be [count, data.count].min
+            expect(query.to_a).to be == expected
+          end # it
+        end # shared_examples
+
+        let(:count) { 3 }
+        let(:expected) do
+          data[0...count]
         end # let
+
+        include_examples 'should return the requested number of items'
+
+        wrap_context 'when the data contains many items' do
+          describe 'with a limit of 0' do
+            let(:count) { 0 }
+
+            include_examples 'should return the requested number of items'
+          end # describe
+
+          describe 'with a limit of 1' do
+            let(:count) { 1 }
+
+            include_examples 'should return the requested number of items'
+          end # describe
+
+          describe 'with a limit of 3' do
+            let(:count) { 3 }
+
+            include_examples 'should return the requested number of items'
+          end # describe
+
+          describe 'with a limit of 6' do
+            let(:count) { 6 }
+
+            include_examples 'should return the requested number of items'
+          end # describe
+
+          describe 'with a limit of 10' do
+            let(:count) { 10 }
+
+            include_examples 'should return the requested number of items'
+          end # describe
+        end # wrap_context
+      end # describe
+
+      describe '#matching' do
+        shared_examples 'should return the items matching the selector' do
+          it 'should return the items matching the selector' do
+            query = instance.matching(selector)
+
+            expect(query.count).to be expected.count
+            expect(query.to_a).to be == expected
+          end # it
+        end # shared_examples
+
         let(:selector) { { :id => '0' } }
         let(:expected) do
           data.select { |hsh| hsh >= selector }
         end # let
 
-        def perform_action
-          instance.matching selector
-        end # method perform_action
-
-        include_examples 'should return a copy of the query'
-
-        it 'should add a match criterion to the copy' do
-          query = instance.matching selector
-
-          criterion = query.send(:criteria).last
-          expect(criterion).to be_a criterion_class
-          expect(criterion.selector).to be == selector
-        end # it
-
-        it 'should not mutate the query' do
-          expect { instance.matching selector }.
-            not_to change(instance.send(:criteria), :count)
-        end # it
+        include_examples 'should return the items matching the selector'
 
         wrap_context 'when the data contains many items' do
-          describe 'with an id selector that does not match an item' do
-            let(:selector) { { :id => '0' } }
-
-            it 'should filter the results array' do
-              query = instance.matching(selector)
-
-              expect(query.count).to be 0
-              expect(query.to_a).to be == []
-            end # it
-          end # describe
-
-          describe 'with an id selector that matches an item' do
-            let(:selector) { { :id => '1' } }
-
-            it 'should filter the results array' do
-              query = instance.matching(selector)
-
-              expect(query.count).to be 1
-              expect(query.to_a).to be == expected
-            end # it
-          end # describe
-
           # rubocop:disable Metrics/LineLength
-          describe 'with an attributes selector that does not match any items' do
+          shared_examples 'should filter the results using the given selector' do
             # rubocop:enable Metrics/LineLength
-            let(:selector) { { :author => 'C.S. Lewis' } }
+            describe 'with an id selector that does not match an item' do
+              let(:selector) { { :id => '0' } }
 
-            it 'should filter the results array' do
-              query = instance.matching(selector)
+              include_examples 'should return the items matching the selector'
+            end # describe
 
-              expect(query.count).to be 0
-              expect(query.to_a).to be == []
-            end # it
-          end # describe
+            describe 'with an id selector that matches an item' do
+              let(:selector) { { :id => '1' } }
 
-          describe 'with an attributes selector that matches one item' do
-            let(:selector) { { :title => 'The Two Towers' } }
+              include_examples 'should return the items matching the selector'
+            end # describe
 
-            it 'should filter the results array' do
-              query = instance.matching(selector)
+            # rubocop:disable Metrics/LineLength
+            describe 'with an attributes selector that does not match any items' do
+              # rubocop:enable Metrics/LineLength
+              let(:selector) { { :author => 'C.S. Lewis' } }
 
-              expect(query.count).to be 1
-              expect(query.to_a).to be == expected
-            end # it
-          end # describe
+              include_examples 'should return the items matching the selector'
+            end # describe
 
-          describe 'with an attributes selector that matches many items' do
-            let(:selector) { { :author => 'J.R.R. Tolkien' } }
+            describe 'with an attributes selector that matches one item' do
+              let(:selector) { { :title => 'The Two Towers' } }
 
-            it 'should filter the results array' do
-              query = instance.matching(selector)
+              include_examples 'should return the items matching the selector'
+            end # describe
 
-              expect(query.count).to be expected.count
-              expect(query.to_a).to be == expected
-            end # it
-          end # describe
+            describe 'with an attributes selector that matches many items' do
+              let(:selector) { { :author => 'J.R.R. Tolkien' } }
 
-          describe 'with a multi-attribute selector' do
-            let(:selector) do
-              {
-                :title  => 'A Princess of Mars',
-                :author => 'Edgar Rice Burroughs'
-              } # end hash
-            end # let
+              include_examples 'should return the items matching the selector'
+            end # describe
 
-            it 'should filter the results array' do
-              query = instance.matching(selector)
+            describe 'with a multi-attribute selector' do
+              let(:selector) do
+                {
+                  :title  => 'A Princess of Mars',
+                  :author => 'Edgar Rice Burroughs'
+                } # end hash
+              end # let
 
-              expect(query.count).to be 1
-              expect(query.to_a).to be == expected
-            end # it
-          end # describe
+              include_examples 'should return the items matching the selector'
+            end # describe
+          end # shared_examples
+
+          include_examples 'should filter the results using the given selector'
 
           describe 'with a chained selector' do
             let(:first_selector) do
@@ -221,7 +252,7 @@ module Spec::Collections
                 select { |hsh| hsh >= second_selector }
             end # let
 
-            it 'should filter the results array' do
+            it 'should return the items matching the selector' do
               query = instance.matching(first_selector)
               query = query.matching(second_selector)
 
@@ -235,77 +266,9 @@ module Spec::Collections
               super().map { |hsh| instance.transform.denormalize hsh }
             end # let
 
-            describe 'with an id selector that does not match an item' do
-              let(:selector) { { :id => '0' } }
-
-              it 'should filter the results array' do
-                query = instance.matching(selector)
-
-                expect(query.count).to be 0
-                expect(query.to_a).to be == []
-              end # it
-            end # describe
-
-            describe 'with an id selector that matches an item' do
-              let(:selector) { { :id => '1' } }
-
-              it 'should filter the results array' do
-                query = instance.matching(selector)
-
-                expect(query.count).to be 1
-                expect(query.to_a).to be == expected
-              end # it
-            end # describe
-
             # rubocop:disable Metrics/LineLength
-            describe 'with an attributes selector that does not match any items' do
-              # rubocop:enable Metrics/LineLength
-              let(:selector) { { :author => 'C.S. Lewis' } }
-
-              it 'should filter the results array' do
-                query = instance.matching(selector)
-
-                expect(query.count).to be 0
-                expect(query.to_a).to be == []
-              end # it
-            end # describe
-
-            describe 'with an attributes selector that matches one item' do
-              let(:selector) { { :title => 'The Two Towers' } }
-
-              it 'should filter the results array' do
-                query = instance.matching(selector)
-
-                expect(query.count).to be 1
-                expect(query.to_a).to be == expected
-              end # it
-            end # describe
-
-            describe 'with an attributes selector that matches many items' do
-              let(:selector) { { :author => 'J.R.R. Tolkien' } }
-
-              it 'should filter the results array' do
-                query = instance.matching(selector)
-                expect(query.count).to be expected.count
-                expect(query.to_a).to be == expected
-              end # it
-            end # describe
-
-            describe 'with a multi-attribute selector' do
-              let(:selector) do
-                {
-                  :title  => 'A Princess of Mars',
-                  :author => 'Edgar Rice Burroughs'
-                } # end hash
-              end # let
-
-              it 'should filter the results array' do
-                query = instance.matching(selector)
-
-                expect(query.count).to be 1
-                expect(query.to_a).to be == expected
-              end # it
-            end # describe
+            include_examples 'should filter the results using the given selector'
+            # rubocop:enable Metrics/LineLength
 
             describe 'with a chained selector' do
               let(:first_selector) do
@@ -329,6 +292,28 @@ module Spec::Collections
               end # it
             end # describe
           end # wrap_context
+        end # wrap_context
+      end # describe
+
+      describe '#one' do
+        it { expect(instance.one).to be nil }
+
+        wrap_context 'when the data contains many items' do
+          it { expect(instance.one).to be nil }
+
+          context 'when the results contain one item' do
+            it 'should return the item' do
+              expect(instance.limit(1).one).to be == data[0]
+            end # it
+
+            wrap_context 'when a transform is set' do
+              let(:expected) { instance.transform.denormalize data[0] }
+
+              it 'should return the item' do
+                expect(instance.limit(1).one).to be == expected
+              end # it
+            end # wrap_context
+          end # context
         end # wrap_context
       end # describe
 
@@ -368,6 +353,102 @@ module Spec::Collections
             end # it
           end # wrap_context
         end # wrap_context
+      end # describe
+
+      describe 'chaining criteria' do
+        shared_examples 'should return the items matching the criteria' do
+          it 'should return the items matching the criteria' do
+            expect(query.count).to be expected.count
+            expect(query.exists?).to be(expected.count > 0)
+            expect(query.to_a).to be == expected
+          end # it
+        end # shared_examples
+
+        describe 'with a :limit followed by a :matching' do
+          let(:selector) { { :author => 'Edgar Rice Burroughs' } }
+          let(:count)    { 2 }
+          let(:query)    { instance.limit(count).matching(selector) }
+          let(:expected) do
+            data.select { |hsh| hsh >= selector }[0...count]
+          end # let
+
+          include_examples 'should return the items matching the criteria'
+
+          wrap_context 'when the data contains many items' do
+            include_examples 'should return the items matching the criteria'
+          end # wrap_context
+        end # describe
+
+        describe 'with a :matching followed by a :limit' do
+          let(:selector) { { :author => 'Edgar Rice Burroughs' } }
+          let(:count)    { 2 }
+          let(:query)    { instance.matching(selector).limit(count) }
+          let(:expected) do
+            data.select { |hsh| hsh >= selector }[0...count]
+          end # let
+
+          include_examples 'should return the items matching the criteria'
+
+          wrap_context 'when the data contains many items' do
+            include_examples 'should return the items matching the criteria'
+          end # wrap_context
+        end # describe
+      end # describe
+    end # shared_examples
+
+    shared_examples 'should implement the Query methods' do
+      include_examples 'should run queries against the datastore'
+
+      describe '#limit' do
+        let(:criterion_class) do
+          Bronze::Collections::Criteria::LimitCriterion
+        end # let
+        let(:count) { 3 }
+
+        def perform_action
+          instance.limit count
+        end # method perform_action
+
+        include_examples 'should return a copy of the query'
+
+        it 'should add a limit criterion to the copy' do
+          query = instance.limit count
+
+          criterion = query.send(:criteria).last
+          expect(criterion).to be_a criterion_class
+          expect(criterion.count).to be == count
+        end # it
+
+        it 'should not mutate the query' do
+          expect { instance.limit count }.
+            not_to change(instance.send(:criteria), :count)
+        end # it
+      end # describe
+
+      describe '#matching' do
+        let(:criterion_class) do
+          Bronze::Collections::Criteria::MatchCriterion
+        end # let
+        let(:selector) { { :id => '0' } }
+
+        def perform_action
+          instance.matching selector
+        end # method perform_action
+
+        include_examples 'should return a copy of the query'
+
+        it 'should add a match criterion to the copy' do
+          query = instance.matching selector
+
+          criterion = query.send(:criteria).last
+          expect(criterion).to be_a criterion_class
+          expect(criterion.selector).to be == selector
+        end # it
+
+        it 'should not mutate the query' do
+          expect { instance.matching selector }.
+            not_to change(instance.send(:criteria), :count)
+        end # it
       end # describe
     end # shared_examples
   end # module

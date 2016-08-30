@@ -42,11 +42,25 @@ RSpec.describe Bronze::Collections::NullCollection do
     validate_params 'item not inserted', :attributes => {}
   end # describe
 
+  describe '#limit' do
+    it 'should return a null query' do
+      query = instance.limit(0)
+
+      expect(query).to be_a Bronze::Collections::NullQuery
+    end # it
+  end # describe
+
   describe '#matching' do
     it 'should return a null query' do
       query = instance.matching({})
 
       expect(query).to be_a Bronze::Collections::NullQuery
+    end # it
+  end # describe
+
+  describe '#to_a' do
+    it 'should return an empty array' do
+      expect(instance.to_a).to be == []
     end # it
   end # describe
 

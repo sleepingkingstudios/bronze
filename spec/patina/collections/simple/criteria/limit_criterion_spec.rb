@@ -1,10 +1,10 @@
-# spec/patina/collections/simple/criteria/match_criterion_spec.rb
+# spec/patina/collections/simple/criteria/limit_criterion_spec.rb
 
-require 'patina/collections/simple/criteria/match_criterion'
+require 'patina/collections/simple/criteria/limit_criterion'
 
-RSpec.describe Patina::Collections::Simple::Criteria::MatchCriterion do
-  let(:selector) { { :id => '0' } }
-  let(:instance) { described_class.new selector }
+RSpec.describe Patina::Collections::Simple::Criteria::LimitCriterion do
+  let(:count)    { 3 }
+  let(:instance) { described_class.new count }
 
   describe '::new' do
     it { expect(described_class).to be_constructible.with(1).argument }
@@ -56,42 +56,46 @@ RSpec.describe Patina::Collections::Simple::Criteria::MatchCriterion do
 
     wrap_context 'when many items are defined for the data' do
       let(:expected) do
-        data.select { |hsh| hsh >= selector }
+        data[0...count]
       end # let
 
-      describe 'with a selector that does not match any items' do
-        let(:selector) { { :id => '0' } }
+      describe 'with a limit of 0' do
+        let(:count) { 0 }
 
         it { expect(instance.call data).to be == [] }
       end # describe
 
-      describe 'with a selector that matches one item' do
-        let(:selector) { { :id => '1' } }
+      describe 'with a limit of 1' do
+        let(:count) { 1 }
 
         it { expect(instance.call data).to be == expected }
       end # describe
 
-      describe 'with a selector that matches many items' do
-        let(:selector) { { :author => 'J.R.R. Tolkien' } }
+      describe 'with a limit of 3' do
+        let(:count) { 3 }
 
         it { expect(instance.call data).to be == expected }
       end # describe
 
-      describe 'with a multi-attribute selector' do
-        let(:selector) do
-          { :title => 'A Princess of Mars', :author => 'Edgar Rice Burroughs' }
-        end # let
+      describe 'with a limit of 6' do
+        let(:count) { 6 }
+
+        it { expect(instance.call data).to be == expected }
+      end # describe
+
+      describe 'with a limit of 10' do
+        let(:count) { 10 }
 
         it { expect(instance.call data).to be == expected }
       end # describe
     end # wrap_context
   end # describe
 
-  describe '#selector' do
-    include_examples 'should have reader', :selector, ->() { be == selector }
+  describe '#count' do
+    include_examples 'should have reader', :count, ->() { be == count }
   end # describe
 
   describe '#type' do
-    include_examples 'should have reader', :type, :filter
+    include_examples 'should have reader', :type, :limit
   end # describe
 end # describe

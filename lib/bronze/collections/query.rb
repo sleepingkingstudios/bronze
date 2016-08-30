@@ -44,6 +44,24 @@ module Bronze::Collections
       query
     end # method dup
 
+    # Checks if any items exist in the datastore that match the given criteria.
+    #
+    # @return [Boolean] True if there are matching items, otherwise false.
+    def exists?
+      limit(1).count > 0
+    end # method exists?
+
+    # Returns a copy of the query with an added limit criteria.
+    #
+    # @param count [Integer] The maximum number of results to return.
+    #
+    # @return [Query] The copied query.
+    def limit count
+      dup.tap do |query|
+        query.criteria << build_criterion(:limit, count)
+      end # tap
+    end # method matching
+
     # Returns a copy of the query with an added match criteria.
     #
     # @param selector [Hash] The properties and values that the returned data
@@ -55,6 +73,16 @@ module Bronze::Collections
         query.criteria << build_criterion(:match, selector)
       end # tap
     end # method matching
+
+    # If there is exactly one item matching the given criteria, returns the
+    # item; otherwise returns nil.
+    #
+    # @return [Hash, nil] The item, or nil.
+    def one
+      results = limit(2).to_a
+
+      results.count == 1 ? results.first : nil
+    end # method one
 
     # Returns an empty query.
     #
@@ -82,8 +110,16 @@ module Bronze::Collections
     private
 
     def apply_criteria native_query
-      criteria.each do |criterion|
-        native_query = criterion.call(native_query)
+      tools = ::SleepingKingStudios::Tools::ArrayTools
+
+      filters, rest = tools.bisect(criteria) do |criterion|
+        criterion.type == :filter
+      end # bisect
+
+      [filters, rest].each do |criteria|
+        criteria.each do |criterion|
+          native_query = criterion.call(native_query)
+        end # each
       end # each
 
       native_query

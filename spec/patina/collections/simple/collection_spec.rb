@@ -8,18 +8,15 @@ RSpec.describe Patina::Collections::Simple::Collection do
   extend RSpec::SleepingKingStudios::Concerns::SharedExampleGroup
   include Spec::Collections::CollectionExamples
 
-  shared_context 'when the collection contains many items' do
-    include_examples 'when many items are defined for the collection'
-
-    before(:example) do
-      data.each do |attributes|
-        instance.insert instance.transform.denormalize(attributes)
-      end # each
-    end # before example
-  end # shared_context
-
+  let(:data)        { [] }
   let(:instance)    { described_class.new }
   let(:query_class) { Patina::Collections::Simple::Query }
+
+  before(:example) do
+    data.each do |attributes|
+      instance.insert instance.transform.denormalize(attributes)
+    end # each
+  end # before example
 
   def find_item id
     items = instance.all.to_a

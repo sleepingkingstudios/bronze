@@ -18,4 +18,8 @@ RSpec.describe Bronze::Collections::Criteria::Criterion do
           "#{described_class.name} does not implement #call"
     end # it
   end # describe
+
+  describe '#type' do
+    include_examples 'should have reader', :type
+  end # describe
 end # describe

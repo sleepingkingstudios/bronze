@@ -1,8 +1,7 @@
 # Development
 
 - Query
-  - #exists?
-  - #limit
+  - #each
   - #matching with non-equality predicates
     - use block syntax+DSL: |
 
@@ -21,7 +20,10 @@
     - between
     - before (alias less than?)
     - after (alias greater than?)
+    - in (element is in array)
+    - not in
   - #one
+  - #order
 - Operation
 - bronze/rails
 

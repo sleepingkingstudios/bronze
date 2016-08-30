@@ -26,7 +26,28 @@ module Bronze::Collections
 
     # @!method count
     #   (see Bronze::Collections::Query#count)
-    delegate :count, :to => :base_query
+
+    # @!method exists?
+    #   (see Bronze::Collections::Query#exists?)
+
+    # @!method limit(count)
+    #   (see Bronze::Collections::Query#limit)
+
+    # @!method one
+    #   (see Bronze::Collections::Query#one)
+
+    # @!method matching(selector)
+    #   Returns a copy of the default query object with an added match criteria.
+    #
+    #   @param selector [Hash] The properties and values that the returned data
+    #     must match.
+    #
+    #   @return [Query] The query with match criteria.
+
+    # @!method to_a
+    #   (see Bronze::Collections::Query#to_a)
+    delegate :count, :exists?, :limit, :matching, :one, :none, :to_a,
+      :to => :base_query
 
     # Returns the default query object for the collection.
     #
@@ -54,23 +75,6 @@ module Bronze::Collections
     def insert attributes
       wrap_errors { insert_one(transform.normalize attributes) }
     end # method insert
-
-    # Returns a copy of the default query object with an added match criteria.
-    #
-    # @param selector [Hash] The properties and values that the returned data
-    #   must match.
-    #
-    # @return [Query] The query with match criteria.
-    def matching selector
-      base_query.matching selector
-    end # method matching
-
-    # Returns an empty query.
-    #
-    # @return [NullQuery] The empty query.
-    def none
-      base_query.none
-    end # method none
 
     # The current transform object. The transform maps the raw data sent to or
     # returned by the datastore to another object, typically an entity.

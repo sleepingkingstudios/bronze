@@ -46,6 +46,14 @@ RSpec.describe Bronze::Collections::AbstractCollection do
     end # it
   end # describe
 
+  describe '#limit' do
+    it 'should raise an error' do
+      expect { instance.limit(0) }.
+        to raise_error described_class::NotImplementedError,
+          "#{described_class.name} does not implement :base_query"
+    end # it
+  end # describe
+
   describe '#matching' do
     it 'should raise an error' do
       expect { instance.matching({}) }.
@@ -57,6 +65,14 @@ RSpec.describe Bronze::Collections::AbstractCollection do
   describe '#none' do
     it 'should raise an error' do
       expect { instance.none }.
+        to raise_error described_class::NotImplementedError,
+          "#{described_class.name} does not implement :base_query"
+    end # it
+  end # describe
+
+  describe '#to_a' do
+    it 'should raise an error' do
+      expect { instance.to_a }.
         to raise_error described_class::NotImplementedError,
           "#{described_class.name} does not implement :base_query"
     end # it

@@ -9,6 +9,12 @@ module Bronze::Collections::Criteria
     # Error class for handling unimplemented abstract query methods.
     class NotImplementedError < StandardError; end
 
+    # The type of criterion. This value controls the order in which criteria are
+    # applied. For example, applying a criterion that limits the number of
+    # results before a criterion that orders the data will return incorrect
+    # values.
+    attr_reader :type
+
     # Applies the criterion to a native query or relation object. This method
     # must be overriden by collection-specific subclasses.
     def call *_args

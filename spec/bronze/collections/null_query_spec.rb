@@ -18,6 +18,14 @@ RSpec.describe Bronze::Collections::NullQuery do
     it { expect(instance.count).to be 0 }
   end # describe
 
+  describe '#exists?' do
+    it { expect(instance.exists?).to be false }
+  end # describe
+
+  describe '#limit' do
+    it { expect(instance.limit(0)).to be instance }
+  end # describe
+
   describe '#matching' do
     it { expect(instance.matching({})).to be instance }
   end # describe
