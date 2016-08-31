@@ -73,7 +73,7 @@ module Bronze::Entities
     def initialize attributes = {}
       @attributes = {}
 
-      self.attributes = attributes
+      self.attributes = attributes.dup
     end # constructor
 
     # Compares with the other object and returns true if the other object has
