@@ -22,6 +22,11 @@ module Bronze::Collections
       self
     end # method matching
 
+    # (see Query#pluck)
+    def pluck attribute_name
+      []
+    end # method pluck
+
     # rubocop:enable Lint/UnusedMethodArgument
 
     # (see Query#to_a)

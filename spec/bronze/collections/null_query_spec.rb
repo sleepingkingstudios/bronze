@@ -30,6 +30,10 @@ RSpec.describe Bronze::Collections::NullQuery do
     it { expect(instance.matching({})).to be instance }
   end # describe
 
+  describe '#pluck' do
+    it { expect(instance.pluck(:id)).to be == [] }
+  end # describe
+
   describe '#to_a' do
     it { expect(instance.to_a).to be == [] }
   end # describe

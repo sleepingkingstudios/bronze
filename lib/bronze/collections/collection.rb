@@ -36,9 +36,6 @@ module Bronze::Collections
     # @!method limit(count)
     #   (see Bronze::Collections::Query#limit)
 
-    # @!method one
-    #   (see Bronze::Collections::Query#one)
-
     # @!method matching(selector)
     #   Returns a copy of the default query object with an added match criteria.
     #
@@ -47,9 +44,27 @@ module Bronze::Collections
     #
     #   @return [Query] The query with match criteria.
 
+    # @!method none
+    #   (see Bronze::Collections::Query#none)
+
+    # @!method one
+    #   (see Bronze::Collections::Query#one)
+
+    # @!method pluck
+    #   (see Bronze::Collections::Query#pluck)
+
     # @!method to_a
     #   (see Bronze::Collections::Query#to_a)
-    delegate :count, :each, :exists?, :limit, :matching, :one, :none, :to_a,
+    delegate \
+      :count,
+      :each,
+      :exists?,
+      :limit,
+      :matching,
+      :one,
+      :none,
+      :pluck,
+      :to_a,
       :to => :base_query
 
     # Returns the default query object for the collection.
