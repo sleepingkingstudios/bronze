@@ -13,13 +13,25 @@ module Patina::Collections::Simple
 
     # @param transform [Bronze::Entities::Transform] The transform object used
     #   to map collection objects to and from raw data.
-    def initialize transform = nil
-      super
+    def initialize data, transform = nil
+      super(transform)
 
-      @data = []
+      @data = data
     end # constructor
 
+    # @return [String, Symbol] The name of the collection. Usually, the
+    # collection name is the plural form of the data it represents, e.g. a
+    # collection of Book objects should be named 'books'.
+    attr_reader :name
+
+    # @return [Bronze::Collections::Repository] The repository to which the
+    #   collection belongs.
+    attr_reader :repository
+
     private
+
+    attr_writer :name
+    attr_writer :repository
 
     def base_query
       Patina::Collections::Simple::Query.new(@data, transform)

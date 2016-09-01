@@ -191,7 +191,7 @@ module Spec::Collections
         item = instance.all.to_a.last
         hsh  = item.is_a?(Hash) ? item : item.attributes
 
-        expect(hsh).to be == attributes
+        expect(hsh).to be >= attributes
       end # it
     end # shared_examples
 

@@ -9,14 +9,8 @@ RSpec.describe Patina::Collections::Simple::Collection do
   include Spec::Collections::CollectionExamples
 
   let(:data)        { [] }
-  let(:instance)    { described_class.new }
+  let(:instance)    { described_class.new data }
   let(:query_class) { Patina::Collections::Simple::Query }
-
-  before(:example) do
-    data.each do |attributes|
-      instance.insert instance.transform.denormalize(attributes)
-    end # each
-  end # before example
 
   def find_item id
     items = instance.all.to_a
@@ -31,7 +25,7 @@ RSpec.describe Patina::Collections::Simple::Collection do
   end # method find_item
 
   describe '::new' do
-    it { expect(described_class).to be_constructible.with(0..1).arguments }
+    it { expect(described_class).to be_constructible.with(1..2).arguments }
   end # describe
 
   include_examples 'should implement the Collection interface'
@@ -82,10 +76,42 @@ RSpec.describe Patina::Collections::Simple::Collection do
     end # wrap_context
   end # describe
 
+  describe '#name' do
+    include_examples 'should have reader', :name, nil
+  end # describe
+
+  describe '#name=' do
+    let(:name) { 'tomes' }
+
+    it { expect(instance).to respond_to(:name=, true).with(1).argument }
+
+    it 'should set the name' do
+      expect { instance.send :name=, name }.
+        to change(instance, :name).
+        to be == name
+    end # it
+  end # describe
+
+  describe '#repository' do
+    include_examples 'should have reader', :repository, nil
+  end # describe
+
+  describe '#repository=' do
+    let(:repository) { double('repository') }
+
+    it { expect(instance).to respond_to(:repository=, true).with(1).argument }
+
+    it 'should set the repository' do
+      expect { instance.send :repository=, repository }.
+        to change(instance, :repository).
+        to be repository
+    end # it
+  end # describe
+
   describe '#transform' do
     context 'when the instance is initialized with a transform' do
       let(:transform) { Bronze::Transforms::IdentityTransform.new }
-      let(:instance)  { described_class.new transform }
+      let(:instance)  { described_class.new data, transform }
 
       it { expect(instance.transform).to be transform }
     end # context

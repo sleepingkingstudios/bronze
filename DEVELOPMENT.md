@@ -1,7 +1,6 @@
 # Development
 
 - Query
-  - #each
   - #matching with non-equality predicates
     - use block syntax+DSL: |
 
@@ -22,9 +21,11 @@
     - after (alias greater than?)
     - in (element is in array)
     - not in
-  - #one
   - #order
+  - #pluck
 - Operation
+- Repository
+  - #except, #only - returns a copy of the repository that only has the given collections.
 - bronze/rails
 
 ## The Apps Structure
