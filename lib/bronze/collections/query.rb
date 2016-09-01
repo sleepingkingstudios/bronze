@@ -98,6 +98,16 @@ module Bronze::Collections
       NullQuery.new
     end # method none
 
+    # Iterates through the data matching the given criteria and returns the
+    # value of the specified attribute for each data object.
+    #
+    # @param attribute_name [Symbol] The name of the attribute.
+    #
+    # @return [Array] The value of the attribute for each object.
+    def pluck attribute_name
+      [].tap { |ary| find_each { |obj| ary << obj[attribute_name] } }
+    end # method pluck
+
     # Executes the query, if applicable, and returns the results as an array of
     # attribute hashes.
     #

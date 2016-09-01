@@ -86,12 +86,16 @@ module Spec::Collections
         it { expect(instance).to respond_to(:matching).with(1).argument }
       end # describe
 
+      describe '#none' do
+        it { expect(instance).to respond_to(:none).with(0).arguments }
+      end # describe
+
       describe '#one' do
         it { expect(instance).to respond_to(:one).with(0).arguments }
       end # describe
 
-      describe '#none' do
-        it { expect(instance).to respond_to(:none).with(0).arguments }
+      describe '#pluck' do
+        it { expect(instance).to respond_to(:pluck).with(1).argument }
       end # describe
 
       describe '#to_a' do
@@ -365,6 +369,34 @@ module Spec::Collections
 
           expect(query).to be_a Bronze::Collections::NullQuery
         end # it
+      end # describe
+
+      describe '#pluck' do
+        it { expect(instance.pluck :id).to be == [] }
+
+        wrap_context 'when the data contains many items' do
+          describe 'with the name of a missing attribute' do
+            let(:expected) { Array.new(data.count, nil) }
+
+            it 'should return the values of the attributes' do
+              proofreaders = instance.pluck :proofreader
+
+              expect(proofreaders).to be_a Array
+              expect(proofreaders.count).to be data.count
+              expect(proofreaders).to contain_exactly(*expected)
+            end # it
+          end # describe
+
+          describe 'with the name of an existing attribute' do
+            it 'should return the values of the attributes' do
+              ids = instance.pluck :id
+
+              expect(ids).to be_a Array
+              expect(ids.count).to be data.count
+              expect(ids).to contain_exactly(*data.map { |hsh| hsh[:id] })
+            end # it
+          end # describe
+        end # wrap_context
       end # describe
 
       describe '#to_a' do

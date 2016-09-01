@@ -22,10 +22,13 @@
     - in (element is in array)
     - not in
   - #order
-  - #pluck
 - Operation
-- Repository
-  - #except, #only - returns a copy of the repository that only has the given collections.
+- Repository#except, #only - returns a copy of the repository that only has the given collections.
+- Scope |
+
+  ActiveScope.new(params).call(query)
+  #=> returns query.matching(:active => true)
+
 - bronze/rails
 
 ## The Apps Structure

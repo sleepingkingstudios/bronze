@@ -126,6 +126,10 @@ module Spec::Collections
         it { expect(instance).to respond_to(:one).with(0).arguments }
       end # describe
 
+      describe '#pluck' do
+        it { expect(instance).to respond_to(:pluck).with(1).argument }
+      end # describe
+
       describe '#to_a' do
         it { expect(instance).to respond_to(:to_a).with(0).arguments }
       end # describe

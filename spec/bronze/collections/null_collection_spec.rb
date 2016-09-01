@@ -58,6 +58,24 @@ RSpec.describe Bronze::Collections::NullCollection do
     end # it
   end # describe
 
+  describe '#none' do
+    it 'should return a null query' do
+      query = instance.none
+
+      expect(query).to be_a Bronze::Collections::NullQuery
+    end # it
+  end # describe
+
+  describe '#one' do
+    it { expect(instance.one).to be nil }
+  end # describe
+
+  describe '#pluck' do
+    it 'should return an empty array' do
+      expect(instance.pluck :id).to be == []
+    end # it
+  end # describe
+
   describe '#to_a' do
     it 'should return an empty array' do
       expect(instance.to_a).to be == []
