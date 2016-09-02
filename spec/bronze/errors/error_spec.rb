@@ -3,14 +3,19 @@
 require 'bronze/errors/error'
 
 RSpec.describe Bronze::Errors::Error do
+  let(:nesting)  { [] }
   let(:type)     { :is_currently_on_fire }
   let(:params)   { [] }
-  let(:instance) { described_class.new type, params }
+  let(:instance) { described_class.new nesting, type, params }
 
   describe '::new' do
     it 'should be constructible' do
-      expect(described_class).to be_constructible.with(2).arguments
+      expect(described_class).to be_constructible.with(3).arguments
     end # it
+  end # describe
+
+  describe '#nesting' do
+    include_examples 'should have reader', :nesting, ->() { be == nesting }
   end # describe
 
   describe '#params' do

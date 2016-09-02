@@ -6,12 +6,17 @@ module Bronze::Errors
   # Encapsulates a single error state with standardized type and optional
   # parameters.
   class Error
+    # @param nesting [Array] The nesting of the containing errors object.
     # @param type [Symbol] The error type.
     # @param params [Array] Array of additional parameters.
-    def initialize type, params
-      @type   = type
-      @params = params
+    def initialize nesting, type, params
+      @nesting = nesting
+      @type    = type
+      @params  = params
     end # constructor
+
+    # @return [Array] The nesting of the containing errors object.
+    attr_reader :nesting
 
     # @return [Array] Array of additional parameters.
     attr_reader :params
