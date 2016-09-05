@@ -1,7 +1,7 @@
 # spec/bronze/collections/collection_examples.rb
 
 require 'bronze/collections/null_query'
-require 'bronze/collections/query_examples'
+require 'bronze/collections/querying_examples'
 require 'bronze/entities/entity'
 require 'bronze/transforms/attributes_transform'
 require 'bronze/transforms/copy_transform'
@@ -9,7 +9,8 @@ require 'bronze/transforms/copy_transform'
 module Spec::Collections
   module CollectionExamples
     extend RSpec::SleepingKingStudios::Concerns::SharedExampleGroup
-    include Spec::Collections::QueryExamples
+
+    include Spec::Collections::QueryingExamples
 
     def self.included other
       super
