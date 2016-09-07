@@ -167,12 +167,11 @@ module Spec::Collections
           not_to change(instance.all, :to_a)
 
         expect(result).to be false
-        expect(errors.to_a).to include(lambda do |error|
-          error.is_a?(Bronze::Errors::Error) &&
-            error.nesting == error_nesting &&
-            error.type == error_type &&
-            error.params == error_params
-        end) # end expect
+
+        expected = Bronze::Errors::Error.new(
+          error_nesting, error_type, error_params
+        ) # end expected
+        expect(errors.to_a).to include(expected)
       end # it
     end # shared_examples
 
