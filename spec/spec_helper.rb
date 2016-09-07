@@ -28,7 +28,7 @@ RSpec.configure do |config|
   config.example_status_persistence_file_path = 'spec/examples.txt'
 
   # Print the 10 slowest examples and example groups.
-  config.profile_examples = 10
+  config.profile_examples = 10 if ENV['CI']
 
   # Run specs in random order to surface order dependencies.
   config.order = :random
