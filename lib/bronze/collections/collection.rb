@@ -1,7 +1,9 @@
 # lib/bronze/collections/collection.rb
 
 require 'bronze/collections'
+require 'bronze/errors/errors'
 require 'bronze/transforms/copy_transform'
+require 'sleeping_king_studios/tools/toolbox/constant_map'
 require 'sleeping_king_studios/tools/toolbox/delegator'
 
 module Bronze::Collections
@@ -17,6 +19,16 @@ module Bronze::Collections
   # (see AbstractCollection)
   module Collection
     extend SleepingKingStudios::Tools::Toolbox::Delegator
+
+    Errors = ::SleepingKingStudios::Tools::Toolbox::ConstantMap.new(
+      :DATA_INVALID          => :data_invalid,
+      :DATA_MISSING          => :data_missing,
+      :PRIMARY_KEY_INVALID   => :primary_key_invalid,
+      :PRIMARY_KEY_MISSING   => :primary_key_missing,
+      :READ_ONLY_COLLECTION  => :read_only_collection,
+      :RECORD_ALREADY_EXISTS => :record_already_exists,
+      :RECORD_NOT_FOUND      => :record_not_found
+    ).freeze # end hash
 
     # @param transform [Bronze::Entities::Transform] The transform object used
     #   to map collection objects to and from raw data.
@@ -121,6 +133,10 @@ module Bronze::Collections
     private
 
     attr_writer :transform
+
+    def build_errors
+      ::Bronze::Errors::Errors.new
+    end # method build_errors
 
     def wrap_errors
       errors = yield

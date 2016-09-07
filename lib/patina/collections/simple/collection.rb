@@ -72,9 +72,9 @@ module Patina::Collections::Simple
 
       return errors unless errors.empty?
 
-      unless attributes[:id].nil? || id == attributes[:id]
-        return ['data id must match id']
-      end # unless
+      errors = validate_id_matches(id, attributes)
+
+      return errors unless errors.empty?
 
       item = @data.find { |hsh| hsh[:id] == id }
 
@@ -84,26 +84,38 @@ module Patina::Collections::Simple
     end # method update_one
 
     def validate_attributes attributes
-      return ["data can't be nil"] if attributes.nil?
+      return build_errors.add(Errors.data_missing) if attributes.nil?
 
-      return ['data must be a Hash'] unless attributes.is_a?(Hash)
+      unless attributes.is_a?(Hash)
+        return build_errors.add(Errors.data_invalid, attributes)
+      end # unless
 
       []
     end # method validate_attributes
 
     def validate_id id, present: nil
-      return ["id can't be nil"] if id.nil?
+      return build_errors.add(Errors.primary_key_missing, :id) if id.nil?
 
       return [] if present.nil?
 
       validate_id_presence id, :present => present
-    end # method validate_idy
+    end # method validate_id
+
+    def validate_id_matches id, attributes
+      unless attributes[:id].nil? || id == attributes[:id]
+        return build_errors.add(
+          Errors.primary_key_invalid, :id, attributes[:id], id
+        ) # end errors
+      end # unless
+
+      []
+    end # method validate_id_matches
 
     def validate_id_presence id, present:
       if present && !@data.find { |hsh| hsh[:id] == id }
-        ["item not found with id #{id.inspect}"]
+        build_errors.add(Errors.record_not_found, :id, id)
       elsif !present && @data.find { |hsh| hsh[:id] == id }
-        ['id already exists']
+        build_errors.add(Errors.record_already_exists, :id, id)
       else
         []
       end # if-elsif-else

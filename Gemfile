@@ -8,7 +8,7 @@ gem 'thor',      '~> 0.19',  '>= 0.19.1'
 gem 'sleeping_king_studios-tools',
   '>= 0.5.0.alpha',
   :git    => 'https://github.com/sleepingkingstudios/sleeping_king_studios-tools',
-  :branch => 'master'
+  :branch => 'feature/constant_map'
 
 group :doc do
   gem 'yard', '~> 0.9', '>= 0.9.5', :require => false
