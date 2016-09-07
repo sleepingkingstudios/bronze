@@ -52,6 +52,18 @@ module Bronze::Errors
       @errors << Error.new(nesting, error_type, error_params)
     end # method <<
 
+    # @return [Boolean] True if there are no errors on the object or on any
+    #   child errors object; otherwise false.
+    def empty?
+      return false unless @errors.empty?
+
+      children.each do |_, child|
+        return false unless child.empty?
+      end # each
+
+      true
+    end # method empty?
+
     # Returns the listed errors and all errors from child errors objects.
     #
     # @return [Array] The errors.

@@ -59,9 +59,6 @@ RSpec.describe Bronze::Errors::Errors do
         } # end hash
       } # end hash
     end # let
-    let(:errors) do
-      { :unable_to_connect_to_server => [] }
-    end # let
 
     def add_errors errors, hsh
       hsh = hsh.dup
@@ -223,6 +220,28 @@ RSpec.describe Bronze::Errors::Errors do
 
         expect(ary).to contain_exactly(*expected)
       end # it
+    end # wrap_context
+  end # describe
+
+  describe '#empty?' do
+    it { expect(instance).to respond_to(:empty?).with(0).arguments }
+
+    it { expect(instance.empty?).to be true }
+
+    wrap_context 'when many errors are added' do
+      it { expect(instance.empty?).to be false }
+    end # wrap_context
+
+    wrap_context 'when there are many descendants' do
+      it { expect(instance.empty?).to be false }
+
+      context 'when there are no errors on the errors object' do
+        let(:children) do
+          super().tap { |hsh| hsh.delete :_ }
+        end # let
+
+        it { expect(instance.empty?).to be false }
+      end # context
     end # wrap_context
   end # describe
 
