@@ -1,6 +1,7 @@
 # spec/patina/collections/simple/collection_spec.rb
 
 require 'bronze/collections/collection_examples'
+require 'bronze/transforms/identity_transform'
 require 'patina/collections/simple/collection'
 require 'patina/collections/simple/query'
 
@@ -37,14 +38,26 @@ RSpec.describe Patina::Collections::Simple::Collection do
       instance.delete id
     end # method perform_action
 
-    validate_params "id can't be nil", :id => nil
+    with_params :id => nil do
+      include_examples 'should fail with error',
+        described_class::Errors::PRIMARY_KEY_MISSING, :id
+    end # with_params
 
-    validate_params 'item not found with id "0"', :id => '0'
+    with_params :id => 0 do
+      include_examples 'should fail with error',
+        described_class::Errors::RECORD_NOT_FOUND, :id, 0
+    end # with_params
 
     wrap_context 'when the collection contains many items' do
-      validate_params "id can't be nil", :id => nil
+      with_params :id => nil do
+        include_examples 'should fail with error',
+          described_class::Errors::PRIMARY_KEY_MISSING, :id
+      end # with_params
 
-      validate_params 'item not found with id "0"', :id => '0'
+      with_params :id => 0 do
+        include_examples 'should fail with error',
+          described_class::Errors::RECORD_NOT_FOUND, :id, 0
+      end # with_params
     end # wrap_context
   end # describe
 
@@ -53,26 +66,53 @@ RSpec.describe Patina::Collections::Simple::Collection do
       instance.insert attributes
     end # method perform_action
 
-    validate_params "data can't be nil", :attributes => nil
+    with_params :attributes => nil do
+      include_examples 'should fail with error',
+        described_class::Errors::DATA_MISSING
+    end # with_params
 
-    validate_params 'data must be a Hash', :attributes => Object.new
+    invalid_attributes = Struct.new(:id).new
+    with_params :attributes => invalid_attributes do
+      include_examples 'should fail with error',
+        described_class::Errors::DATA_INVALID, invalid_attributes
+    end # with_params
 
-    validate_params "id can't be nil", :attributes => {}
+    with_params :attributes => {} do
+      include_examples 'should fail with error',
+        described_class::Errors::PRIMARY_KEY_MISSING, :id
+    end # with_params
 
-    validate_params "id can't be nil", :attributes => { :title => 'The Hobbit' }
+    with_params :attributes => { :title => 'The Hobbit' } do
+      include_examples 'should fail with error',
+        described_class::Errors::PRIMARY_KEY_MISSING, :id
+    end # with_params
 
     wrap_context 'when the collection contains many items' do
-      validate_params "data can't be nil", :attributes => nil
+      with_params :attributes => nil do
+        include_examples 'should fail with error',
+          described_class::Errors::DATA_MISSING
+      end # with_params
 
-      validate_params 'data must be a Hash', :attributes => Object.new
+      invalid_attributes = Struct.new(:id).new
+      with_params :attributes => invalid_attributes do
+        include_examples 'should fail with error',
+          described_class::Errors::DATA_INVALID, invalid_attributes
+      end # with_params
 
-      validate_params "id can't be nil", :attributes => {}
+      with_params :attributes => {} do
+        include_examples 'should fail with error',
+          described_class::Errors::PRIMARY_KEY_MISSING, :id
+      end # with_params
 
-      validate_params "id can't be nil",
-        :attributes => { :title => 'The Hobbit' }
+      with_params :attributes => { :title => 'The Hobbit' } do
+        include_examples 'should fail with error',
+          described_class::Errors::PRIMARY_KEY_MISSING, :id
+      end # with_params
 
-      validate_params 'id already exists',
-        :attributes => { :id => '1', :title => 'The Hobbit' }
+      with_params :attributes => { :id => '1', :title => 'The Hobbit' } do
+        include_examples 'should fail with error',
+          described_class::Errors::RECORD_ALREADY_EXISTS, :id, '1'
+      end # with_params
     end # wrap_context
   end # describe
 
@@ -125,20 +165,42 @@ RSpec.describe Patina::Collections::Simple::Collection do
       instance.update id, attributes
     end # method perform_action
 
-    validate_params "id can't be nil", :id => nil
+    with_params :id => nil do
+      include_examples 'should fail with error',
+        described_class::Errors::PRIMARY_KEY_MISSING, :id
+    end # with_params
 
-    validate_params 'item not found with id "0"', :id => '0'
+    with_params :id => 0 do
+      include_examples 'should fail with error',
+        described_class::Errors::RECORD_NOT_FOUND, :id, 0
+    end # with_params
 
     wrap_context 'when the collection contains many items' do
-      validate_params "id can't be nil", :id => nil
+      with_params :id => nil do
+        include_examples 'should fail with error',
+          described_class::Errors::PRIMARY_KEY_MISSING, :id
+      end # with_params
 
-      validate_params 'item not found with id "0"', :id => '0'
+      with_params :id => 0 do
+        include_examples 'should fail with error',
+          described_class::Errors::RECORD_NOT_FOUND, :id, 0
+      end # with_params
 
-      validate_params "data can't be nil", :attributes => nil
+      with_params :attributes => nil do
+        include_examples 'should fail with error',
+          described_class::Errors::DATA_MISSING
+      end # with_params
 
-      validate_params 'data must be a Hash', :attributes => Object.new
+      invalid_attributes = Struct.new(:id).new
+      with_params :attributes => invalid_attributes do
+        include_examples 'should fail with error',
+          described_class::Errors::DATA_INVALID, invalid_attributes
+      end # with_params
 
-      validate_params 'data id must match id', :attributes => { :id => 1 }
+      with_params :attributes => { :id => 1 } do
+        include_examples 'should fail with error',
+          described_class::Errors::PRIMARY_KEY_INVALID, :id, 1, '1'
+      end # with_params
     end # wrap_context
   end # describe
 end # describe

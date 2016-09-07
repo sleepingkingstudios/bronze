@@ -1,5 +1,6 @@
 # spec/bronze/collections/null_collection_spec.rb
 
+require 'bronze/collections/collection_examples'
 require 'bronze/collections/null_collection'
 require 'bronze/collections/null_query'
 
@@ -31,7 +32,10 @@ RSpec.describe Bronze::Collections::NullCollection do
       instance.delete id
     end # method perform_action
 
-    validate_params 'item not found with id "0"', :id => '0'
+    with_params :id => 0 do
+      include_examples 'should fail with error',
+        described_class::Errors::READ_ONLY_COLLECTION
+    end # with_params
   end # describe
 
   describe '#insert' do
@@ -39,7 +43,10 @@ RSpec.describe Bronze::Collections::NullCollection do
       instance.insert attributes
     end # method perform_action
 
-    validate_params 'item not inserted', :attributes => {}
+    with_params :attributes => {} do
+      include_examples 'should fail with error',
+        described_class::Errors::READ_ONLY_COLLECTION
+    end # with_params
   end # describe
 
   describe '#limit' do
@@ -87,6 +94,9 @@ RSpec.describe Bronze::Collections::NullCollection do
       instance.update id, attributes
     end # method perform_action
 
-    validate_params 'item not found with id "0"', :id => '0', :attributes => {}
+    with_params :id => 0, :attributes => {} do
+      include_examples 'should fail with error',
+        described_class::Errors::READ_ONLY_COLLECTION
+    end # with_params
   end # describe
 end # describe

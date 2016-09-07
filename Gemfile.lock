@@ -1,9 +1,9 @@
 GIT
   remote: https://github.com/sleepingkingstudios/sleeping_king_studios-tools
-  revision: 3bfa5d8bb6d8446437f59bec7f905410ee04c505
-  branch: master
+  revision: 8aae6341342edfca142049e2bc48d3e82601f62b
+  branch: feature/constant_map
   specs:
-    sleeping_king_studios-tools (0.5.0.alpha)
+    sleeping_king_studios-tools (0.5.0.rc.0)
 
 GEM
   remote: https://rubygems.org/

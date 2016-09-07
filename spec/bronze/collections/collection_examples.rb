@@ -3,6 +3,7 @@
 require 'bronze/collections/null_query'
 require 'bronze/collections/querying_examples'
 require 'bronze/entities/entity'
+require 'bronze/errors/error'
 require 'bronze/transforms/attributes_transform'
 require 'bronze/transforms/copy_transform'
 
@@ -19,19 +20,20 @@ module Spec::Collections
     end # class method included
 
     module ClassMethods
-      def validate_params desc, message: nil, **params
-        tools      = ::SleepingKingStudios::Tools::ArrayTools
-        params_ary = params.map { |key, value| ":#{key} => #{value.inspect}" }
-        params_str = "with #{tools.humanize_list(params_ary)}"
+      def with_params params, &block
+        tools = ::SleepingKingStudios::Tools::ArrayTools
+        desc  = tools.humanize_list(params.to_a) do |attribute, value|
+          ":#{attribute} => #{value.inspect}"
+        end # humanize_list
 
-        describe params_str do
+        describe "with #{desc}" do
           params.each do |key, value|
             let(key) { value }
           end # each
 
-          include_examples 'should fail with message', message || desc
+          instance_exec(&block)
         end # describe
-      end # class method validate
+      end # method with_params
     end # module
 
     shared_context 'when the collection contains many items' do
@@ -144,17 +146,20 @@ module Spec::Collections
       end # describe
     end # shared_examples
 
-    shared_examples 'should fail with message' do |message = nil|
-      let(:error_message) do
-        msg = defined?(super()) ? super() : message
+    shared_examples 'should fail with error' do |expectation, *rest|
+      if expectation.is_a?(Hash)
+        # include_examples 'should fail with error', :id => [:not_found, 0]
+        key = expectation.keys.first
+        error_type, *error_params = *Array(expectation[key])
+        error_nesting = Array(key)
+      else
+        # include_examples 'should fail with error', :read_only
+        error_nesting = []
+        error_type    = expectation
+        error_params  = rest
+      end # if
 
-        msg.is_a?(Proc) ? instance_exec(&msg) : msg
-      end # let
-
-      desc = 'should fail with message'
-      desc << ' ' << message.inspect if message
-
-      it desc do
+      it "should fail with error :#{error_type}" do
         result = nil
         errors = nil
 
@@ -162,7 +167,12 @@ module Spec::Collections
           not_to change(instance.all, :to_a)
 
         expect(result).to be false
-        expect(errors).to contain_exactly error_message
+        expect(errors.to_a).to include(lambda do |error|
+          error.is_a?(Bronze::Errors::Error) &&
+            error.nesting == error_nesting &&
+            error.type == error_type &&
+            error.params == error_params
+        end) # end expect
       end # it
     end # shared_examples
 

@@ -17,16 +17,16 @@ module Bronze::Collections
       Bronze::Collections::NullQuery.new
     end # method base_query
 
-    def delete_one id
-      ["item not found with id #{id.inspect}"]
+    def delete_one _id
+      build_errors.add(Errors::READ_ONLY_COLLECTION)
     end # method delete_one
 
     def insert_one _attributes
-      ['item not inserted']
+      build_errors.add(Errors::READ_ONLY_COLLECTION)
     end # method insert_one
 
-    def update_one id, _attributes
-      ["item not found with id #{id.inspect}"]
+    def update_one _id, _attributes
+      build_errors.add(Errors::READ_ONLY_COLLECTION)
     end # method delete_one
   end # class
 end # module
