@@ -15,6 +15,14 @@ module Bronze::Errors
       @params  = params
     end # constructor
 
+    # @return [Boolean] True if the other object is an Error of the same class
+    #   and has the same nesting, type, and params.
+    def == other
+      return false unless other.class == self.class
+
+      type == other.type && nesting == other.nesting && params == other.params
+    end # method ==
+
     # @return [Array] The nesting of the containing errors object.
     attr_reader :nesting
 

@@ -14,6 +14,48 @@ RSpec.describe Bronze::Errors::Error do
     end # it
   end # describe
 
+  describe '#==' do
+    # rubocop:disable Style/NilComparison
+    describe 'with nil' do
+      it { expect(instance == nil).to be false }
+    end # describe
+    # rubocop:enable Style/NilComparison
+
+    describe 'with an object' do
+      it { expect(instance == Object.new).to be false }
+    end # describe
+
+    describe 'with an error with non-matching nesting' do
+      let(:other) do
+        described_class.new([:object], type, params)
+      end # let
+
+      it { expect(instance == other).to be false }
+    end # describe
+
+    describe 'with an error with non-matching params' do
+      let(:other) do
+        described_class.new(nesting, type, [:at, :'451_degrees'])
+      end # let
+
+      it { expect(instance == other).to be false }
+    end # describe
+
+    describe 'with an error with non-matching type' do
+      let(:other) do
+        described_class.new(nesting, :undergoing_combustion, params)
+      end # let
+
+      it { expect(instance == other).to be false }
+    end # describe
+
+    describe 'with a matching error' do
+      let(:other) { described_class.new nesting, type, params }
+
+      it { expect(instance == other).to be true }
+    end # describe
+  end # describe
+
   describe '#nesting' do
     include_examples 'should have reader', :nesting, ->() { be == nesting }
   end # describe
