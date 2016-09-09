@@ -1,5 +1,6 @@
 # spec/bronze/operations/repository_operation_spec.rb
 
+require 'bronze/operations/operation'
 require 'bronze/operations/repository_operation'
 
 RSpec.describe Bronze::Operations::RepositoryOperation do

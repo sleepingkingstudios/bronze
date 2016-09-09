@@ -1,5 +1,6 @@
 # spec/patina/collections/simple/repository_spec.rb
 
+require 'bronze/transforms/identity_transform'
 require 'patina/collections/simple/collection'
 require 'patina/collections/simple/repository'
 
