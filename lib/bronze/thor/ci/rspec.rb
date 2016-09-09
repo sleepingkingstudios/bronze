@@ -1,15 +1,19 @@
-# lib/bronze/tasks/ci/rspec_tasks.rb
+# lib/bronze/thor/ci/rspec.thor
 
 require 'rspec'
 
-module Bronze::Tasks
-  # Thor tasks for running in a Continuous Integration environment.
-  class Ci
+require 'bronze/thor/ci'
+require 'bronze/thor/task'
+
+module Bronze::Thor::Ci
+  # Defines a Thor task for running the full RSpec test suite.
+  module RSpec
+    extend Bronze::Thor::Task
+
     desc :rspec, 'Runs the RSpec test suite.'
     method_option :quiet,
       :aliases => '-q',
       :desc    => 'Does not write test results to STDOUT.'
-
     # Runs the spec suite and returns the summary hash. If the --quiet option
     # is not selected, also prints the test results to STDOUT using the
     # documentation formatter.
@@ -22,7 +26,8 @@ module Bronze::Tasks
 
       ::RSpec::Core::Runner.run(build_rspec_args)
 
-      results = JSON.parse File.read(File.join root_dir, 'tmp/ci/rspec.json')
+      file_path = File.join Bronze.gem_path, 'tmp/ci/rspec.json'
+      results   = JSON.parse File.read(file_path)
 
       results['summary']
     end # method rspec
@@ -32,12 +37,12 @@ module Bronze::Tasks
     def build_rspec_args
       args = spec_files
 
-      args << '--format=documentation' unless options[:quiet]
+      args << '--format=documentation' unless quiet?
       args << '--format=json' << '--out=tmp/ci/rspec.json'
     end # method build_rspec_args
 
     def spec_dir
-      @spec_dir = File.join root_dir, 'spec'
+      @spec_dir = File.join Bronze.gem_path, 'spec'
     end # method spec_dir
 
     def spec_files
