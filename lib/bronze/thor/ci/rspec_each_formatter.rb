@@ -43,12 +43,12 @@ module Bronze::Thor::Ci
     private
 
     def format_results_count aggregated_results
-      fmt = '%i examples, %i failures'
+      fmt = '%i spec files, %i failures'
       fmt << ', %i pending' if aggregated_results.pending?
 
       format(
         fmt,
-        aggregated_results.example_count,
+        aggregated_results.spec_file_count,
         aggregated_results.failure_count,
         aggregated_results.pending_count
       ) # end format

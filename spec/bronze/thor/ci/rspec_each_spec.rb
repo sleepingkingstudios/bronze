@@ -75,10 +75,12 @@ RSpec.describe Bronze::Thor::Ci::RSpecEach do
       results = instance.rspec_each
 
       expect(results).to be_a Hash
-      expect(results['example_count']).to be == expected_example_count
+      expect(results['spec_file_count']).to be == spec_files.count
       expect(results['failure_count']).to be == expected_failure_count
       expect(results['pending_count']).to be == expected_pending_count
-      expect(results['duration']).to be_within(0.001).of(expected_duration)
+      expect(results['spec_duration']).
+        to be_within(0.001).
+        of(expected_duration)
     end # it
 
     context 'when the files have failing examples' do
@@ -87,7 +89,7 @@ RSpec.describe Bronze::Thor::Ci::RSpecEach do
           hsh['summary']['failure_count'] = 3
         end # tap
       end # let
-      let(:expected_failure_count) { 3 * spec_files.count }
+      let(:expected_failure_count) { spec_files.count }
 
       it 'should run each spec file' do
         run_files = []
@@ -101,10 +103,12 @@ RSpec.describe Bronze::Thor::Ci::RSpecEach do
         results = instance.rspec_each
 
         expect(results).to be_a Hash
-        expect(results['example_count']).to be == expected_example_count
+        expect(results['spec_file_count']).to be == spec_files.count
         expect(results['failure_count']).to be == expected_failure_count
         expect(results['pending_count']).to be == expected_pending_count
-        expect(results['duration']).to be_within(0.001).of(expected_duration)
+        expect(results['spec_duration']).
+          to be_within(0.001).
+          of(expected_duration)
       end # it
     end # context
 
@@ -128,10 +132,12 @@ RSpec.describe Bronze::Thor::Ci::RSpecEach do
         results = instance.rspec_each
 
         expect(results).to be_a Hash
-        expect(results['example_count']).to be == expected_example_count
+        expect(results['spec_file_count']).to be == spec_files.count
         expect(results['failure_count']).to be == expected_failure_count
         expect(results['pending_count']).to be == expected_pending_count
-        expect(results['duration']).to be_within(0.001).of(expected_duration)
+        expect(results['spec_duration']).
+          to be_within(0.001).
+          of(expected_duration)
       end # it
     end # context
   end # describe

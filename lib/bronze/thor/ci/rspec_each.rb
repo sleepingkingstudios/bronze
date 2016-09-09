@@ -4,7 +4,7 @@ require 'rspec'
 
 require 'bronze/thor/ci'
 require 'bronze/thor/ci/rspec_each_formatter'
-require 'bronze/thor/ci/rspec_results'
+require 'bronze/thor/ci/rspec_each_results'
 require 'bronze/thor/task'
 
 module Bronze::Thor::Ci
@@ -26,15 +26,13 @@ module Bronze::Thor::Ci
 
       aggregated_results = Bronze::Thor::Ci::RSpecResults.new
 
-      # print "\n" unless quiet?
-
       run_each_spec_file(aggregated_results)
-
-      aggregated_results.profile['suite'] = Time.now - start_time
 
       puts each_formatter.format_results(aggregated_results) unless quiet?
 
-      aggregated_results.summary
+      aggregated_results.to_hash.merge(
+        'total_duration' => Time.now - start_time
+      ) # end merge
     end # method rspec
 
     private
