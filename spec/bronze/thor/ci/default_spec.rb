@@ -7,8 +7,9 @@ RSpec.describe Bronze::Thor::Ci::Default do
     Class.new(::Thor).tap do |klass|
       klass.send :include, super()
 
-      klass.send :define_method, :rspec,   ->() {}
-      klass.send :define_method, :rubocop, ->() {}
+      klass.send :define_method, :rspec,      ->() {}
+      klass.send :define_method, :rspec_each, ->() {}
+      klass.send :define_method, :rubocop,    ->() {}
     end # class
   end # let
   let(:instance) { described_class.new }
@@ -24,7 +25,7 @@ RSpec.describe Bronze::Thor::Ci::Default do
   describe '#default' do
     let(:rspec_results) do
       {
-        'example_count' => 5,
+        'example_count' => 10,
         'failure_count' => 0,
         'pending_count' => 0,
         'duration'      => 10.0
@@ -36,6 +37,23 @@ RSpec.describe Bronze::Thor::Ci::Default do
       str << ', ' << "#{rspec_results['failure_count']} failures"
       str << ', ' << "#{rspec_results['pending_count']} pending"
       str << " in #{rspec_results['duration']} seconds."
+    end # let
+    let(:rspec_each_results) do
+      {
+        'spec_file_count' => 5,
+        'failure_count'   => 0,
+        'pending_count'   => 0,
+        'total_duration'  => 15.0
+      } # end hash
+    end # let
+    let(:formatted_rspec_each_results) do
+      duration = format('%0.2f', rspec_each_results['total_duration'])
+
+      str = ''
+      str << "#{rspec_each_results['spec_file_count']} spec files"
+      str << ', ' << "#{rspec_each_results['failure_count']} failures"
+      str << ', ' << "#{rspec_each_results['pending_count']} pending"
+      str << " in #{duration} seconds."
     end # let
     let(:rubocop_results) do
       {
@@ -59,6 +77,7 @@ RSpec.describe Bronze::Thor::Ci::Default do
 
     before(:example) do
       allow(instance).to receive(:rspec).and_return(rspec_results)
+      allow(instance).to receive(:rspec_each).and_return(rspec_each_results)
       allow(instance).to receive(:rubocop).and_return(rubocop_results)
       allow(instance).to receive(:simplecov).and_return(simplecov_results)
     end # before example
@@ -70,12 +89,17 @@ RSpec.describe Bronze::Thor::Ci::Default do
         with(no_args).
         and_return(rspec_results)
 
+      expect(instance).to receive(:rspec_each).
+        with(no_args).
+        and_return(rspec_each_results)
+
       expect(instance).to receive(:rubocop).
         with(no_args).
         and_return(rubocop_results)
 
       expect(instance).to receive(:puts) do |output|
         expect(output).to include(formatted_rspec_results)
+        expect(output).to include(formatted_rspec_each_results)
         expect(output).to include(formatted_rubocop_results)
       end # receive
 

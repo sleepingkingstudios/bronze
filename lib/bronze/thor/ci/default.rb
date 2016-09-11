@@ -17,7 +17,7 @@ module Bronze::Thor::Ci
     extend Bronze::Thor::Task
 
     # The individual CI steps to run.
-    CI_STEPS = %w(rspec rubocop simplecov).freeze
+    CI_STEPS = %w(rspec rspec_each rubocop simplecov).freeze
 
     desc :default, 'Runs the full CI suite.'
     # Runs the full CI suite and prints a summary of the results. If any step
@@ -69,6 +69,13 @@ module Bronze::Thor::Ci
 
       [passed, results]
     end # method wrap_rspec
+
+    def wrap_rspec_each
+      results = rspec_each
+      passed  = !results['failure_count'].positive?
+
+      [passed, results]
+    end # method wrap_rspec_each
 
     def wrap_rubocop
       results = rubocop

@@ -7,15 +7,23 @@ module Bronze::Thor::Ci
   # @api private
   class DefaultFormatter < Bronze::Thor::Formatter
     def format_rspec_results results
-      str = "#{colorize 'RSpec:', rspec_results_color(results)}     "
+      str = "#{colorize 'RSpec (Suite):', rspec_results_color(results)} "
       str << "#{results['example_count']} examples"
       str << ', ' << "#{results['failure_count']} failures"
       str << ', ' << "#{results['pending_count']} pending"
       str << " in #{results['duration']} seconds."
     end # method format_rspec_results
 
+    def format_rspec_each_results results
+      str = "#{colorize 'RSpec (Files):', rspec_results_color(results)} "
+      str << "#{results['spec_file_count']} spec files"
+      str << ', ' << "#{results['failure_count']} failures"
+      str << ', ' << "#{results['pending_count']} pending"
+      str << " in #{format '%0.2f', results['total_duration']} seconds."
+    end # method format_rspec_results
+
     def format_rubocop_results results
-      str = "#{colorize 'RuboCop:', rubocop_results_color(results)}   "
+      str = "#{colorize 'RuboCop:', rubocop_results_color(results)}       "
       str << "#{results['inspected_file_count']} files inspected"
       str << ', ' << "#{results['offense_count']} offenses."
     end # method format_rubocop_results
@@ -25,19 +33,20 @@ module Bronze::Thor::Ci
 
       missed = results.total_lines - results.covered_lines
 
-      str = "#{colorize 'SimpleCov:', simplecov_results_color(results)} "
+      str = "#{colorize 'SimpleCov:', simplecov_results_color(results)}     "
       str << "#{results.total_lines} lines inspected"
       str << ", #{missed} lines missed"
       str << ", #{format '%0.02f', results.covered_percent}% coverage."
     end # method format_simplecov_results
 
     def format_summary suite_results
-      output = "\n"
-      output << format_rspec_results(suite_results['rspec'])
-      output << "\n"
-      output << format_rubocop_results(suite_results['rubocop'])
-      output << "\n"
-      output << format_simplecov_results(suite_results['simplecov'])
+      [
+        '',
+        format_rspec_results(suite_results['rspec']),
+        format_rspec_each_results(suite_results['rspec_each']),
+        format_rubocop_results(suite_results['rubocop']),
+        format_simplecov_results(suite_results['simplecov'])
+      ].join "\n"
     end # method format_summary
 
     private
