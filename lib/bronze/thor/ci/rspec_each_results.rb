@@ -44,7 +44,8 @@ module Bronze::Thor::Ci
         'spec_file_count' => spec_file_count,
         'failure_count'   => failure_count,
         'pending_count'   => pending_count,
-        'spec_duration'   => summary['duration']
+        'spec_duration'   => summary['duration'],
+        'total_duration'  => profile['suite']
       } # end hash
     end # method to_hash
 

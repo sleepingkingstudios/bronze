@@ -28,6 +28,8 @@ module Bronze::Thor::Ci
 
       run_each_spec_file(aggregated_results)
 
+      aggregated_results.profile['suite'] = Time.now - start_time
+
       puts each_formatter.format_results(aggregated_results) unless quiet?
 
       aggregated_results.to_hash.merge(
