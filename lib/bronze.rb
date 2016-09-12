@@ -10,3 +10,5 @@ module Bronze
     @gem_path ||= __dir__.sub %r{/lib\z}, ''
   end # method
 end # module
+
+require 'bronze/version'

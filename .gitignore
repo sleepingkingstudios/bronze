@@ -4,6 +4,7 @@
 /.rspec
 /.ruby-gemset
 /.ruby-version
+Gemfile.lock
 
 # Ignore local and generated documentation.
 /coverage
