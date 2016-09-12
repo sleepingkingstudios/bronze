@@ -3,12 +3,15 @@
 require 'rspec'
 
 require 'bronze/thor/ci'
+require 'bronze/thor/ci/rspec_helper'
 require 'bronze/thor/task'
 
 module Bronze::Thor::Ci
   # Defines a Thor task for running the full RSpec test suite.
   module RSpec
     extend Bronze::Thor::Task
+
+    include Bronze::Thor::Ci::RSpecHelper
 
     desc :rspec, 'Runs the RSpec test suite.'
     method_option :quiet,
@@ -40,13 +43,5 @@ module Bronze::Thor::Ci
       args << '--format=documentation' unless quiet?
       args << '--format=json' << '--out=tmp/ci/rspec.json'
     end # method build_rspec_args
-
-    def spec_dir
-      @spec_dir = File.join Bronze.gem_path, 'spec'
-    end # method spec_dir
-
-    def spec_files
-      Dir[File.join spec_dir, '**', '*_spec.rb']
-    end # method require_spec_files
   end # class
 end # module
