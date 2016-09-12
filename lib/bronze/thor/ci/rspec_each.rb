@@ -52,7 +52,7 @@ module Bronze::Thor::Ci
 
       `#{cmd.join ' '}`
 
-      JSON.parse File.read(File.join Bronze.gem_path, 'tmp/ci/rspec_each.json')
+      JSON.parse File.read(File.join root_dir, 'tmp/ci/rspec_each.json')
     end # method run_spec_file
 
     def run_each_spec_file aggregated_results

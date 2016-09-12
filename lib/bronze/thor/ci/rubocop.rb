@@ -22,7 +22,7 @@ module Bronze::Thor::Ci
     def rubocop
       ::RuboCop::CLI.new.run(build_rubocop_args)
 
-      output  = File.read(File.join Bronze.gem_path, 'tmp/ci/rubocop.json')
+      output  = File.read(File.join root_dir, 'tmp/ci/rubocop.json')
       results = JSON.parse output
 
       results['summary']
@@ -36,5 +36,9 @@ module Bronze::Thor::Ci
       args << '--format' << 'progress' unless quiet?
       args << '--format' << 'json' << '--out' << 'tmp/ci/rubocop.json'
     end # method build_rspec_args
+
+    def root_dir
+      ENV['ROOT_DIR'] || Bronze.gem_path
+    end # method root_dir
   end # module
 end # module

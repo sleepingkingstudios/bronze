@@ -29,7 +29,7 @@ module Bronze::Thor::Ci
 
       ::RSpec::Core::Runner.run(build_rspec_args)
 
-      file_path = File.join Bronze.gem_path, 'tmp/ci/rspec.json'
+      file_path = File.join root_dir, 'tmp/ci/rspec.json'
       results   = JSON.parse File.read(file_path)
 
       results['summary']
