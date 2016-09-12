@@ -5,6 +5,7 @@ require 'bronze/collections/collection_examples'
 require 'bronze/entities/entity'
 require 'bronze/entities/collections/entity_collection'
 require 'bronze/entities/transforms/entity_transform'
+require 'bronze/transforms/identity_transform'
 
 RSpec.describe Bronze::Entities::Collections::EntityCollection do
   include Spec::Collections::CollectionExamples
