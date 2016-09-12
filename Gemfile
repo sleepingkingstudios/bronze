@@ -3,9 +3,9 @@
 source 'https://rubygems.org'
 
 gem 'sleeping_king_studios-tools',
-  '>= 0.5.0.alpha',
+  '0.5.0',
   :git    => 'https://github.com/sleepingkingstudios/sleeping_king_studios-tools',
-  :branch => 'feature/constant_map'
+  :branch => 'master'
 
 group :doc do
   gem 'yard', '~> 0.9', '>= 0.9.5', :require => false

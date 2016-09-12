@@ -20,7 +20,7 @@ module Bronze::Collections
   module Collection
     extend SleepingKingStudios::Tools::Toolbox::Delegator
 
-    Errors = ::SleepingKingStudios::Tools::Toolbox::ConstantMap.new(
+    errors = ::SleepingKingStudios::Tools::Toolbox::ConstantMap.new(
       :DATA_INVALID          => :data_invalid,
       :DATA_MISSING          => :data_missing,
       :PRIMARY_KEY_INVALID   => :primary_key_invalid,
@@ -29,6 +29,8 @@ module Bronze::Collections
       :RECORD_ALREADY_EXISTS => :record_already_exists,
       :RECORD_NOT_FOUND      => :record_not_found
     ).freeze # end hash
+
+    const_set(:Errors, errors)
 
     # @param transform [Bronze::Entities::Transform] The transform object used
     #   to map collection objects to and from raw data.
@@ -62,7 +64,7 @@ module Bronze::Collections
     # @!method one
     #   (see Bronze::Collections::Query#one)
 
-    # @!method pluck
+    # @!method pluck(attribute_name)
     #   (see Bronze::Collections::Query#pluck)
 
     # @!method to_a
