@@ -7,9 +7,11 @@ RSpec.describe Bronze::Thor::Ci::Default do
     Class.new(::Thor).tap do |klass|
       klass.send :include, super()
 
-      klass.send :define_method, :rspec,      ->() {}
-      klass.send :define_method, :rspec_each, ->() {}
-      klass.send :define_method, :rubocop,    ->() {}
+      klass.no_commands do
+        klass.send :define_method, :rspec,      ->() {}
+        klass.send :define_method, :rspec_each, ->() {}
+        klass.send :define_method, :rubocop,    ->() {}
+      end # no_commands
     end # class
   end # let
   let(:instance) { described_class.new }
