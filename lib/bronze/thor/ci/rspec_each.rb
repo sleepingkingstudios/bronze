@@ -5,12 +5,15 @@ require 'rspec'
 require 'bronze/thor/ci'
 require 'bronze/thor/ci/rspec_each_formatter'
 require 'bronze/thor/ci/rspec_each_results'
+require 'bronze/thor/ci/rspec_helper'
 require 'bronze/thor/task'
 
 module Bronze::Thor::Ci
   # Defines a Thor task for running each spec file individually.
   module RSpecEach
     extend Bronze::Thor::Task
+
+    include Bronze::Thor::Ci::RSpecHelper
 
     desc :rspec_each, 'Runs each spec file individually.'
     method_option :quiet,
@@ -63,13 +66,5 @@ module Bronze::Thor::Ci
         puts each_formatter.format_file_results(results) unless quiet?
       end # each
     end # method run_each_spec_file
-
-    def spec_dir
-      @spec_dir = File.join Bronze.gem_path, 'spec'
-    end # method spec_dir
-
-    def spec_files
-      Dir[File.join spec_dir, '**', '*_spec.rb']
-    end # method require_spec_files
   end # class
 end # module
