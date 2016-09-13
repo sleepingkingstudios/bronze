@@ -32,6 +32,15 @@ module Bronze::Collections
 
     const_set(:Errors, errors)
 
+    # @param transform [Bronze::Entities::Transform] The transform object used
+    #   to map collection objects to and from raw data.
+    def initialize transform = nil
+      @transform = transform
+    end # constructor
+
+    # @return [String, Symbol] The name of the collection's root resource.
+    attr_reader :resource_name
+
     # @!method count
     #   (see Bronze::Collections::Query#count)
 
@@ -84,13 +93,6 @@ module Bronze::Collections
     #   collection belongs.
     attr_reader :repository
 
-    # Returns the default query object for the collection.
-    #
-    # @return [Query] The default query.
-    def all
-      base_query
-    end # method all
-
     # Deletes the specified hash from the datastore.
     #
     # @param id [Object] The primary key of the hash to delete.
@@ -116,6 +118,13 @@ module Bronze::Collections
     def insert attributes
       wrap_errors { insert_one(transform.normalize attributes) }
     end # method insert
+
+    # Returns the default query object for the collection.
+    #
+    # @return [Query] The default query.
+    def query
+      base_query
+    end # method query
 
     # The current transform object. The transform maps the raw data sent to or
     # returned by the datastore to another object, typically an entity.

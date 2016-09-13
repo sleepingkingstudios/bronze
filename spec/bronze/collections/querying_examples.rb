@@ -41,6 +41,14 @@ module Spec::Collections
       end # let
     end # shared_context
 
+    shared_examples 'should return a query' do
+      let(:query_class) { defined?(super()) ? super() : described_class }
+
+      it 'should return a query' do
+        expect(query).to be_a query_class
+      end # it
+    end # shared_examples
+
     shared_examples 'should run queries against the datastore' do
       describe '#count' do
         it { expect(instance.count).to be 0 }
@@ -109,6 +117,10 @@ module Spec::Collections
           data[0...count]
         end # let
 
+        include_examples 'should return a query' do
+          let(:query) { instance.limit(count) }
+        end # include_examples
+
         include_examples 'should return the requested number of items'
 
         wrap_context 'when the data contains many items' do
@@ -158,6 +170,10 @@ module Spec::Collections
         let(:expected) do
           data.select { |hsh| hsh >= selector }
         end # let
+
+        include_examples 'should return a query' do
+          let(:query) { instance.matching(selector) }
+        end # include_examples
 
         include_examples 'should return the items matching the selector'
 

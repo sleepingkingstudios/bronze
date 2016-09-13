@@ -2,6 +2,7 @@
 
 require 'bronze/collections/collection_examples'
 require 'bronze/collections/reference/collection'
+require 'bronze/collections/reference/query'
 require 'bronze/transforms/identity_transform'
 
 RSpec.describe Bronze::Collections::Reference::Collection do
@@ -9,10 +10,10 @@ RSpec.describe Bronze::Collections::Reference::Collection do
 
   let(:data)        { [] }
   let(:instance)    { described_class.new data }
-  let(:query_class) { Patina::Collections::Simple::Query }
+  let(:query_class) { Bronze::Collections::Reference::Query }
 
   def find_item id
-    items = instance.all.to_a
+    items = instance.to_a
 
     if items.empty?
       nil

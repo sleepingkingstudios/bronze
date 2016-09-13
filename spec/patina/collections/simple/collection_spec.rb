@@ -14,7 +14,7 @@ RSpec.describe Patina::Collections::Simple::Collection do
   let(:query_class) { Patina::Collections::Simple::Query }
 
   def find_item id
-    items = instance.all.to_a
+    items = instance.query.to_a
 
     if items.empty?
       nil

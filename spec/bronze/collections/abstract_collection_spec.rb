@@ -14,14 +14,6 @@ RSpec.describe Bronze::Collections::AbstractCollection do
 
   include_examples 'should implement the Collection interface'
 
-  describe '#all' do
-    it 'should raise an error' do
-      expect { instance.all }.
-        to raise_error described_class::NotImplementedError,
-          "#{described_class.name} does not implement :base_query"
-    end # it
-  end # describe
-
   describe '#count' do
     it 'should raise an error' do
       expect { instance.count }.
@@ -73,6 +65,14 @@ RSpec.describe Bronze::Collections::AbstractCollection do
   describe '#none' do
     it 'should raise an error' do
       expect { instance.none }.
+        to raise_error described_class::NotImplementedError,
+          "#{described_class.name} does not implement :base_query"
+    end # it
+  end # describe
+
+  describe '#query' do
+    it 'should raise an error' do
+      expect { instance.query }.
         to raise_error described_class::NotImplementedError,
           "#{described_class.name} does not implement :base_query"
     end # it
