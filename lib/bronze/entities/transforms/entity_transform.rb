@@ -1,5 +1,6 @@
 # lib/bronze/entities/transforms/entity_transform.rb
 
+require 'bronze/entities/transforms'
 require 'bronze/transforms/transform'
 
 module Bronze::Entities::Transforms
