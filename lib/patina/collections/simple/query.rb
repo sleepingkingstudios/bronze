@@ -36,9 +36,7 @@ module Patina::Collections::Simple
     end # method criteria_namespace
 
     def find_each
-      filtered = apply_criteria(@data)
-
-      filtered.each { |hsh| yield transform.denormalize(hsh) }
+      apply_criteria(@data).each { |hsh| yield hsh }
     end # method find_each
   end # class
 end # module

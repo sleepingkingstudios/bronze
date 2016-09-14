@@ -48,7 +48,7 @@ module Bronze::Collections
     #
     # @yieldparam hsh [Hash] The current result.
     def each &block
-      find_each(&block)
+      find_each { |hsh| block.call(transform.denormalize hsh) }
     end # method each
 
     # Checks if any items exist in the datastore that match the given criteria.
@@ -113,7 +113,11 @@ module Bronze::Collections
     #
     # @return [Array[Hash]] The data objects matching the query.
     def to_a
-      [].tap { |ary| find_each { |obj| ary << obj } }
+      results = []
+
+      find_each { |hsh| results << transform.denormalize(hsh) }
+
+      results
     end # method to_a
 
     protected

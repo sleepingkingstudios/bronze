@@ -12,6 +12,11 @@ Metrics/ModuleLength:
   Exclude:
     - 'spec/**/*.rb'
 
+Performance/RedundantBlockCall:
+  # Incompatible with documentation/testing requirement of explicitly defining
+  # a block argument.
+  Enabled: false
+
 Style/Alias:
   EnforcedStyle: prefer_alias_method
 

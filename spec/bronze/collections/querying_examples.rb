@@ -321,6 +321,30 @@ module Spec::Collections
               expect(ids).to contain_exactly(*data.map { |hsh| hsh[:id] })
             end # it
           end # describe
+
+          wrap_context 'when a transform is set' do
+            describe 'with the name of a missing attribute' do
+              let(:expected) { Array.new(data.count, nil) }
+
+              it 'should return the values of the attributes' do
+                proofreaders = instance.pluck :proofreader
+
+                expect(proofreaders).to be_a Array
+                expect(proofreaders.count).to be data.count
+                expect(proofreaders).to contain_exactly(*expected)
+              end # it
+            end # describe
+
+            describe 'with the name of an existing attribute' do
+              it 'should return the values of the attributes' do
+                ids = instance.pluck :id
+
+                expect(ids).to be_a Array
+                expect(ids.count).to be data.count
+                expect(ids).to contain_exactly(*data.map { |hsh| hsh[:id] })
+              end # it
+            end # describe
+          end # wrap_context
         end # wrap_context
       end # describe
 
