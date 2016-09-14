@@ -1,5 +1,7 @@
 # Development
 
+- Extract Bronze::Ci to standalone gem.
+
 ## Bug Fixes
 
 - bronze/entities/transforms/entity_transform should require bronze/entities/transforms FIXED

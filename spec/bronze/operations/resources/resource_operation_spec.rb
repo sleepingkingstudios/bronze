@@ -17,15 +17,13 @@ RSpec.describe Bronze::Operations::Resources::ResourceOperation do
   end # shared_context
 
   let(:described_class) do
-    operation_class = Class.new(Bronze::Operations::Operation) do
-      def self.name
-        'Namespace::OperationName'
-      end # class method name
-    end # class
-    operation_class.send :include, super()
-    operation_class
+    Spec::ResourceOperation
   end # let
   let(:instance) { described_class.new }
+
+  mock_class Spec, :ResourceOperation do |klass|
+    klass.send :include, Bronze::Operations::Resources::ResourceOperation
+  end # mock_class
 
   describe '::new' do
     it { expect(described_class).to be_constructible.with(0).arguments }

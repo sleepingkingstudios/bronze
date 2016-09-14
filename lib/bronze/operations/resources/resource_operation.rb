@@ -13,10 +13,12 @@ module Bronze::Operations::Resources
       # @param resource_class [Class] The class of the root resource.
       def [] resource_class
         generated_name = "#{name}[#{resource_class.name}]"
+        name_method    = ->() { super() || generated_name }
 
         subclass = Class.new(self)
         subclass.resource_class = resource_class
-        subclass.define_singleton_method :name, ->() { generated_name }
+        subclass.define_singleton_method :name, name_method
+        subclass.define_singleton_method :to_s, name_method
         subclass
       end # class method []
 
