@@ -54,13 +54,15 @@ module Bronze::Thor
     end # method define_tasks
 
     def included other
-      if other < Thor
-        other.define_singleton_method :exit_on_failure?, ->() { true }
+      super
 
-        define_tasks(other)
+      return unless other < Thor
 
-        other.send :include, Defaults
-      end # if
+      other.define_singleton_method :exit_on_failure?, ->() { true }
+
+      define_tasks(other)
+
+      other.send :include, Defaults
     end # method included
   end # module
 end # module

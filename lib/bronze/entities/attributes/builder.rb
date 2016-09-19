@@ -117,9 +117,9 @@ module Bronze::Entities::Attributes
           @attributes[attr_name] = value.nil? ? metadata.default : value
         } # end lambda
 
-      if metadata.read_only?
-        entity_class_attributes.send :private, metadata.writer_name
-      end # if
+      return unless metadata.read_only?
+
+      entity_class_attributes.send :private, metadata.writer_name
     end # define_writer
 
     def entity_class_attributes
@@ -157,9 +157,9 @@ module Bronze::Entities::Attributes
     def validate_attribute_type attribute_type
       raise_error "attribute type can't be blank" if attribute_type.nil?
 
-      unless attribute_type.is_a?(Class)
-        raise_error 'attribute type must be a Class'
-      end # unless
+      return if attribute_type.is_a?(Class)
+
+      raise_error 'attribute type must be a Class'
     end # method validate_attribute_type
   end # class
 end # class
