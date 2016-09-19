@@ -21,7 +21,9 @@ module Bronze::Collections
     # @param collection_name [String, Symbol] The name of the collection.
     # @param transform [Bronze::Transforms::Transform] The transform, if any.
     def collection collection_name, transform = nil
-      collection = build_collection collection_name, transform
+      builder     = build_collection collection_name
+      transform ||= build_transform  builder
+      collection  = builder.build    transform
 
       collection.send :repository=, self
 
@@ -32,8 +34,12 @@ module Bronze::Collections
 
     attr_accessor :collection_builder
 
-    def build_collection collection_name, transform
-      collection_builder.new(collection_name).build(transform)
+    def build_collection collection_name
+      collection_builder.new(collection_name)
     end # method build_collection
+
+    def build_transform _collection_builder
+      nil
+    end # method build_transform
   end # module
 end # module

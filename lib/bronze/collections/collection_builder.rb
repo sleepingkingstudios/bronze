@@ -33,7 +33,7 @@ module Bronze::Collections
       collection = build_collection
 
       collection.send :name=,      collection_name
-      collection.send :transform=, transform || build_transform
+      collection.send :transform=, transform
 
       collection
     end # method build
@@ -57,10 +57,6 @@ module Bronze::Collections
         "#{self.class.name} does not implement :build_collection",
         caller
     end # method build_collection
-
-    def build_transform
-      nil
-    end # method default_transform
 
     def normalize_collection_name name
       tools = ::SleepingKingStudios::Tools::StringTools
