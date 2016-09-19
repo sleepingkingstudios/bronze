@@ -20,25 +20,12 @@ module Patina::Collections::Simple
       Patina::Collections::Simple::Collection
     end # method collection_class
 
-    # (see Bronze::Collections::CollectionBuilder#collection_name)
-    def collection_name
-      @collection_name ||= normalize_collection_name collection_type
-    end # method
-
     private
 
     attr_reader :data
 
     def build_collection
-      collection_class.new(data[collection_name])
+      collection_class.new(data[collection_name.intern])
     end # method
-
-    def normalize_collection_name name
-      tools = ::SleepingKingStudios::Tools::StringTools
-      name  = tools.underscore(name.to_s)
-      name  = tools.pluralize(name)
-
-      name.intern
-    end # method normalize_collection_name
   end # class
 end # module

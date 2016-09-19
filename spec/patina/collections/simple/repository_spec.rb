@@ -20,14 +20,14 @@ RSpec.describe Patina::Collections::Simple::Repository do
       books = instance.collection(collection_name)
 
       expect(books).to be_a Patina::Collections::Simple::Collection
-      expect(books.name).to be == collection_name
+      expect(books.name).to be == collection_name.to_s
       expect(books.repository).to be instance
     end # it
 
     it 'should normalize the collection name' do
       books = instance.collection('RareBook')
 
-      expect(books.name).to be == :rare_books
+      expect(books.name).to be == 'rare_books'
     end # it
 
     describe 'with a transform' do

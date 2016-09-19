@@ -24,7 +24,7 @@ RSpec.describe Patina::Collections::Simple::CollectionBuilder do
       collection = instance.build
 
       expect(collection).to be_a collection_class
-      expect(collection.name).to be == collection_type
+      expect(collection.name).to be == collection_type.to_s
       expect(collection.count).to be data[collection_type].count
     end # it
   end # describe
@@ -35,8 +35,23 @@ RSpec.describe Patina::Collections::Simple::CollectionBuilder do
   end # describe
 
   describe '#collection_name' do
-    include_examples 'should have reader', :collection_name,
-      ->() { be == collection_type }
+    include_examples 'should have reader',
+      :collection_name,
+      ->() { be == collection_type.to_s }
+
+    context 'when the collection type is a denormalized collection name' do
+      let(:collection_type) { 'Resource' }
+
+      it { expect(instance.collection_name).to be == 'resources' }
+    end # context
+
+    context 'when the collection type is a named resource' do
+      mock_class Spec, :Resource
+
+      let(:collection_type) { Spec::Resource }
+
+      it { expect(instance.collection_name).to be == 'resources' }
+    end # context
   end # describe
 
   describe '#collection_type' do

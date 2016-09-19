@@ -22,9 +22,6 @@ module Bronze::Collections
     # @return [Class] The class of the collection.
     attr_reader :collection_class
 
-    # @return [String] The name of the collection.
-    attr_reader :collection_name
-
     # @return [Object] Object specifying the type of collection to create.
     attr_reader :collection_type
 
@@ -41,6 +38,18 @@ module Bronze::Collections
       collection
     end # method build
 
+    # @return [String] The name of the collection.
+    def collection_name
+      @collection_name ||=
+        if collection_type.is_a?(Class)
+          name = collection_type.name.split('::').last
+
+          normalize_collection_name(name)
+        else
+          normalize_collection_name(collection_type)
+        end # if-else
+    end # method collection_name
+
     private
 
     def build_collection
@@ -52,5 +61,13 @@ module Bronze::Collections
     def build_transform
       nil
     end # method default_transform
+
+    def normalize_collection_name name
+      tools = ::SleepingKingStudios::Tools::StringTools
+      name  = tools.underscore(name.to_s)
+      name  = tools.pluralize(name)
+
+      name
+    end # method normalize_collection_name
   end # class
 end # module

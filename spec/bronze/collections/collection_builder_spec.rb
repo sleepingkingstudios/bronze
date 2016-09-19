@@ -24,7 +24,23 @@ RSpec.describe Bronze::Collections::CollectionBuilder do
   end # describe
 
   describe '#collection_name' do
-    include_examples 'should have reader', :collection_name
+    include_examples 'should have reader',
+      :collection_name,
+      ->() { be == collection_type.to_s }
+
+    context 'when the collection type is a denormalized collection name' do
+      let(:collection_type) { 'Resource' }
+
+      it { expect(instance.collection_name).to be == 'resources' }
+    end # context
+
+    context 'when the collection type is a named resource' do
+      mock_class Spec, :Resource
+
+      let(:collection_type) { Spec::Resource }
+
+      it { expect(instance.collection_name).to be == 'resources' }
+    end # context
   end # describe
 
   describe '#collection_type' do
