@@ -25,17 +25,9 @@ module Bronze::Collections
     # @return [Object] Object specifying the type of collection to create.
     attr_reader :collection_type
 
-    # Builds a new collection of the specified type and (optionally) with the
-    # specified transform.
-    #
-    # @param transform [Bronze::Transforms::Transform]
-    def build transform = nil
-      collection = build_collection
-
-      collection.send :name=,      collection_name
-      collection.send :transform=, transform
-
-      collection
+    # Builds a new collection of the specified type.
+    def build
+      build_collection.tap { |cll| cll.send :name=, collection_name }
     end # method build
 
     # @return [String] The name of the collection.

@@ -1,26 +1,37 @@
-# spec/bronze/collections/collection_builder_spec.rb
+# spec/bronze/collections/reference/collection_builder_spec.rb
 
-require 'bronze/collections/collection_builder'
+require 'bronze/collections/reference/collection'
+require 'bronze/collections/reference/collection_builder'
 
-RSpec.describe Bronze::Collections::CollectionBuilder do
+RSpec.describe Bronze::Collections::Reference::CollectionBuilder do
+  let(:collection_class) do
+    Bronze::Collections::Reference::Collection
+  end # let
+  let(:data) do
+    { collection_type => Array.new(3) { {} } }
+  end # let
   let(:collection_type) { :resources }
-  let(:instance)        { described_class.new collection_type }
+  let(:instance)        { described_class.new collection_type, data }
 
   describe '::new' do
-    it { expect(described_class).to be_constructible.with(1).argument }
+    it { expect(described_class).to be_constructible.with(2).arguments }
   end # describe
 
   describe '#build' do
     it { expect(instance).to respond_to(:build).with(0).arguments }
 
-    it 'should raise an error' do
-      expect { instance.build }.
-        to raise_error described_class::NotImplementedError
+    it 'should build a collection' do
+      collection = instance.build
+
+      expect(collection).to be_a collection_class
+      expect(collection.name).to be == collection_type.to_s
+      expect(collection.count).to be data[collection_type].count
     end # it
   end # describe
 
   describe '#collection_class' do
-    include_examples 'should have reader', :collection_class
+    include_examples 'should have reader', :collection_class,
+      ->() { collection_class }
   end # describe
 
   describe '#collection_name' do

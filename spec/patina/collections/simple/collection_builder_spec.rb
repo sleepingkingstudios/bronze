@@ -18,7 +18,7 @@ RSpec.describe Patina::Collections::Simple::CollectionBuilder do
   end # describe
 
   describe '#build' do
-    it { expect(instance).to respond_to(:build).with(0..1).arguments }
+    it { expect(instance).to respond_to(:build).with(0).arguments }
 
     it 'should build a collection' do
       collection = instance.build
