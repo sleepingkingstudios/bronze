@@ -17,6 +17,12 @@ module Bronze::Collections
 
     include Bronze::Collections::Collection
 
+    # @param transform [Bronze::Entities::Transform] The transform object used
+    #   to map collection objects to and from raw data.
+    def initialize transform = nil
+      @transform = transform
+    end # constructor
+
     private
 
     def base_query

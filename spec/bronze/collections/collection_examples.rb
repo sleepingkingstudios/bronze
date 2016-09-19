@@ -121,6 +121,16 @@ module Spec::Collections
         it { expect(instance).to respond_to(:matching).with(1).argument }
       end # describe
 
+      describe '#name' do
+        it { expect(instance).to respond_to(:name).with(0).arguments }
+      end # describe
+
+      describe '#name=' do
+        it { expect(instance).not_to respond_to(:name=) }
+
+        it { expect(instance).to respond_to(:name=, true).with(1).argument }
+      end # describe
+
       describe '#none' do
         it { expect(instance).to respond_to(:none).with(0).arguments }
       end # describe
@@ -131,6 +141,18 @@ module Spec::Collections
 
       describe '#pluck' do
         it { expect(instance).to respond_to(:pluck).with(1).argument }
+      end # describe
+
+      describe '#repository' do
+        it { expect(instance).to respond_to(:repository).with(0).arguments }
+      end # describe
+
+      describe '#repository=' do
+        it { expect(instance).not_to respond_to(:repository=) }
+
+        it 'should define the private writer' do
+          expect(instance).to respond_to(:repository=, true).with(1).argument
+        end # it
       end # describe
 
       describe '#to_a' do
@@ -294,6 +316,20 @@ module Spec::Collections
             end # describe
           end # wrap_context
         end # wrap_context
+      end # describe
+
+      describe '#name' do
+        it { expect(instance.name).to be nil }
+      end # describe
+
+      describe '#name=' do
+        let(:name) { 'tomes' }
+
+        it 'should set the name' do
+          expect { instance.send :name=, name }.
+            to change(instance, :name).
+            to be == name
+        end # it
       end # describe
 
       describe '#transform' do

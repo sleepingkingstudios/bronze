@@ -7,9 +7,7 @@ module Bronze::Collections
   class NullCollection
     include Bronze::Collections::Collection
 
-    def initialize
-      super(nil)
-    end # constructorss
+    def initialize; end
 
     private
 
