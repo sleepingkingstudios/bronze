@@ -109,6 +109,10 @@ module Spec::Collections
         it { expect(instance).to respond_to(:exists?).with(0).arguments }
       end # describe
 
+      describe '#find' do
+        it { expect(instance).to respond_to(:find).with(1).argument }
+      end # describe
+
       describe '#insert' do
         it { expect(instance).to respond_to(:insert).with(1).argument }
       end # describe
@@ -267,6 +271,26 @@ module Spec::Collections
             let(:id) { '1' }
 
             include_examples 'should delete the item'
+          end # describe
+        end # wrap_context
+      end # describe
+
+      describe '#find' do
+        it { expect(instance.find '0').to be nil }
+
+        wrap_context 'when the collection contains many items' do
+          describe 'with an invalid id' do
+            it { expect(instance.find '0').to be nil }
+          end # describe
+
+          describe 'with a valid id' do
+            let(:id) { '1' }
+
+            it { expect(instance.find id).to be == find_item(id) }
+
+            wrap_context 'when a transform is set' do
+              it { expect(instance.find id).to be == find_item(id) }
+            end # wrap_context
           end # describe
         end # wrap_context
       end # describe

@@ -101,6 +101,12 @@ module Bronze::Collections
       wrap_errors { delete_one(id) }
     end # method delete
 
+    # Queries for and returns the resource hash with the requested id from the
+    #   datastore.
+    def find id
+      base_query.matching(:id => id).limit(2).one
+    end # method find
+
     # Persists the given hash in the datastore.
     #
     # @param attributes [Hash] The hash to persist.

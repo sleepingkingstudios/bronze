@@ -32,9 +32,17 @@ RSpec.describe Bronze::Collections::AbstractCollection do
 
   describe '#delete' do
     it 'should raise an error' do
-      expect { instance.delete 0 }.
+      expect { instance.delete '0' }.
         to raise_error described_class::NotImplementedError,
           "#{described_class.name} does not implement :delete_one"
+    end # it
+  end # describe
+
+  describe '#find' do
+    it 'should raise an error' do
+      expect { instance.find '0' }.
+        to raise_error described_class::NotImplementedError,
+          "#{described_class.name} does not implement :base_query"
     end # it
   end # describe
 
@@ -48,7 +56,7 @@ RSpec.describe Bronze::Collections::AbstractCollection do
 
   describe '#limit' do
     it 'should raise an error' do
-      expect { instance.limit(0) }.
+      expect { instance.limit(3) }.
         to raise_error described_class::NotImplementedError,
           "#{described_class.name} does not implement :base_query"
     end # it
@@ -82,7 +90,7 @@ RSpec.describe Bronze::Collections::AbstractCollection do
     it { expect(instance).to respond_to(:update).with(2).arguments }
 
     it 'should raise an error' do
-      expect { instance.update(0, {}) }.
+      expect { instance.update('0', {}) }.
         to raise_error described_class::NotImplementedError,
           "#{described_class.name} does not implement :update_one"
     end # it

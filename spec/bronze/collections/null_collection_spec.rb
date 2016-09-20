@@ -38,6 +38,10 @@ RSpec.describe Bronze::Collections::NullCollection do
     end # with_params
   end # describe
 
+  describe '#find' do
+    it { expect(instance.find '0').to be nil }
+  end # describe
+
   describe '#insert' do
     def perform_action
       instance.insert attributes
