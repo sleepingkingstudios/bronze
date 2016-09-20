@@ -8,6 +8,13 @@ RSpec.describe Bronze::Collections::CollectionBuilder do
 
   describe '::new' do
     it { expect(described_class).to be_constructible.with(1).argument }
+
+    describe 'with nil' do
+      it 'should raise an error' do
+        expect { described_class.new nil }.
+          to raise_error ArgumentError, "collection_type can't be nil"
+      end # it
+    end # describe
   end # describe
 
   describe '#build' do

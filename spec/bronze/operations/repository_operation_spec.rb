@@ -22,7 +22,7 @@ RSpec.describe Bronze::Operations::RepositoryOperation do
   describe '#repository=' do
     let(:repository) { double('repository') }
 
-    it 'should define the private reader' do
+    it 'should define the private writer' do
       expect(instance).not_to respond_to(:repository=)
 
       expect(instance).to respond_to(:repository=, true).with(1).argument

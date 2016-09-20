@@ -16,6 +16,10 @@ module Bronze::Collections
     #   responsible for resolving this object into a name and class for the
     #   created collection object.
     def initialize collection_type
+      if collection_type.nil?
+        raise ArgumentError, "collection_type can't be nil", caller
+      end # if
+
       @collection_type = collection_type
     end # constructor
 
