@@ -4,11 +4,12 @@
 
 ## Bug Fixes
 
-- bronze/entities/transforms/entity_transform should require bronze/entities/transforms FIXED
-- SimpleCollection#pluck does not work with a transform FIXED
-
 ## Features
 
+- Collection
+  - bulk operations
+- Entity
+  - Relations?
 - Query
   - #matching with non-equality predicates
     - use block syntax+DSL: |
@@ -31,11 +32,11 @@
     - in (element is in array)
     - not in
   - #order
-- Operation
+  - #includes
 - Repository#except, #only - returns a copy of the repository that only has the given collections.
 - Scope |
 
-  ActiveScope.new(params).call(query)
+  ActivatedScope.new(params).call(query)
   #=> returns query.matching(:active => true)
 
 - bronze/rails

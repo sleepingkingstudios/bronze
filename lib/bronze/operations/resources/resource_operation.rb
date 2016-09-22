@@ -1,11 +1,13 @@
 # lib/bronze/operations/resources/resource_operation.rb
 
+require 'sleeping_king_studios/tools/toolbox/mixin'
 require 'bronze/operations/resources'
 require 'bronze/operations/repository_operation'
 
 module Bronze::Operations::Resources
   # Shared functionality for operations on singular and plural resources.
   module ResourceOperation
+    extend  SleepingKingStudios::Tools::Toolbox::Mixin
     include Bronze::Operations::RepositoryOperation
 
     # Class methods to define when including ResourceOperation in a class.
@@ -38,13 +40,6 @@ module Bronze::Operations::Resources
     def initialize repository
       self.repository = repository
     end # method initialize
-
-    # @api private
-    def self.included other
-      other.extend ClassMethods
-
-      super
-    end # class method included
 
     # @return [Bronze::Collections::Collection] The collection used to persist
     #   and query the root resource.

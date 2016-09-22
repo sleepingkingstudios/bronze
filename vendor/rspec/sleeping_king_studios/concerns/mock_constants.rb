@@ -30,7 +30,9 @@ module RSpec::SleepingKingStudios::Concerns
 
           example.call
         ensure
-          mod.send :remove_const, constant_name
+          if mod.const_defined?(constant_name)
+            mod.send :remove_const, constant_name
+          end # if
         end # begin-ensure
       end # around scope
     end # method mock_constant
