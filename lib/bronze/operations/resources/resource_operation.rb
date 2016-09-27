@@ -1,6 +1,7 @@
 # lib/bronze/operations/resources/resource_operation.rb
 
 require 'sleeping_king_studios/tools/toolbox/mixin'
+require 'bronze/entities/transforms/entity_transform'
 require 'bronze/operations/resources'
 require 'bronze/operations/repository_operation'
 
@@ -41,16 +42,20 @@ module Bronze::Operations::Resources
       self.repository = repository
     end # method initialize
 
-    # @return [Bronze::Collections::Collection] The collection used to persist
-    #   and query the root resource.
-    def collection
-      @collection ||= repository.collection(resource_class)
-    end # method collection
-
     # @return [Class] The class of the root resource.
     def resource_class
       self.class.resource_class
     end # method resource_class
+
+    # @return [Bronze::Collections::Collection] The collection used to persist
+    #   and query the root resource.
+    def resource_collection
+      @collection ||= begin
+        transform = resource_transform_for(resource_class)
+
+        repository.collection(resource_class, transform)
+      end # begin-end
+    end # method resource_collection
 
     # @return [String] The name of the root resource.
     def resource_name
@@ -64,5 +69,11 @@ module Bronze::Operations::Resources
         tools.underscore(name)
       end # begin
     end # method resource_name
+
+    private
+
+    def resource_transform_for resource_class
+      Bronze::Entities::Transforms::EntityTransform.new resource_class
+    end # method resource_transform_for
   end # module
 end # module

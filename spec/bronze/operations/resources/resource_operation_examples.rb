@@ -1,5 +1,8 @@
 # spec/bronze/operations/resources/resource_operation_examples.rb
 
+require 'bronze/entities/transforms/entity_transform'
+require 'bronze/transforms/identity_transform'
+
 module Spec::Operations
   module ResourceOperationExamples
     extend RSpec::SleepingKingStudios::Concerns::SharedExampleGroup
@@ -59,20 +62,6 @@ module Spec::Operations
         end # it
       end # describe
 
-      describe '#collection' do
-        let(:collection_name) { 'archived_periodicals' }
-
-        it { expect(instance).to respond_to(:collection).with(0).arguments }
-
-        it 'should return a collection' do
-          collection = instance.collection
-
-          expect(collection).to be_a Bronze::Collections::Reference::Collection
-          expect(collection.name).to be == collection_name
-          expect(collection.repository).to be repository
-        end # it
-      end # describe
-
       describe '#repository' do
         include_examples 'should have reader',
           :repository,
@@ -95,12 +84,118 @@ module Spec::Operations
         end # it
       end # describe
 
+      describe '#resource_class' do
+        it 'should define the reader' do
+          expect(instance).
+            to have_reader(:resource_class).
+            with_value(resource_class)
+        end # it
+      end # describe
+
+      describe '#resource_collection' do
+        let(:collection_name) { 'archived_periodicals' }
+
+        it 'should define the method' do
+          expect(instance).to respond_to(:resource_collection).with(0).arguments
+        end # it
+
+        it 'should return a collection' do
+          collection = instance.resource_collection
+
+          expect(collection).to be_a Bronze::Collections::Reference::Collection
+          expect(collection.name).to be == collection_name
+          expect(collection.repository).to be repository
+
+          transform = collection.transform
+
+          expect(transform).
+            to be_a Bronze::Entities::Transforms::EntityTransform
+          expect(transform.entity_class).to be resource_class
+        end # it
+
+        context 'when a custom transform is defined' do
+          let(:transform) { Bronze::Transforms::IdentityTransform.new }
+
+          before(:example) do
+            allow(instance).
+              to receive(:resource_transform_for).
+              and_return(transform)
+          end # before example
+
+          it 'should return a collection' do
+            collection = instance.resource_collection
+
+            expect(collection).
+              to be_a Bronze::Collections::Reference::Collection
+            expect(collection.name).to be == collection_name
+            expect(collection.repository).to be repository
+
+            transform = collection.transform
+
+            expect(transform).to be transform
+          end # it
+        end # context
+      end # describe
+
       describe '#resource_name' do
         let(:expected) { 'archived_periodicals' }
 
         include_examples 'should have reader',
           :resource_name,
           ->() { be == expected }
+      end # describe
+    end # shared_examples
+
+    shared_examples 'should implement the SingleResourceOperation methods' do
+      include_examples 'should implement the ResourceOperation methods'
+
+      describe '#build_resource' do
+        let(:attributes) { {} }
+
+        it { expect(instance).to respond_to(:build_resource).with(1).argument }
+
+        it 'should build an instance of the resource class' do
+          resource = instance.build_resource attributes
+          expected = attributes.merge(:id => resource.id)
+
+          expect(resource).to be_a resource_class
+          expect(resource.attributes).to be == expected
+        end # it
+
+        it 'should set the resource' do
+          resource = nil
+
+          expect { resource = instance.build_resource attributes }.
+            to change(instance, :resource)
+
+          expect(instance.resource).to be == resource
+        end # it
+      end # describe
+
+      describe '#find_resource' do
+        let(:id)         { '0' }
+        let(:attributes) { { :id => id } }
+        let(:resource)   { resource_class.new(attributes) }
+
+        it { expect(instance).to respond_to(:find_resource).with(1).argument }
+
+        context 'when the repository does not have the requested resource' do
+          it 'should return nil' do
+            expect(instance.find_resource id).to be nil
+          end # it
+        end # context
+
+        context 'when the repository has the requested resource' do
+          before(:example) { instance.resource_collection.insert(resource) }
+
+          it 'should return the resource' do
+            expect(instance.find_resource id).to be == resource
+          end # it
+        end # context
+      end # describe
+
+      describe '#resource' do
+        include_examples 'should have reader', :resource, nil
       end # describe
     end # shared_examples
   end # module

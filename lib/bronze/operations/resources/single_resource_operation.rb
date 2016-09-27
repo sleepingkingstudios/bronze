@@ -28,7 +28,7 @@ module Bronze::Operations::Resources
     #
     # @return [Object] The resource.
     def find_resource resource_id
-      collection.find(resource_id)
+      resource_collection.find(resource_id)
     end # method resource_id
   end # module
 end # module
