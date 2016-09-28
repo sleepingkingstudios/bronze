@@ -11,12 +11,8 @@ RSpec.describe Bronze::Operations::Resources::SingleResourceOperation do
 
   let(:resource_class)  { Spec::ArchivedPeriodical }
   let(:described_class) { Spec::SingleResourceOperation }
-  let(:repository) do
-    repo = Bronze::Collections::Reference::Repository.new
-    repo.extend Bronze::Entities::Collections::EntityRepository
-    repo
-  end # let
-  let(:instance) { described_class.new repository }
+  let(:repository)      { Bronze::Collections::Reference::Repository.new }
+  let(:instance)        { described_class.new repository }
 
   mock_class Spec, :ArchivedPeriodical, :base_class => Bronze::Entities::Entity
 

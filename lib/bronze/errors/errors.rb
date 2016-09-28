@@ -50,7 +50,7 @@ module Bronze::Errors
     # @param error_params [Array] Array of optional error parameters.
     def add error_type, *error_params
       @errors << Error.new(nesting, error_type, error_params)
-    end # method <<
+    end # method add
 
     # @return [Boolean] True if there are no errors on the object or on any
     #   child errors object; otherwise false.

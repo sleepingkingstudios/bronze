@@ -156,7 +156,13 @@ module Spec::Operations
 
         it 'should build an instance of the resource class' do
           resource = instance.build_resource attributes
-          expected = attributes.merge(:id => resource.id)
+          expected = {}
+
+          resource_class.attributes.each do |attr_name, _|
+            expected[attr_name] = attributes[attr_name]
+          end # each
+
+          expected = expected.merge(:id => resource.id)
 
           expect(resource).to be_a resource_class
           expect(resource.attributes).to be == expected
