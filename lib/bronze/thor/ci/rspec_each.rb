@@ -52,12 +52,18 @@ module Bronze::Thor::Ci
 
       `#{cmd.join ' '}`
 
-      JSON.parse File.read(File.join root_dir, 'tmp/ci/rspec_each.json')
+      begin
+        data = File.read(File.join root_dir, 'tmp/ci/rspec_each.json')
+
+        JSON.parse data
+      rescue JSON::ParserError
+        {}
+      end # begin-rescue
     end # method run_spec_file
 
     def run_each_spec_file aggregated_results
       spec_files.each do |file_path|
-        print each_formatter.format_file_path(file_path) unless quiet?
+        print "#{each_formatter.format_file_path(file_path)} " unless quiet?
 
         results = run_spec_file(file_path).merge('file_path' => file_path)
 

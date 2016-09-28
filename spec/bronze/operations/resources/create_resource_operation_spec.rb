@@ -1,5 +1,7 @@
 # spec/bronze/operations/resources/create_resource_operation_spec.rb
 
+require 'bronze/collections/reference/repository'
+require 'bronze/entities/entity'
 require 'bronze/errors/errors'
 require 'bronze/operations/resources/create_resource_operation'
 require 'bronze/operations/resources/resource_operation_examples'

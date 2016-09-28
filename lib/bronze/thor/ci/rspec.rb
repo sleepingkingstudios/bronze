@@ -30,9 +30,14 @@ module Bronze::Thor::Ci
       ::RSpec::Core::Runner.run(build_rspec_args)
 
       file_path = File.join root_dir, 'tmp/ci/rspec.json'
-      results   = JSON.parse File.read(file_path)
 
-      results['summary']
+      begin
+        results = JSON.parse File.read(file_path)
+
+        results['summary']
+      rescue JSON::ParserError
+        {}
+      end # begin-rescue
     end # method rspec
 
     private
