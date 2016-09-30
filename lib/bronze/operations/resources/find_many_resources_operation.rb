@@ -9,8 +9,6 @@ module Bronze::Operations::Resources
 
     def process matching: nil
       find_resources :matching => matching
-
-      true
     end # method process
   end # class
 end # module

@@ -50,7 +50,7 @@ module Bronze::Operations::Resources
     # @return [Bronze::Collections::Collection] The collection used to persist
     #   and query the root resource.
     def resource_collection
-      @collection ||= begin
+      @resource_collection ||= begin
         transform = resource_transform_for(resource_class)
 
         repository.collection(resource_class, transform)

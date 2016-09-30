@@ -11,9 +11,7 @@ module Bronze::Operations::Resources
     def process attributes
       build_resource(attributes)
 
-      result, @errors = resource_collection.insert @resource
-
-      result
+      _, @errors = resource_collection.insert @resource
     end # method process
   end # class
 end # module

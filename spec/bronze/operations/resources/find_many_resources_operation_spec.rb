@@ -57,7 +57,7 @@ RSpec.describe Bronze::Operations::Resources::FindManyResourcesOperation do
     let(:arguments)  { [] }
 
     before(:example) do
-      allow(collection).to receive(:query).and_return(query)
+      allow(collection).to receive(:base_query).and_return(query)
 
       allow(query).to receive(:to_a).and_return(expected)
     end # before example
