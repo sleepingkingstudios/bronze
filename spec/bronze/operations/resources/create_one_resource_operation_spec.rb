@@ -1,16 +1,16 @@
-# spec/bronze/operations/resources/create_resource_operation_spec.rb
+# spec/bronze/operations/resources/create_one_resource_operation_spec.rb
 
 require 'bronze/collections/reference/repository'
 require 'bronze/entities/entity'
 require 'bronze/errors/errors'
-require 'bronze/operations/resources/create_resource_operation'
+require 'bronze/operations/resources/create_one_resource_operation'
 require 'bronze/operations/resources/resource_operation_examples'
 
-RSpec.describe Bronze::Operations::Resources::CreateResourceOperation do
+RSpec.describe Bronze::Operations::Resources::CreateOneResourceOperation do
   include Spec::Operations::ResourceOperationExamples
 
   let(:resource_class)  { Spec::ArchivedPeriodical }
-  let(:described_class) { Spec::CreateResourceOperation }
+  let(:described_class) { Spec::CreateOneResourceOperation }
   let(:repository)      { Bronze::Collections::Reference::Repository.new }
   let(:instance)        { described_class.new repository }
 
@@ -21,9 +21,9 @@ RSpec.describe Bronze::Operations::Resources::CreateResourceOperation do
   end # mock_class
 
   options = {
-    :base_class => Bronze::Operations::Resources::CreateResourceOperation
+    :base_class => Bronze::Operations::Resources::CreateOneResourceOperation
   } # end options
-  mock_class Spec, :CreateResourceOperation, options do |klass|
+  mock_class Spec, :CreateOneResourceOperation, options do |klass|
     klass.send :resource_class=, resource_class
   end # mock_class
 
@@ -31,7 +31,7 @@ RSpec.describe Bronze::Operations::Resources::CreateResourceOperation do
     it { expect(described_class).to be_constructible.with(1).argument }
   end # describe
 
-  include_examples 'should implement the SingleResourceOperation methods'
+  include_examples 'should implement the OneResourceOperation methods'
 
   describe '#call' do
     let(:attributes) { { :title => 'Journal of Phrenology', :volume => 13 } }

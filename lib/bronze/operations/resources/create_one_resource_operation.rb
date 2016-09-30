@@ -1,11 +1,11 @@
-# lib/bronze/operations/resources/create_resource_operation.rb
+# lib/bronze/operations/resources/create_one_resource_operation.rb
 
-require 'bronze/operations/resources/single_resource_operation'
+require 'bronze/operations/resources/one_resource_operation'
 
 module Bronze::Operations::Resources
   # Base class implementing query and persistence functionality on a single
   # resource, such as a RESTful #show or #create method.
-  class CreateResourceOperation < SingleResourceOperation
+  class CreateOneResourceOperation < OneResourceOperation
     private
 
     def process attributes

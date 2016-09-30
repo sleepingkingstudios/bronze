@@ -146,7 +146,7 @@ module Spec::Operations
       end # describe
     end # shared_examples
 
-    shared_examples 'should implement the SingleResourceOperation methods' do
+    shared_examples 'should implement the OneResourceOperation methods' do
       include_examples 'should implement the ResourceOperation methods'
 
       describe '#build_resource' do
@@ -189,6 +189,12 @@ module Spec::Operations
           it 'should return nil' do
             expect(instance.find_resource id).to be nil
           end # it
+
+          it 'should clear the resource' do
+            instance.find_resource id
+
+            expect(instance.resource).to be nil
+          end # it
         end # context
 
         context 'when the repository has the requested resource' do
@@ -196,6 +202,12 @@ module Spec::Operations
 
           it 'should return the resource' do
             expect(instance.find_resource id).to be == resource
+          end # it
+
+          it 'should set the resource' do
+            expect { instance.find_resource id }.to change(instance, :resource)
+
+            expect(instance.resource).to be == resource
           end # it
         end # context
       end # describe

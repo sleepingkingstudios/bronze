@@ -8,9 +8,12 @@
 
 - Collection
   - bulk operations
-- Entity
-  - Relations?
+- Constraint
+  - represents an expectation on an object
+  - Contract
+    - group of constraints
 - Query
+  - #all returns with JSON envelope for advanced features?
   - #matching with non-equality predicates
     - use block syntax+DSL: |
 
@@ -33,6 +36,11 @@
     - not in
   - #order
   - #includes
+- Relations
+  - Entities
+    - foreign_key => attribute
+    - Bronze::Entities::Relations::Metadata
+    - relation macros
 - Repository#except, #only - returns a copy of the repository that only has the given collections.
 - Scope |
 
