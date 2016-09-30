@@ -146,6 +146,70 @@ module Spec::Operations
       end # describe
     end # shared_examples
 
+    shared_examples 'should implement the ManyResourcesOperation methods' do
+      include_examples 'should implement the ResourceOperation methods'
+
+      describe '#find_resources' do
+        let(:collection) { instance.resource_collection }
+        let(:expected)   { Array.new(3) { double('entity') } }
+        let(:query)      { double('query') }
+
+        before(:example) do
+          allow(collection).to receive(:query).and_return(query)
+
+          allow(query).to receive(:to_a).and_return(expected)
+        end # before example
+
+        it 'should define the method' do
+          expect(instance).
+            to respond_to(:find_resources).
+            with(0).arguments.
+            and_keywords(:matching)
+        end # it
+
+        it 'should query the repository' do
+          expect(instance.find_resources).to be == expected
+        end # it
+
+        it 'should set the resources' do
+          resources = nil
+
+          expect { resources = instance.find_resources }.
+            to change(instance, :resources)
+
+          expect(resources).to be == expected
+        end # it
+
+        describe 'with :matching => selector' do
+          let(:selector) { { :author => 'J.R.R. Tolkien' } }
+
+          before(:example) do
+            expect(query).to receive(:matching).with(selector).and_return(query)
+          end # before example
+
+          it 'should query the repository' do
+            results = instance.find_resources :matching => selector
+
+            expect(results).to be == expected
+          end # it
+
+          it 'should set the resources' do
+            resources = nil
+
+            expect do
+              resources = instance.find_resources :matching => selector
+            end.to change(instance, :resources)
+
+            expect(resources).to be == expected
+          end # it
+        end # describe
+      end # describe
+
+      describe '#resources' do
+        include_examples 'should have reader', :resources, nil
+      end # describe
+    end # shared_examples
+
     shared_examples 'should implement the OneResourceOperation methods' do
       include_examples 'should implement the ResourceOperation methods'
 
