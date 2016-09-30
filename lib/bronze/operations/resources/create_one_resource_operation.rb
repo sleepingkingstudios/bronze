@@ -3,8 +3,8 @@
 require 'bronze/operations/resources/one_resource_operation'
 
 module Bronze::Operations::Resources
-  # Base class implementing query and persistence functionality on a single
-  # resource, such as a RESTful #show or #create method.
+  # Operation class to build, validate and persist an instance of a resource
+  # from an attributes hash.
   class CreateOneResourceOperation < OneResourceOperation
     private
 

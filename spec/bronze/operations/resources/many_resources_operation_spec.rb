@@ -2,8 +2,8 @@
 
 require 'bronze/collections/reference/repository'
 require 'bronze/entities/entity'
-require 'bronze/operations/resources/resource_operation_examples'
 require 'bronze/operations/resources/many_resources_operation'
+require 'bronze/operations/resources/resource_operation_examples'
 
 RSpec.describe Bronze::Operations::Resources::ManyResourcesOperation do
   include Spec::Operations::ResourceOperationExamples
