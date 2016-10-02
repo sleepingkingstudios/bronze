@@ -9,17 +9,7 @@ module Bronze::Operations::Resources
     private
 
     def process resource_id
-      find_resource resource_id
-
-      return if @resource
-
-      error_definitions = Bronze::Collections::Collection::Errors
-
-      @errors[:resource].add(
-        error_definitions::RECORD_NOT_FOUND,
-        :id,
-        resource_id
-      ) # end add error
+      require_resource resource_id
     end # method process
   end # class
 end # module

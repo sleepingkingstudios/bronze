@@ -1,11 +1,88 @@
 # spec/bronze/operations/resources/resource_operation_examples.rb
 
+require 'bronze/collections/collection'
+require 'bronze/entities/entity'
 require 'bronze/entities/transforms/entity_transform'
+require 'bronze/errors/error'
 require 'bronze/transforms/identity_transform'
 
 module Spec::Operations
   module ResourceOperationExamples
     extend RSpec::SleepingKingStudios::Concerns::SharedExampleGroup
+
+    shared_context 'when a resource class is defined' do
+      let(:resource_class) { Spec::ArchivedPeriodical }
+
+      options = { :base_class => Bronze::Entities::Entity }
+      mock_class Spec, :ArchivedPeriodical, options do |klass|
+        klass.attribute :title,  String
+        klass.attribute :volume, Integer
+      end # mock_class
+    end # shared_context
+
+    shared_context 'when the collection contains one resource' do
+      let(:attributes) { {} }
+      let(:resource)   { resource_class.new attributes }
+
+      before(:example) { instance.resource_collection.insert resource }
+    end # shared_context
+
+    shared_context 'when the collection contains many resources' do
+      let(:attributes) do
+        ary = []
+
+        title = 'Astrology Today'
+        1.upto(3) { |i| ary << { :title => title, :volume => i } }
+
+        title = 'Journal of Applied Phrenology'
+        4.upto(6) { |i| ary << { :title => title, :volume => i } }
+
+        ary
+      end # let
+      let(:resources) do
+        attributes.map { |hsh| resource_class.new hsh }
+      end # let
+
+      before(:example) do
+        resources.each do |resource|
+          instance.resource_collection.insert resource
+        end # each
+      end # before
+    end # shared_context
+
+    shared_examples 'should require a resource' do
+      let(:errors) do
+        error_definitions = Bronze::Collections::Collection::Errors
+
+        Bronze::Errors::Errors.new.tap do |errors|
+          errors[:resource].add(
+            error_definitions::RECORD_NOT_FOUND,
+            :id,
+            resource_id
+          ) # end add error
+        end # tap
+      end # let
+
+      it { expect(call_operation).to be false }
+
+      it 'should set the resource' do
+        call_operation
+
+        expect(instance.resource).to be nil
+      end # it
+
+      it 'should set the errors' do
+        previous_errors = Bronze::Errors::Errors.new
+        previous_errors[:resources].add :require_more_minerals
+        previous_errors[:resources].add :insufficient_vespene_gas
+
+        instance.instance_variable_set :@errors, previous_errors
+
+        call_operation
+
+        expect(instance.errors).to be == errors
+      end # it
+    end # shared_context
 
     shared_examples 'should implement the ResourceOperation methods' do
       describe '::[]' do
@@ -150,58 +227,56 @@ module Spec::Operations
       include_examples 'should implement the ResourceOperation methods'
 
       describe '#find_resources' do
-        let(:collection) { instance.resource_collection }
-        let(:expected)   { Array.new(3) { double('entity') } }
-        let(:query)      { double('query') }
+        shared_examples 'should set and return the resources' do
+          it 'should return the resources' do
+            resources = instance.send(:find_resources, *arguments)
 
-        before(:example) do
-          allow(collection).to receive(:query).and_return(query)
-
-          allow(query).to receive(:to_a).and_return(expected)
-        end # before example
-
-        it 'should define the method' do
-          expect(instance).
-            to respond_to(:find_resources).
-            with(0).arguments.
-            and_keywords(:matching)
-        end # it
-
-        it 'should query the repository' do
-          expect(instance.find_resources).to be == expected
-        end # it
-
-        it 'should set the resources' do
-          resources = nil
-
-          expect { resources = instance.find_resources }.
-            to change(instance, :resources)
-
-          expect(resources).to be == expected
-        end # it
-
-        describe 'with :matching => selector' do
-          let(:selector) { { :author => 'J.R.R. Tolkien' } }
-
-          before(:example) do
-            expect(query).to receive(:matching).with(selector).and_return(query)
-          end # before example
-
-          it 'should query the repository' do
-            results = instance.find_resources :matching => selector
-
-            expect(results).to be == expected
+            expect(resources).to be == expected
           end # it
 
           it 'should set the resources' do
             resources = nil
 
-            expect do
-              resources = instance.find_resources :matching => selector
-            end.to change(instance, :resources)
+            expect { resources = instance.send(:find_resources, *arguments) }.
+              to change(instance, :resources)
 
-            expect(resources).to be == expected
+            expect(instance.resources).to be == expected
           end # it
+        end # shared_examples
+
+        let(:arguments) { [] }
+        let(:expected)  { [] }
+
+        it 'should define the method' do
+          expect(instance).
+            to respond_to(:find_resources, true).
+            with(0).arguments.
+            and_keywords(:matching)
+        end # it
+
+        include_examples 'should set and return the resources'
+
+        wrap_context 'when the collection contains many resources' do
+          let(:expected) { resources }
+
+          include_examples 'should set and return the resources'
+        end # wrap_context
+
+        describe 'with :matching => selector' do
+          let(:selector)  { { :title => 'Journal of Applied Phrenology' } }
+          let(:arguments) { super() << { :matching => selector } }
+
+          include_examples 'should set and return the resources'
+
+          wrap_context 'when the collection contains many resources' do
+            let(:expected) do
+              resources.select do |resource|
+                resource.title == selector[:title]
+              end # select
+            end # let
+
+            include_examples 'should set and return the resources'
+          end # wrap_context
         end # describe
       end # describe
 
@@ -216,10 +291,12 @@ module Spec::Operations
       describe '#build_resource' do
         let(:attributes) { {} }
 
-        it { expect(instance).to respond_to(:build_resource).with(1).argument }
+        it 'should define the method' do
+          expect(instance).to respond_to(:build_resource, true).with(1).argument
+        end # it
 
         it 'should build an instance of the resource class' do
-          resource = instance.build_resource attributes
+          resource = instance.send :build_resource, attributes
           expected = {}
 
           resource_class.attributes.each do |attr_name, _|
@@ -235,7 +312,7 @@ module Spec::Operations
         it 'should set the resource' do
           resource = nil
 
-          expect { resource = instance.build_resource attributes }.
+          expect { resource = instance.send :build_resource, attributes }.
             to change(instance, :resource)
 
           expect(instance.resource).to be == resource
@@ -243,19 +320,21 @@ module Spec::Operations
       end # describe
 
       describe '#find_resource' do
-        let(:id)         { '0' }
-        let(:attributes) { { :id => id } }
-        let(:resource)   { resource_class.new(attributes) }
+        let(:resource_id) { '0' }
+        let(:attributes)  { { :id => resource_id } }
+        let(:resource)    { resource_class.new(attributes) }
 
-        it { expect(instance).to respond_to(:find_resource).with(1).argument }
+        it 'should define the method' do
+          expect(instance).to respond_to(:find_resource, true).with(1).argument
+        end # it
 
         context 'when the repository does not have the requested resource' do
           it 'should return nil' do
-            expect(instance.find_resource id).to be nil
+            expect(instance.send :find_resource, resource_id).to be nil
           end # it
 
           it 'should clear the resource' do
-            instance.find_resource id
+            instance.send :find_resource, resource_id
 
             expect(instance.resource).to be nil
           end # it
@@ -265,13 +344,76 @@ module Spec::Operations
           before(:example) { instance.resource_collection.insert(resource) }
 
           it 'should return the resource' do
-            expect(instance.find_resource id).to be == resource
+            expect(instance.send :find_resource, resource_id).to be == resource
           end # it
 
           it 'should set the resource' do
-            expect { instance.find_resource id }.to change(instance, :resource)
+            expect { instance.send :find_resource, resource_id }.
+              to change(instance, :resource)
 
             expect(instance.resource).to be == resource
+          end # it
+        end # context
+      end # describe
+
+      describe '#require_resource' do
+        let(:expected) do
+          error_definitions = Bronze::Collections::Collection::Errors
+
+          Bronze::Errors::Error.new [:resource],
+            error_definitions::RECORD_NOT_FOUND,
+            [:id, resource_id]
+        end # let
+        let(:resource_id) { '0' }
+        let(:attributes)  { { :id => resource_id } }
+        let(:resource)    { resource_class.new(attributes) }
+
+        before(:example) do
+          instance.instance_variable_set :@errors, Bronze::Errors::Errors.new
+        end # before example
+
+        it 'should define the method' do
+          expect(instance).
+            to respond_to(:require_resource, true).
+            with(1).argument
+        end # it
+
+        context 'when the repository does not have the requested resource' do
+          it 'should return false' do
+            expect(instance.send :require_resource, resource_id).to be false
+          end # it
+
+          it 'should clear the resource' do
+            instance.send :require_resource, resource_id
+
+            expect(instance.resource).to be nil
+          end # it
+
+          it 'should append the error' do
+            instance.send :require_resource, resource_id
+
+            expect(instance.errors).to include(expected)
+          end # it
+        end # context
+
+        context 'when the repository has the requested resource' do
+          before(:example) { instance.resource_collection.insert(resource) }
+
+          it 'should return the resource' do
+            expect(instance.send :find_resource, resource_id).to be == resource
+          end # it
+
+          it 'should set the resource' do
+            expect { instance.send :find_resource, resource_id }.
+              to change(instance, :resource)
+
+            expect(instance.resource).to be == resource
+          end # it
+
+          it 'should not append an error' do
+            instance.send :require_resource, resource_id
+
+            expect { instance.errors }.not_to change(instance, :errors)
           end # it
         end # context
       end # describe

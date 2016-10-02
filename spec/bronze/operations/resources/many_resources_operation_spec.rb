@@ -1,19 +1,17 @@
 # spec/bronze/operations/resources/many_resources_operation_spec.rb
 
 require 'bronze/collections/reference/repository'
-require 'bronze/entities/entity'
 require 'bronze/operations/resources/many_resources_operation'
 require 'bronze/operations/resources/resource_operation_examples'
 
 RSpec.describe Bronze::Operations::Resources::ManyResourcesOperation do
   include Spec::Operations::ResourceOperationExamples
 
-  let(:resource_class)  { Spec::ArchivedPeriodical }
+  include_context 'when a resource class is defined'
+
   let(:described_class) { Spec::ManyResourcesOperation }
   let(:repository)      { Bronze::Collections::Reference::Repository.new }
   let(:instance)        { described_class.new repository }
-
-  mock_class Spec, :ArchivedPeriodical, :base_class => Bronze::Entities::Entity
 
   options = {
     :base_class => Bronze::Operations::Resources::ManyResourcesOperation

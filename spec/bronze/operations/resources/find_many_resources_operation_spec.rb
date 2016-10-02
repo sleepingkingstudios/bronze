@@ -1,19 +1,17 @@
 # spec/bronze/operations/resources/find_many_resources_operation_spec.rb
 
 require 'bronze/collections/reference/repository'
-require 'bronze/entities/entity'
 require 'bronze/operations/resources/find_many_resources_operation'
 require 'bronze/operations/resources/resource_operation_examples'
 
 RSpec.describe Bronze::Operations::Resources::FindManyResourcesOperation do
   include Spec::Operations::ResourceOperationExamples
 
-  let(:resource_class)  { Spec::ArchivedPeriodical }
+  include_context 'when a resource class is defined'
+
   let(:described_class) { Spec::FindManyResourcesOperation }
   let(:repository)      { Bronze::Collections::Reference::Repository.new }
   let(:instance)        { described_class.new repository }
-
-  mock_class Spec, :ArchivedPeriodical, :base_class => Bronze::Entities::Entity
 
   options = {
     :base_class => Bronze::Operations::Resources::FindManyResourcesOperation
@@ -29,7 +27,7 @@ RSpec.describe Bronze::Operations::Resources::FindManyResourcesOperation do
   include_examples 'should implement the ManyResourcesOperation methods'
 
   describe '#call' do
-    shared_examples 'should set the resources' do
+    shared_examples 'should find the resources' do
       it { expect(instance.call(*arguments)).to be true }
 
       it 'should set the resources' do
@@ -51,30 +49,34 @@ RSpec.describe Bronze::Operations::Resources::FindManyResourcesOperation do
       end # it
     end # shared_examples
 
-    let(:collection) { instance.resource_collection }
-    let(:expected)   { Array.new(3) { double('entity') } }
-    let(:query)      { double('query') }
-    let(:arguments)  { [] }
-
-    before(:example) do
-      allow(collection).to receive(:base_query).and_return(query)
-
-      allow(query).to receive(:to_a).and_return(expected)
-    end # before example
+    let(:expected)  { [] }
+    let(:arguments) { [] }
 
     it { expect(instance).to respond_to(:call).with(0).arguments }
 
-    include_examples 'should set the resources'
+    include_examples 'should find the resources'
+
+    wrap_context 'when the collection contains many resources' do
+      let(:expected) { resources }
+
+      include_examples 'should find the resources'
+    end # wrap_context
 
     describe 'with :matching => selector' do
-      let(:selector)  { { :author => 'J.R.R. Tolkien' } }
-      let(:arguments) { [{ :matching => selector }] }
+      let(:selector)  { { :title => 'Journal of Applied Phrenology' } }
+      let(:arguments) { super() << { :matching => selector } }
 
-      before(:example) do
-        expect(query).to receive(:matching).with(selector).and_return(query)
-      end # before example
+      include_examples 'should find the resources'
 
-      include_examples 'should set the resources'
+      wrap_context 'when the collection contains many resources' do
+        let(:expected) do
+          resources.select do |resource|
+            resource.title == selector[:title]
+          end # select
+        end # let
+
+        include_examples 'should find the resources'
+      end # wrap_context
     end # describe
   end # describe
 end # describe

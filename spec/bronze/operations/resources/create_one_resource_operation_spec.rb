@@ -1,7 +1,6 @@
 # spec/bronze/operations/resources/create_one_resource_operation_spec.rb
 
 require 'bronze/collections/reference/repository'
-require 'bronze/entities/entity'
 require 'bronze/errors/errors'
 require 'bronze/operations/resources/create_one_resource_operation'
 require 'bronze/operations/resources/resource_operation_examples'
@@ -9,16 +8,11 @@ require 'bronze/operations/resources/resource_operation_examples'
 RSpec.describe Bronze::Operations::Resources::CreateOneResourceOperation do
   include Spec::Operations::ResourceOperationExamples
 
-  let(:resource_class)  { Spec::ArchivedPeriodical }
+  include_context 'when a resource class is defined'
+
   let(:described_class) { Spec::CreateOneResourceOperation }
   let(:repository)      { Bronze::Collections::Reference::Repository.new }
   let(:instance)        { described_class.new repository }
-
-  options = { :base_class => Bronze::Entities::Entity }
-  mock_class Spec, :ArchivedPeriodical, options do |klass|
-    klass.attribute :title,  String
-    klass.attribute :volume, Integer
-  end # mock_class
 
   options = {
     :base_class => Bronze::Operations::Resources::CreateOneResourceOperation

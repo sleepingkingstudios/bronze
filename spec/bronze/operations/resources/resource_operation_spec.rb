@@ -7,13 +7,8 @@ require 'bronze/operations/resources/resource_operation_examples'
 RSpec.describe Bronze::Operations::Resources::ResourceOperation do
   include Spec::Operations::ResourceOperationExamples
 
-  let(:resource_class) do
-    Class.new do
-      def self.name
-        'Publications::ArchivedPeriodical'
-      end # class method name
-    end # class
-  end # let
+  include_context 'when a resource class is defined'
+
   let(:described_class) { Spec::ResourceOperation }
   let(:repository)      { Bronze::Collections::Reference::Repository.new }
   let(:instance)        { described_class.new repository }

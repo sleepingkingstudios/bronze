@@ -13,6 +13,8 @@ module Bronze::Operations::Resources
     # @return [Array] The root resource for the operation.
     attr_reader :resources
 
+    private
+
     # Finds the requested instances of the resource class in the repository.
     #
     # @return [Array] The resources matching the requested parameters.
@@ -23,8 +25,6 @@ module Bronze::Operations::Resources
 
       @resources = query.to_a
     end # method find_resources
-
-    private
 
     def resource_query
       @resource_query ||= resource_collection.query
