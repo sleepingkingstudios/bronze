@@ -15,14 +15,6 @@ RSpec.describe Bronze::Collections::NullCollection do
 
   include_examples 'should implement the Collection interface'
 
-  describe '#all' do
-    it 'should return a null query' do
-      query = instance.all
-
-      expect(query).to be_a Bronze::Collections::NullQuery
-    end # it
-  end # describe
-
   describe '#count' do
     it { expect(instance.count).to be 0 }
   end # describe
@@ -36,6 +28,10 @@ RSpec.describe Bronze::Collections::NullCollection do
       include_examples 'should fail with error',
         described_class::Errors::READ_ONLY_COLLECTION
     end # with_params
+  end # describe
+
+  describe '#find' do
+    it { expect(instance.find '0').to be nil }
   end # describe
 
   describe '#insert' do
@@ -80,6 +76,14 @@ RSpec.describe Bronze::Collections::NullCollection do
   describe '#pluck' do
     it 'should return an empty array' do
       expect(instance.pluck :id).to be == []
+    end # it
+  end # describe
+
+  describe '#query' do
+    it 'should return a null query' do
+      query = instance.query
+
+      expect(query).to be_a Bronze::Collections::NullQuery
     end # it
   end # describe
 

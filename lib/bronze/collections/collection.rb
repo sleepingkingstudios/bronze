@@ -38,6 +38,9 @@ module Bronze::Collections
       @transform = transform
     end # constructor
 
+    # @return [String, Symbol] The name of the collection's root resource.
+    attr_reader :resource_name
+
     # @!method count
     #   (see Bronze::Collections::Query#count)
 
@@ -81,12 +84,14 @@ module Bronze::Collections
       :to_a,
       :to => :base_query
 
-    # Returns the default query object for the collection.
-    #
-    # @return [Query] The default query.
-    def all
-      base_query
-    end # method all
+    # @return [String] The name of the collection. Usually, the collection name
+    # is the plural form of the data it represents, e.g. a collection of Book
+    # objects should be named 'books'.
+    attr_reader :name
+
+    # @return [Bronze::Collections::Repository] The repository to which the
+    #   collection belongs.
+    attr_reader :repository
 
     # Deletes the specified hash from the datastore.
     #
@@ -98,6 +103,12 @@ module Bronze::Collections
       wrap_errors { delete_one(id) }
     end # method delete
 
+    # Queries for and returns the resource hash with the requested id from the
+    #   datastore.
+    def find id
+      base_query.matching(:id => id).limit(2).one
+    end # method find
+
     # Persists the given hash in the datastore.
     #
     # @param attributes [Hash] The hash to persist.
@@ -107,6 +118,13 @@ module Bronze::Collections
     def insert attributes
       wrap_errors { insert_one(transform.normalize attributes) }
     end # method insert
+
+    # Returns the default query object for the collection.
+    #
+    # @return [Query] The default query.
+    def query
+      base_query
+    end # method query
 
     # The current transform object. The transform maps the raw data sent to or
     # returned by the datastore to another object, typically an entity.
@@ -134,6 +152,8 @@ module Bronze::Collections
 
     private
 
+    attr_writer :name
+    attr_writer :repository
     attr_writer :transform
 
     def build_errors

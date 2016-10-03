@@ -1,14 +1,19 @@
 # lib/patina/collections/simple/repository.rb
 
 require 'bronze/collections/repository'
+require 'bronze/entities/collections/entity_repository'
 require 'patina/collections/simple/collection'
+require 'patina/collections/simple/collection_builder'
 
 module Patina::Collections::Simple
   # Coordinator object for creating collections around an in-memory data store.
   class Repository
     include Bronze::Collections::Repository
+    include Bronze::Entities::Collections::EntityRepository
 
     def initialize
+      @collection_builder = Patina::Collections::Simple::CollectionBuilder
+
       @data = Hash.new { |hsh, key| hsh[key] = [] }
     end # method initialize
 
@@ -16,27 +21,8 @@ module Patina::Collections::Simple
 
     attr_reader :data
 
-    def build_collection collection_name, transform
-      name = normalize_collection_name collection_name
-
-      collection = collection_class.new(data[name], transform)
-
-      collection.send :name=,       name
-      collection.send :repository=, self
-
-      collection
+    def build_collection collection_name
+      collection_builder.new(collection_name, @data)
     end # method build_collection
-
-    def collection_class
-      Patina::Collections::Simple::Collection
-    end # method collection_class
-
-    def normalize_collection_name name
-      tools = ::SleepingKingStudios::Tools::StringTools
-      name  = tools.underscore(name.to_s)
-      name  = tools.pluralize(name)
-
-      name.intern
-    end # method normalize_collection_name
   end # class
 end # module

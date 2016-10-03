@@ -34,7 +34,15 @@ module Bronze::Errors
     #   returning an array containing the results of each yield.
     #
     #   @yieldparam error [Bronze::Errors::Error] The current error object.
-    delegate :each, :map, :to => :to_a
+    delegate :each, :include?, :map, :to => :to_a
+
+    # @return [Boolean] True if the other object is an Errors object of the same
+    #   class and has the same errors.
+    def == other
+      return false unless other.class == self.class
+
+      errors == other.errors && children == other.children
+    end # method ==
 
     # Finds or creates a child errors object with the given name, representing
     # an attribute or nested relation.
@@ -50,7 +58,22 @@ module Bronze::Errors
     # @param error_params [Array] Array of optional error parameters.
     def add error_type, *error_params
       @errors << Error.new(nesting, error_type, error_params)
-    end # method <<
+
+      self
+    end # method add
+
+    # Iterates through the errors and returns true if the errors object
+    # includes the given error.
+    #
+    # @param error [Bronze::Errors::Error] The error to check.
+    #
+    # @return [Boolean] True if the errors object includes the given error,
+    #   otherwise false.
+    def detect &block
+      return true if @errors.detect(&block)
+
+      children.any? { |_, child| child.detect(&block) }
+    end # method detect
 
     # @return [Boolean] True if there are no errors on the object or on any
     #   child errors object; otherwise false.
@@ -63,6 +86,19 @@ module Bronze::Errors
 
       true
     end # method empty?
+
+    # Iterates through the errors and returns true if the errors object
+    # includes the given error.
+    #
+    # @param error [Bronze::Errors::Error] The error to check.
+    #
+    # @return [Boolean] True if the errors object includes the given error,
+    #   otherwise false.
+    def include? error
+      return true if @errors.include? error
+
+      children.any? { |_, child| child.include?(error) }
+    end # method include?
 
     # Returns the listed errors and all errors from child errors objects.
     #
@@ -82,5 +118,7 @@ module Bronze::Errors
     attr_accessor :parent
 
     attr_reader :children
+
+    attr_reader :errors
   end # class
 end # module

@@ -87,10 +87,6 @@ module Spec::Collections
     end # shared_context
 
     shared_examples 'should implement the Collection interface' do
-      describe '#all' do
-        it { expect(instance).to respond_to(:all).with(0).arguments }
-      end # describe
-
       describe '#count' do
         it { expect(instance).to respond_to(:count).with(0).arguments }
       end # describe
@@ -109,6 +105,10 @@ module Spec::Collections
         it { expect(instance).to respond_to(:exists?).with(0).arguments }
       end # describe
 
+      describe '#find' do
+        it { expect(instance).to respond_to(:find).with(1).argument }
+      end # describe
+
       describe '#insert' do
         it { expect(instance).to respond_to(:insert).with(1).argument }
       end # describe
@@ -121,6 +121,16 @@ module Spec::Collections
         it { expect(instance).to respond_to(:matching).with(1).argument }
       end # describe
 
+      describe '#name' do
+        it { expect(instance).to respond_to(:name).with(0).arguments }
+      end # describe
+
+      describe '#name=' do
+        it { expect(instance).not_to respond_to(:name=) }
+
+        it { expect(instance).to respond_to(:name=, true).with(1).argument }
+      end # describe
+
       describe '#none' do
         it { expect(instance).to respond_to(:none).with(0).arguments }
       end # describe
@@ -131,6 +141,22 @@ module Spec::Collections
 
       describe '#pluck' do
         it { expect(instance).to respond_to(:pluck).with(1).argument }
+      end # describe
+
+      describe '#query' do
+        it { expect(instance).to respond_to(:query).with(0).arguments }
+      end # describe
+
+      describe '#repository' do
+        it { expect(instance).to respond_to(:repository).with(0).arguments }
+      end # describe
+
+      describe '#repository=' do
+        it { expect(instance).not_to respond_to(:repository=) }
+
+        it 'should define the private writer' do
+          expect(instance).to respond_to(:repository=, true).with(1).argument
+        end # it
       end # describe
 
       describe '#to_a' do
@@ -164,7 +190,7 @@ module Spec::Collections
         errors = nil
 
         expect { result, errors = perform_action }.
-          not_to change(instance.all, :to_a)
+          not_to change(instance.query, :to_a)
 
         expect(result).to be false
 
@@ -186,7 +212,7 @@ module Spec::Collections
         expect(result).to be true
         expect(errors).to be == []
 
-        item = instance.all.to_a.find { |hsh| hsh[:id] == id }
+        item = instance.query.to_a.find { |hsh| hsh[:id] == id }
         expect(item).to be nil
       end # it
     end # shared_examples
@@ -202,7 +228,7 @@ module Spec::Collections
         expect(result).to be true
         expect(errors).to be == []
 
-        item = instance.all.to_a.last
+        item = instance.query.to_a.last
         hsh  = item.is_a?(Hash) ? item : item.attributes
 
         expect(hsh).to be >= attributes
@@ -249,6 +275,26 @@ module Spec::Collections
         end # wrap_context
       end # describe
 
+      describe '#find' do
+        it { expect(instance.find '0').to be nil }
+
+        wrap_context 'when the collection contains many items' do
+          describe 'with an invalid id' do
+            it { expect(instance.find '0').to be nil }
+          end # describe
+
+          describe 'with a valid id' do
+            let(:id) { '1' }
+
+            it { expect(instance.find id).to be == find_item(id) }
+
+            wrap_context 'when a transform is set' do
+              it { expect(instance.find id).to be == find_item(id) }
+            end # wrap_context
+          end # describe
+        end # wrap_context
+      end # describe
+
       describe '#insert' do
         let(:entity) { attributes }
 
@@ -263,7 +309,7 @@ module Spec::Collections
             instance.insert attributes
 
             expect { attributes[:title] = 'Bored of the Rings' }.
-              not_to change { tools.deep_dup(instance.all.to_a) }
+              not_to change { tools.deep_dup(instance.query.to_a) }
           end # it
         end # describe
 
@@ -294,6 +340,26 @@ module Spec::Collections
             end # describe
           end # wrap_context
         end # wrap_context
+      end # describe
+
+      describe '#name' do
+        it { expect(instance.name).to be nil }
+      end # describe
+
+      describe '#name=' do
+        let(:name) { 'tomes' }
+
+        it 'should set the name' do
+          expect { instance.send :name=, name }.
+            to change(instance, :name).
+            to be == name
+        end # it
+      end # describe
+
+      describe '#query' do
+        include_examples 'should return a query' do
+          let(:query) { instance.query }
+        end # include_examples
       end # describe
 
       describe '#transform' do

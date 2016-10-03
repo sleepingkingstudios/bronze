@@ -140,6 +140,31 @@ RSpec.describe Bronze::Thor::Ci::RSpecEach do
           of(expected_duration)
       end # it
     end # context
+
+    context 'when the files have execution errors' do
+      let(:expected_failure_count) { spec_files.count }
+      let(:expected_duration)      { 0.0 }
+
+      it 'should run each spec file' do
+        run_files = []
+
+        allow(instance).to receive(:run_spec_file) do |file_path|
+          run_files << file_path
+
+          {}
+        end # method
+
+        results = instance.rspec_each
+
+        expect(results).to be_a Hash
+        expect(results['spec_file_count']).to be == spec_files.count
+        expect(results['failure_count']).to be == expected_failure_count
+        expect(results['pending_count']).to be == expected_pending_count
+        expect(results['spec_duration']).
+          to be_within(0.001).
+          of(expected_duration)
+      end # it
+    end # context
   end # describe
 
   describe '#run_spec_file' do

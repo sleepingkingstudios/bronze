@@ -52,6 +52,12 @@ module Bronze::Thor::Ci
     def update results
       @spec_file_count += 1
 
+      if results.empty? || results.keys == %w(file_path)
+        failing_files << results['file_path'] if results['file_path']
+
+        return
+      end # if
+
       profile['total'] += results['profile']['total']
 
       update_failures(results)

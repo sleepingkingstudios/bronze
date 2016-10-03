@@ -20,7 +20,7 @@ RSpec.describe Bronze::Entities::Ulid do
 
     it 'should be lexographically ordered' do
       chars  = described_class::ENCODING.split ''
-      sorted = chars.sort { |u, v| u.ord <=> v.ord }.join
+      sorted = chars.sort_by(&:ord).join
 
       expect(sorted).to be == described_class::ENCODING
     end # it

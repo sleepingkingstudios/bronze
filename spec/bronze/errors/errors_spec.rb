@@ -99,6 +99,101 @@ RSpec.describe Bronze::Errors::Errors do
     it { expect(described_class).to be_constructible.with(0..1).arguments }
   end # describe
 
+  describe '#==' do
+    # rubocop:disable Style/NilComparison
+    describe 'with nil' do
+      it { expect(instance == nil).to be false }
+    end # describe
+    # rubocop:enable Style/NilComparison
+
+    describe 'with an object' do
+      it { expect(instance == Object.new).to be false }
+    end # describe
+
+    describe 'with an empty errors object' do
+      it { expect(instance == described_class.new).to be true }
+    end # describe
+
+    describe 'with an errors object with different errors' do
+      let(:other) do
+        described_class.new.tap do |other|
+          other.add :require_more_minerals
+          other.add :require_more_vespene_gas
+        end # tap
+      end # let
+
+      it { expect(instance == other).to be false }
+    end # describe
+
+    wrap_context 'when many errors are added' do
+      describe 'with an empty errors object' do
+        it { expect(instance == described_class.new).to be false }
+      end # describe
+
+      describe 'with an errors object with different errors' do
+        let(:other) do
+          described_class.new.tap do |other|
+            other.add :require_more_minerals
+            other.add :require_more_vespene_gas
+          end # tap
+        end # let
+
+        it { expect(instance == other).to be false }
+      end # describe
+
+      describe 'with an errors object with matching errors' do
+        let(:other) do
+          described_class.new.tap do |other|
+            errors.each do |error_type, error_params|
+              other.add error_type, *error_params
+            end # each
+          end # tap
+        end # let
+
+        it { expect(instance == other).to be true }
+      end # describe
+    end # describe
+
+    wrap_context 'when there are many descendants' do
+      describe 'with an empty errors object' do
+        it { expect(instance == described_class.new).to be false }
+      end # describe
+
+      describe 'with an errors object with different errors' do
+        let(:other) do
+          described_class.new.tap do |other|
+            other.add :require_more_minerals
+            other.add :require_more_vespene_gas
+          end # tap
+        end # let
+
+        it { expect(instance == other).to be false }
+      end # describe
+
+      describe 'with an errors object with matching errors' do
+        let(:other) do
+          described_class.new.tap do |other|
+            children[:_].each do |error_type, error_params|
+              other.add error_type, *error_params
+            end # each
+          end # tap
+        end # let
+
+        it { expect(instance == other).to be false }
+      end # describe
+
+      describe 'with an errors object with matching errors and descendants' do
+        let(:other) do
+          described_class.new.tap do |other|
+            add_errors(other, children)
+          end # tap
+        end # let
+
+        it { expect(instance == other).to be true }
+      end # describe
+    end # wrap_context
+  end # describe
+
   describe '#[]' do
     shared_examples 'should return a nested errors object' do
       it 'should return a nested errors object' do
@@ -145,6 +240,8 @@ RSpec.describe Bronze::Errors::Errors do
 
   describe '#add' do
     shared_examples 'should append an error' do
+      it { expect(instance.add error_type, *error_params).to be instance }
+
       it 'should append an error' do
         expect { instance.add error_type, *error_params }.
           to change { instance.to_a.count }.
@@ -186,6 +283,46 @@ RSpec.describe Bronze::Errors::Errors do
         let(:error_type) { :must_be_present }
 
         include_examples 'should append an error'
+      end # describe
+    end # wrap_context
+  end # describe
+
+  describe '#detect' do
+    let(:error) { Bronze::Errors::Error.new [], :require_more_minerals, [] }
+
+    it { expect(instance).to respond_to(:detect).with(0).argument.and_a_block }
+
+    it { expect(instance.detect { |e| e == error }).to be false }
+
+    wrap_context 'when many errors are added' do
+      it { expect(instance.detect { |e| e == error }).to be false }
+
+      describe 'with a matching error' do
+        let(:error) { Bronze::Errors::Error.new [], *errors.first }
+
+        it { expect(instance.detect { |e| e == error }).to be true }
+      end # describe
+    end # wrap_context
+
+    wrap_context 'when there are many descendants' do
+      it { expect(instance.detect { |e| e == error }).to be false }
+
+      describe 'with a matching error' do
+        let(:error) { Bronze::Errors::Error.new [], *children[:_].first }
+
+        it { expect(instance.detect { |e| e == error }).to be true }
+      end # describe
+
+      describe 'with a nested matching error' do
+        let(:error_nesting) { [:articles, 0, :tags] }
+        let(:error) do
+          error_data =
+            error_nesting.reduce(children) { |hsh, key| hsh[key] }[:_]
+
+          Bronze::Errors::Error.new error_nesting, *error_data.first
+        end # let
+
+        it { expect(instance.detect { |e| e == error }).to be true }
       end # describe
     end # wrap_context
   end # describe
@@ -242,6 +379,46 @@ RSpec.describe Bronze::Errors::Errors do
 
         it { expect(instance.empty?).to be false }
       end # context
+    end # wrap_context
+  end # describe
+
+  describe '#include?' do
+    let(:error) { Bronze::Errors::Error.new [], :require_more_minerals, [] }
+
+    it { expect(instance).to respond_to(:include?).with(1).argument }
+
+    it { expect(instance.include? error).to be false }
+
+    wrap_context 'when many errors are added' do
+      it { expect(instance.include? error).to be false }
+
+      describe 'with a matching error' do
+        let(:error) { Bronze::Errors::Error.new [], *errors.first }
+
+        it { expect(instance.include? error).to be true }
+      end # describe
+    end # wrap_context
+
+    wrap_context 'when there are many descendants' do
+      it { expect(instance.include? error).to be false }
+
+      describe 'with a matching error' do
+        let(:error) { Bronze::Errors::Error.new [], *children[:_].first }
+
+        it { expect(instance.include? error).to be true }
+      end # describe
+
+      describe 'with a nested matching error' do
+        let(:error_nesting) { [:articles, 0, :tags] }
+        let(:error) do
+          error_data =
+            error_nesting.reduce(children) { |hsh, key| hsh[key] }[:_]
+
+          Bronze::Errors::Error.new error_nesting, *error_data.first
+        end # let
+
+        it { expect(instance.include? error).to be true }
+      end # describe
     end # wrap_context
   end # describe
 

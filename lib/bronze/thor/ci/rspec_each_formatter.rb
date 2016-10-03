@@ -11,10 +11,10 @@ module Bronze::Thor::Ci
     end # methdo format_file_path
 
     def format_file_results results
-      str = ' - '
-
-      str <<
-        if results['summary']['failure_count'] > 0
+      '- ' <<
+        if results.empty? || results.keys == %w(file_path)
+          colorize('ERRORED', :red)
+        elsif results['summary']['failure_count'] > 0
           colorize('FAILED', :red)
         elsif results['summary']['pending_count'] > 0
           colorize('PENDING', :yellow)

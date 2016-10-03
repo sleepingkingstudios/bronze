@@ -1,13 +1,19 @@
 # Development
 
-## Bug Fixes
+- Extract Bronze::Ci to standalone gem.
 
-- bronze/entities/transforms/entity_transform should require bronze/entities/transforms FIXED
-- SimpleCollection#pluck does not work with a transform FIXED
+## Bug Fixes
 
 ## Features
 
+- Collection
+  - bulk operations
+- Constraint
+  - represents an expectation on an object
+  - Contract
+    - group of constraints
 - Query
+  - #all returns with JSON envelope for advanced features?
   - #matching with non-equality predicates
     - use block syntax+DSL: |
 
@@ -29,11 +35,16 @@
     - in (element is in array)
     - not in
   - #order
-- Operation
+  - #includes
+- Relations
+  - Entities
+    - foreign_key => attribute
+    - Bronze::Entities::Relations::Metadata
+    - relation macros
 - Repository#except, #only - returns a copy of the repository that only has the given collections.
 - Scope |
 
-  ActiveScope.new(params).call(query)
+  ActivatedScope.new(params).call(query)
   #=> returns query.matching(:active => true)
 
 - bronze/rails
