@@ -21,14 +21,16 @@ module Spec::Operations
     end # shared_context
 
     shared_context 'when the collection contains one resource' do
-      let(:attributes) { {} }
-      let(:resource)   { resource_class.new attributes }
+      let(:resource_attributes) do
+        { :title => 'Your Weekly Horoscope', :volume => 0 }
+      end # let
+      let(:resource) { resource_class.new resource_attributes }
 
       before(:example) { instance.resource_collection.insert resource }
     end # shared_context
 
     shared_context 'when the collection contains many resources' do
-      let(:attributes) do
+      let(:resources_attributes) do
         ary = []
 
         title = 'Astrology Today'
@@ -40,7 +42,7 @@ module Spec::Operations
         ary
       end # let
       let(:resources) do
-        attributes.map { |hsh| resource_class.new hsh }
+        resources_attributes.map { |hsh| resource_class.new hsh }
       end # let
 
       before(:example) do
