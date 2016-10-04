@@ -6,6 +6,7 @@
 
 ## Features
 
+- Errors#merge, #update
 - Collection
   - bulk operations
 - Constraint

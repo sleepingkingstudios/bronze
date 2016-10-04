@@ -66,6 +66,15 @@ RSpec.configure do |config|
     mocks.verify_partial_doubles = true
   end # config
 
+  # rspec-sleeping_king_studios config goes here.
+  config.sleeping_king_studios do |sleeping_king_studios|
+    sleeping_king_studios.matchers do |matchers|
+      matchers.allow_empty_include_matchers = false
+
+      matchers.strict_predicate_matching = true
+    end # matchers
+  end # config
+
   # This option will default to `:apply_to_host_groups` in RSpec 4 (and will
   # have no way to turn it off -- the option exists only for backwards
   # compatibility in RSpec 3). It causes shared context metadata to be
