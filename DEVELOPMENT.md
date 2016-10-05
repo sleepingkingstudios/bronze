@@ -13,6 +13,12 @@
   - represents an expectation on an object
   - Contract
     - group of constraints
+- Entity
+  - dirty_tracking
+    - #changed? - alias #dirty?
+    - #{attribute}_changed?
+    - #old_{attribute}
+    - #clean!
 - Query
   - #all returns with JSON envelope for advanced features?
   - #matching with non-equality predicates

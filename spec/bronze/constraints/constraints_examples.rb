@@ -4,13 +4,15 @@ module Spec::Constraints
   module ConstraintsExamples
     extend RSpec::SleepingKingStudios::Concerns::SharedExampleGroup
 
-    shared_examples 'should return false and the errors object' do
+    shared_examples 'should return false and the errors object' do |proc = nil|
       it 'should return false and the errors object' do
         result, errors = instance.match object
 
         expect(result).to be false
 
-        if defined?(error_type)
+        if proc.is_a?(Proc)
+          instance_exec(errors, &proc)
+        elsif defined?(error_type)
           expect(errors).to include { |error|
             return false unless error.type == error_type
 
