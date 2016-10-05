@@ -1,8 +1,11 @@
 # spec/bronze/contracts/failure_constraint_spec.rb
 
+require 'bronze/contracts/constraints_examples'
 require 'bronze/contracts/failure_constraint'
 
 RSpec.describe Spec::FailureConstraint do
+  include Spec::Contracts::ConstraintsExamples
+
   let(:instance) { described_class.new }
 
   describe '::new' do
@@ -10,17 +13,11 @@ RSpec.describe Spec::FailureConstraint do
   end # describe
 
   describe '#match' do
-    let(:object) { double('object') }
+    let(:error_type) { described_class::INVALID_ERROR }
+    let(:object)     { double('object') }
 
     it { expect(instance).to respond_to(:match).with(1).argument }
 
-    it 'should return false and the errors object' do
-      result, errors = instance.match object
-
-      expect(result).to be false
-      expect(errors).to include { |error|
-        error.type == described_class::INVALID_ERROR
-      } # errors
-    end # it
+    include_examples 'should return false and the errors object'
   end # describe
 end # describe

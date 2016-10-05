@@ -1,8 +1,11 @@
 # spec/bronze/contracts/success_constraint_spec.rb
 
+require 'bronze/contracts/constraints_examples'
 require 'bronze/contracts/success_constraint'
 
 RSpec.describe Spec::SuccessConstraint do
+  include Spec::Contracts::ConstraintsExamples
+
   let(:instance) { described_class.new }
 
   describe '::new' do
@@ -14,11 +17,6 @@ RSpec.describe Spec::SuccessConstraint do
 
     it { expect(instance).to respond_to(:match).with(1).argument }
 
-    it 'should return true and an empty errors object' do
-      result, errors = instance.match object
-
-      expect(result).to be true
-      expect(errors).to satisfy(&:empty?)
-    end # it
+    include_examples 'should return true and an empty errors object'
   end # describe
 end # describe
