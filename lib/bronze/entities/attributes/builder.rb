@@ -11,6 +11,7 @@ module Bronze::Entities::Attributes
     # Provides a list of the valid options for the attribute_options parameter
     # for Builder#build.
     VALID_OPTIONS = %w(
+      allow_nil
       default
       read_only
     ).map(&:freeze).freeze

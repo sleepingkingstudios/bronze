@@ -34,6 +34,12 @@ module Bronze::Entities::Attributes
     # @return [String, Symbol] The name of the attribute's writer method.
     attr_reader :writer_name
 
+    # @return [Boolean] True if the attribute allows nil values, otherwise
+    #   false.
+    def allow_nil?
+      !!@attribute_options[:allow_nil]
+    end # method allow_nil?
+
     # @return [Object] The default value for the attribute.
     def default
       val = @attribute_options[:default]

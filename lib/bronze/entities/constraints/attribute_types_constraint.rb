@@ -50,6 +50,8 @@ module Bronze::Entities::Constraints
     def matches_attribute_type? value, metadata
       if value.is_a?(metadata.attribute_type)
         true
+      elsif value.nil? && metadata.allow_nil?
+        true
       else
         false
       end # if-else

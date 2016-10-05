@@ -14,6 +14,16 @@ RSpec.describe Bronze::Entities::Attributes::Metadata do
     it { expect(described_class).to be_constructible.with(3).arguments }
   end # describe
 
+  describe '#allow_nil?' do
+    include_examples 'should have predicate', :allow_nil?, false
+
+    context 'when the allow nil flag is set to true' do
+      let(:attribute_options) { { :allow_nil => true } }
+
+      it { expect(instance.allow_nil?).to be true }
+    end # context
+  end # describe
+
   describe '#attribute_name' do
     include_examples 'should have reader', :attribute_name, lambda {
       be == attribute_name

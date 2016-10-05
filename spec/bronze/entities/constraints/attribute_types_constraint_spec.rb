@@ -55,7 +55,7 @@ RSpec.describe Bronze::Entities::Constraints::AttributeTypesConstraint do
         end # each
       end # mock_class
 
-      describe 'with empty attributes' do
+      describe 'with nil attributes' do
         include_examples 'should return false and the errors object',
           lambda { |errors|
             expect(errors[:id]).to satisfy(&:empty?)
@@ -68,6 +68,18 @@ RSpec.describe Bronze::Entities::Constraints::AttributeTypesConstraint do
               } # end include
             end # each
           } # end lambda
+
+        context 'when the attributes allow nil values' do
+          let(:attribute_definitions) do
+            super().tap do |hsh|
+              hsh.each do |_, config|
+                (config[:opts] ||= {}).update :allow_nil => true
+              end # each
+            end # tap
+          end # let
+
+          include_examples 'should return true and an empty errors object'
+        end # context
       end # describe
 
       describe 'with attributes with invalid values' do
