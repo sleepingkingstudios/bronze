@@ -1,0 +1,69 @@
+# spec/bronze/contracts/empty_constraint_spec.rb
+
+require 'bronze/contracts/constraints_examples'
+require 'bronze/contracts/empty_constraint'
+
+RSpec.describe Bronze::Contracts::EmptyConstraint do
+  include Spec::Contracts::ConstraintsExamples
+
+  let(:instance) { described_class.new }
+
+  describe '::new' do
+    it { expect(described_class).to be_constructible.with(0).arguments }
+  end # describe
+
+  describe '#match' do
+    let(:error_type)   { described_class::NOT_EMPTY_ERROR }
+    let(:error_params) { [] }
+
+    it { expect(instance).to respond_to(:match).with(1).argument }
+
+    describe 'with nil' do
+      let(:object) { nil }
+
+      include_examples 'should return true and an empty errors object'
+    end # describe
+
+    describe 'with a non-nil object' do
+      let(:object) { Object.new }
+
+      include_examples 'should return false and the errors object'
+    end # describe
+
+    describe 'with an empty array' do
+      let(:object) { [] }
+
+      include_examples 'should return true and an empty errors object'
+    end # describe
+
+    describe 'with a non-empty string' do
+      let(:object) { %w(an array) }
+
+      include_examples 'should return false and the errors object'
+    end # describe
+
+    describe 'with an empty hash' do
+      let(:object) { {} }
+
+      include_examples 'should return true and an empty errors object'
+    end # describe
+
+    describe 'with a non-empty hash' do
+      let(:object) { { :a => :hash } }
+
+      include_examples 'should return false and the errors object'
+    end # describe
+
+    describe 'with an empty string' do
+      let(:object) { '' }
+
+      include_examples 'should return true and an empty errors object'
+    end # describe
+
+    describe 'with a non-empty string' do
+      let(:object) { 'a string' }
+
+      include_examples 'should return false and the errors object'
+    end # describe
+  end # describe
+end # describe
