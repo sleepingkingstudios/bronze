@@ -1,9 +1,9 @@
-# spec/bronze/contracts/constraint_spec.rb
+# spec/bronze/constraints/constraint_spec.rb
 
-require 'bronze/contracts/constraint'
+require 'bronze/constraints/constraint'
 require 'bronze/errors/errors'
 
-RSpec.describe Bronze::Contracts::Constraint do
+RSpec.describe Bronze::Constraints::Constraint do
   let(:instance) { described_class.new }
 
   describe '::new' do

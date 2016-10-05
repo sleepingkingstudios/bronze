@@ -1,10 +1,10 @@
-# spec/bronze/contracts/type_constraint_spec.rb
+# spec/bronze/constraints/type_constraint_spec.rb
 
-require 'bronze/contracts/constraints_examples'
-require 'bronze/contracts/type_constraint'
+require 'bronze/constraints/constraints_examples'
+require 'bronze/constraints/type_constraint'
 
-RSpec.describe Bronze::Contracts::TypeConstraint do
-  include Spec::Contracts::ConstraintsExamples
+RSpec.describe Bronze::Constraints::TypeConstraint do
+  include Spec::Constraints::ConstraintsExamples
 
   let(:expected) { Object.new }
   let(:instance) { described_class.new expected }

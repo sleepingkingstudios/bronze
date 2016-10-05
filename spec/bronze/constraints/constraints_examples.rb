@@ -1,6 +1,6 @@
-# spec/bronze/contracts/constraints_examples.rb
+# spec/bronze/constraints/constraints_examples.rb
 
-module Spec::Contracts
+module Spec::Constraints
   module ConstraintsExamples
     extend RSpec::SleepingKingStudios::Concerns::SharedExampleGroup
 

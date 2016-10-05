@@ -1,10 +1,10 @@
-# spec/bronze/contracts/block_constraint_spec.rb
+# spec/bronze/constraints/block_constraint_spec.rb
 
-require 'bronze/contracts/constraints_examples'
-require 'bronze/contracts/block_constraint'
+require 'bronze/constraints/constraints_examples'
+require 'bronze/constraints/block_constraint'
 
-RSpec.describe Bronze::Contracts::BlockConstraint do
-  include Spec::Contracts::ConstraintsExamples
+RSpec.describe Bronze::Constraints::BlockConstraint do
+  include Spec::Constraints::ConstraintsExamples
 
   let(:block)    { ->(int) { int.even? } }
   let(:instance) { described_class.new(&block) }

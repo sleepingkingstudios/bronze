@@ -1,11 +1,11 @@
-# spec/bronze/contracts/failure_constraint.rb
+# spec/bronze/constraints/failure_constraint.rb
 
-require 'bronze/contracts/constraint'
+require 'bronze/constraints/constraint'
 
 module Spec
-  # An implementation of Bronze::Contracts::Constraint that does not match any
+  # An implementation of Bronze::Constraints::Constraint that does not match any
   # objects.
-  class FailureConstraint < Bronze::Contracts::Constraint
+  class FailureConstraint < Bronze::Constraints::Constraint
     # Error message for objects that do not match the constraint.
     INVALID_ERROR = :invalid
 

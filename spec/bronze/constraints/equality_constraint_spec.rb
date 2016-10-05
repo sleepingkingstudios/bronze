@@ -1,10 +1,10 @@
-# spec/bronze/contracts/equality_constraint_spec.rb
+# spec/bronze/constraints/equality_constraint_spec.rb
 
-require 'bronze/contracts/constraints_examples'
-require 'bronze/contracts/equality_constraint'
+require 'bronze/constraints/constraints_examples'
+require 'bronze/constraints/equality_constraint'
 
-RSpec.describe Bronze::Contracts::EqualityConstraint do
-  include Spec::Contracts::ConstraintsExamples
+RSpec.describe Bronze::Constraints::EqualityConstraint do
+  include Spec::Constraints::ConstraintsExamples
 
   let(:expected) { 'a string' }
   let(:instance) { described_class.new expected }

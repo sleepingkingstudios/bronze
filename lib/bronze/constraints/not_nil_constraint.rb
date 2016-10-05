@@ -1,8 +1,8 @@
-# lib/bronze/contracts/not_nil_constraint.rb
+# lib/bronze/constraints/not_nil_constraint.rb
 
-require 'bronze/contracts/constraint'
+require 'bronze/constraints/constraint'
 
-module Bronze::Contracts
+module Bronze::Constraints
   # Constraint that matches all objects except for nil.
   class NotNilConstraint < Constraint
     # Error message for objects that do not match the constraint.

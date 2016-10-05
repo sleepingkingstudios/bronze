@@ -1,10 +1,10 @@
-# spec/bronze/contracts/failure_constraint_spec.rb
+# spec/bronze/constraints/failure_constraint_spec.rb
 
-require 'bronze/contracts/constraints_examples'
-require 'bronze/contracts/failure_constraint'
+require 'bronze/constraints/constraints_examples'
+require 'bronze/constraints/failure_constraint'
 
 RSpec.describe Spec::FailureConstraint do
-  include Spec::Contracts::ConstraintsExamples
+  include Spec::Constraints::ConstraintsExamples
 
   let(:instance) { described_class.new }
 

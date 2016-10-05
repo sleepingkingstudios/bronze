@@ -1,10 +1,10 @@
-# spec/bronze/contracts/success_constraint_spec.rb
+# spec/bronze/constraints/success_constraint_spec.rb
 
-require 'bronze/contracts/constraints_examples'
-require 'bronze/contracts/success_constraint'
+require 'bronze/constraints/constraints_examples'
+require 'bronze/constraints/success_constraint'
 
 RSpec.describe Spec::SuccessConstraint do
-  include Spec::Contracts::ConstraintsExamples
+  include Spec::Constraints::ConstraintsExamples
 
   let(:instance) { described_class.new }
 

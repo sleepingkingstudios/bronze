@@ -1,8 +1,8 @@
-# lib/bronze/contracts/not_empty_constraint.rb
+# lib/bronze/constraints/not_empty_constraint.rb
 
-require 'bronze/contracts/constraint'
+require 'bronze/constraints/constraint'
 
-module Bronze::Contracts
+module Bronze::Constraints
   # Constraint that matches only nil and empty objects.
   class NotEmptyConstraint < Constraint
     # Error message for objects that do not match the constraint.

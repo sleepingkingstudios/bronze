@@ -1,10 +1,10 @@
-# spec/bronze/contracts/identity_constraint_spec.rb
+# spec/bronze/constraints/identity_constraint_spec.rb
 
-require 'bronze/contracts/constraints_examples'
-require 'bronze/contracts/identity_constraint'
+require 'bronze/constraints/constraints_examples'
+require 'bronze/constraints/identity_constraint'
 
-RSpec.describe Bronze::Contracts::IdentityConstraint do
-  include Spec::Contracts::ConstraintsExamples
+RSpec.describe Bronze::Constraints::IdentityConstraint do
+  include Spec::Constraints::ConstraintsExamples
 
   let(:expected) { 'a string' }
   let(:instance) { described_class.new expected }

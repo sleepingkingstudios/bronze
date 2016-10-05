@@ -1,8 +1,8 @@
-# lib/bronze/contracts/block_constraint.rb
+# lib/bronze/constraints/block_constraint.rb
 
-require 'bronze/contracts/constraint'
+require 'bronze/constraints/constraint'
 
-module Bronze::Contracts
+module Bronze::Constraints
   # Constraint that matches only nil.
   class BlockConstraint < Constraint
     # Error message for objects that do not match the constraint.

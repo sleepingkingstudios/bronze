@@ -1,12 +1,12 @@
-# lib/bronze/contracts/equality_constraint.rb
+# lib/bronze/constraints/identity_constraint.rb
 
-require 'bronze/contracts/constraint'
+require 'bronze/constraints/constraint'
 
-module Bronze::Contracts
+module Bronze::Constraints
   # Constraint that matches only the given object.
-  class EqualityConstraint < Constraint
+  class IdentityConstraint < Constraint
     # Error message for objects that do not match the constraint.
-    NOT_EQUAL_TO_ERROR = :not_equal_to
+    NOT_IDENTICAL_TO_ERROR = :not_identical_to
 
     # @param expected [Object] The expected object.
     def initialize expected
@@ -16,11 +16,11 @@ module Bronze::Contracts
     private
 
     def build_errors _object
-      super.add(NOT_EQUAL_TO_ERROR, @expected)
+      super.add(NOT_IDENTICAL_TO_ERROR, @expected)
     end # method build_errors
 
     def matches_object? object
-      @expected == object
+      @expected.equal?(object)
     end # method matches_object?
   end # class
 end # module

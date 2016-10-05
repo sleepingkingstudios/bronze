@@ -1,9 +1,9 @@
-# lib/bronze/contracts/constraint.rb
+# lib/bronze/constraints/constraint.rb
 
-require 'bronze/contracts'
+require 'bronze/constraints'
 require 'bronze/errors/errors'
 
-module Bronze::Contracts
+module Bronze::Constraints
   # Constraints encapsulate a single expectation that an object may or may not
   # match. Constraints can be used individually or aggregated into a contract.
   class Constraint

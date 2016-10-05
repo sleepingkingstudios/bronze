@@ -1,10 +1,10 @@
-# spec/bronze/contracts/not_nil_constraint_spec.rb
+# spec/bronze/constraints/not_nil_constraint_spec.rb
 
-require 'bronze/contracts/constraints_examples'
-require 'bronze/contracts/not_nil_constraint'
+require 'bronze/constraints/constraints_examples'
+require 'bronze/constraints/not_nil_constraint'
 
-RSpec.describe Bronze::Contracts::NotNilConstraint do
-  include Spec::Contracts::ConstraintsExamples
+RSpec.describe Bronze::Constraints::NotNilConstraint do
+  include Spec::Constraints::ConstraintsExamples
 
   let(:instance) { described_class.new }
 
