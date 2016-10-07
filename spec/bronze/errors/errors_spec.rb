@@ -287,6 +287,20 @@ RSpec.describe Bronze::Errors::Errors do
     end # wrap_context
   end # describe
 
+  describe '#count' do
+    it { expect(instance).to respond_to(:count).with(0).arguments }
+
+    it { expect(instance.count).to be == 0 }
+
+    wrap_context 'when many errors are added' do
+      it { expect(instance.count).to be == instance.to_a.size }
+    end # wrap_context
+
+    wrap_context 'when there are many descendants' do
+      it { expect(instance.count).to be == instance.to_a.size }
+    end # wrap_context
+  end # describe
+
   describe '#detect' do
     let(:error) { Bronze::Errors::Error.new [], :require_more_minerals, [] }
 
@@ -491,6 +505,113 @@ RSpec.describe Bronze::Errors::Errors do
 
         expect(ary).to contain_exactly(*expected)
       end # it
+    end # wrap_context
+  end # describe
+
+  describe '#update' do
+    shared_examples 'should update the errors' do
+      describe 'with an empty errors object' do
+        let(:other) { described_class.new }
+
+        it 'should not change the errors' do
+          expect { instance.update other }.not_to change(instance, :to_a)
+
+          expected.each do |error_type, error_params|
+            expect(instance.to_a).to include { |error|
+              error.type == error_type &&
+                error.params == error_params &&
+                error.nesting == nesting
+            } # end include
+          end # each
+        end # it
+      end # describe
+
+      describe 'with an errors object with many errors' do
+        let(:other) do
+          described_class.new.tap do |other|
+            other.add :require_more_minerals
+            other.add :require_more_vespene_gas
+          end # tap
+        end # let
+
+        it 'should add the errors' do
+          instance.update other
+
+          expected.each do |error_type, error_params|
+            expect(instance.to_a).to include { |error|
+              error.type == error_type &&
+                error.params == error_params &&
+                error.nesting == nesting
+            } # end include
+          end # each
+
+          # byebug
+
+          expect(instance.to_a).to include { |error|
+            error.type == :require_more_minerals &&
+              error.nesting == nesting
+          } # end include
+
+          expect(instance.to_a).to include { |error|
+            error.type == :require_more_vespene_gas &&
+              error.nesting == nesting
+          } # end include
+        end # it
+      end # describe
+
+      describe 'with an errors object with nested errors' do
+        let(:other) do
+          described_class.new.tap do |other|
+            other.add :supply_limit_exceeded
+            other[:zerg].add :must_spawn_more_overlords
+            other[:zerg][:units].add :research_overseers_at_the_hive
+          end # tap
+        end # let
+
+        it 'should add the errors' do
+          instance.update other
+
+          expected.each do |error_type, error_params|
+            expect(instance.to_a).to include { |error|
+              error.type == error_type &&
+                error.params == error_params &&
+                error.nesting == nesting
+            } # end include
+          end # each
+
+          expect(instance.to_a).to include { |error|
+            error.type == :supply_limit_exceeded &&
+              error.nesting == nesting
+          } # end include
+
+          expect(instance.to_a).to include { |error|
+            error.type == :must_spawn_more_overlords &&
+              error.nesting == nesting + [:zerg]
+          } # end include
+
+          expect(instance.to_a).to include { |error|
+            error.type == :research_overseers_at_the_hive &&
+              error.nesting == nesting + [:zerg, :units]
+          } # end include
+        end # it
+      end # describe
+    end # shared_examples
+
+    let(:nesting)  { [] }
+    let(:expected) { [] }
+
+    it { expect(instance).to respond_to(:update).with(1).argument }
+
+    include_examples 'should update the errors'
+
+    wrap_context 'when there are many ancestors' do
+      include_examples 'should update the errors'
+    end # wrap_context
+
+    wrap_context 'when many errors are added' do
+      let(:expected) { errors }
+
+      include_examples 'should update the errors'
     end # wrap_context
   end # describe
 end # describe

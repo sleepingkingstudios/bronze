@@ -55,3 +55,8 @@
   #=> returns query.matching(:active => true)
 
 - bronze/rails
+
+## Optimization
+
+- benchmarks!!!
+- stateless constraints? e.g. instead of TypeConstaint.new(klass).match(obj), TypeConstaint.match(obj, klass)
