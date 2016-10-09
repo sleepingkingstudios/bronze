@@ -10,9 +10,7 @@
 - Collection
   - bulk operations
 - Constraint
-  - represents an expectation on an object
-  - Contract
-    - group of constraints
+  - negatable, similar to RSpec expect().not_to support
 - Entity
   - dirty_tracking
     - #changed? - alias #dirty?

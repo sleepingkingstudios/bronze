@@ -1,6 +1,5 @@
 # lib/bronze/operations/resources/many_resources_operation.rb
 
-require 'sleeping_king_studios/tools/toolbox/mixin'
 require 'bronze/operations/operation'
 require 'bronze/operations/resources/resource_operation'
 

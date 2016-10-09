@@ -1,11 +1,11 @@
-# spec/bronze/constraints/contract_spec.rb
+# spec/bronze/contracts/contract_spec.rb
 
 require 'bronze/constraints/constraints_examples'
-require 'bronze/constraints/contract'
 require 'bronze/constraints/failure_constraint'
 require 'bronze/constraints/success_constraint'
+require 'bronze/contracts/contract'
 
-RSpec.describe Bronze::Constraints::Contract do
+RSpec.describe Bronze::Contracts::Contract do
   include Spec::Constraints::ConstraintsExamples
 
   let(:instance) { described_class.new }

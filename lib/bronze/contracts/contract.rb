@@ -1,12 +1,12 @@
-# lib/bronze/constraints/contract.rb
+# lib/bronze/contracts/contract.rb
 
 require 'bronze/constraints/constraint'
 
-module Bronze::Constraints
+module Bronze::Contracts
   # An aggregation of constraints with support for additional context, such as
   # apply constraints to the object's properties. Provides a DSL for quickly
   # defining a contract using the predefined constraint classes.
-  class Contract < Constraint
+  class Contract < Bronze::Constraints::Constraint
     # @api private
     class ConstraintData
       def initialize constraint, nesting:
