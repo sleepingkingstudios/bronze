@@ -6,16 +6,24 @@ module Bronze::Constraints
   # Constraint that matches only nil.
   class BlockConstraint < Constraint
     # Error message for objects that do not match the constraint.
-    NOT_SATISFY_BLOCK_ERROR = :not_nil
+    NOT_SATISFY_BLOCK_ERROR = 'constraints.errors.not_satisfy_block'.freeze
 
-    def initialize &block
+    # Error message for objects that match the constraint.
+    SATISFY_BLOCK_ERROR = 'constraints.errors.satisfy_block'.freeze
+
+    def initialize error = nil, &block
+      @error = error
       @block = block
     end # constructor
 
     private
 
     def build_errors _object
-      super.add(NOT_SATISFY_BLOCK_ERROR)
+      super.add(@error || NOT_SATISFY_BLOCK_ERROR)
+    end # method build_errors
+
+    def build_negated_errors _object
+      super.add(@error || SATISFY_BLOCK_ERROR)
     end # method build_errors
 
     def matches_object? object

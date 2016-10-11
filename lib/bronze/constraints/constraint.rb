@@ -17,9 +17,20 @@ module Bronze::Constraints
       [false, build_errors(object)]
     end # method match
 
+    def negated_match object
+      return [true, []] if negated_matches_object? object
+
+      [false, build_negated_errors(object)]
+    end # method negated_match
+    alias_method :does_not_match, :negated_match
+
     private
 
     def build_errors _object
+      Bronze::Errors::Errors.new
+    end # method build_errors
+
+    def build_negated_errors _object
       Bronze::Errors::Errors.new
     end # method build_errors
 
@@ -28,5 +39,9 @@ module Bronze::Constraints
         "#{self.class.name} does not implement :matches_object?",
         caller
     end # method matches_object?
+
+    def negated_matches_object? object
+      !matches_object?(object)
+    end # method negated_matches_object?
   end # class
 end # module

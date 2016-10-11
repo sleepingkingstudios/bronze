@@ -5,36 +5,44 @@ module Spec::Constraints
     extend RSpec::SleepingKingStudios::Concerns::SharedExampleGroup
 
     shared_examples 'should return false and the errors object' do |proc = nil|
-      it 'should return false and the errors object' do
-        result, errors = instance.match object
+      describe 'should return false and the errors object' do
+        let(:match_method) { defined?(super()) ? super() : :match }
 
-        expect(result).to be false
+        it do
+          result, errors = instance.send match_method, object
 
-        if proc.is_a?(Proc)
-          instance_exec(errors, &proc)
-        elsif defined?(error_type)
-          expect(errors).to include { |error|
-            return false unless error.type == error_type
+          expect(result).to be false
 
-            if defined?(error_params)
-              return false unless error.params == error_params
-            end # if
+          if proc.is_a?(Proc)
+            instance_exec(errors, &proc)
+          elsif defined?(error_type)
+            expect(errors).to include { |error|
+              next false unless error.type == error_type
 
-            true
-          } # end errors
-        else
-          expect(errors).not_to satisfy(&:empty?)
-        end # if
-      end # it
+              if defined?(error_params)
+                next false unless error.params == error_params
+              end # if
+
+              true
+            } # end errors
+          else
+            expect(errors).not_to satisfy(&:empty?)
+          end # if
+        end # it
+      end # describe
     end # shared_examples
 
     shared_examples 'should return true and an empty errors object' do
-      it 'should return true and an empty errors object' do
-        result, errors = instance.match object
+      describe 'should return false and the errors object' do
+        let(:match_method) { defined?(super()) ? super() : :match }
 
-        expect(result).to be true
-        expect(errors).to satisfy(&:empty?)
-      end # it
+        it do
+          result, errors = instance.send match_method, object
+
+          expect(result).to be true
+          expect(errors).to satisfy(&:empty?)
+        end # it
+      end # describe
     end # shared_examples
   end # module
 end # module

@@ -2,11 +2,17 @@
 
 - Extract Bronze::Ci to standalone gem.
 
+## Readme
+
+- Why "bronze"?
+  - alloy is metaphorically appropriate
+    - incorporates different influences
+    - a combination of ingredients that form a harmonious whole
+
 ## Bug Fixes
 
 ## Features
 
-- Errors#merge, #update
 - Collection
   - bulk operations
 - Constraint
@@ -17,6 +23,9 @@
     - #{attribute}_changed?
     - #old_{attribute}
     - #clean!
+- Errors
+  - Errors#params should be Hash, not Array
+  - Error keys should be namespaced+frozen strings, not symbols.
 - Query
   - #all returns with JSON envelope for advanced features?
   - #matching with non-equality predicates
@@ -30,6 +39,8 @@
           :published_at => between(1.year.ago, Time.current)
         }
       end # matching
+
+      # BUILDER ONLY, must convert to a Hash syntax!
     - not equal
     - not null
     - greater than (or equal to)

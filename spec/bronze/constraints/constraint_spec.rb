@@ -1,9 +1,12 @@
 # spec/bronze/constraints/constraint_spec.rb
 
 require 'bronze/constraints/constraint'
+require 'bronze/constraints/constraints_examples'
 require 'bronze/errors/errors'
 
 RSpec.describe Bronze::Constraints::Constraint do
+  include Spec::Constraints::ConstraintsExamples
+
   let(:instance) { described_class.new }
 
   describe '::new' do
@@ -29,7 +32,7 @@ RSpec.describe Bronze::Constraints::Constraint do
         allow(instance).to receive(:build_errors).and_return(errors)
       end # before
 
-      it 'should raise an error' do
+      it 'should return false and the errors object' do
         result, errors = instance.match object
 
         expect(result).to be false
@@ -42,11 +45,45 @@ RSpec.describe Bronze::Constraints::Constraint do
         allow(instance).to receive(:matches_object?).and_return(true)
       end # before
 
-      it 'should return true and an empty errors object' do
-        result, errors = instance.match object
+      include_examples 'should return true and an empty errors object'
+    end # describe
+  end # describe
 
-        expect(result).to be true
-        expect(errors).to satisfy(&:empty?)
+  describe '#negated_match' do
+    let(:match_method) { :negated_match }
+    let(:object)       { double('object') }
+
+    it { expect(instance).to respond_to(:negated_match).with(1).argument }
+
+    it { expect(instance).to alias_method(:negated_match).as(:does_not_match) }
+
+    it 'should raise an error' do
+      expect { instance.send :negated_match, object }.
+        to raise_error described_class::NotImplementedError,
+          "#{described_class.name} does not implement :matches_object?"
+    end # it
+
+    describe 'with an object that does not match the constraint' do
+      before(:example) do
+        allow(instance).to receive(:matches_object?).and_return(false)
+      end # before
+
+      include_examples 'should return true and an empty errors object'
+    end # describe
+
+    describe 'with an object that matches the constraint' do
+      let(:errors) { double('errors') }
+
+      before(:example) do
+        allow(instance).to receive(:matches_object?).and_return(true)
+        allow(instance).to receive(:build_negated_errors).and_return(errors)
+      end # before
+
+      it 'should return false and the errors object' do
+        result, errors = instance.negated_match object
+
+        expect(result).to be false
+        expect(errors).to be errors
       end # it
     end # describe
   end # describe
