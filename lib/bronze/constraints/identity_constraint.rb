@@ -16,6 +16,10 @@ module Bronze::Constraints
       @expected = expected
     end # constructor
 
+    # @return [Object] The expected object.
+    attr_reader :expected
+    alias_method :value, :expected
+
     private
 
     def build_errors _object

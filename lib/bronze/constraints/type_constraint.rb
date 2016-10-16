@@ -12,10 +12,22 @@ module Bronze::Constraints
     NOT_KIND_OF_ERROR = 'constraints.errors.not_kind_of'.freeze
 
     # @param expected [Object] The expected object.
+    # @param allow_nil [Boolean] True if nil is allowed in addition to the
+    #   specified type, otherwise false.
     def initialize expected, allow_nil: false
       @expected  = expected
       @allow_nil = allow_nil
     end # constructor
+
+    # @return [Object] The expected object.
+    attr_reader :expected
+    alias_method :type, :expected
+
+    # @return [Boolean] True if nil is allowed in addition to the specified
+    #   type, otherwise false.
+    def allow_nil?
+      @allow_nil
+    end # method allow_nil?
 
     private
 

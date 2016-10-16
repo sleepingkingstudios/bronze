@@ -6,6 +6,10 @@ require 'bronze/constraints/type_constraint'
 RSpec.describe Bronze::Constraints::TypeConstraint do
   include Spec::Constraints::ConstraintsExamples
 
+  shared_context 'when allow_nil is set to true' do
+    let(:instance) { described_class.new expected, :allow_nil => true }
+  end # shared_context
+
   let(:expected) { Object.new }
   let(:instance) { described_class.new expected }
 
@@ -34,6 +38,20 @@ RSpec.describe Bronze::Constraints::TypeConstraint do
     end # it
   end # describe
 
+  describe '#allow_nil?' do
+    include_examples 'should have predicate', :allow_nil?, false
+
+    wrap_context 'when allow_nil is set to true' do
+      it { expect(instance.allow_nil?).to be true }
+    end # wrap_context
+  end # describe
+
+  describe '#expected' do
+    include_examples 'should have reader', :expected, ->() { expected }
+
+    it { expect(instance).to alias_method(:expected).as(:type) }
+  end # describe
+
   describe '#match' do
     let(:error_type)   { described_class::NOT_KIND_OF_ERROR }
     let(:error_params) { [expected] }
@@ -48,9 +66,7 @@ RSpec.describe Bronze::Constraints::TypeConstraint do
 
         include_examples 'should return false and the errors object'
 
-        context 'when the constraint allows nil values' do
-          let(:instance) { described_class.new expected, :allow_nil => true }
-
+        wrap_context 'when allow_nil is set to true' do
           include_examples 'should return true and an empty errors object'
         end # context
       end # describe
@@ -84,6 +100,10 @@ RSpec.describe Bronze::Constraints::TypeConstraint do
         let(:object) { nil }
 
         include_examples 'should return false and the errors object'
+
+        wrap_context 'when allow_nil is set to true' do
+          include_examples 'should return true and an empty errors object'
+        end # let
       end # describe
 
       describe 'with an object' do
@@ -122,7 +142,7 @@ RSpec.describe Bronze::Constraints::TypeConstraint do
 
         include_examples 'should return true and an empty errors object'
 
-        context 'when the constraint allows nil values' do
+        wrap_context 'when allow_nil is set to true' do
           let(:instance) { described_class.new expected, :allow_nil => true }
 
           include_examples 'should return false and the errors object'
@@ -158,6 +178,10 @@ RSpec.describe Bronze::Constraints::TypeConstraint do
         let(:object) { nil }
 
         include_examples 'should return true and an empty errors object'
+
+        wrap_context 'when allow_nil is set to true' do
+          include_examples 'should return false and the errors object'
+        end # wrap_context
       end # describe
 
       describe 'with an object' do

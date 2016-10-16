@@ -29,6 +29,12 @@ RSpec.describe Bronze::Constraints::EqualityConstraint do
     it { expect(described_class).to be_constructible.with(1).argument }
   end # describe
 
+  describe '#expected' do
+    include_examples 'should have reader', :expected, ->() { expected }
+
+    it { expect(instance).to alias_method(:expected).as(:value) }
+  end # describe
+
   describe '#match' do
     let(:error_type)   { described_class::NOT_EQUAL_TO_ERROR }
     let(:error_params) { [expected] }
