@@ -14,6 +14,14 @@ RSpec.describe Bronze::Entities::Constraints::AttributeTypesConstraint do
     it { expect(described_class).to be_constructible.with(0).arguments }
   end # describe
 
+  describe '::MISSING_ATTRIBUTES_ERROR' do
+    it 'should define the constant' do
+      expect(described_class).
+        to have_immutable_constant(:MISSING_ATTRIBUTES_ERROR).
+        with_value('constraints.errors.missing_attributes')
+    end # it
+  end # describe
+
   describe '#match' do
     it { expect(instance).to respond_to(:match).with(1).argument }
 
@@ -112,5 +120,17 @@ RSpec.describe Bronze::Entities::Constraints::AttributeTypesConstraint do
         include_examples 'should return true and an empty errors object'
       end # describe
     end # describe
+  end # describe
+
+  describe '#negated_match' do
+    let(:match_method) { :negated_match }
+
+    it { expect(instance).to respond_to(:negated_match).with(1).argument }
+
+    it 'should raise an error' do
+      expect { instance.negated_match nil }.
+        to raise_error Bronze::Constraints::Constraint::InvalidNegationError,
+          "#{described_class.name} constraints do not support negated matching"
+    end # it
   end # describe
 end # describe

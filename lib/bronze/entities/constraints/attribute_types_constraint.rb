@@ -9,7 +9,7 @@ module Bronze::Entities::Constraints
   # definition.
   class AttributeTypesConstraint < Bronze::Constraints::Constraint
     # Error message for objects that do not define attributes.
-    MISSING_ATTRIBUTES_ERROR = :missing_attributes
+    MISSING_ATTRIBUTES_ERROR = 'constraints.errors.missing_attributes'.freeze
 
     # (see Constraint#match)
     def match object
@@ -17,6 +17,11 @@ module Bronze::Entities::Constraints
 
       super
     end # method match
+
+    # (see Constraint#negated_match)
+    def negated_match _
+      raise_invalid_negation
+    end # method negated_match
 
     private
 

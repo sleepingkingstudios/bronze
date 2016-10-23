@@ -17,6 +17,7 @@
 - Collection
   - bulk operations
 - Constraint
+  - AttributeTypesConstraint # :except, :only?
   - EachConstraint # wraps another constraint, matches it against each array item
 - Contract
   - add_constraint Publisher.contract, :each => :publisher # Like :on, but wraps in an EachConstraint

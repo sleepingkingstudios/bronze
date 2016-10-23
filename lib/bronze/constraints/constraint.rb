@@ -7,6 +7,9 @@ module Bronze::Constraints
   # Constraints encapsulate a single expectation that an object may or may not
   # match. Constraints can be used individually or aggregated into a contract.
   class Constraint
+    # Error class for handling constraints that do not support negated matching.
+    class InvalidNegationError < StandardError; end
+
     # Error class for handling unimplemented constraint methods. Subclasses of
     # Constraint must implement these methods.
     class NotImplementedError < StandardError; end
@@ -43,5 +46,11 @@ module Bronze::Constraints
     def negated_matches_object? object
       !matches_object?(object)
     end # method negated_matches_object?
+
+    def raise_invalid_negation
+      raise InvalidNegationError,
+        "#{self.class.name} constraints do not support negated matching",
+        caller[1..-1]
+    end # method raise_invalid_negation
   end # class
 end # module
