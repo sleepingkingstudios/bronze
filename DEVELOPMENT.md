@@ -1,5 +1,6 @@
 # Development
 
+- Documentation Pass
 - Extract Bronze::Ci to standalone gem.
 
 ## Readme
@@ -59,6 +60,7 @@
     - foreign_key => attribute
     - Bronze::Entities::Relations::Metadata
     - relation macros
+    - nested attributes
 - Repository#except, #only - returns a copy of the repository that only has the given collections.
 - Scope |
 
