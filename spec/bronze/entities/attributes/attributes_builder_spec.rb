@@ -1,11 +1,11 @@
-# spec/bronze/entities/attributes/builder_spec.rb
+# spec/bronze/entities/attributes/attributes_builder_spec.rb
 
-require 'bronze/entities/attributes/builder'
+require 'bronze/entities/attributes/attributes_builder'
 require 'bronze/entities/attributes/metadata'
 
-require 'bronze/entities/attributes/examples'
+require 'bronze/entities/attributes/attributes_examples'
 
-RSpec.describe Bronze::Entities::Attributes::Builder do
+RSpec.describe Bronze::Entities::Attributes::AttributesBuilder do
   include Spec::Entities::Attributes::AttributesExamples
 
   let(:entity_class) do

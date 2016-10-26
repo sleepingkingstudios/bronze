@@ -2,7 +2,7 @@
 
 require 'bronze/entities/entity'
 
-require 'bronze/entities/attributes/examples'
+require 'bronze/entities/attributes/attributes_examples'
 
 RSpec.describe Bronze::Entities::Entity do
   include Spec::Entities::Attributes::AttributesExamples

@@ -1,6 +1,6 @@
 # lib/bronze/entities/entity.rb
 
-require 'bronze/entities/attributes/builder'
+require 'bronze/entities/attributes/attributes_builder'
 
 require 'bronze/entities/ulid'
 
@@ -23,15 +23,15 @@ module Bronze::Entities
     #   book.title
     #   #=> 'Romance of the Three Kingdoms'
     #
-    # @param (see Attributes::Builder#build)
+    # @param (see Attributes::AttributesBuilder#build)
     #
-    # @option (see Attributes::Builder#build)
+    # @option (see Attributes::AttributesBuilder#build)
     #
-    # @return (see Attributes::Builder#build)
+    # @return (see Attributes::AttributesBuilder#build)
     #
-    # @raise (see Attributes::Builder#build)
+    # @raise (see Attributes::AttributesBuilder#build)
     def self.attribute attribute_name, attribute_type, attribute_options = {}
-      builder  = Bronze::Entities::Attributes::Builder.new(self)
+      builder  = Bronze::Entities::Attributes::AttributesBuilder.new(self)
       metadata = builder.build(
         attribute_name,
         attribute_type,
