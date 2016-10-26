@@ -53,7 +53,7 @@ module Bronze::Contracts
     #
     #   Builds the given constraint with the specified parameters. Common
     #   parameters include :negated => true|false and :value => value.
-    def constrain property = nil, **constraints, &block
+    def constrain property = nil, constraints = {}, &block
       require_constraints(constraints) unless block_given?
 
       build_constraints(property, constraints)
@@ -76,12 +76,17 @@ module Bronze::Contracts
     private
 
     def build_constraints property, constraints
-      constraints.each do |constraint_key, constraint_params|
+      constraints.each do |constraint_or_key, constraint_params|
         negated, params = normalize_params(constraint_params)
 
-        contract.add_constraint build_constraint(constraint_key, params),
-          :negated => negated,
-          :on      => property
+        constraint =
+          if constraint_or_key.is_a? Bronze::Constraints::Constraint
+            constraint_or_key
+          else
+            build_constraint(constraint_or_key, params)
+          end # if-else
+
+        contract.add_constraint constraint, :negated => negated, :on => property
       end # each
     end # method build_constraints
 

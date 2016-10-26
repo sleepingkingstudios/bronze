@@ -19,12 +19,17 @@ module Bronze::Contracts
 
       def contract &block
         @contract ||= Bronze::Contracts::Contract.new
-        @builder  ||= Bronze::Contracts::ContractBuilder.new(@contract)
 
-        @builder.instance_exec(&block) if block_given?
+        contract_builder.instance_exec(&block) if block_given?
 
         @contract
       end # class method contract
+
+      private
+
+      def contract_builder
+        @contract_builder ||= Bronze::Contracts::ContractBuilder.new(@contract)
+      end # method contract_builder
     end # module
   end # module
 end # module
