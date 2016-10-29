@@ -31,5 +31,13 @@ module Bronze::Errors
 
     # @return [Symbol] The error type.
     attr_reader :type
+
+    def with_nesting nesting
+      dup.tap { |err| err.nesting = nesting }
+    end # method with_nesting
+
+    protected
+
+    attr_writer :nesting
   end # class
 end # module

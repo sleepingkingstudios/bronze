@@ -1,11 +1,11 @@
-# spec/bronze/entities/attributes/builder_spec.rb
+# spec/bronze/entities/attributes/attributes_builder_spec.rb
 
-require 'bronze/entities/attributes/builder'
+require 'bronze/entities/attributes/attributes_builder'
 require 'bronze/entities/attributes/metadata'
 
-require 'bronze/entities/attributes/examples'
+require 'bronze/entities/attributes/attributes_examples'
 
-RSpec.describe Bronze::Entities::Attributes::Builder do
+RSpec.describe Bronze::Entities::Attributes::AttributesBuilder do
   include Spec::Entities::Attributes::AttributesExamples
 
   let(:entity_class) do
@@ -23,6 +23,7 @@ RSpec.describe Bronze::Entities::Attributes::Builder do
 
     it 'should list the valid options' do
       expect(described_class::VALID_OPTIONS).to be == %w(
+        allow_nil
         default
         read_only
       ) # end array
@@ -89,7 +90,20 @@ RSpec.describe Bronze::Entities::Attributes::Builder do
         expect(metadata).to be_a Bronze::Entities::Attributes::Metadata
         expect(metadata.attribute_name).to be == attribute_name
         expect(metadata.attribute_type).to be == attribute_type
+
+        expect(metadata.allow_nil?).to be false
+        expect(metadata.default).to be nil
+        expect(metadata.read_only?).to be false
       end # it
+
+      describe 'with :allow_nil => true' do
+        it 'should return the metadata' do
+          metadata =
+            instance.build attribute_name, attribute_type, :allow_nil => true
+
+          expect(metadata.allow_nil?).to be true
+        end # it
+      end # describe
 
       wrap_context 'when the attribute has been defined' do
         let(:updated_value) { 'Dream of a Red Chamber' }

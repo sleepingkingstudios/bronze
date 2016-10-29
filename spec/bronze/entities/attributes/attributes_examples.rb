@@ -1,4 +1,4 @@
-# spec/bronze/entities/attributes/examples.rb
+# spec/bronze/entities/attributes/attributes_examples.rb
 
 module Spec::Entities
   module Attributes; end

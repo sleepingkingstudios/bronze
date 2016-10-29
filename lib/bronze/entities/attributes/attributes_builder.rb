@@ -1,16 +1,17 @@
-# lib/bronze/entities/attributes/builder.rb
+# lib/bronze/entities/attributes/attributes_builder.rb
 
 require 'bronze/entities/attributes/metadata'
 
 module Bronze::Entities::Attributes
   # Service class to define attributes on an entity.
-  class Builder
+  class AttributesBuilder
     # Error class for handling invalid attribute definitions.
     class Error < ::StandardError; end
 
     # Provides a list of the valid options for the attribute_options parameter
     # for Builder#build.
     VALID_OPTIONS = %w(
+      allow_nil
       default
       read_only
     ).map(&:freeze).freeze
@@ -33,7 +34,7 @@ module Bronze::Entities::Attributes
     #   book.title
     #   #=> NoMethodError: undefined method `title'
     #
-    #   builder = Bronze::Entities::Attributes::Builder.new(Book)
+    #   builder = Bronze::Entities::Attributes::AttributesBuilder.new(Book)
     #   builder.define_attribute :title, String
     #
     #   book.title
@@ -133,7 +134,7 @@ module Bronze::Entities::Attributes
     end # method entity_class_attributes
 
     def raise_error error_message
-      raise Builder::Error, error_message, caller[1..-1]
+      raise Error, error_message, caller[1..-1]
     end # method raise_error
 
     def validate_attribute_name attribute_name

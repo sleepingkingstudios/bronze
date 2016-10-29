@@ -1,5 +1,7 @@
 # spec/bronze/collections/collection_examples.rb
 
+require 'sleeping_king_studios/tools/toolbox/mixin'
+
 require 'bronze/collections/null_query'
 require 'bronze/collections/querying_examples'
 require 'bronze/entities/entity'
@@ -10,14 +12,9 @@ require 'bronze/transforms/copy_transform'
 module Spec::Collections
   module CollectionExamples
     extend RSpec::SleepingKingStudios::Concerns::SharedExampleGroup
+    extend SleepingKingStudios::Tools::Toolbox::Mixin
 
     include Spec::Collections::QueryingExamples
-
-    def self.included other
-      super
-
-      other.extend ClassMethods
-    end # class method included
 
     module ClassMethods
       def with_params params, &block

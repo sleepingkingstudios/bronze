@@ -67,4 +67,21 @@ RSpec.describe Bronze::Errors::Error do
   describe '#type' do
     include_examples 'should have reader', :type, ->() { be == type }
   end # describe
+
+  describe '#with_nesting' do
+    let(:other_nesting) { [:posts, 0, :subtitle] }
+
+    it { expect(instance).to respond_to(:with_nesting).with(1).argument }
+
+    it 'should return a copy of the error' do
+      error = instance.with_nesting other_nesting
+
+      expect(error.nesting).to be == other_nesting
+    end # it
+
+    it 'should not change the error' do
+      expect { instance.with_nesting other_nesting }.
+        not_to change(instance, :nesting)
+    end # it
+  end # describe
 end # describe

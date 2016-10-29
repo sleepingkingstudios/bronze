@@ -63,3 +63,7 @@ Style/NumericLiterals:
 Style/SingleLineBlockParams:
   # Prefer descriptive block param names.
   Enabled: false
+
+Style/TrailingUnderscoreVariable:
+  # Prefer more explicit syntax when ignoring destructured results.
+  Enabled: false

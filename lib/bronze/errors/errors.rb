@@ -62,6 +62,15 @@ module Bronze::Errors
       self
     end # method add
 
+    # Counts the number of errors.
+    #
+    # @return [Integer] The number of errors.
+    def count
+      children.reduce(@errors.count) do |memo, (_, child)|
+        memo + child.count
+      end # reduce
+    end # method count
+
     # Iterates through the errors and returns true if the errors object
     # includes the given error.
     #
@@ -113,6 +122,17 @@ module Bronze::Errors
       ary
     end # method to_a
 
+    # Adds the errors from the other errors object to the current errors object.
+    #
+    # @param other [Errors] The other errors object.
+    def update other
+      other.each do |error|
+        child = resolve_nesting(self, *error.nesting)
+
+        child.errors << error.with_nesting(child.nesting)
+      end # each
+    end # method update
+
     protected
 
     attr_accessor :parent
@@ -120,5 +140,11 @@ module Bronze::Errors
     attr_reader :children
 
     attr_reader :errors
+
+    private
+
+    def resolve_nesting parent, *fragments
+      fragments.reduce(parent) { |memo, fragment| memo[fragment] }
+    end # method resolve_nesting
   end # class
 end # module
