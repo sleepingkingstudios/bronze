@@ -14,10 +14,10 @@ RSpec.describe Bronze::Operations::Operation do
   shared_context 'when the operation runs and generates errors' do
     let(:expected_errors) do
       [
-        Bronze::Errors::Error.new([], :library_closed, []),
-        Bronze::Errors::Error.new([:book], :already_checked_out, []),
+        Bronze::Errors::Error.new([], :library_closed, {}),
+        Bronze::Errors::Error.new([:book], :already_checked_out, {}),
         Bronze::Errors::Error.new(
-          [:user], :borrowing_privileges_revoked, [7, :days]
+          [:user], :borrowing_privileges_revoked, :duration => [7, :days]
         ) # end error
       ] # end array
     end # let
@@ -30,7 +30,7 @@ RSpec.describe Bronze::Operations::Operation do
 
           error.nesting.each { |fragment| nesting = nesting[fragment] }
 
-          nesting.add(error.type, *error.params)
+          nesting.add(error.type, **error.params)
         end # each
       end # allow
     end # before example

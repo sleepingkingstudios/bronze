@@ -228,7 +228,7 @@ RSpec.describe Bronze::Contracts::Contract do
         let(:error_type) do
           Bronze::Constraints::TypeConstraint::NOT_KIND_OF_ERROR
         end # let
-        let(:error_params)  { [Integer] }
+        let(:error_params)  { { :value => Integer } }
         let(:error_nesting) { [:subtitle] }
 
         before(:example) do
@@ -254,7 +254,7 @@ RSpec.describe Bronze::Contracts::Contract do
         let(:error_type) do
           Bronze::Constraints::TypeConstraint::KIND_OF_ERROR
         end # let
-        let(:error_params)  { [String] }
+        let(:error_params)  { { :value => String } }
         let(:error_nesting) { [:title] }
 
         before(:example) do
@@ -311,7 +311,7 @@ RSpec.describe Bronze::Contracts::Contract do
         let(:error_type) do
           Bronze::Constraints::TypeConstraint::NOT_KIND_OF_ERROR
         end # let
-        let(:error_params)  { [Integer] }
+        let(:error_params)  { { :value => Integer } }
         let(:error_nesting) { [:data, :slug] }
 
         before(:example) do
@@ -337,7 +337,7 @@ RSpec.describe Bronze::Contracts::Contract do
         let(:error_type) do
           Bronze::Constraints::TypeConstraint::KIND_OF_ERROR
         end # let
-        let(:error_params)  { [String] }
+        let(:error_params)  { { :value => String } }
         let(:error_nesting) { [:data, :name] }
 
         before(:example) do
@@ -401,7 +401,7 @@ RSpec.describe Bronze::Contracts::Contract do
         let(:error_type) do
           Bronze::Constraints::TypeConstraint::KIND_OF_ERROR
         end # let
-        let(:error_params)  { [String] }
+        let(:error_params)  { { :value => String } }
         let(:error_nesting) { [:publisher, :address, :street] }
 
         before(:example) do
@@ -605,7 +605,7 @@ RSpec.describe Bronze::Contracts::Contract do
         let(:error_type) do
           Bronze::Constraints::TypeConstraint::KIND_OF_ERROR
         end # let
-        let(:error_params)  { [String] }
+        let(:error_params)  { { :value => String } }
         let(:error_nesting) { [:title] }
 
         before(:example) do
@@ -687,7 +687,7 @@ RSpec.describe Bronze::Contracts::Contract do
         let(:error_type) do
           Bronze::Constraints::TypeConstraint::KIND_OF_ERROR
         end # let
-        let(:error_params)  { [String] }
+        let(:error_params)  { { :value => String } }
         let(:error_nesting) { [:data, :name] }
 
         before(:example) do
@@ -750,7 +750,7 @@ RSpec.describe Bronze::Contracts::Contract do
         let(:error_type) do
           Bronze::Constraints::TypeConstraint::KIND_OF_ERROR
         end # let
-        let(:error_params)  { [String] }
+        let(:error_params)  { { :value => String } }
         let(:error_nesting) { [:publisher, :address, :street] }
 
         before(:example) do

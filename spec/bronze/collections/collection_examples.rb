@@ -169,7 +169,7 @@ module Spec::Collections
       end # describe
     end # shared_examples
 
-    shared_examples 'should fail with error' do |expectation, *rest|
+    shared_examples 'should fail with error' do |expectation, **params|
       if expectation.is_a?(Hash)
         # include_examples 'should fail with error', :id => [:not_found, 0]
         key = expectation.keys.first
@@ -179,7 +179,7 @@ module Spec::Collections
         # include_examples 'should fail with error', :read_only
         error_nesting = []
         error_type    = expectation
-        error_params  = rest
+        error_params  = params
       end # if
 
       it "should fail with error :#{error_type}" do

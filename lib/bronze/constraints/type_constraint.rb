@@ -6,10 +6,10 @@ module Bronze::Constraints
   # Constraint that matches only the given object.
   class TypeConstraint < Constraint
     # Error message for objects that match the constraint.
-    KIND_OF_ERROR = 'constraints.errors.kind_of'.freeze
+    KIND_OF_ERROR = 'constraints.errors.messages.kind_of'.freeze
 
     # Error message for objects that do not match the constraint.
-    NOT_KIND_OF_ERROR = 'constraints.errors.not_kind_of'.freeze
+    NOT_KIND_OF_ERROR = 'constraints.errors.messages.not_kind_of'.freeze
 
     # @param expected [Object] The expected object.
     # @param allow_nil [Boolean] True if nil is allowed in addition to the
@@ -32,11 +32,11 @@ module Bronze::Constraints
     private
 
     def build_errors _object
-      super.add(NOT_KIND_OF_ERROR, @expected)
+      super.add(NOT_KIND_OF_ERROR, :value => @expected)
     end # method build_errors
 
     def build_negated_errors _object
-      super.add(KIND_OF_ERROR, @expected)
+      super.add(KIND_OF_ERROR, :value => @expected)
     end # method build_errors
 
     def matches_object? object

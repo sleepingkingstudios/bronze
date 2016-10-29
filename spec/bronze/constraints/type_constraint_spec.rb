@@ -26,7 +26,7 @@ RSpec.describe Bronze::Constraints::TypeConstraint do
     it 'should define the constant' do
       expect(described_class).
         to have_immutable_constant(:KIND_OF_ERROR).
-        with_value('constraints.errors.kind_of')
+        with_value('constraints.errors.messages.kind_of')
     end # it
   end # describe
 
@@ -34,7 +34,7 @@ RSpec.describe Bronze::Constraints::TypeConstraint do
     it 'should define the constant' do
       expect(described_class).
         to have_immutable_constant(:NOT_KIND_OF_ERROR).
-        with_value('constraints.errors.not_kind_of')
+        with_value('constraints.errors.messages.not_kind_of')
     end # it
   end # describe
 
@@ -54,7 +54,7 @@ RSpec.describe Bronze::Constraints::TypeConstraint do
 
   describe '#match' do
     let(:error_type)   { described_class::NOT_KIND_OF_ERROR }
-    let(:error_params) { [expected] }
+    let(:error_params) { { :value => expected } }
 
     it { expect(instance).to respond_to(:match).with(1).argument }
 
@@ -130,7 +130,7 @@ RSpec.describe Bronze::Constraints::TypeConstraint do
   describe '#negated_match' do
     let(:match_method) { :negated_match }
     let(:error_type)   { described_class::KIND_OF_ERROR }
-    let(:error_params) { [expected] }
+    let(:error_params) { { :value => expected } }
 
     it { expect(instance).to respond_to(:negated_match).with(1).argument }
 

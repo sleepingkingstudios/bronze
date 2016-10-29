@@ -40,23 +40,23 @@ RSpec.describe Patina::Collections::Simple::Collection do
 
     with_params :id => nil do
       include_examples 'should fail with error',
-        described_class::Errors::PRIMARY_KEY_MISSING, :id
+        described_class::Errors::PRIMARY_KEY_MISSING, :key => :id
     end # with_params
 
     with_params :id => 0 do
       include_examples 'should fail with error',
-        described_class::Errors::RECORD_NOT_FOUND, :id, 0
+        described_class::Errors::RECORD_NOT_FOUND, :id => 0
     end # with_params
 
     wrap_context 'when the collection contains many items' do
       with_params :id => nil do
         include_examples 'should fail with error',
-          described_class::Errors::PRIMARY_KEY_MISSING, :id
+          described_class::Errors::PRIMARY_KEY_MISSING, :key => :id
       end # with_params
 
       with_params :id => 0 do
         include_examples 'should fail with error',
-          described_class::Errors::RECORD_NOT_FOUND, :id, 0
+          described_class::Errors::RECORD_NOT_FOUND, :id => 0
       end # with_params
     end # wrap_context
   end # describe
@@ -74,17 +74,17 @@ RSpec.describe Patina::Collections::Simple::Collection do
     invalid_attributes = Struct.new(:id).new
     with_params :attributes => invalid_attributes do
       include_examples 'should fail with error',
-        described_class::Errors::DATA_INVALID, invalid_attributes
+        described_class::Errors::DATA_INVALID, :attributes => invalid_attributes
     end # with_params
 
     with_params :attributes => {} do
       include_examples 'should fail with error',
-        described_class::Errors::PRIMARY_KEY_MISSING, :id
+        described_class::Errors::PRIMARY_KEY_MISSING, :key => :id
     end # with_params
 
     with_params :attributes => { :title => 'The Hobbit' } do
       include_examples 'should fail with error',
-        described_class::Errors::PRIMARY_KEY_MISSING, :id
+        described_class::Errors::PRIMARY_KEY_MISSING, :key => :id
     end # with_params
 
     wrap_context 'when the collection contains many items' do
@@ -96,22 +96,23 @@ RSpec.describe Patina::Collections::Simple::Collection do
       invalid_attributes = Struct.new(:id).new
       with_params :attributes => invalid_attributes do
         include_examples 'should fail with error',
-          described_class::Errors::DATA_INVALID, invalid_attributes
+          described_class::Errors::DATA_INVALID,
+          :attributes => invalid_attributes
       end # with_params
 
       with_params :attributes => {} do
         include_examples 'should fail with error',
-          described_class::Errors::PRIMARY_KEY_MISSING, :id
+          described_class::Errors::PRIMARY_KEY_MISSING, :key => :id
       end # with_params
 
       with_params :attributes => { :title => 'The Hobbit' } do
         include_examples 'should fail with error',
-          described_class::Errors::PRIMARY_KEY_MISSING, :id
+          described_class::Errors::PRIMARY_KEY_MISSING, :key => :id
       end # with_params
 
       with_params :attributes => { :id => '1', :title => 'The Hobbit' } do
         include_examples 'should fail with error',
-          described_class::Errors::RECORD_ALREADY_EXISTS, :id, '1'
+          described_class::Errors::RECORD_ALREADY_EXISTS, :id => '1'
       end # with_params
     end # wrap_context
   end # describe
@@ -135,23 +136,23 @@ RSpec.describe Patina::Collections::Simple::Collection do
 
     with_params :id => nil do
       include_examples 'should fail with error',
-        described_class::Errors::PRIMARY_KEY_MISSING, :id
+        described_class::Errors::PRIMARY_KEY_MISSING, :key => :id
     end # with_params
 
     with_params :id => 0 do
       include_examples 'should fail with error',
-        described_class::Errors::RECORD_NOT_FOUND, :id, 0
+        described_class::Errors::RECORD_NOT_FOUND, :id => 0
     end # with_params
 
     wrap_context 'when the collection contains many items' do
       with_params :id => nil do
         include_examples 'should fail with error',
-          described_class::Errors::PRIMARY_KEY_MISSING, :id
+          described_class::Errors::PRIMARY_KEY_MISSING, :key => :id
       end # with_params
 
       with_params :id => 0 do
         include_examples 'should fail with error',
-          described_class::Errors::RECORD_NOT_FOUND, :id, 0
+          described_class::Errors::RECORD_NOT_FOUND, :id => 0
       end # with_params
 
       with_params :attributes => nil do
@@ -162,12 +163,16 @@ RSpec.describe Patina::Collections::Simple::Collection do
       invalid_attributes = Struct.new(:id).new
       with_params :attributes => invalid_attributes do
         include_examples 'should fail with error',
-          described_class::Errors::DATA_INVALID, invalid_attributes
+          described_class::Errors::DATA_INVALID,
+          :attributes => invalid_attributes
       end # with_params
 
       with_params :attributes => { :id => 1 } do
         include_examples 'should fail with error',
-          described_class::Errors::PRIMARY_KEY_INVALID, :id, 1, '1'
+          described_class::Errors::PRIMARY_KEY_INVALID,
+          :key      => :id,
+          :expected => 1,
+          :received => '1'
       end # with_params
     end # wrap_context
   end # describe

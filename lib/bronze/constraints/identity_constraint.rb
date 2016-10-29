@@ -6,10 +6,11 @@ module Bronze::Constraints
   # Constraint that matches only the given object.
   class IdentityConstraint < Constraint
     # Error message for objects that match the constraint.
-    IDENTICAL_TO_ERROR = 'constraints.errors.identical_to'.freeze
+    IDENTICAL_TO_ERROR = 'constraints.errors.messages.identical_to'.freeze
 
     # Error message for objects that do not match the constraint.
-    NOT_IDENTICAL_TO_ERROR = 'constraints.errors.not_identical_to'.freeze
+    NOT_IDENTICAL_TO_ERROR =
+      'constraints.errors.messages.not_identical_to'.freeze
 
     # @param expected [Object] The expected object.
     def initialize expected
@@ -23,11 +24,11 @@ module Bronze::Constraints
     private
 
     def build_errors _object
-      super.add(NOT_IDENTICAL_TO_ERROR, @expected)
+      super.add(NOT_IDENTICAL_TO_ERROR, :value => @expected)
     end # method build_errors
 
     def build_negated_errors _object
-      super.add(IDENTICAL_TO_ERROR, @expected)
+      super.add(IDENTICAL_TO_ERROR, :value => @expected)
     end # method build_errors
 
     def matches_object? object

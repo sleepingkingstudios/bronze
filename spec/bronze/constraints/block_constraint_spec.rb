@@ -23,7 +23,7 @@ RSpec.describe Bronze::Constraints::BlockConstraint do
     it 'should define the constant' do
       expect(described_class).
         to have_immutable_constant(:NOT_SATISFY_BLOCK_ERROR).
-        with_value('constraints.errors.not_satisfy_block')
+        with_value('constraints.errors.messages.not_satisfy_block')
     end # it
   end # describe
 
@@ -31,13 +31,13 @@ RSpec.describe Bronze::Constraints::BlockConstraint do
     it 'should define the constant' do
       expect(described_class).
         to have_immutable_constant(:SATISFY_BLOCK_ERROR).
-        with_value('constraints.errors.satisfy_block')
+        with_value('constraints.errors.messages.satisfy_block')
     end # it
   end # describe
 
   describe '#match' do
     let(:error_type)   { described_class::NOT_SATISFY_BLOCK_ERROR }
-    let(:error_params) { [] }
+    let(:error_params) { {} }
 
     it { expect(instance).to respond_to(:match).with(1).argument }
 
@@ -64,7 +64,7 @@ RSpec.describe Bronze::Constraints::BlockConstraint do
   describe '#negated_match' do
     let(:match_method) { :negated_match }
     let(:error_type)   { described_class::SATISFY_BLOCK_ERROR }
-    let(:error_params) { [] }
+    let(:error_params) { {} }
 
     it { expect(instance).to respond_to(:negated_match).with(1).argument }
 

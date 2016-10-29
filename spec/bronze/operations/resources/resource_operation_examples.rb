@@ -59,8 +59,7 @@ module Spec::Operations
         Bronze::Errors::Errors.new.tap do |errors|
           errors[:resource].add(
             error_definitions::RECORD_NOT_FOUND,
-            :id,
-            resource_id
+            :id => resource_id
           ) # end add error
         end # tap
       end # let
@@ -364,7 +363,7 @@ module Spec::Operations
 
           Bronze::Errors::Error.new [:resource],
             error_definitions::RECORD_NOT_FOUND,
-            [:id, resource_id]
+            :id => resource_id
         end # let
         let(:resource_id) { '0' }
         let(:attributes)  { { :id => resource_id } }

@@ -36,7 +36,7 @@ module Bronze::Entities::Constraints
         error_type = Bronze::Constraints::TypeConstraint::NOT_KIND_OF_ERROR
 
         @mismatched_attributes.each do |attr_name, attr_type|
-          errors[attr_name].add(error_type, attr_type)
+          errors[attr_name].add(error_type, :value => attr_type)
         end # each
 
         errors

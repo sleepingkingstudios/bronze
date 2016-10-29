@@ -16,7 +16,7 @@ RSpec.describe Spec::FailureConstraint do
     it 'should define the constant' do
       expect(described_class).
         to have_immutable_constant(:INVALID_ERROR).
-        with_value('constraints.errors.invalid_object')
+        with_value('constraints.errors.messages.invalid_object')
     end # it
   end # describe
 
@@ -37,8 +37,8 @@ RSpec.describe Spec::FailureConstraint do
 
     context 'with an error type and error params' do
       let(:error_type)   { :supply_limit_exceeded }
-      let(:error_params) { [:spawn_more_overlords, 100, :minerals] }
-      let(:instance)     { described_class.new error_type, *error_params }
+      let(:error_params) { { :spawn => 'more_overlords' } }
+      let(:instance)     { described_class.new error_type, **error_params }
 
       include_examples 'should return false and the errors object'
     end # context
