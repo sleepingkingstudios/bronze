@@ -79,16 +79,28 @@ module Bronze::Contracts
       constraints.each do |constraint_or_key, constraint_params|
         negated, params = normalize_params(constraint_params)
 
-        constraint =
-          if constraint_or_key.is_a? Bronze::Constraints::Constraint
-            constraint_or_key
-          else
-            build_constraint(constraint_or_key, params)
-          end # if-else
+        constraint = extract_constraint(constraint_or_key, params)
 
         contract.add_constraint constraint, :negated => negated, :on => property
       end # each
     end # method build_constraints
+
+    def extract_constraint constraint_or_key, params
+      constraint_type = Bronze::Constraints::Constraint
+
+      return constraint_or_key if constraint_or_key.is_a? constraint_type
+
+      bool = [Symbol, String].any? { |type| constraint_or_key.is_a?(type) }
+      return build_constraint(constraint_or_key, params) if bool
+
+      bool = constraint_or_key.respond_to?(:contract)
+      bool &&= constraint_or_key.contract.is_a?(constraint_type)
+      return constraint_or_key.contract if bool
+
+      raise Bronze::Constraints::ConstraintBuilder::INVALID_CONSTRAINT,
+        "#{constraint_or_key} is not a valid constraint",
+        caller
+    end # method extract_constraint
 
     def normalize_params params
       if params.is_a?(Hash)

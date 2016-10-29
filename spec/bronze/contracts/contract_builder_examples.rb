@@ -23,6 +23,17 @@ module Spec::Contracts
 
       describe '#constrain' do
         shared_examples 'should add the constraints to the contract' do
+          describe 'with an object' do
+            it 'should raise an error' do
+              object      = Object.new
+              error_types = Bronze::Constraints::ConstraintBuilder
+
+              expect { instance.constrain(property, object => {}) }.
+                to raise_error error_types::INVALID_CONSTRAINT,
+                  "#{object} is not a valid constraint"
+            end # it
+          end # describe
+
           describe 'with an unknown constraint type' do
             it 'should raise an error' do
               error_types = Bronze::Constraints::ConstraintBuilder
@@ -97,6 +108,39 @@ module Spec::Contracts
                 constraints = instance.contract.constraints
 
                 expect { instance.constrain(property, constraint => false) }.
+                  to change(constraints, :count).by(1)
+
+                data = constraints.last
+                expect(data.nesting).to be == nesting
+                expect(data.negated?).to be true
+
+                expect(data.constraint).to be constraint
+              end # it
+            end # describe
+          end # describe
+
+          describe 'with an object that defines a contract' do
+            let(:constraint) { Bronze::Constraints::Constraint.new }
+            let(:object)     { double('object', :contract => constraint) }
+
+            it 'should add the constraint' do
+              constraints = instance.contract.constraints
+
+              expect { instance.constrain(property, object => true) }.
+                to change(constraints, :count).by(1)
+
+              data = constraints.last
+              expect(data.nesting).to be == nesting
+              expect(data.negated?).to be false
+
+              expect(data.constraint).to be constraint
+            end # it
+
+            describe 'with constraint => false' do
+              it 'should add the constraint' do
+                constraints = instance.contract.constraints
+
+                expect { instance.constrain(property, object => false) }.
                   to change(constraints, :count).by(1)
 
                 data = constraints.last
