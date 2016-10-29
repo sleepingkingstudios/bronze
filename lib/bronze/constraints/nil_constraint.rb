@@ -6,10 +6,10 @@ module Bronze::Constraints
   # Constraint that matches only nil.
   class NilConstraint < Constraint
     # Error message for objects that match the constraint.
-    NIL_ERROR = 'constraints.errors.nil'.freeze
+    NIL_ERROR = 'constraints.errors.messages.nil'.freeze
 
     # Error message for objects that do not match the constraint.
-    NOT_NIL_ERROR = 'constraints.errors.not_nil'.freeze
+    NOT_NIL_ERROR = 'constraints.errors.messages.not_nil'.freeze
 
     private
 

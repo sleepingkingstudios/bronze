@@ -16,7 +16,7 @@ RSpec.describe Bronze::Constraints::PresenceConstraint do
     it 'should define the constant' do
       expect(described_class).
         to have_immutable_constant(:EMPTY_ERROR).
-        with_value('constraints.errors.empty')
+        with_value('constraints.errors.messages.empty')
     end # it
   end # describe
 
@@ -24,13 +24,13 @@ RSpec.describe Bronze::Constraints::PresenceConstraint do
     it 'should define the constant' do
       expect(described_class).
         to have_immutable_constant(:NOT_EMPTY_ERROR).
-        with_value('constraints.errors.not_empty')
+        with_value('constraints.errors.messages.not_empty')
     end # it
   end # describe
 
   describe '#match' do
     let(:error_type)   { described_class::EMPTY_ERROR }
-    let(:error_params) { [] }
+    let(:error_params) { {} }
 
     it { expect(instance).to respond_to(:match).with(1).argument }
 
@@ -86,7 +86,7 @@ RSpec.describe Bronze::Constraints::PresenceConstraint do
   describe '#negated_match' do
     let(:match_method) { :negated_match }
     let(:error_type)   { described_class::NOT_EMPTY_ERROR }
-    let(:error_params) { [] }
+    let(:error_params) { {} }
 
     it { expect(instance).to respond_to(:negated_match).with(1).argument }
 

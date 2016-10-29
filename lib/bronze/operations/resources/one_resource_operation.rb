@@ -46,8 +46,7 @@ module Bronze::Operations::Resources
 
       @errors[resource_key].add(
         error_definitions::RECORD_NOT_FOUND,
-        :id,
-        resource_id
+        :id => resource_id
       ) # end errors
 
       false

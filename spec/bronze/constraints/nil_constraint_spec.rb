@@ -16,7 +16,7 @@ RSpec.describe Bronze::Constraints::NilConstraint do
     it 'should define the constant' do
       expect(described_class).
         to have_immutable_constant(:NIL_ERROR).
-        with_value('constraints.errors.nil')
+        with_value('constraints.errors.messages.nil')
     end # it
   end # describe
 
@@ -24,13 +24,13 @@ RSpec.describe Bronze::Constraints::NilConstraint do
     it 'should define the constant' do
       expect(described_class).
         to have_immutable_constant(:NOT_NIL_ERROR).
-        with_value('constraints.errors.not_nil')
+        with_value('constraints.errors.messages.not_nil')
     end # it
   end # describe
 
   describe '#match' do
     let(:error_type)   { described_class::NOT_NIL_ERROR }
-    let(:error_params) { [] }
+    let(:error_params) { {} }
 
     it { expect(instance).to respond_to(:match).with(1).argument }
 
@@ -50,7 +50,7 @@ RSpec.describe Bronze::Constraints::NilConstraint do
   describe '#negated_match' do
     let(:match_method) { :negated_match }
     let(:error_type)   { described_class::NIL_ERROR }
-    let(:error_params) { [] }
+    let(:error_params) { {} }
 
     it { expect(instance).to respond_to(:negated_match).with(1).argument }
 

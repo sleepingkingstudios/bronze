@@ -6,15 +6,15 @@ RSpec.describe Bronze::Errors::Errors do
   shared_context 'when many errors are added' do
     let(:errors) do
       {
-        :must_be_present      => [],
-        :must_be_numeric      => [],
-        :must_be_greater_than => [0]
+        :must_be_present      => {},
+        :must_be_numeric      => {},
+        :must_be_greater_than => { :value => 0 }
       } # end hash
     end # let
 
     before(:example) do
       errors.each do |error_type, error_params|
-        instance.add error_type, *error_params
+        instance.add error_type, **error_params
       end # each
     end # before example
   end # shared_context
@@ -26,19 +26,19 @@ RSpec.describe Bronze::Errors::Errors do
   shared_context 'when there are many descendants' do
     let(:children) do
       {
-        :_        => { :unable_to_connect_to_server => [] },
+        :_        => { :unable_to_connect_to_server => {} },
         :articles => {
-          :_ => { :must_be_published => [] },
+          :_ => { :must_be_published => {} },
           0  => {
             :id => {
               :_ => {
-                :must_be_numeric                  => [],
-                :must_be_an_integer               => [],
-                :must_be_greater_than_or_equal_to => [0]
+                :must_be_numeric                  => {},
+                :must_be_an_integer               => {},
+                :must_be_greater_than_or_equal_to => { :value => 0 }
               }, # end hash
             }, # end hash
             :tags => {
-              :_ => { :must_be_present => [] }
+              :_ => { :must_be_present => {} }
             }, # end hash
           }, # end hash
           1  => {},
@@ -46,7 +46,7 @@ RSpec.describe Bronze::Errors::Errors do
             :tags => {
               0 => {
                 :name => {
-                  :_ => { :already_exists => ['Favorite Color'] }
+                  :_ => { :already_exists => { :value => 'Favorite Color' } }
                 } # end hash
               } # end hash
             } # end hash
@@ -54,7 +54,7 @@ RSpec.describe Bronze::Errors::Errors do
         }, # end hash
         :publisher => {
           :printing_press => {
-            :_ => { :must_be_present => [] }
+            :_ => { :must_be_present => {} }
           } # end hash
         } # end hash
       } # end hash
@@ -64,7 +64,7 @@ RSpec.describe Bronze::Errors::Errors do
       hsh = hsh.dup
 
       (hsh.delete(:_) || {}).each do |type, params|
-        errors.add(type, *params)
+        errors.add(type, **params)
       end # each
 
       hsh.each do |key, children|
@@ -145,7 +145,7 @@ RSpec.describe Bronze::Errors::Errors do
         let(:other) do
           described_class.new.tap do |other|
             errors.each do |error_type, error_params|
-              other.add error_type, *error_params
+              other.add error_type, **error_params
             end # each
           end # tap
         end # let
@@ -240,10 +240,10 @@ RSpec.describe Bronze::Errors::Errors do
 
   describe '#add' do
     shared_examples 'should append an error' do
-      it { expect(instance.add error_type, *error_params).to be instance }
+      it { expect(instance.add error_type, **error_params).to be instance }
 
       it 'should append an error' do
-        expect { instance.add error_type, *error_params }.
+        expect { instance.add error_type, **error_params }.
           to change { instance.to_a.count }.
           by 1
 
@@ -256,13 +256,13 @@ RSpec.describe Bronze::Errors::Errors do
     end # shared_examples
 
     let(:error_type)   { :must_be_present }
-    let(:error_params) { [] }
+    let(:error_params) { {} }
 
     it 'should define the method' do
       expect(instance).
         to respond_to(:add).
         with(1).argument.
-        and_unlimited_arguments
+        and_arbitrary_keywords
     end # it
 
     describe 'with an error type' do
@@ -273,7 +273,7 @@ RSpec.describe Bronze::Errors::Errors do
 
     describe 'with an error type and params' do
       let(:error_type)   { :must_be_between }
-      let(:error_params) { [0, 1] }
+      let(:error_params) { { :values => [0, 1] } }
 
       include_examples 'should append an error'
     end # describe

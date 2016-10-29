@@ -55,8 +55,8 @@ module Bronze::Errors
     # Appends an error to the objcet.
     #
     # @param error_type [String, Symbol] The error type.
-    # @param error_params [Array] Array of optional error parameters.
-    def add error_type, *error_params
+    # @param error_params [Hash] Hash of optional error parameters.
+    def add error_type, **error_params
       @errors << Error.new(nesting, error_type, error_params)
 
       self

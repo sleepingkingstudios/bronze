@@ -72,7 +72,8 @@ RSpec.describe Bronze::Entities::Constraints::AttributeTypesConstraint do
               attr_type = attr_config[:type]
 
               expect(errors[attr_name]).to include { |error|
-                error.type == error_type && error.params == [attr_type]
+                error.type == error_type &&
+                  error.params == { :value => attr_type }
               } # end include
             end # each
           } # end lambda
@@ -106,7 +107,8 @@ RSpec.describe Bronze::Entities::Constraints::AttributeTypesConstraint do
               attr_type = attr_config[:type]
 
               expect(errors[attr_name]).to include { |error|
-                error.type == error_type && error.params == [attr_type]
+                error.type == error_type &&
+                  error.params == { :value => attr_type }
               } # end include
             end # each
           } # end lambda

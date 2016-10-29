@@ -6,10 +6,10 @@ module Bronze::Constraints
   # Constraint that matches only not-nil and non-empty objects.
   class PresenceConstraint < Constraint
     # Error message for objects that do not match the constraint.
-    EMPTY_ERROR = 'constraints.errors.empty'.freeze
+    EMPTY_ERROR = 'constraints.errors.messages.empty'.freeze
 
     # Error message for objects that match the constraint.
-    NOT_EMPTY_ERROR = 'constraints.errors.not_empty'.freeze
+    NOT_EMPTY_ERROR = 'constraints.errors.messages.not_empty'.freeze
 
     private
 

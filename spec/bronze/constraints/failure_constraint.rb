@@ -7,7 +7,7 @@ module Spec
   # objects.
   class FailureConstraint < Bronze::Constraints::Constraint
     # Error message for objects that do not match the constraint.
-    INVALID_ERROR = 'constraints.errors.invalid_object'.freeze
+    INVALID_ERROR = 'constraints.errors.messages.invalid_object'.freeze
 
     # @param error_type [Symbol] The type of error to return. If no error type
     #   is specified, will default to INVALID_ERROR.
