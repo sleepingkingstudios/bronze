@@ -77,11 +77,11 @@ module Bronze::Contracts
 
     def build_constraints property, constraints
       constraints.each do |constraint_or_key, constraint_params|
-        negated, params = normalize_params(constraint_params)
+        options, params = normalize_params(constraint_params)
 
         constraint = extract_constraint(constraint_or_key, params)
 
-        contract.add_constraint constraint, :negated => negated, :on => property
+        contract.add_constraint constraint, options.merge(:on => property)
       end # each
     end # method build_constraints
 
@@ -103,15 +103,19 @@ module Bronze::Contracts
     end # method extract_constraint
 
     def normalize_params params
-      if params.is_a?(Hash)
-        negated = !!params.delete(:negated)
+      return [{ :negated => !params }, {}] if params == true || params == false
 
-        [negated, params]
-      elsif params == true || params == false
-        [!params, {}]
-      else
-        [false, { :value => params }]
-      end # if-else
+      unless params.is_a?(Hash)
+        return [{ :negated => false }, { :value => params }]
+      end # unless
+
+      options = {
+        :if      => params.delete(:if),
+        :negated => !!params.delete(:negated),
+        :unless  => params.delete(:unless)
+      } # end hash
+
+      [options, params]
     end # method normalize_params
 
     def require_constraints constraints

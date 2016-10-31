@@ -37,9 +37,20 @@ RSpec.describe Bronze::Contracts::Contract do
         } # end include
     end # it
 
-    describe 'with :on => a nesting with one item' do
-      let(:nesting) { [:supply_limit] }
+    describe 'with :if => proc' do
+      let(:conditional) { ->(obj) {} }
 
+      it 'should add the constraint' do
+        expect { instance.add_constraint constraint, :if => conditional }.
+          to change(instance, :constraints).
+          to include { |data|
+            data.constraint == constraint &&
+              data.if_proc == conditional
+          } # end include
+      end # it
+    end # describe
+
+    describe 'with :negated => true' do
       it 'should add the constraint' do
         expect { instance.add_constraint constraint, :negated => true }.
           to change(instance, :constraints).
@@ -75,6 +86,19 @@ RSpec.describe Bronze::Contracts::Contract do
           } # end include
       end # it
     end # describe
+
+    describe 'with :unless => proc' do
+      let(:conditional) { ->(obj) {} }
+
+      it 'should add the constraint' do
+        expect { instance.add_constraint constraint, :unless => conditional }.
+          to change(instance, :constraints).
+          to include { |data|
+            data.constraint == constraint &&
+              data.unless_proc == conditional
+          } # end include
+      end # it
+    end # describe
   end # describe
 
   describe '#constraints' do
@@ -85,46 +109,146 @@ RSpec.describe Bronze::Contracts::Contract do
     it { expect(instance).to respond_to(:match).with(1).argument }
 
     describe 'with a simple object' do
-      let(:object) { double('object') }
+      let(:object) { double('object', :value => 0) }
 
       include_examples 'should return true and an empty errors object'
 
       context 'with a matching constraint' do
+        let(:kwargs) { {} }
+
         before(:example) do
-          instance.add_constraint Spec::SuccessConstraint.new
+          instance.add_constraint Spec::SuccessConstraint.new, **kwargs
         end # before example
 
         include_examples 'should return true and an empty errors object'
+
+        context 'with :if => a proc that matches the object' do
+          let(:kwargs) { super().merge :if => ->(obj) { obj.value.even? } }
+
+          include_examples 'should return true and an empty errors object'
+        end # context
+
+        context 'with :if => a proc that does not match the object' do
+          let(:kwargs) { super().merge :if => ->(obj) { obj.value.odd? } }
+
+          include_examples 'should return true and an empty errors object'
+        end # context
+
+        context 'with :unless => a proc that matches the object' do
+          let(:kwargs) { super().merge :unless => ->(obj) { obj.value.even? } }
+
+          include_examples 'should return true and an empty errors object'
+        end # context
+
+        context 'with :unless => a proc that does not match the object' do
+          let(:kwargs) { super().merge :unless => ->(obj) { obj.value.odd? } }
+
+          include_examples 'should return true and an empty errors object'
+        end # context
       end # context
 
       context 'with a negated matching constraint' do
+        let(:kwargs)     { { :negated => true } }
         let(:error_type) { Spec::SuccessConstraint::VALID_ERROR }
 
         before(:example) do
-          instance.add_constraint Spec::SuccessConstraint.new, :negated => true
+          instance.add_constraint Spec::SuccessConstraint.new, **kwargs
         end # before example
 
         include_examples 'should return false and the errors object'
+
+        context 'with :if => a proc that matches the object' do
+          let(:kwargs) { super().merge :if => ->(obj) { obj.value.even? } }
+
+          include_examples 'should return false and the errors object'
+        end # context
+
+        context 'with :if => a proc that does not match the object' do
+          let(:kwargs) { super().merge :if => ->(obj) { obj.value.odd? } }
+
+          include_examples 'should return true and an empty errors object'
+        end # context
+
+        context 'with :unless => a proc that matches the object' do
+          let(:kwargs) { super().merge :unless => ->(obj) { obj.value.even? } }
+
+          include_examples 'should return true and an empty errors object'
+        end # context
+
+        context 'with :unless => a proc that does not match the object' do
+          let(:kwargs) { super().merge :unless => ->(obj) { obj.value.odd? } }
+
+          include_examples 'should return false and the errors object'
+        end # context
       end # context
 
       context 'with a non-matching constraint' do
+        let(:kwargs)     { {} }
         let(:error_type) { Spec::FailureConstraint::INVALID_ERROR }
 
         before(:example) do
-          instance.add_constraint Spec::FailureConstraint.new
+          instance.add_constraint Spec::FailureConstraint.new, **kwargs
         end # before example
 
         include_examples 'should return false and the errors object'
+
+        context 'with :if => a proc that matches the object' do
+          let(:kwargs) { super().merge :if => ->(obj) { obj.value.even? } }
+
+          include_examples 'should return false and the errors object'
+        end # context
+
+        context 'with :if => a proc that does not match the object' do
+          let(:kwargs) { super().merge :if => ->(obj) { obj.value.odd? } }
+
+          include_examples 'should return true and an empty errors object'
+        end # context
+
+        context 'with :unless => a proc that matches the object' do
+          let(:kwargs) { super().merge :unless => ->(obj) { obj.value.even? } }
+
+          include_examples 'should return true and an empty errors object'
+        end # context
+
+        context 'with :unless => a proc that does not match the object' do
+          let(:kwargs) { super().merge :unless => ->(obj) { obj.value.odd? } }
+
+          include_examples 'should return false and the errors object'
+        end # context
       end # context
 
       context 'with a negated non-matching constraint' do
-        before(:example) do
-          constraint = Spec::FailureConstraint.new
+        let(:kwargs) { { :negated => true } }
 
-          instance.add_constraint constraint, :negated => true
+        before(:example) do
+          instance.add_constraint Spec::FailureConstraint.new, **kwargs
         end # before example
 
         include_examples 'should return true and an empty errors object'
+
+        context 'with :if => a proc that matches the object' do
+          let(:kwargs) { super().merge :if => ->(obj) { obj.value.even? } }
+
+          include_examples 'should return true and an empty errors object'
+        end # context
+
+        context 'with :if => a proc that does not match the object' do
+          let(:kwargs) { super().merge :if => ->(obj) { obj.value.odd? } }
+
+          include_examples 'should return true and an empty errors object'
+        end # context
+
+        context 'with :unless => a proc that matches the object' do
+          let(:kwargs) { super().merge :unless => ->(obj) { obj.value.even? } }
+
+          include_examples 'should return true and an empty errors object'
+        end # context
+
+        context 'with :unless => a proc that does not match the object' do
+          let(:kwargs) { super().merge :unless => ->(obj) { obj.value.odd? } }
+
+          include_examples 'should return true and an empty errors object'
+        end # context
       end # context
 
       context 'with many matching constraints' do

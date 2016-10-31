@@ -2,6 +2,7 @@
 
 - Documentation Pass
 - Extract Bronze::Ci to standalone gem.
+- remove `result, errors =` pattern?
 
 ## Readme
 
@@ -9,6 +10,7 @@
   - alloy is metaphorically appropriate
     - incorporates different influences
     - a combination of ingredients that form a harmonious whole
+    - more than the sum of its parts
 
 ## Bug Fixes
 
@@ -22,14 +24,17 @@
 - Contract
   - add_constraint Publisher.contract, :each => :publisher # Like :on, but wraps in an EachConstraint
 - Entity
+  - configuration option for default value of :allow_nil => default is true
+  - dependent_attribute
+    - creates read-only method on entity
+    - collection writes the attribute but does not read it
   - dirty_tracking
     - #changed? - alias #dirty?
     - #{attribute}_changed?
     - #old_{attribute}
     - #clean!
-- Errors
-  - Errors#params should be Hash, not Array
-  - Error keys should be namespaced+frozen strings, not symbols.
+  - EntityContractBuilder
+    - configuration option for adding AttributeTypesConstraint by default => default is true
 - Query
   - #all returns with JSON envelope for advanced features?
   - #matching with non-equality predicates

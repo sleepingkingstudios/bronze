@@ -69,6 +69,25 @@ module Spec::Contracts
               expect(data.constraint).to be constraint
             end # it
 
+            describe 'with :if => proc' do
+              let(:proc)   { ->() {} }
+              let(:params) { super().merge :if => proc }
+
+              it 'should delegate to the builder method' do
+                constraints = instance.contract.constraints
+
+                expect { instance.constrain(property, key => params) }.
+                  to change(constraints, :count).by(1)
+
+                data = constraints.last
+                expect(data.nesting).to be == nesting
+                expect(data.negated?).to be false
+                expect(data.if_proc).to be proc
+
+                expect(data.constraint).to be constraint
+              end # it
+            end # describe
+
             describe 'with :negated => true' do
               let(:params) { super().merge :negated => true }
 
@@ -81,6 +100,25 @@ module Spec::Contracts
                 data = constraints.last
                 expect(data.nesting).to be == nesting
                 expect(data.negated?).to be true
+
+                expect(data.constraint).to be constraint
+              end # it
+            end # describe
+
+            describe 'with :unless => proc' do
+              let(:proc)   { ->() {} }
+              let(:params) { super().merge :unless => proc }
+
+              it 'should delegate to the builder method' do
+                constraints = instance.contract.constraints
+
+                expect { instance.constrain(property, key => params) }.
+                  to change(constraints, :count).by(1)
+
+                data = constraints.last
+                expect(data.nesting).to be == nesting
+                expect(data.negated?).to be false
+                expect(data.unless_proc).to be proc
 
                 expect(data.constraint).to be constraint
               end # it
@@ -117,6 +155,61 @@ module Spec::Contracts
                 expect(data.constraint).to be constraint
               end # it
             end # describe
+
+            describe 'with constraint => { :if => proc }' do
+              let(:proc)   { ->() {} }
+              let(:params) { { :if => proc } }
+
+              it 'should add the constraint' do
+                constraints = instance.contract.constraints
+
+                expect { instance.constrain(property, constraint => params) }.
+                  to change(constraints, :count).by(1)
+
+                data = constraints.last
+                expect(data.nesting).to be == nesting
+                expect(data.negated?).to be false
+                expect(data.if_proc).to be proc
+
+                expect(data.constraint).to be constraint
+              end # it
+            end # describe
+
+            describe 'with constraint => { :negated => true }' do
+              let(:params) { { :negated => true } }
+
+              it 'should add the constraint' do
+                constraints = instance.contract.constraints
+
+                expect { instance.constrain(property, constraint => params) }.
+                  to change(constraints, :count).by(1)
+
+                data = constraints.last
+                expect(data.nesting).to be == nesting
+                expect(data.negated?).to be true
+
+                expect(data.constraint).to be constraint
+              end # it
+            end # describe
+
+            describe 'with constraint => { :unless => proc }' do
+              let(:proc)   { ->() {} }
+              let(:params) { { :unless => proc } }
+
+              it 'should add the constraint' do
+                constraints = instance.contract.constraints
+
+                expect { instance.constrain(property, constraint => params) }.
+                  to change(constraints, :count).by(1)
+
+                data = constraints.last
+                expect(data.nesting).to be == nesting
+                expect(data.negated?).to be false
+                expect(data.unless_proc).to be proc
+
+                expect(data.constraint).to be constraint
+              end # it
+            end # describe
           end # describe
 
           describe 'with an object that defines a contract' do
@@ -136,7 +229,7 @@ module Spec::Contracts
               expect(data.constraint).to be constraint
             end # it
 
-            describe 'with constraint => false' do
+            describe 'with object => false' do
               it 'should add the constraint' do
                 constraints = instance.contract.constraints
 
@@ -146,6 +239,61 @@ module Spec::Contracts
                 data = constraints.last
                 expect(data.nesting).to be == nesting
                 expect(data.negated?).to be true
+
+                expect(data.constraint).to be constraint
+              end # it
+            end # describe
+
+            describe 'with object => { :if => proc }' do
+              let(:proc)   { ->() {} }
+              let(:params) { { :if => proc } }
+
+              it 'should add the constraint' do
+                constraints = instance.contract.constraints
+
+                expect { instance.constrain(property, object => params) }.
+                  to change(constraints, :count).by(1)
+
+                data = constraints.last
+                expect(data.nesting).to be == nesting
+                expect(data.negated?).to be false
+                expect(data.if_proc).to be proc
+
+                expect(data.constraint).to be constraint
+              end # it
+            end # describe
+
+            describe 'with object => { :negated => true }' do
+              let(:params) { { :negated => true } }
+
+              it 'should add the constraint' do
+                constraints = instance.contract.constraints
+
+                expect { instance.constrain(property, object => params) }.
+                  to change(constraints, :count).by(1)
+
+                data = constraints.last
+                expect(data.nesting).to be == nesting
+                expect(data.negated?).to be true
+
+                expect(data.constraint).to be constraint
+              end # it
+            end # describe
+
+            describe 'with object => { :unless => proc }' do
+              let(:proc)   { ->() {} }
+              let(:params) { { :unless => proc } }
+
+              it 'should add the constraint' do
+                constraints = instance.contract.constraints
+
+                expect { instance.constrain(property, object => params) }.
+                  to change(constraints, :count).by(1)
+
+                data = constraints.last
+                expect(data.nesting).to be == nesting
+                expect(data.negated?).to be false
+                expect(data.unless_proc).to be proc
 
                 expect(data.constraint).to be constraint
               end # it
