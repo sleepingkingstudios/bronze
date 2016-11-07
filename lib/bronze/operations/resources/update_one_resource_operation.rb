@@ -13,6 +13,8 @@ module Bronze::Operations::Resources
 
       resource.assign(attributes)
 
+      return unless validate_resource(@resource)
+
       _, @errors = resource_collection.update resource_id, @resource
     end # method process
   end # class

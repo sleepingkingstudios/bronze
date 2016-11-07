@@ -34,96 +34,147 @@ RSpec.describe Bronze::Operations::Resources::UpdateOneResourceOperation do
       instance.call resource_id, attributes
     end # method call_operation
 
-    include_context 'should require a resource'
+    include_examples 'should require a resource'
 
     wrap_context 'when the collection contains one resource' do
-      include_context 'should require a resource'
+      shared_examples 'should perform the operation' do
+        it { expect(instance.call resource_id, attributes).to be true }
 
-      describe 'with a valid resource id' do
-        let(:resource_id) { resource.id }
-        let(:attributes)  { { :volume => 7 } }
+        it 'should set the resource' do
+          instance.call resource_id, attributes
 
-        describe 'with a failing update' do
-          let(:errors) do
-            Bronze::Errors::Errors.new.tap do |errors|
-              errors[:user].add :not_authorized
-            end # tap
-          end # let
+          resource = instance.resource
 
-          before(:example) do
-            allow(instance.resource_collection).to receive(:update) do |*|
-              [false, errors]
-            end # allow
-          end # before example
+          expect(resource).to be_a resource_class
+          expect(resource.title).to be == resource_attributes[:title]
+          expect(resource.volume).to be == attributes[:volume]
+        end # it
 
-          it { expect(instance.call resource_id, attributes).to be false }
+        it 'should update the persisted resource' do
+          transform  =
+            Bronze::Entities::Transforms::EntityTransform.new(resource_class)
+          collection = repository.collection(resource_class, transform)
 
-          it 'should set the resource' do
-            instance.call resource_id, attributes
+          expect { instance.call resource_id, attributes }.
+            to change { collection.find resource_id }
 
-            resource = instance.resource
+          expect(collection.find resource_id).to be == instance.resource
+        end # it
 
-            expect(resource).to be_a resource_class
-            expect(resource.title).to be == resource_attributes[:title]
-            expect(resource.volume).to be == attributes[:volume]
-          end # it
+        it 'should clear the errors' do
+          previous_errors = Bronze::Errors::Errors.new
+          previous_errors[:resources].add :require_more_minerals
+          previous_errors[:resources].add :insufficient_vespene_gas
 
-          it 'should not update the persisted resource' do
-            collection = repository.collection(resource_class)
+          instance.instance_variable_set :@errors, previous_errors
 
-            expect { instance.call resource_id, attributes }.
-              not_to change { collection.find resource_id }
-          end # it
+          instance.call resource_id, attributes
 
-          it 'should set the errors' do
-            previous_errors = Bronze::Errors::Errors.new
-            previous_errors[:resources].add :require_more_minerals
-            previous_errors[:resources].add :insufficient_vespene_gas
+          expect(instance.errors).to satisfy(&:empty?)
+        end # it
+      end # shared_examples
 
-            instance.instance_variable_set :@errors, previous_errors
+      let(:resource_id) { resource.id }
+      let(:attributes)  { { :volume => 7 } }
 
-            instance.call resource_id, attributes
+      include_examples 'should require a resource'
 
-            expect(instance.errors).to be == errors
-          end # it
-        end # describe
+      include_examples 'should perform the operation'
 
-        describe 'with a successful update' do
-          it { expect(instance.call resource_id, attributes).to be true }
+      describe 'with a failing update' do
+        let(:errors) do
+          Bronze::Errors::Errors.new.tap do |errors|
+            errors[:user].add :not_authorized
+          end # tap
+        end # let
 
-          it 'should set the resource' do
-            instance.call resource_id, attributes
+        before(:example) do
+          allow(instance.resource_collection).to receive(:update) do |*|
+            [false, errors]
+          end # allow
+        end # before example
 
-            resource = instance.resource
+        it { expect(instance.call resource_id, attributes).to be false }
 
-            expect(resource).to be_a resource_class
-            expect(resource.title).to be == resource_attributes[:title]
-            expect(resource.volume).to be == attributes[:volume]
-          end # it
+        it 'should set the resource' do
+          instance.call resource_id, attributes
 
-          it 'should update the persisted resource' do
-            transform  =
-              Bronze::Entities::Transforms::EntityTransform.new(resource_class)
-            collection = repository.collection(resource_class, transform)
+          resource = instance.resource
 
-            expect { instance.call resource_id, attributes }.
-              to change { collection.find resource_id }
+          expect(resource).to be_a resource_class
+          expect(resource.title).to be == resource_attributes[:title]
+          expect(resource.volume).to be == attributes[:volume]
+        end # it
 
-            expect(collection.find resource_id).to be == instance.resource
-          end # it
+        it 'should not update the persisted resource' do
+          collection = repository.collection(resource_class)
 
-          it 'should clear the errors' do
-            previous_errors = Bronze::Errors::Errors.new
-            previous_errors[:resources].add :require_more_minerals
-            previous_errors[:resources].add :insufficient_vespene_gas
+          expect { instance.call resource_id, attributes }.
+            not_to change { collection.find resource_id }
+        end # it
 
-            instance.instance_variable_set :@errors, previous_errors
+        it 'should set the errors' do
+          previous_errors = Bronze::Errors::Errors.new
+          previous_errors[:resources].add :require_more_minerals
+          previous_errors[:resources].add :insufficient_vespene_gas
 
-            instance.call resource_id, attributes
+          instance.instance_variable_set :@errors, previous_errors
 
-            expect(instance.errors).to satisfy(&:empty?)
-          end # it
-        end # describe
+          instance.call resource_id, attributes
+
+          expect(instance.errors).to be == errors
+        end # it
+      end # describe
+
+      describe 'with a failing validation' do
+        before(:example) do
+          described_class.contract do
+            add_constraint Spec::Constraints::FailureConstraint.new
+          end # contract
+        end # before example
+
+        it { expect(instance.call resource_id, attributes).to be false }
+
+        it 'should set the resource' do
+          instance.call resource_id, attributes
+
+          resource = instance.resource
+
+          expect(resource).to be_a resource_class
+          expect(resource.title).to be == resource_attributes[:title]
+          expect(resource.volume).to be == attributes[:volume]
+        end # it
+
+        it 'should not update the persisted resource' do
+          collection = repository.collection(resource_class)
+
+          expect { instance.call resource_id, attributes }.
+            not_to change { collection.find resource_id }
+        end # it
+
+        it 'should set the errors' do
+          previous_errors = Bronze::Errors::Errors.new
+          previous_errors[:resources].add :require_more_minerals
+          previous_errors[:resources].add :insufficient_vespene_gas
+
+          instance.instance_variable_set :@errors, previous_errors
+
+          instance.call resource_id, attributes
+
+          expect(instance.errors).to include { |error|
+            error.type == Spec::Constraints::FailureConstraint::INVALID_ERROR
+          } # end include
+        end # it
+      end # describe
+
+      describe 'with a passing validation' do
+        before(:example) do
+          described_class.contract do
+            add_constraint Spec::Constraints::SuccessConstraint.new
+          end # contract
+        end # before example
+
+        include_examples 'should perform the operation'
       end # describe
     end # wrap_context
   end # describe

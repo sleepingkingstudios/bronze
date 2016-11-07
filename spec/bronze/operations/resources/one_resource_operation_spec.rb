@@ -9,14 +9,14 @@ RSpec.describe Bronze::Operations::Resources::OneResourceOperation do
 
   include_context 'when a resource class is defined'
 
-  let(:described_class) { Spec::OneResourceOperation }
+  let(:described_class) { Spec::Operations::OneResourceOperation }
   let(:repository)      { Bronze::Collections::Reference::Repository.new }
   let(:instance)        { described_class.new repository }
 
   options = {
     :base_class => Bronze::Operations::Resources::OneResourceOperation
   } # end options
-  mock_class Spec, :OneResourceOperation, options do |klass|
+  mock_class Spec::Operations, :OneResourceOperation, options do |klass|
     klass.send :resource_class=, resource_class
   end # mock_class
 

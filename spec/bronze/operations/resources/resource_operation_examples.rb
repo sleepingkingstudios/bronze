@@ -59,36 +59,39 @@ module Spec::Operations
     end # shared_context
 
     shared_examples 'should require a resource' do
-      let(:errors) do
-        error_definitions = Bronze::Collections::Collection::Errors
+      describe 'should require a resource' do
+        let(:resource_id) { '0' }
+        let(:errors) do
+          error_definitions = Bronze::Collections::Collection::Errors
 
-        Bronze::Errors::Errors.new.tap do |errors|
-          errors[:resource].add(
-            error_definitions::RECORD_NOT_FOUND,
-            :id => resource_id
-          ) # end add error
-        end # tap
-      end # let
+          Bronze::Errors::Errors.new.tap do |errors|
+            errors[:resource].add(
+              error_definitions::RECORD_NOT_FOUND,
+              :id => resource_id
+            ) # end add error
+          end # tap
+        end # let
 
-      it { expect(call_operation).to be false }
+        it { expect(call_operation).to be false }
 
-      it 'should set the resource' do
-        call_operation
+        it 'should set the resource' do
+          call_operation
 
-        expect(instance.resource).to be nil
-      end # it
+          expect(instance.resource).to be nil
+        end # it
 
-      it 'should set the errors' do
-        previous_errors = Bronze::Errors::Errors.new
-        previous_errors[:resources].add :require_more_minerals
-        previous_errors[:resources].add :insufficient_vespene_gas
+        it 'should set the errors' do
+          previous_errors = Bronze::Errors::Errors.new
+          previous_errors[:resources].add :require_more_minerals
+          previous_errors[:resources].add :insufficient_vespene_gas
 
-        instance.instance_variable_set :@errors, previous_errors
+          instance.instance_variable_set :@errors, previous_errors
 
-        call_operation
+          call_operation
 
-        expect(instance.errors).to be == errors
-      end # it
+          expect(instance.errors).to be == errors
+        end # it
+      end # describe
     end # shared_context
 
     shared_examples 'should implement the ResourceOperation methods' do
@@ -562,6 +565,77 @@ module Spec::Operations
             expect { instance.errors }.not_to change(instance, :errors)
           end # it
         end # context
+      end # describe
+
+      describe '#validate_resource' do
+        let(:resource) { Object.new }
+
+        it 'should define the method' do
+          expect(instance).
+            to respond_to(:validate_resource, true).
+            with(1).argument
+        end # it
+
+        it { expect(instance.send :validate_resource, resource).to be true }
+
+        it 'should clear the errors' do
+          previous_errors = Bronze::Errors::Errors.new
+          previous_errors[:resources].add :require_more_minerals
+          previous_errors[:resources].add :insufficient_vespene_gas
+
+          instance.instance_variable_set :@errors, previous_errors
+
+          instance.send :validate_resource, resource
+
+          expect(instance.errors).to satisfy(&:empty?)
+        end # it
+
+        describe 'with a resource that passes validation' do
+          before(:example) do
+            described_class.contract do
+              add_constraint Spec::Constraints::SuccessConstraint.new
+            end # contract
+          end # before example
+
+          it { expect(instance.send :validate_resource, resource).to be true }
+
+          it 'should clear the errors' do
+            previous_errors = Bronze::Errors::Errors.new
+            previous_errors[:resources].add :require_more_minerals
+            previous_errors[:resources].add :insufficient_vespene_gas
+
+            instance.instance_variable_set :@errors, previous_errors
+
+            instance.send :validate_resource, resource
+
+            expect(instance.errors).to satisfy(&:empty?)
+          end # it
+        end # describe
+
+        describe 'with a resource that fails validation' do
+          before(:example) do
+            described_class.contract do
+              add_constraint Spec::Constraints::FailureConstraint.new
+            end # contract
+          end # before example
+
+          it { expect(instance.send :validate_resource, resource).to be false }
+
+          it 'should set the errors' do
+            previous_errors = Bronze::Errors::Errors.new
+            previous_errors[:resources].add :require_more_minerals
+            previous_errors[:resources].add :insufficient_vespene_gas
+
+            instance.instance_variable_set :@errors, previous_errors
+
+            instance.send :validate_resource, resource
+
+            expect(instance.errors.count).to be 1
+            expect(instance.errors).to include { |error|
+              error.type == Spec::Constraints::FailureConstraint::INVALID_ERROR
+            } # end include
+          end # it
+        end # describe
       end # describe
 
       describe '#resource' do

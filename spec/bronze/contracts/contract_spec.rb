@@ -310,7 +310,41 @@ RSpec.describe Bronze::Contracts::Contract do
 
     it { expect(instance.empty?).to be true }
 
-    pending
+    context 'when there are constraints on the contract' do
+      before(:example) do
+        constraint_class = Spec::Constraints::SuccessConstraint
+
+        instance.add_constraint constraint_class.new
+      end # before
+
+      it { expect(instance.empty?).to be false }
+    end # context
+
+    context 'when there are constraints on the class' do
+      let(:described_class) { Class.new(super()) }
+
+      before(:example) do
+        constraint_class = Spec::Constraints::SuccessConstraint
+
+        described_class.add_constraint constraint_class.new
+      end # before example
+
+      it { expect(instance.empty?).to be false }
+    end # context
+
+    context 'when there are constraints on the parent class' do
+      let(:described_class) { Class.new(super()) }
+      let(:child_class)     { Class.new(described_class) }
+      let(:instance)        { child_class.new }
+
+      before(:example) do
+        constraint_class = Spec::Constraints::SuccessConstraint
+
+        described_class.add_constraint constraint_class.new
+      end # before example
+
+      it { expect(instance.empty?).to be false }
+    end # context
   end # describe
 
   describe '#match' do

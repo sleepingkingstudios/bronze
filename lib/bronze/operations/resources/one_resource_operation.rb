@@ -52,6 +52,18 @@ module Bronze::Operations::Resources
       false
     end # method require_resource
 
+    # Matches the resource against the operation contract and sets the operation
+    # errors accordingly.
+    #
+    # @param resource [Object] The resource to validate.
+    #
+    # @return [Boolean] True if the validation passes, otherwise false.
+    def validate_resource resource
+      result, @errors = resource_valid?(resource)
+
+      result
+    end # method validate_resource
+
     def resource_key
       :resource
     end # method resource_key
