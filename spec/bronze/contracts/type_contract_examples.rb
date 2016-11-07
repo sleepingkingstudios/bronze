@@ -15,7 +15,7 @@ module Spec::Contracts
         it 'should define the method' do
           expect(described_class).
             to respond_to(:contract).
-            with(0).arguments.
+            with(0..1).arguments.
             and_a_block
         end # it
 
@@ -25,6 +25,26 @@ module Spec::Contracts
           expect(contract).to be_a Bronze::Contracts::Contract
           expect(contract.constraints).to satisfy(&:empty?)
         end # it
+
+        describe 'with a contract class' do
+          let(:contract_class) { Class.new(Bronze::Contracts::Contract) }
+
+          it 'should set the contract' do
+            expect { described_class.contract contract_class }.
+              to change(described_class, :contract).
+              to be_a contract_class
+          end # it
+        end # describe
+
+        describe 'with a contract instance' do
+          let(:contract) { Bronze::Contracts::Contract.new }
+
+          it 'should set the contract' do
+            expect { described_class.contract contract }.
+              to change(described_class, :contract).
+              to be contract
+          end # it
+        end # describe
 
         describe 'with a block' do
           it 'should execute the block in the context of the contract' do

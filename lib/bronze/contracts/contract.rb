@@ -58,7 +58,7 @@ module Bronze::Contracts
       #   Builds the given constraint with the specified parameters. Common
       #   parameters include :negated => true|false and :value => value.
       def constrain property = nil, constraints = {}, &block
-        if property.is_a?(Hash) && empty?(constraints)
+        if property.is_a?(Hash) && empty_constraints?(constraints)
           constraints = property
           property    = nil
         end # if
@@ -94,9 +94,9 @@ module Bronze::Contracts
         object.is_a?(String) || object.is_a?(Symbol)
       end # method constraint_name?
 
-      def empty? object
+      def empty_constraints? object
         object.nil? || (object.respond_to?(:empty?) && object.empty?)
-      end # method empty?
+      end # method empty_constraints?
 
       def extract_constraint object, params
         constraint_type = Bronze::Constraints::Constraint
@@ -171,6 +171,14 @@ module Bronze::Contracts
 
     # @return [Array] The constraints defined on the contract.
     attr_reader :constraints
+
+    # @return [Boolean] True if the contract does not have any constraints,
+    #   otherwise false.
+    def empty?
+      each_constraint { |_| return false }
+
+      true
+    end # method empty?
 
     def match object
       @errors = Bronze::Errors::Errors.new

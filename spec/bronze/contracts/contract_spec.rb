@@ -305,6 +305,14 @@ RSpec.describe Bronze::Contracts::Contract do
     include_examples 'should have reader', :constraints, ->() { be == [] }
   end # describe
 
+  describe '#empty?' do
+    it { expect(instance).to respond_to(:empty?).with(0).arguments }
+
+    it { expect(instance.empty?).to be true }
+
+    pending
+  end # describe
+
   describe '#match' do
     let(:object) { double('object') }
 

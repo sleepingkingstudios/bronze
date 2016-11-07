@@ -17,8 +17,14 @@ module Bronze::Contracts
 
       delegate :match, :to => :contract
 
-      def contract &block
-        @contract ||= build_contract
+      def contract contract_or_class = nil, &block
+        if contract_class?(contract_or_class)
+          @contract = contract_or_class.new
+        elsif contract_or_class.is_a?(Bronze::Contracts::Contract)
+          @contract = contract_or_class
+        else
+          @contract ||= build_contract
+        end # if-else
 
         @contract.instance_exec(&block) if block_given?
 
@@ -30,6 +36,10 @@ module Bronze::Contracts
       def build_contract
         Bronze::Contracts::Contract.new
       end # method contract_builder
+
+      def contract_class? object
+        object.is_a?(Class) && object < Bronze::Contracts::Contract
+      end # method contract_class?
     end # module
   end # module
 end # module

@@ -9,6 +9,7 @@
     constrain :manufacturer, Manufacturer => true
   end # class
 
+- Move ResourceOperations to Patina namespace.
 - Documentation Pass
 - Extract Bronze::Ci to standalone gem.
 - remove `result, errors =` pattern?

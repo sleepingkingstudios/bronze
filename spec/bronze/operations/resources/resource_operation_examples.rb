@@ -1,6 +1,10 @@
 # spec/bronze/operations/resources/resource_operation_examples.rb
 
 require 'bronze/collections/collection'
+require 'bronze/constraints/constraints_examples'
+require 'bronze/constraints/failure_constraint'
+require 'bronze/constraints/success_constraint'
+require 'bronze/contracts/type_contract_examples'
 require 'bronze/entities/entity'
 require 'bronze/entities/transforms/entity_transform'
 require 'bronze/errors/error'
@@ -9,6 +13,8 @@ require 'bronze/transforms/identity_transform'
 module Spec::Operations
   module ResourceOperationExamples
     extend RSpec::SleepingKingStudios::Concerns::SharedExampleGroup
+
+    include Spec::Contracts::TypeContractExamples
 
     shared_context 'when a resource class is defined' do
       let(:resource_class) { Spec::ArchivedPeriodical }
@@ -86,6 +92,8 @@ module Spec::Operations
     end # shared_context
 
     shared_examples 'should implement the ResourceOperation methods' do
+      include_examples 'should implement the TypeContract methods'
+
       describe '::[]' do
         let(:resource_class) do
           Class.new do
@@ -138,6 +146,44 @@ module Spec::Operations
             to change(described_class, :resource_class).
             to be new_resource_class
         end # it
+      end # describe
+
+      describe '::resource_contract' do
+        it 'should alias the method' do
+          original_method = described_class.method(:contract)
+          aliased_method  = described_class.method(:resource_contract)
+
+          expect(original_method.source_location).
+            to be == aliased_method.source_location
+
+          expect(aliased_method.original_name).to be == :contract
+        end # it
+      end # describe
+
+      describe '::resource_contract?' do
+        it { expect(described_class).to have_predicate(:resource_contract?) }
+
+        it { expect(described_class.resource_contract?).to be false }
+
+        context 'when a resource contract has been defined' do
+          before(:example) do
+            described_class.contract do
+              constrain :attribute_types => true
+            end # contract
+          end # before
+
+          it { expect(described_class.resource_contract?).to be true }
+        end # context
+
+        context 'when a resource contract has been set' do
+          let(:contract) { Bronze::Contracts::Contract.new }
+
+          before(:example) do
+            described_class.contract(contract)
+          end # before
+
+          it { expect(described_class.resource_contract?).to be true }
+        end # context
       end # describe
 
       describe '#repository' do
@@ -215,12 +261,111 @@ module Spec::Operations
         end # context
       end # describe
 
+      describe '#resource_contract' do
+        let(:contract) { double('contract') }
+
+        include_examples 'should have reader', :resource_contract, nil
+
+        context 'when a resource contract has been defined' do
+          before(:example) do
+            described_class.contract do
+              constrain :attribute_types => true
+            end # contract
+          end # before
+
+          it 'should delegate to the class' do
+            expect(instance.resource_contract).to be described_class.contract
+          end # it
+        end # context
+
+        context 'when a resource contract has been set' do
+          let(:contract) { Bronze::Contracts::Contract.new }
+
+          before(:example) do
+            described_class.contract(contract)
+          end # before
+
+          it 'should delegate to the class' do
+            expect(instance.resource_contract).to be contract
+          end # it
+        end # context
+
+        context 'when a resource class is defined' do
+          let(:resource_class) { Spec::ArchivedPeriodical }
+
+          context 'when the resource class has a ::Contract constant' do
+            let(:contract_class) { Class.new(Bronze::Contracts::Contract) }
+
+            before(:example) do
+              resource_class.const_set :Contract, contract_class
+            end # before example
+
+            it 'should return the resource class contract' do
+              expect(instance.resource_contract).to be_a contract_class
+            end # it
+          end # context
+
+          context 'when the resource class has a ::contract method' do
+            let(:contract) { Bronze::Contracts::Contract.new }
+
+            before(:example) do
+              resource_class.send :include, Bronze::Contracts::TypeContract
+            end # before example
+
+            it 'should return the resource class contract' do
+              expect(instance.resource_contract).to be resource_class.contract
+            end # it
+          end # context
+        end # wrap_context
+      end # describe
+
       describe '#resource_name' do
         let(:expected) { 'archived_periodicals' }
 
         include_examples 'should have reader',
           :resource_name,
           ->() { be == expected }
+      end # describe
+
+      describe '#resource_valid?' do
+        include Spec::Constraints::ConstraintsExamples
+
+        let(:match_method) { :resource_valid? }
+        let(:object)       { Object.new }
+
+        it 'should define the method' do
+          expect(instance).to respond_to(:resource_valid?).with(1).argument
+        end # it
+
+        include_examples 'should return true and an empty errors object'
+
+        context 'when there is a contract that matches the object' do
+          before(:example) do
+            constraint = Spec::Constraints::SuccessConstraint.new
+
+            allow(instance).
+              to receive(:resource_contract).
+              and_return(constraint)
+          end # before example
+
+          include_examples 'should return true and an empty errors object'
+        end # context
+
+        context 'when there is a contract that does not match the object' do
+          let(:error_type) do
+            Spec::Constraints::FailureConstraint::INVALID_ERROR
+          end # let
+
+          before(:example) do
+            constraint = Spec::Constraints::FailureConstraint.new
+
+            allow(instance).
+              to receive(:resource_contract).
+              and_return(constraint)
+          end # before example
+
+          include_examples 'should return false and the errors object'
+        end # context
       end # describe
     end # shared_examples
 
