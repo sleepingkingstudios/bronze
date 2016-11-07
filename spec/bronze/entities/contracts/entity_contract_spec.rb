@@ -16,10 +16,10 @@ RSpec.describe Bronze::Entities::Contracts::EntityContract do
 
   describe '::contract' do
     describe 'with a block' do
-      describe 'with a #constrain_attribute_types call' do
+      describe 'with a #constrain :attribute_types call' do
         it 'should add the specified constraints' do
           contract = described_class.contract do
-            constrain_attribute_types
+            constrain :attribute_types => true
 
             constrain :title, :present => true
 
@@ -33,26 +33,26 @@ RSpec.describe Bronze::Entities::Contracts::EntityContract do
               Bronze::Entities::Constraints::AttributeTypesConstraint
 
             data.constraint.is_a?(constraint_type) &&
-              data.nesting == [] &&
+              data.property.nil? &&
               !data.negated?
           } # end include
 
           expect(constraints).to include { |data|
             data.constraint.is_a?(Bronze::Constraints::PresenceConstraint) &&
-              data.nesting == [:title] &&
+              data.property == :title &&
               !data.negated?
           } # end include
 
           expect(constraints).to include { |data|
             data.constraint.is_a?(Bronze::Constraints::TypeConstraint) &&
               data.constraint.type == String &&
-              data.nesting == [:isbn] &&
+              data.property == :isbn &&
               !data.negated?
           } # end include
 
           expect(constraints).to include { |data|
             data.constraint.is_a?(Bronze::Constraints::NilConstraint) &&
-              data.nesting == [:isbn] &&
+              data.property == :isbn &&
               data.negated?
           } # end include
         end # it

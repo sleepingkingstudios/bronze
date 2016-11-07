@@ -1,6 +1,5 @@
 # spec/bronze/contracts/type_contract_spec.rb
 
-require 'bronze/contracts/contract_builder'
 require 'bronze/contracts/type_contract'
 require 'bronze/contracts/type_contract_examples'
 

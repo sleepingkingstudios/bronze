@@ -27,7 +27,7 @@ module Spec::Contracts
         end # it
 
         describe 'with a block' do
-          it 'should execute the block in the context of a contract builder' do
+          it 'should execute the block in the context of the contract' do
             contract  = described_class.contract
             called_by = nil
 
@@ -35,8 +35,7 @@ module Spec::Contracts
               called_by = self
             end # contract
 
-            expect(called_by).to be_a Bronze::Contracts::ContractBuilder
-            expect(called_by.contract).to be contract
+            expect(called_by).to be contract
           end # it
 
           it 'should add the specified constraints' do
@@ -50,20 +49,20 @@ module Spec::Contracts
 
             expect(constraints).to include { |data|
               data.constraint.is_a?(Bronze::Constraints::PresenceConstraint) &&
-                data.nesting == [:title] &&
+                data.property == :title &&
                 !data.negated?
             } # end include
 
             expect(constraints).to include { |data|
               data.constraint.is_a?(Bronze::Constraints::TypeConstraint) &&
                 data.constraint.type == String &&
-                data.nesting == [:isbn] &&
+                data.property == :isbn &&
                 !data.negated?
             } # end include
 
             expect(constraints).to include { |data|
               data.constraint.is_a?(Bronze::Constraints::NilConstraint) &&
-                data.nesting == [:isbn] &&
+                data.property == :isbn &&
                 data.negated?
             } # end include
           end # it

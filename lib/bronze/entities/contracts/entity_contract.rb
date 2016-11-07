@@ -4,7 +4,7 @@ require 'sleeping_king_studios/tools/toolbox/mixin'
 
 require 'bronze/contracts/contract'
 require 'bronze/contracts/type_contract'
-require 'bronze/entities/contracts/entity_contract_builder'
+require 'bronze/entities/constraints/entity_constraint_builder'
 
 module Bronze::Entities::Contracts
   # Helper mixin for defining a canonical contract for an entity.
@@ -17,9 +17,10 @@ module Bronze::Entities::Contracts
     module ClassMethods
       private
 
-      def contract_builder
-        @contract_builder ||=
-          Bronze::Entities::Contracts::EntityContractBuilder.new(@contract)
+      def build_contract
+        Bronze::Contracts::Contract.new.tap do |contract|
+          contract.extend Bronze::Entities::Constraints::EntityConstraintBuilder
+        end # tap
       end # method contract_builder
     end # module
   end # module

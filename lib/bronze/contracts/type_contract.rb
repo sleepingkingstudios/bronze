@@ -3,7 +3,7 @@
 require 'sleeping_king_studios/tools/toolbox/delegator'
 require 'sleeping_king_studios/tools/toolbox/mixin'
 
-require 'bronze/contracts/contract_builder'
+require 'bronze/contracts/contract'
 
 module Bronze::Contracts
   # Helper mixin for defining a canonical contract for a type, such as required
@@ -18,17 +18,17 @@ module Bronze::Contracts
       delegate :match, :to => :contract
 
       def contract &block
-        @contract ||= Bronze::Contracts::Contract.new
+        @contract ||= build_contract
 
-        contract_builder.instance_exec(&block) if block_given?
+        @contract.instance_exec(&block) if block_given?
 
         @contract
       end # class method contract
 
       private
 
-      def contract_builder
-        @contract_builder ||= Bronze::Contracts::ContractBuilder.new(@contract)
+      def build_contract
+        Bronze::Contracts::Contract.new
       end # method contract_builder
     end # module
   end # module

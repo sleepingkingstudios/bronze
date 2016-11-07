@@ -1,9 +1,7 @@
 # spec/bronze/contracts/contract_spec.rb
 
 require 'bronze/constraints/constraints_examples'
-require 'bronze/constraints/empty_constraint'
 require 'bronze/constraints/failure_constraint'
-require 'bronze/constraints/nil_constraint'
 require 'bronze/constraints/success_constraint'
 require 'bronze/constraints/type_constraint'
 require 'bronze/contracts/contract'
@@ -12,25 +10,12 @@ require 'bronze/entities/entity'
 RSpec.describe Bronze::Contracts::Contract do
   include Spec::Constraints::ConstraintsExamples
 
-  let(:instance) { described_class.new }
-
-  describe '::new' do
-    it { expect(described_class).to be_constructible.with(0).arguments }
-  end # describe
-
-  describe '#add_constraint' do
+  shared_examples 'should add the constraint' do
     let(:constraint) { Spec::Constraints::SuccessConstraint.new }
 
-    it 'should define the method' do
-      expect(instance).
-        to respond_to(:add_constraint).
-        with(1).argument.
-        and_keywords(:on)
-    end # let
-
     it 'should add the constraint' do
-      expect { instance.add_constraint constraint }.
-        to change(instance, :constraints).
+      expect { contract.add_constraint constraint }.
+        to change(contract, :constraints).
         to include { |data|
           data.constraint == constraint &&
             data.negated? == false
@@ -38,22 +23,22 @@ RSpec.describe Bronze::Contracts::Contract do
     end # it
 
     describe 'with :if => proc' do
-      let(:conditional) { ->(obj) {} }
+      let(:condition) { ->(obj) {} }
 
       it 'should add the constraint' do
-        expect { instance.add_constraint constraint, :if => conditional }.
-          to change(instance, :constraints).
+        expect { contract.add_constraint constraint, :if => condition }.
+          to change(contract, :constraints).
           to include { |data|
             data.constraint == constraint &&
-              data.if_proc == conditional
+              data.if_condition == condition
           } # end include
       end # it
     end # describe
 
     describe 'with :negated => true' do
       it 'should add the constraint' do
-        expect { instance.add_constraint constraint, :negated => true }.
-          to change(instance, :constraints).
+        expect { contract.add_constraint constraint, :negated => true }.
+          to change(contract, :constraints).
           to include { |data|
             data.constraint == constraint &&
               data.negated? == true
@@ -61,44 +46,259 @@ RSpec.describe Bronze::Contracts::Contract do
       end # it
     end # describe
 
-    describe 'with :on => a nesting with one item' do
-      let(:nesting) { [:supply_limit] }
+    describe 'with :on => property' do
+      let(:property) { :supply_limit }
 
       it 'should add the constraint' do
-        expect { instance.add_constraint constraint, :on => nesting }.
-          to change(instance, :constraints).
+        expect { contract.add_constraint constraint, :on => property }.
+          to change(contract, :constraints).
           to include { |data|
             data.constraint == constraint &&
-              data.nesting == nesting
-          } # end include
-      end # it
-    end # describe
-
-    describe 'with :on => a nesting with many items' do
-      let(:nesting) { [:hazards, :terran, :nuclear_launch_detected] }
-
-      it 'should add the constraint' do
-        expect { instance.add_constraint constraint, :on => nesting }.
-          to change(instance, :constraints).
-          to include { |data|
-            data.constraint == constraint &&
-              data.nesting == nesting
+              data.property == property
           } # end include
       end # it
     end # describe
 
     describe 'with :unless => proc' do
-      let(:conditional) { ->(obj) {} }
+      let(:condition) { ->(obj) {} }
 
       it 'should add the constraint' do
-        expect { instance.add_constraint constraint, :unless => conditional }.
-          to change(instance, :constraints).
+        expect { contract.add_constraint constraint, :unless => condition }.
+          to change(contract, :constraints).
           to include { |data|
             data.constraint == constraint &&
-              data.unless_proc == conditional
+              data.unless_condition == condition
           } # end include
       end # it
     end # describe
+  end # shared_examples
+
+  shared_examples 'should create and add the constraint' do
+    desc = 'should create and add the specified constraint'
+    shared_examples desc do |constraint_type, expected = {}|
+      it 'should create and add the constraint' do
+        expect { contract.constrain(property, params) }.
+          to change(contract.constraints, :count).by(1)
+
+        context = contract.constraints.last
+        expect(context.negated?).to be !!expected[:negated]
+        expect(context.property).to be == property
+        expect(context.constraint).to be_a constraint_type
+
+        condition = expected[:if_condition] ? proc : nil
+        expect(context.if_condition).to be condition
+
+        condition = expected[:unless_condition] ? proc : nil
+        expect(context.unless_condition).to be condition
+      end # it
+    end # shared_examples
+
+    desc = 'should create and add the constraint with options'
+    shared_examples desc do |constraint_type|
+      describe 'with constraint => true' do
+        let(:params) { { constraint => true } }
+
+        include_examples 'should create and add the specified constraint',
+          constraint_type
+      end # describe
+
+      describe 'with constraint => false' do
+        let(:params) { { constraint => false } }
+
+        include_examples 'should create and add the specified constraint',
+          constraint_type,
+          :negated => true
+      end # describe
+
+      describe 'with constraint => { :if => proc }' do
+        let(:proc)   { ->() {} }
+        let(:params) { { constraint => { :if => proc } } }
+
+        include_examples 'should create and add the specified constraint',
+          constraint_type,
+          :if_condition => true
+      end # describe
+
+      describe 'with constraint => { :negated => true }' do
+        let(:params) { { constraint => { :negated => true } } }
+
+        include_examples 'should create and add the specified constraint',
+          constraint_type,
+          :negated => true
+      end # describe
+
+      describe 'with constraint => { :unless => proc }' do
+        let(:proc)   { ->() {} }
+        let(:params) { { constraint => { :unless => proc } } }
+
+        include_examples 'should create and add the specified constraint',
+          constraint_type,
+          :unless_condition => true
+      end # describe
+    end # shared_examples
+
+    shared_examples 'should create the constraint(s)' do
+      describe 'with no arguments' do
+        it 'should raise an error' do
+          expect { instance.constrain property }.
+            to raise_error described_class::EMPTY_CONSTRAINTS,
+              'must specify at least one constraint'
+        end # it
+      end # describe
+
+      describe 'with an object' do
+        let(:object) { Object.new }
+
+        it 'should raise an error' do
+          error_types = Bronze::Constraints::ConstraintBuilder
+
+          expect { instance.constrain property, object }.
+            to raise_error error_types::INVALID_CONSTRAINT,
+              "#{object} is not a valid constraint"
+        end # it
+      end # describe
+
+      describe 'with a constraint object' do
+        let(:constraint) { Bronze::Constraints::Constraint.new }
+        let(:params)     { constraint }
+
+        include_examples 'should create and add the specified constraint',
+          Bronze::Constraints::Constraint
+
+        include_examples 'should create and add the constraint with options',
+          Bronze::Constraints::Constraint
+      end # describe
+
+      describe 'with an object with a ::Contract constant' do
+        let(:contract) { Bronze::Contracts::Contract.new }
+        let(:constraint) do
+          Module.new.tap do |mod|
+            mod.const_set :Contract, contract
+          end # tap
+        end # let
+        let(:params) { constraint }
+
+        include_examples 'should create and add the specified constraint',
+          Bronze::Contracts::Contract
+
+        include_examples 'should create and add the constraint with options',
+          Bronze::Contracts::Contract
+      end # describe
+
+      describe 'with an object with a #contract method' do
+        let(:contract)   { Bronze::Contracts::Contract.new }
+        let(:constraint) { double('object', :contract => contract) }
+        let(:params)     { constraint }
+
+        include_examples 'should create and add the specified constraint',
+          Bronze::Contracts::Contract
+
+        include_examples 'should create and add the constraint with options',
+          Bronze::Contracts::Contract
+      end # describe
+
+      describe 'with an unknown constraint type' do
+        it 'should raise an error' do
+          error_types = Bronze::Constraints::ConstraintBuilder
+
+          expect { instance.build_constraint :unknown, {} }.
+            to raise_error error_types::UNKNOWN_CONSTRAINT,
+              'unrecognized constraint type "unknown"'
+        end # it
+      end # describe
+
+      describe 'with a known constraint type' do
+        let(:constraint) { :present }
+
+        include_examples 'should create and add the constraint with options',
+          Bronze::Constraints::PresenceConstraint
+      end # describe
+
+      describe 'with a block' do
+        it 'should create a child contract' do
+          defn = ->() { constrain :subtitle, :type => String }
+
+          expect { contract.constrain(property, &defn) }.
+            to change(contract.constraints, :count).by(1)
+
+          context = contract.constraints.last
+          expect(context.negated?).to be false
+          expect(context.property).to be == property
+          expect(context.constraint).to be_a Bronze::Contracts::Contract
+
+          child   = context.constraint
+          context = child.constraints.last
+          expect(context.negated?).to be false
+          expect(context.property).to be == :subtitle
+          expect(context.constraint).to be_a Bronze::Constraints::TypeConstraint
+          expect(context.constraint.type).to be == String
+        end # it
+      end # describe
+    end # shared_examples
+
+    let(:constraints) { {} }
+    let(:property)    { nil }
+
+    include_examples 'should create the constraint(s)'
+
+    describe 'with a property name' do
+      let(:property) { :name }
+
+      include_examples 'should create the constraint(s)'
+    end # describe
+  end # shared_examples
+
+  let(:instance) { described_class.new }
+
+  describe '::new' do
+    it { expect(described_class).to be_constructible.with(0).arguments }
+  end # describe
+
+  describe '::add_constraint' do
+    let(:contract) { Class.new(described_class) }
+
+    it 'should define the method' do
+      expect(described_class).
+        to respond_to(:add_constraint).
+        with(1).argument.
+        and_any_keywords
+    end # let
+
+    include_examples 'should add the constraint'
+  end # describe
+
+  describe '::constrain' do
+    let(:contract) { Class.new(described_class) }
+
+    it 'should define the method' do
+      expect(described_class).
+        to respond_to(:constrain).
+        with(0..2).arguments.
+        and_a_block
+    end # let
+
+    it { expect(described_class).to alias_method(:constrain).as(:validate) }
+
+    include_examples 'should create and add the constraint'
+  end # describe
+
+  describe '::constraints' do
+    it 'should define the class reader' do
+      expect(described_class).to have_reader(:constraints).with_value(be == [])
+    end # it
+  end # describe
+
+  describe '#add_constraint' do
+    let(:contract) { instance }
+
+    it 'should define the method' do
+      expect(instance).
+        to respond_to(:add_constraint).
+        with(1).argument.
+        and_any_keywords
+    end # let
+
+    include_examples 'should add the constraint'
   end # describe
 
   describe '#constraints' do
@@ -106,840 +306,202 @@ RSpec.describe Bronze::Contracts::Contract do
   end # describe
 
   describe '#match' do
+    let(:object) { double('object') }
+
     it { expect(instance).to respond_to(:match).with(1).argument }
 
-    describe 'with a simple object' do
-      let(:object) { double('object', :value => 0) }
+    include_examples 'should return true and an empty errors object'
+
+    context 'when there is one matching constraint' do
+      before(:example) do
+        constraint = Spec::Constraints::SuccessConstraint.new
+
+        instance.add_constraint constraint
+      end # before example
 
       include_examples 'should return true and an empty errors object'
+    end # context
 
-      context 'with a matching constraint' do
-        let(:kwargs) { {} }
+    context 'when there is one non-matching constraint' do
+      let(:error_type) { Spec::Constraints::FailureConstraint::INVALID_ERROR }
 
-        before(:example) do
-          constraint = Spec::Constraints::SuccessConstraint.new
+      before(:example) do
+        constraint = Spec::Constraints::FailureConstraint.new
 
-          instance.add_constraint constraint, **kwargs
-        end # before example
+        instance.add_constraint constraint
+      end # before example
 
-        include_examples 'should return true and an empty errors object'
+      include_examples 'should return false and the errors object'
+    end # context
 
-        context 'with :if => a proc that matches the object' do
-          let(:kwargs) { super().merge :if => ->(obj) { obj.value.even? } }
+    context 'when there are many matching constraints' do
+      before(:example) do
+        constraint_class = Spec::Constraints::SuccessConstraint
 
-          include_examples 'should return true and an empty errors object'
-        end # context
+        3.times { instance.add_constraint constraint_class.new }
+      end # before example
 
-        context 'with :if => a proc that does not match the object' do
-          let(:kwargs) { super().merge :if => ->(obj) { obj.value.odd? } }
+      include_examples 'should return true and an empty errors object'
+    end # context
 
-          include_examples 'should return true and an empty errors object'
-        end # context
+    context 'when there are many non-matching constraints' do
+      let(:error_type) { Spec::Constraints::FailureConstraint::INVALID_ERROR }
 
-        context 'with :unless => a proc that matches the object' do
-          let(:kwargs) { super().merge :unless => ->(obj) { obj.value.even? } }
+      before(:example) do
+        constraint_class = Spec::Constraints::FailureConstraint
 
-          include_examples 'should return true and an empty errors object'
-        end # context
+        3.times { instance.add_constraint constraint_class.new }
+      end # before example
 
-        context 'with :unless => a proc that does not match the object' do
-          let(:kwargs) { super().merge :unless => ->(obj) { obj.value.odd? } }
+      include_examples 'should return false and the errors object',
+        lambda { |errors|
+          expect(errors.count).to be 3
 
-          include_examples 'should return true and an empty errors object'
-        end # context
-      end # context
+          errors.each { |error| expect(error.type).to be == error_type }
+        } # end lambda
+    end # context
 
-      context 'with a negated matching constraint' do
-        let(:kwargs)     { { :negated => true } }
-        let(:error_type) { Spec::Constraints::SuccessConstraint::VALID_ERROR }
+    context 'when there are mixed matching and non-matching constraints' do
+      let(:error_type) { Spec::Constraints::FailureConstraint::INVALID_ERROR }
 
-        before(:example) do
-          constraint = Spec::Constraints::SuccessConstraint.new
+      before(:example) do
+        constraint_class = Spec::Constraints::SuccessConstraint
 
-          instance.add_constraint constraint, **kwargs
-        end # before example
+        3.times { instance.add_constraint constraint_class.new }
 
-        include_examples 'should return false and the errors object'
+        constraint_class = Spec::Constraints::FailureConstraint
 
-        context 'with :if => a proc that matches the object' do
-          let(:kwargs) { super().merge :if => ->(obj) { obj.value.even? } }
+        3.times { instance.add_constraint constraint_class.new }
+      end # before example
 
-          include_examples 'should return false and the errors object'
-        end # context
+      include_examples 'should return false and the errors object',
+        lambda { |errors|
+          expect(errors.count).to be 3
 
-        context 'with :if => a proc that does not match the object' do
-          let(:kwargs) { super().merge :if => ->(obj) { obj.value.odd? } }
+          errors.each { |error| expect(error.type).to be == error_type }
+        } # end lambda
+    end # context
 
-          include_examples 'should return true and an empty errors object'
-        end # context
-
-        context 'with :unless => a proc that matches the object' do
-          let(:kwargs) { super().merge :unless => ->(obj) { obj.value.even? } }
-
-          include_examples 'should return true and an empty errors object'
-        end # context
-
-        context 'with :unless => a proc that does not match the object' do
-          let(:kwargs) { super().merge :unless => ->(obj) { obj.value.odd? } }
-
-          include_examples 'should return false and the errors object'
-        end # context
-      end # context
-
-      context 'with a non-matching constraint' do
-        let(:kwargs)     { {} }
-        let(:error_type) { Spec::Constraints::FailureConstraint::INVALID_ERROR }
-
-        before(:example) do
-          constraint = Spec::Constraints::FailureConstraint.new
-
-          instance.add_constraint constraint, **kwargs
-        end # before example
-
-        include_examples 'should return false and the errors object'
-
-        context 'with :if => a proc that matches the object' do
-          let(:kwargs) { super().merge :if => ->(obj) { obj.value.even? } }
-
-          include_examples 'should return false and the errors object'
-        end # context
-
-        context 'with :if => a proc that does not match the object' do
-          let(:kwargs) { super().merge :if => ->(obj) { obj.value.odd? } }
-
-          include_examples 'should return true and an empty errors object'
-        end # context
-
-        context 'with :unless => a proc that matches the object' do
-          let(:kwargs) { super().merge :unless => ->(obj) { obj.value.even? } }
-
-          include_examples 'should return true and an empty errors object'
-        end # context
-
-        context 'with :unless => a proc that does not match the object' do
-          let(:kwargs) { super().merge :unless => ->(obj) { obj.value.odd? } }
-
-          include_examples 'should return false and the errors object'
-        end # context
-      end # context
-
-      context 'with a negated non-matching constraint' do
-        let(:kwargs) { { :negated => true } }
-
-        before(:example) do
-          constraint = Spec::Constraints::FailureConstraint.new
-
-          instance.add_constraint constraint, **kwargs
-        end # before example
-
-        include_examples 'should return true and an empty errors object'
-
-        context 'with :if => a proc that matches the object' do
-          let(:kwargs) { super().merge :if => ->(obj) { obj.value.even? } }
-
-          include_examples 'should return true and an empty errors object'
-        end # context
-
-        context 'with :if => a proc that does not match the object' do
-          let(:kwargs) { super().merge :if => ->(obj) { obj.value.odd? } }
-
-          include_examples 'should return true and an empty errors object'
-        end # context
-
-        context 'with :unless => a proc that matches the object' do
-          let(:kwargs) { super().merge :unless => ->(obj) { obj.value.even? } }
-
-          include_examples 'should return true and an empty errors object'
-        end # context
-
-        context 'with :unless => a proc that does not match the object' do
-          let(:kwargs) { super().merge :unless => ->(obj) { obj.value.odd? } }
-
-          include_examples 'should return true and an empty errors object'
-        end # context
-      end # context
-
-      context 'with many matching constraints' do
-        before(:example) do
-          3.times do
-            instance.add_constraint Spec::Constraints::SuccessConstraint.new
-          end # times
-        end # before example
-
-        include_examples 'should return true and an empty errors object'
-      end # context
-
-      context 'with many non-matching constraints' do
-        let(:error_types) do
-          [
-            'constraints.errors.first_error',
-            'constraints.errors.second_error',
-            'constraints.errors.third_error'
-          ] # end array
-        end # let
-
-        before(:example) do
-          error_types.each do |error_type|
-            constraint = Spec::Constraints::FailureConstraint.new error_type
-
-            instance.add_constraint constraint
-          end # each
-        end # before example
-
-        include_examples 'should return false and the errors object',
-          lambda { |errors|
-            expect(errors.count).to be == 3
-
-            error_types.each do |error_type|
-              expect(errors).to include { |error|
-                error.type == error_type
-              } # include
-            end # each
-          } # end lambda
-      end # context
-
-      context 'with mixed matching and non-matching constraints' do
-        let(:error_types) do
-          [
-            'constraints.errors.first_error',
-            'constraints.errors.second_error',
-            'constraints.errors.third_error'
-          ] # end array
-        end # let
-
-        before(:example) do
-          3.times do
-            instance.add_constraint Spec::Constraints::SuccessConstraint.new
-          end # times
-
-          error_types.each do |error_type|
-            constraint = Spec::Constraints::FailureConstraint.new error_type
-
-            instance.add_constraint constraint
-          end # each
-        end # before example
-
-        include_examples 'should return false and the errors object',
-          lambda { |errors|
-            expect(errors.count).to be == 3
-
-            error_types.each do |error_type|
-              expect(errors).to include { |error|
-                error.type == error_type
-              } # include
-            end # each
-          } # end lambda
-      end # context
-    end # describe
-
-    describe 'with an object with attributes' do
-      let(:object_class) do
-        Class.new do
-          def initialize title
-            @title = title
-          end # method initialize
-
-          attr_reader :title
-        end # class
+    context 'when there are constraints on the class' do
+      let(:described_class) { Class.new(super()) }
+      let(:child_class)     { Class.new(described_class) }
+      let(:instance)        { child_class.new }
+      let(:error_type) do
+        Spec::Constraints::FailureConstraint::INVALID_ERROR
       end # let
-      let(:object) { object_class.new('Object Title') }
 
-      include_examples 'should return true and an empty errors object'
+      before(:example) do
+        constraint_class = Spec::Constraints::FailureConstraint
 
-      context 'with a matching constraint on an undefined attribute' do
-        before(:example) do
-          constraint = Bronze::Constraints::NilConstraint.new
+        described_class.add_constraint constraint_class.new
+        child_class.add_constraint     constraint_class.new
+        instance.add_constraint        constraint_class.new
+      end # before example
 
-          instance.add_constraint constraint, :on => :subtitle
-        end # before
+      include_examples 'should return false and the errors object',
+        lambda { |errors|
+          expect(errors.count).to be 3
 
-        include_examples 'should return true and an empty errors object'
-      end # context
-
-      context 'with a non-matching constraint on an undefined attribute' do
-        let(:error_type) do
-          Bronze::Constraints::TypeConstraint::NOT_KIND_OF_ERROR
-        end # let
-        let(:error_params)  { { :value => Integer } }
-        let(:error_nesting) { [:subtitle] }
-
-        before(:example) do
-          constraint = Bronze::Constraints::TypeConstraint.new(Integer)
-
-          instance.add_constraint constraint, :on => :subtitle
-        end # before
-
-        include_examples 'should return false and the errors object'
-      end # context
-
-      context 'with a matching attribute constraint' do
-        before(:example) do
-          constraint = Bronze::Constraints::TypeConstraint.new(String)
-
-          instance.add_constraint constraint, :on => :title
-        end # before example
-
-        include_examples 'should return true and an empty errors object'
-      end # context
-
-      context 'with a negated matching attribute constraint' do
-        let(:error_type) do
-          Bronze::Constraints::TypeConstraint::KIND_OF_ERROR
-        end # let
-        let(:error_params)  { { :value => String } }
-        let(:error_nesting) { [:title] }
-
-        before(:example) do
-          constraint = Bronze::Constraints::TypeConstraint.new(String)
-
-          instance.add_constraint constraint, :on => :title, :negated => true
-        end # before example
-
-        include_examples 'should return false and the errors object'
-      end # context
-
-      context 'with a non-matching attribute constraint' do
-        let(:error_type) do
-          Bronze::Constraints::EmptyConstraint::NOT_EMPTY_ERROR
-        end # let
-        let(:error_nesting) { [:title] }
-
-        before(:example) do
-          constraint = Bronze::Constraints::EmptyConstraint.new
-
-          instance.add_constraint constraint, :on => :title
-        end # before example
-
-        include_examples 'should return false and the errors object'
-      end # context
-
-      context 'with a negated non-matching attribute constraint' do
-        before(:example) do
-          constraint = Bronze::Constraints::EmptyConstraint.new
-
-          instance.add_constraint constraint, :on => :title, :negated => true
-        end # before example
-
-        include_examples 'should return true and an empty errors object'
-      end # context
-    end # describe
-
-    describe 'with an object with attributes hashes' do
-      let(:object) { Struct.new(:data).new(:name => 'Object Name') }
-
-      include_examples 'should return true and an empty errors object'
-
-      context 'with a matching constraint on an undefined attribute' do
-        before(:example) do
-          constraint = Bronze::Constraints::NilConstraint.new
-
-          instance.add_constraint constraint, :on => [:data, :slug]
-        end # before
-
-        include_examples 'should return true and an empty errors object'
-      end # context
-
-      context 'with a non-matching constraint on an undefined attribute' do
-        let(:error_type) do
-          Bronze::Constraints::TypeConstraint::NOT_KIND_OF_ERROR
-        end # let
-        let(:error_params)  { { :value => Integer } }
-        let(:error_nesting) { [:data, :slug] }
-
-        before(:example) do
-          constraint = Bronze::Constraints::TypeConstraint.new(Integer)
-
-          instance.add_constraint constraint, :on => [:data, :slug]
-        end # before
-
-        include_examples 'should return false and the errors object'
-      end # context
-
-      context 'with a matching attribute constraint' do
-        before(:example) do
-          constraint = Bronze::Constraints::TypeConstraint.new(String)
-
-          instance.add_constraint constraint, :on => [:data, :name]
-        end # before example
-
-        include_examples 'should return true and an empty errors object'
-      end # context
-
-      context 'with a negated matching attribute constraint' do
-        let(:error_type) do
-          Bronze::Constraints::TypeConstraint::KIND_OF_ERROR
-        end # let
-        let(:error_params)  { { :value => String } }
-        let(:error_nesting) { [:data, :name] }
-
-        before(:example) do
-          constraint = Bronze::Constraints::TypeConstraint.new(String)
-
-          instance.add_constraint constraint,
-            :on      => [:data, :name],
-            :negated => true
-        end # before example
-
-        include_examples 'should return false and the errors object'
-      end # context
-
-      context 'with a non-matching attribute constraint' do
-        let(:error_type) do
-          Bronze::Constraints::EmptyConstraint::NOT_EMPTY_ERROR
-        end # let
-        let(:error_nesting) { [:data, :name] }
-
-        before(:example) do
-          constraint = Bronze::Constraints::EmptyConstraint.new
-
-          instance.add_constraint constraint, :on => [:data, :name]
-        end # before example
-
-        include_examples 'should return false and the errors object'
-      end # context
-
-      context 'with a negated non-matching attribute constraint' do
-        before(:example) do
-          constraint = Bronze::Constraints::EmptyConstraint.new
-
-          instance.add_constraint constraint,
-            :on      => [:data, :name],
-            :negated => true
-        end # before example
-
-        include_examples 'should return true and an empty errors object'
-      end # context
-    end # describe
-
-    describe 'with an object with children' do
-      let(:address)   { Struct.new(:street).new('Falken Avenue') }
-      let(:publisher) { Struct.new(:address).new(address) }
-      let(:object)    { Struct.new(:publisher).new(publisher) }
-
-      include_examples 'should return true and an empty errors object'
-
-      context 'with a matching child attribute constraint' do
-        before(:example) do
-          constraint = Bronze::Constraints::TypeConstraint.new(String)
-
-          instance.add_constraint constraint,
-            :on => [:publisher, :address, :street]
-        end # before example
-
-        include_examples 'should return true and an empty errors object'
-      end # context
-
-      context 'with a negated matching attribute constraint' do
-        let(:error_type) do
-          Bronze::Constraints::TypeConstraint::KIND_OF_ERROR
-        end # let
-        let(:error_params)  { { :value => String } }
-        let(:error_nesting) { [:publisher, :address, :street] }
-
-        before(:example) do
-          constraint = Bronze::Constraints::TypeConstraint.new(String)
-
-          instance.add_constraint constraint,
-            :on      => [:publisher, :address, :street],
-            :negated => true
-        end # before example
-
-        include_examples 'should return false and the errors object'
-      end # context
-
-      context 'with a non-matching attribute constraint' do
-        let(:error_type) do
-          Bronze::Constraints::EmptyConstraint::NOT_EMPTY_ERROR
-        end # let
-        let(:error_nesting) { [:publisher, :address, :street] }
-
-        before(:example) do
-          constraint = Bronze::Constraints::EmptyConstraint.new
-
-          instance.add_constraint constraint,
-            :on => [:publisher, :address, :street]
-        end # before example
-
-        include_examples 'should return false and the errors object'
-      end # context
-
-      context 'with a negated non-matching attribute constraint' do
-        before(:example) do
-          constraint = Bronze::Constraints::EmptyConstraint.new
-
-          instance.add_constraint constraint,
-            :on      => [:publisher, :address, :street],
-            :negated => true
-        end # before example
-
-        include_examples 'should return true and an empty errors object'
-      end # context
-    end # describe
+          errors.each { |error| expect(error.type).to be == error_type }
+        } # end lambda
+    end # context
   end # describe
 
   describe '#negated_match' do
+    let(:error_type)   { Spec::Constraints::SuccessConstraint::VALID_ERROR }
     let(:match_method) { :negated_match }
+    let(:object)       { double('object') }
 
     it { expect(instance).to respond_to(:negated_match).with(1).argument }
 
-    describe 'with a simple object' do
-      let(:object) { double('object') }
+    include_examples 'should return true and an empty errors object'
+
+    context 'when there is one matching constraint' do
+      before(:example) do
+        constraint = Spec::Constraints::SuccessConstraint.new
+
+        instance.add_constraint constraint
+      end # before example
+
+      include_examples 'should return false and the errors object'
+    end # context
+
+    context 'when there is one non-matching constraint' do
+      before(:example) do
+        constraint = Spec::Constraints::FailureConstraint.new
+
+        instance.add_constraint constraint
+      end # before example
 
       include_examples 'should return true and an empty errors object'
+    end # context
 
-      context 'with a matching constraint' do
-        let(:error_type) { Spec::Constraints::SuccessConstraint::VALID_ERROR }
+    context 'when there are many matching constraints' do
+      before(:example) do
+        constraint_class = Spec::Constraints::SuccessConstraint
 
-        before(:example) do
-          instance.add_constraint Spec::Constraints::SuccessConstraint.new
-        end # before example
+        3.times { instance.add_constraint constraint_class.new }
+      end # before example
 
-        include_examples 'should return false and the errors object'
-      end # context
+      include_examples 'should return false and the errors object',
+        lambda { |errors|
+          expect(errors.count).to be 3
 
-      context 'with a negated matching constraint' do
-        before(:example) do
-          constraint = Spec::Constraints::SuccessConstraint.new
+          errors.each { |error| expect(error.type).to be == error_type }
+        } # end lambda
+    end # context
 
-          instance.add_constraint constraint, :negated => true
-        end # before example
+    context 'when there are many non-matching constraints' do
+      before(:example) do
+        constraint_class = Spec::Constraints::FailureConstraint
 
-        include_examples 'should return true and an empty errors object'
-      end # context
+        3.times { instance.add_constraint constraint_class.new }
+      end # before example
 
-      context 'with a non-matching constraint' do
-        before(:example) do
-          instance.add_constraint Spec::Constraints::FailureConstraint.new
-        end # before example
+      include_examples 'should return true and an empty errors object'
+    end # context
 
-        include_examples 'should return true and an empty errors object'
-      end # context
+    context 'when there are mixed matching and non-matching constraints' do
+      before(:example) do
+        constraint_class = Spec::Constraints::SuccessConstraint
 
-      context 'with a negated non-matching constraint' do
-        let(:error_type) { Spec::Constraints::FailureConstraint::INVALID_ERROR }
+        3.times { instance.add_constraint constraint_class.new }
 
-        before(:example) do
-          constraint = Spec::Constraints::FailureConstraint.new
+        constraint_class = Spec::Constraints::FailureConstraint
 
-          instance.add_constraint constraint, :negated => true
-        end # before example
+        3.times { instance.add_constraint constraint_class.new }
+      end # before example
 
-        include_examples 'should return false and the errors object'
-      end # context
+      include_examples 'should return false and the errors object',
+        lambda { |errors|
+          expect(errors.count).to be 3
 
-      context 'with many matching constraints' do
-        before(:example) do
-          3.times do
-            instance.add_constraint Spec::Constraints::SuccessConstraint.new
-          end # times
-        end # before example
+          errors.each { |error| expect(error.type).to be == error_type }
+        } # end lambda
+    end # context
 
-        include_examples 'should return false and the errors object',
-          lambda { |errors|
-            expect(errors.count).to be == 3
-
-            error_type = Spec::Constraints::SuccessConstraint::VALID_ERROR
-
-            errors.each do |error|
-              expect(error.type).to be == error_type
-            end # each
-          } # end lambda
-      end # context
-
-      context 'with many non-matching constraints' do
-        let(:error_types) do
-          [
-            'constraints.errors.first_error',
-            'constraints.errors.second_error',
-            'constraints.errors.third_error'
-          ] # end array
-        end # let
-
-        before(:example) do
-          error_types.each do |error_type|
-            constraint = Spec::Constraints::FailureConstraint.new error_type
-
-            instance.add_constraint constraint
-          end # each
-        end # before example
-
-        include_examples 'should return true and an empty errors object'
-      end # context
-
-      context 'with mixed matching and non-matching constraints' do
-        let(:error_types) do
-          [
-            'constraints.errors.first_error',
-            'constraints.errors.second_error',
-            'constraints.errors.third_error'
-          ] # end array
-        end # let
-
-        before(:example) do
-          3.times do
-            instance.add_constraint Spec::Constraints::SuccessConstraint.new
-          end # times
-
-          error_types.each do |error_type|
-            constraint = Spec::Constraints::FailureConstraint.new error_type
-
-            instance.add_constraint constraint
-          end # each
-        end # before example
-
-        include_examples 'should return false and the errors object',
-          lambda { |errors|
-            expect(errors.count).to be == 3
-
-            error_type = Spec::Constraints::SuccessConstraint::VALID_ERROR
-
-            errors.each do |error|
-              expect(error.type).to be == error_type
-            end # each
-          } # end lambda
-      end # context
-    end # describe
-
-    describe 'with an object with attributes' do
-      let(:object_class) do
-        Class.new do
-          def initialize title
-            @title = title
-          end # method initialize
-
-          attr_reader :title
-        end # class
+    context 'when there are constraints on the class' do
+      let(:described_class) { Class.new(super()) }
+      let(:child_class)     { Class.new(described_class) }
+      let(:instance)        { child_class.new }
+      let(:error_type) do
+        Spec::Constraints::SuccessConstraint::VALID_ERROR
       end # let
-      let(:object) { object_class.new('Object Title') }
 
-      include_examples 'should return true and an empty errors object'
+      before(:example) do
+        constraint_class = Spec::Constraints::SuccessConstraint
 
-      context 'with a matching constraint on an undefined attribute' do
-        let(:error_type) do
-          Bronze::Constraints::NilConstraint::NIL_ERROR
-        end # let
-        let(:error_nesting) { [:subtitle] }
+        described_class.add_constraint constraint_class.new
+        child_class.add_constraint     constraint_class.new
+        instance.add_constraint        constraint_class.new
+      end # before example
 
-        before(:example) do
-          constraint = Bronze::Constraints::NilConstraint.new
+      include_examples 'should return false and the errors object',
+        lambda { |errors|
+          expect(errors.count).to be 3
 
-          instance.add_constraint constraint, :on => :subtitle
-        end # before
-
-        include_examples 'should return false and the errors object'
-      end # context
-
-      context 'with a non-matching constraint on an undefined attribute' do
-        before(:example) do
-          constraint = Bronze::Constraints::TypeConstraint.new(Integer)
-
-          instance.add_constraint constraint, :on => :subtitle
-        end # before
-
-        include_examples 'should return true and an empty errors object'
-      end # context
-
-      context 'with a matching attribute constraint' do
-        let(:error_type) do
-          Bronze::Constraints::TypeConstraint::KIND_OF_ERROR
-        end # let
-        let(:error_params)  { { :value => String } }
-        let(:error_nesting) { [:title] }
-
-        before(:example) do
-          constraint = Bronze::Constraints::TypeConstraint.new(String)
-
-          instance.add_constraint constraint, :on => :title
-        end # before example
-
-        include_examples 'should return false and the errors object'
-      end # context
-
-      context 'with a negated matching attribute constraint' do
-        before(:example) do
-          constraint = Bronze::Constraints::TypeConstraint.new(String)
-
-          instance.add_constraint constraint, :on => :title, :negated => true
-        end # before example
-
-        include_examples 'should return true and an empty errors object'
-      end # context
-
-      context 'with a non-matching attribute constraint' do
-        before(:example) do
-          constraint = Bronze::Constraints::EmptyConstraint.new
-
-          instance.add_constraint constraint, :on => :title
-        end # before example
-
-        include_examples 'should return true and an empty errors object'
-      end # context
-
-      context 'with a negated non-matching attribute constraint' do
-        let(:error_type) do
-          Bronze::Constraints::EmptyConstraint::NOT_EMPTY_ERROR
-        end # let
-        let(:error_nesting) { [:title] }
-
-        before(:example) do
-          constraint = Bronze::Constraints::EmptyConstraint.new
-
-          instance.add_constraint constraint, :on => :title, :negated => true
-        end # before example
-
-        include_examples 'should return false and the errors object'
-      end # context
-    end # describe
-
-    describe 'with an object with attributes hashes' do
-      let(:object) { Struct.new(:data).new(:name => 'Object Name') }
-
-      include_examples 'should return true and an empty errors object'
-
-      context 'with a matching constraint on an undefined attribute' do
-        let(:error_type) do
-          Bronze::Constraints::NilConstraint::NIL_ERROR
-        end # let
-        let(:error_nesting) { [:data, :slug] }
-
-        before(:example) do
-          constraint = Bronze::Constraints::NilConstraint.new
-
-          instance.add_constraint constraint, :on => [:data, :slug]
-        end # before
-
-        include_examples 'should return false and the errors object'
-      end # context
-
-      context 'with a non-matching constraint on an undefined attribute' do
-        before(:example) do
-          constraint = Bronze::Constraints::TypeConstraint.new(Integer)
-
-          instance.add_constraint constraint, :on => [:data, :slug]
-        end # before
-
-        include_examples 'should return true and an empty errors object'
-      end # context
-
-      context 'with a matching attribute constraint' do
-        let(:error_type) do
-          Bronze::Constraints::TypeConstraint::KIND_OF_ERROR
-        end # let
-        let(:error_params)  { { :value => String } }
-        let(:error_nesting) { [:data, :name] }
-
-        before(:example) do
-          constraint = Bronze::Constraints::TypeConstraint.new(String)
-
-          instance.add_constraint constraint, :on => [:data, :name]
-        end # before example
-
-        include_examples 'should return false and the errors object'
-      end # context
-
-      context 'with a negated matching attribute constraint' do
-        before(:example) do
-          constraint = Bronze::Constraints::TypeConstraint.new(String)
-
-          instance.add_constraint constraint,
-            :on      => [:data, :name],
-            :negated => true
-        end # before example
-
-        include_examples 'should return true and an empty errors object'
-      end # context
-
-      context 'with a non-matching attribute constraint' do
-        before(:example) do
-          constraint = Bronze::Constraints::EmptyConstraint.new
-
-          instance.add_constraint constraint, :on => [:data, :name]
-        end # before example
-
-        include_examples 'should return true and an empty errors object'
-      end # context
-
-      context 'with a negated non-matching attribute constraint' do
-        let(:error_type) do
-          Bronze::Constraints::EmptyConstraint::NOT_EMPTY_ERROR
-        end # let
-        let(:error_nesting) { [:data, :name] }
-
-        before(:example) do
-          constraint = Bronze::Constraints::EmptyConstraint.new
-
-          instance.add_constraint constraint,
-            :on      => [:data, :name],
-            :negated => true
-        end # before example
-
-        include_examples 'should return false and the errors object'
-      end # context
-    end # describe
-
-    describe 'with an object with children' do
-      let(:address)   { Struct.new(:street).new('Falken Avenue') }
-      let(:publisher) { Struct.new(:address).new(address) }
-      let(:object)    { Struct.new(:publisher).new(publisher) }
-
-      include_examples 'should return true and an empty errors object'
-
-      context 'with a matching child attribute constraint' do
-        let(:error_type) do
-          Bronze::Constraints::TypeConstraint::KIND_OF_ERROR
-        end # let
-        let(:error_params)  { { :value => String } }
-        let(:error_nesting) { [:publisher, :address, :street] }
-
-        before(:example) do
-          constraint = Bronze::Constraints::TypeConstraint.new(String)
-
-          instance.add_constraint constraint,
-            :on => [:publisher, :address, :street]
-        end # before example
-
-        include_examples 'should return false and the errors object'
-      end # context
-
-      context 'with a negated matching attribute constraint' do
-        before(:example) do
-          constraint = Bronze::Constraints::TypeConstraint.new(String)
-
-          instance.add_constraint constraint,
-            :on      => [:publisher, :address, :street],
-            :negated => true
-        end # before example
-
-        include_examples 'should return true and an empty errors object'
-      end # context
-
-      context 'with a non-matching attribute constraint' do
-        before(:example) do
-          constraint = Bronze::Constraints::EmptyConstraint.new
-
-          instance.add_constraint constraint,
-            :on => [:publisher, :address, :street]
-        end # before example
-
-        include_examples 'should return true and an empty errors object'
-      end # context
-
-      context 'with a negated non-matching attribute constraint' do
-        let(:error_type) do
-          Bronze::Constraints::EmptyConstraint::NOT_EMPTY_ERROR
-        end # let
-        let(:error_nesting) { [:publisher, :address, :street] }
-
-        before(:example) do
-          constraint = Bronze::Constraints::EmptyConstraint.new
-
-          instance.add_constraint constraint,
-            :on      => [:publisher, :address, :street],
-            :negated => true
-        end # before example
-
-        include_examples 'should return false and the errors object'
-      end # context
-    end # describe
+          errors.each { |error| expect(error.type).to be == error_type }
+        } # end lambda
+    end # context
   end # describe
 end # describe
