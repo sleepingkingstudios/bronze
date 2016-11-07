@@ -18,11 +18,6 @@ module Bronze::Entities::Constraints
       super
     end # method match
 
-    # (see Constraint#negated_match)
-    def negated_match _
-      raise_invalid_negation
-    end # method negated_match
-
     private
 
     def attribute_definitions object
@@ -79,5 +74,9 @@ module Bronze::Entities::Constraints
     def matches_object? object
       defines_attributes?(object) && matches_attribute_types?(object)
     end # method matches_object?
+
+    def negated_matches_object? _object
+      raise_invalid_negation caller[1..-1]
+    end # method negated_matches_object?
   end # class
 end # module

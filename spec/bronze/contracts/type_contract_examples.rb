@@ -79,7 +79,7 @@ module Spec::Contracts
         context 'with a contract that matches the object' do
           before(:example) do
             described_class.contract do
-              add_constraint Spec::SuccessConstraint.new
+              add_constraint Spec::Constraints::SuccessConstraint.new
             end # contract
           end # before example
 
@@ -87,11 +87,13 @@ module Spec::Contracts
         end # context
 
         context 'with a contract that does not match the object' do
-          let(:error_type) { Spec::FailureConstraint::INVALID_ERROR }
+          let(:error_type) do
+            Spec::Constraints::FailureConstraint::INVALID_ERROR
+          end # let
 
           before(:example) do
             described_class.contract do
-              add_constraint Spec::FailureConstraint.new
+              add_constraint Spec::Constraints::FailureConstraint.new
             end # contract
           end # before example
 

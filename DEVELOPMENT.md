@@ -1,5 +1,14 @@
 # Development
 
+- refactor Contract: |
+
+  # Define as class.
+  class WidgetContract < Bronze::Contracts::Contract
+    constrain :name, String => true, :present => true
+
+    constrain :manufacturer, Manufacturer => true
+  end # class
+
 - Documentation Pass
 - Extract Bronze::Ci to standalone gem.
 - remove `result, errors =` pattern?
@@ -22,6 +31,9 @@
   - AttributeTypesConstraint # :except, :only?
   - EachConstraint # wraps another constraint, matches it against each array item
 - Contract
+  - update syntax constrain :attribute, ClassName => true
+    - if ClassName::Contract or ClassName::contract, uses contract
+    - otherwise adds TypeConstraint => Class
   - add_constraint Publisher.contract, :each => :publisher # Like :on, but wraps in an EachConstraint
 - Entity
   - configuration option for default value of :allow_nil => default is true

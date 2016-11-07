@@ -3,7 +3,7 @@
 require 'bronze/constraints/constraints_examples'
 require 'bronze/constraints/failure_constraint'
 
-RSpec.describe Spec::FailureConstraint do
+RSpec.describe Spec::Constraints::FailureConstraint do
   include Spec::Constraints::ConstraintsExamples
 
   let(:instance) { described_class.new }

@@ -19,7 +19,7 @@ RSpec.describe Bronze::Contracts::Contract do
   end # describe
 
   describe '#add_constraint' do
-    let(:constraint) { Spec::SuccessConstraint.new }
+    let(:constraint) { Spec::Constraints::SuccessConstraint.new }
 
     it 'should define the method' do
       expect(instance).
@@ -117,7 +117,9 @@ RSpec.describe Bronze::Contracts::Contract do
         let(:kwargs) { {} }
 
         before(:example) do
-          instance.add_constraint Spec::SuccessConstraint.new, **kwargs
+          constraint = Spec::Constraints::SuccessConstraint.new
+
+          instance.add_constraint constraint, **kwargs
         end # before example
 
         include_examples 'should return true and an empty errors object'
@@ -149,10 +151,12 @@ RSpec.describe Bronze::Contracts::Contract do
 
       context 'with a negated matching constraint' do
         let(:kwargs)     { { :negated => true } }
-        let(:error_type) { Spec::SuccessConstraint::VALID_ERROR }
+        let(:error_type) { Spec::Constraints::SuccessConstraint::VALID_ERROR }
 
         before(:example) do
-          instance.add_constraint Spec::SuccessConstraint.new, **kwargs
+          constraint = Spec::Constraints::SuccessConstraint.new
+
+          instance.add_constraint constraint, **kwargs
         end # before example
 
         include_examples 'should return false and the errors object'
@@ -184,10 +188,12 @@ RSpec.describe Bronze::Contracts::Contract do
 
       context 'with a non-matching constraint' do
         let(:kwargs)     { {} }
-        let(:error_type) { Spec::FailureConstraint::INVALID_ERROR }
+        let(:error_type) { Spec::Constraints::FailureConstraint::INVALID_ERROR }
 
         before(:example) do
-          instance.add_constraint Spec::FailureConstraint.new, **kwargs
+          constraint = Spec::Constraints::FailureConstraint.new
+
+          instance.add_constraint constraint, **kwargs
         end # before example
 
         include_examples 'should return false and the errors object'
@@ -221,7 +227,9 @@ RSpec.describe Bronze::Contracts::Contract do
         let(:kwargs) { { :negated => true } }
 
         before(:example) do
-          instance.add_constraint Spec::FailureConstraint.new, **kwargs
+          constraint = Spec::Constraints::FailureConstraint.new
+
+          instance.add_constraint constraint, **kwargs
         end # before example
 
         include_examples 'should return true and an empty errors object'
@@ -254,7 +262,7 @@ RSpec.describe Bronze::Contracts::Contract do
       context 'with many matching constraints' do
         before(:example) do
           3.times do
-            instance.add_constraint Spec::SuccessConstraint.new
+            instance.add_constraint Spec::Constraints::SuccessConstraint.new
           end # times
         end # before example
 
@@ -272,7 +280,7 @@ RSpec.describe Bronze::Contracts::Contract do
 
         before(:example) do
           error_types.each do |error_type|
-            constraint = Spec::FailureConstraint.new error_type
+            constraint = Spec::Constraints::FailureConstraint.new error_type
 
             instance.add_constraint constraint
           end # each
@@ -301,11 +309,11 @@ RSpec.describe Bronze::Contracts::Contract do
 
         before(:example) do
           3.times do
-            instance.add_constraint Spec::SuccessConstraint.new
+            instance.add_constraint Spec::Constraints::SuccessConstraint.new
           end # times
 
           error_types.each do |error_type|
-            constraint = Spec::FailureConstraint.new error_type
+            constraint = Spec::Constraints::FailureConstraint.new error_type
 
             instance.add_constraint constraint
           end # each
@@ -580,10 +588,10 @@ RSpec.describe Bronze::Contracts::Contract do
       include_examples 'should return true and an empty errors object'
 
       context 'with a matching constraint' do
-        let(:error_type) { Spec::SuccessConstraint::VALID_ERROR }
+        let(:error_type) { Spec::Constraints::SuccessConstraint::VALID_ERROR }
 
         before(:example) do
-          instance.add_constraint Spec::SuccessConstraint.new
+          instance.add_constraint Spec::Constraints::SuccessConstraint.new
         end # before example
 
         include_examples 'should return false and the errors object'
@@ -591,7 +599,9 @@ RSpec.describe Bronze::Contracts::Contract do
 
       context 'with a negated matching constraint' do
         before(:example) do
-          instance.add_constraint Spec::SuccessConstraint.new, :negated => true
+          constraint = Spec::Constraints::SuccessConstraint.new
+
+          instance.add_constraint constraint, :negated => true
         end # before example
 
         include_examples 'should return true and an empty errors object'
@@ -599,17 +609,17 @@ RSpec.describe Bronze::Contracts::Contract do
 
       context 'with a non-matching constraint' do
         before(:example) do
-          instance.add_constraint Spec::FailureConstraint.new
+          instance.add_constraint Spec::Constraints::FailureConstraint.new
         end # before example
 
         include_examples 'should return true and an empty errors object'
       end # context
 
       context 'with a negated non-matching constraint' do
-        let(:error_type) { Spec::FailureConstraint::INVALID_ERROR }
+        let(:error_type) { Spec::Constraints::FailureConstraint::INVALID_ERROR }
 
         before(:example) do
-          constraint = Spec::FailureConstraint.new
+          constraint = Spec::Constraints::FailureConstraint.new
 
           instance.add_constraint constraint, :negated => true
         end # before example
@@ -620,7 +630,7 @@ RSpec.describe Bronze::Contracts::Contract do
       context 'with many matching constraints' do
         before(:example) do
           3.times do
-            instance.add_constraint Spec::SuccessConstraint.new
+            instance.add_constraint Spec::Constraints::SuccessConstraint.new
           end # times
         end # before example
 
@@ -628,8 +638,10 @@ RSpec.describe Bronze::Contracts::Contract do
           lambda { |errors|
             expect(errors.count).to be == 3
 
+            error_type = Spec::Constraints::SuccessConstraint::VALID_ERROR
+
             errors.each do |error|
-              expect(error.type).to be == Spec::SuccessConstraint::VALID_ERROR
+              expect(error.type).to be == error_type
             end # each
           } # end lambda
       end # context
@@ -645,7 +657,7 @@ RSpec.describe Bronze::Contracts::Contract do
 
         before(:example) do
           error_types.each do |error_type|
-            constraint = Spec::FailureConstraint.new error_type
+            constraint = Spec::Constraints::FailureConstraint.new error_type
 
             instance.add_constraint constraint
           end # each
@@ -665,11 +677,11 @@ RSpec.describe Bronze::Contracts::Contract do
 
         before(:example) do
           3.times do
-            instance.add_constraint Spec::SuccessConstraint.new
+            instance.add_constraint Spec::Constraints::SuccessConstraint.new
           end # times
 
           error_types.each do |error_type|
-            constraint = Spec::FailureConstraint.new error_type
+            constraint = Spec::Constraints::FailureConstraint.new error_type
 
             instance.add_constraint constraint
           end # each
@@ -679,8 +691,10 @@ RSpec.describe Bronze::Contracts::Contract do
           lambda { |errors|
             expect(errors.count).to be == 3
 
+            error_type = Spec::Constraints::SuccessConstraint::VALID_ERROR
+
             errors.each do |error|
-              expect(error.type).to be == Spec::SuccessConstraint::VALID_ERROR
+              expect(error.type).to be == error_type
             end # each
           } # end lambda
       end # context
