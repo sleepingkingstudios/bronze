@@ -2,7 +2,7 @@
 
 require 'bronze/constraints/constraint'
 
-module Spec
+module Spec::Constraints
   # An implementation of Bronze::Constraints::Constraint that does not match any
   # objects.
   class FailureConstraint < Bronze::Constraints::Constraint

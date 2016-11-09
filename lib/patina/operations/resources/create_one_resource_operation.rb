@@ -1,8 +1,8 @@
-# lib/bronze/operations/resources/create_one_resource_operation.rb
+# lib/patina/operations/resources/create_one_resource_operation.rb
 
-require 'bronze/operations/resources/one_resource_operation'
+require 'patina/operations/resources/one_resource_operation'
 
-module Bronze::Operations::Resources
+module Patina::Operations::Resources
   # Operation class to build, validate and persist an instance of a resource
   # from an attributes hash.
   class CreateOneResourceOperation < OneResourceOperation
@@ -10,6 +10,8 @@ module Bronze::Operations::Resources
 
     def process attributes
       build_resource(attributes)
+
+      return unless validate_resource(@resource)
 
       _, @errors = resource_collection.insert @resource
     end # method process

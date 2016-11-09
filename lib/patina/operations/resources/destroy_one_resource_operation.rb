@@ -1,8 +1,8 @@
-# lib/bronze/operations/resources/destroy_one_resource_operation.rb
+# lib/patina/operations/resources/destroy_one_resource_operation.rb
 
-require 'bronze/operations/resources/one_resource_operation'
+require 'patina/operations/resources/one_resource_operation'
 
-module Bronze::Operations::Resources
+module Patina::Operations::Resources
   # Operation class to build, validate and persist an instance of a resource
   # from an attributes hash.
   class DestroyOneResourceOperation < OneResourceOperation

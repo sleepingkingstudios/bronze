@@ -1,13 +1,13 @@
-# lib/bronze/operations/resources/many_resources_operation.rb
+# lib/patina/operations/resources/many_resources_operation.rb
 
 require 'bronze/operations/operation'
-require 'bronze/operations/resources/resource_operation'
+require 'patina/operations/resources/resource_operation'
 
-module Bronze::Operations::Resources
+module Patina::Operations::Resources
   # Base class implementing query and persistence functionality on a group of
   # resources, such as a RESTful #index method or a bulk operation.
   class ManyResourcesOperation < Bronze::Operations::Operation
-    include Bronze::Operations::Resources::ResourceOperation
+    include Patina::Operations::Resources::ResourceOperation
 
     # @return [Array] The root resource for the operation.
     attr_reader :resources

@@ -1,22 +1,22 @@
-# spec/bronze/operations/resources/one_resource_operation_spec.rb
+# spec/patina/operations/resources/one_resource_operation_spec.rb
 
 require 'bronze/collections/reference/repository'
-require 'bronze/operations/resources/one_resource_operation'
-require 'bronze/operations/resources/resource_operation_examples'
+require 'patina/operations/resources/one_resource_operation'
+require 'patina/operations/resources/resource_operation_examples'
 
-RSpec.describe Bronze::Operations::Resources::OneResourceOperation do
+RSpec.describe Patina::Operations::Resources::OneResourceOperation do
   include Spec::Operations::ResourceOperationExamples
 
   include_context 'when a resource class is defined'
 
-  let(:described_class) { Spec::OneResourceOperation }
+  let(:described_class) { Spec::Operations::OneResourceOperation }
   let(:repository)      { Bronze::Collections::Reference::Repository.new }
   let(:instance)        { described_class.new repository }
 
   options = {
-    :base_class => Bronze::Operations::Resources::OneResourceOperation
+    :base_class => Patina::Operations::Resources::OneResourceOperation
   } # end options
-  mock_class Spec, :OneResourceOperation, options do |klass|
+  mock_class Spec::Operations, :OneResourceOperation, options do |klass|
     klass.send :resource_class=, resource_class
   end # mock_class
 
