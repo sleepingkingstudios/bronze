@@ -1,11 +1,11 @@
-# lib/bronze/entities/attributes/metadata.rb
+# lib/bronze/entities/attributes/attribute_metadata.rb
 
 require 'bronze/entities/attributes'
 
 module Bronze::Entities::Attributes
   # Data class that characterizes an entity attribute and allows for reflection
   # on its properties and options.
-  class Metadata
+  class AttributeMetadata
     # @param attribute_name [String, Symbol] The name of the attribute.
     # @param attribute_type [Class] The type of the attribute.
     # @param attribute_options [Hash] Additional options for the attribute.

@@ -1,11 +1,11 @@
-# spec/bronze/entities/attributes/attributes_builder_spec.rb
+# spec/bronze/entities/attributes/attribute_builder_spec.rb
 
-require 'bronze/entities/attributes/attributes_builder'
-require 'bronze/entities/attributes/metadata'
+require 'bronze/entities/attributes/attribute_builder'
+require 'bronze/entities/attributes/attribute_metadata'
 
 require 'bronze/entities/attributes/attributes_examples'
 
-RSpec.describe Bronze::Entities::Attributes::AttributesBuilder do
+RSpec.describe Bronze::Entities::Attributes::AttributeBuilder do
   include Spec::Entities::Attributes::AttributesExamples
 
   let(:entity_class) do
@@ -86,8 +86,9 @@ RSpec.describe Bronze::Entities::Attributes::AttributesBuilder do
     describe 'with a valid attribute name and attribute type' do
       it 'should return the metadata' do
         metadata = instance.build attribute_name, attribute_type
+        mt_class = Bronze::Entities::Attributes::AttributeMetadata
 
-        expect(metadata).to be_a Bronze::Entities::Attributes::Metadata
+        expect(metadata).to be_a mt_class
         expect(metadata.attribute_name).to be == attribute_name
         expect(metadata.attribute_type).to be == attribute_type
 

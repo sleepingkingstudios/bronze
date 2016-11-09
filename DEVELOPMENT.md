@@ -8,6 +8,12 @@
 
 ## Features
 
+- Associations
+  - Entities
+    - foreign_key => attribute
+    - Bronze::Entities::Associations::AssociationMetadata
+    - relation macros
+    - nested attributes
 - Collection
   - bulk operations
 - Constraint
@@ -54,12 +60,6 @@
     - not in
   - #order
   - #includes
-- Relations
-  - Entities
-    - foreign_key => attribute
-    - Bronze::Entities::Relations::Metadata
-    - relation macros
-    - nested attributes
 - Repository#except, #only - returns a copy of the repository that only has the given collections.
 - Scope |
 

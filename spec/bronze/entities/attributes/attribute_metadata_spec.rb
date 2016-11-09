@@ -1,8 +1,8 @@
-# spec/bronze/entities/attributes/metadata_spec.rb
+# spec/bronze/entities/attributes/attribute_metadata_spec.rb
 
-require 'bronze/entities/attributes/metadata'
+require 'bronze/entities/attributes/attribute_metadata'
 
-RSpec.describe Bronze::Entities::Attributes::Metadata do
+RSpec.describe Bronze::Entities::Attributes::AttributeMetadata do
   let(:attribute_name)    { :title }
   let(:attribute_type)    { String }
   let(:attribute_options) { {} }

@@ -48,8 +48,9 @@ RSpec.describe Bronze::Entities::Entity do
 
         it 'should set and return the metadata' do
           metadata = described_class.attribute attribute_name, attribute_type
+          mt_class = Bronze::Entities::Attributes::AttributeMetadata
 
-          expect(metadata).to be_a Bronze::Entities::Attributes::Metadata
+          expect(metadata).to be_a mt_class
           expect(metadata.attribute_name).to be == attribute_name
           expect(metadata.attribute_type).to be == attribute_type
 
@@ -151,7 +152,11 @@ RSpec.describe Bronze::Entities::Entity do
 
     it 'should return a frozen copy of the attributes hash' do
       metadata =
-        Bronze::Entities::Attributes::Metadata.new(:malicious, Object, {})
+        Bronze::Entities::Attributes::AttributeMetadata.new(
+          :malicious,
+          Object,
+          {}
+        ) # end metadata
 
       expect { described_class.attributes[:bogus] = metadata }.
         to raise_error(RuntimeError)

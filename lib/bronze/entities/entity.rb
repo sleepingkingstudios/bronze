@@ -1,6 +1,6 @@
 # lib/bronze/entities/entity.rb
 
-require 'bronze/entities/attributes/attributes_builder'
+require 'bronze/entities/attributes/attribute_builder'
 
 require 'bronze/entities/ulid'
 
@@ -23,15 +23,15 @@ module Bronze::Entities
     #   book.title
     #   #=> 'Romance of the Three Kingdoms'
     #
-    # @param (see Attributes::AttributesBuilder#build)
+    # @param (see Attributes::AttributeBuilder#build)
     #
-    # @option (see Attributes::AttributesBuilder#build)
+    # @option (see Attributes::AttributeBuilder#build)
     #
-    # @return (see Attributes::AttributesBuilder#build)
+    # @return (see Attributes::AttributeBuilder#build)
     #
-    # @raise (see Attributes::AttributesBuilder#build)
+    # @raise (see Attributes::AttributeBuilder#build)
     def self.attribute attribute_name, attribute_type, attribute_options = {}
-      builder  = Bronze::Entities::Attributes::AttributesBuilder.new(self)
+      builder  = Bronze::Entities::Attributes::AttributeBuilder.new(self)
       metadata = builder.build(
         attribute_name,
         attribute_type,
@@ -43,7 +43,8 @@ module Bronze::Entities
 
     # Returns the metadata for the attributes defined for the current class.
     #
-    # @return [Hash{Symbol => Attributes::Metadata}] The attributes metadata.
+    # @return [Hash{Symbol => Attributes::AttributeMetadata}] The metadata for
+    #   the attributes.
     def self.attributes
       if superclass.respond_to?(:attributes)
         superclass.attributes.merge(@attributes ||= {}).freeze
