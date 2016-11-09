@@ -16,7 +16,6 @@ Gem::Specification.new do |gem|
     constraints on your business logic.
   DESCRIPTION
   gem.description = description.strip.gsub(/\n +/, ' ')
-
   gem.authors     = ['Rob "Merlin" Smith']
   gem.email       = ['merlin@sleepingkingstudios.com']
   gem.homepage    = 'http://sleepingkingstudios.com'
@@ -26,7 +25,7 @@ Gem::Specification.new do |gem|
   gem.files        = Dir["lib/**/*.rb", "LICENSE", "*.md"]
 
   gem.add_runtime_dependency 'sysrandom', '~> 1.0.0', '>= 1.0.2'
-  gem.add_runtime_dependency 'sleeping_king_studios-tools'
+  gem.add_runtime_dependency 'sleeping_king_studios-tools', '~> 0.5.0'
 
   gem.add_development_dependency 'thor',      '~> 0.19',  '>= 0.19.1'
   gem.add_development_dependency 'rspec',     '~> 3.5'

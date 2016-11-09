@@ -4,14 +4,6 @@
 - Extract Bronze::Ci to standalone gem.
 - remove `result, errors =` pattern?
 
-## Readme
-
-- Why "bronze"?
-  - alloy is metaphorically appropriate
-    - incorporates different influences
-    - a combination of ingredients that form a harmonious whole
-    - more than the sum of its parts
-
 ## Bug Fixes
 
 ## Features

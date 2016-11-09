@@ -14,7 +14,6 @@ Gem::Specification.new do |gem|
     patterns.
   DESCRIPTION
   gem.description = description.strip.gsub(/\n +/, ' ')
-
   gem.authors     = ['Rob "Merlin" Smith']
   gem.email       = ['merlin@sleepingkingstudios.com']
   gem.homepage    = 'http://sleepingkingstudios.com'
@@ -23,5 +22,5 @@ Gem::Specification.new do |gem|
   gem.require_path = 'lib'
   gem.files        = Dir["lib/**/*.rb", "LICENSE", "*.md"]
 
-  gem.add_runtime_dependency 'bronze'
+  gem.add_runtime_dependency 'bronze', '~> 0.0'
 end # gemspec
