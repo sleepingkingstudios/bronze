@@ -1,4 +1,4 @@
-# spec/bronze/operations/resources/resource_operation_examples.rb
+# spec/patina/operations/resources/resource_operation_examples.rb
 
 require 'bronze/collections/collection'
 require 'bronze/constraints/constraints_examples'

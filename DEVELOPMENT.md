@@ -1,15 +1,5 @@
 # Development
 
-- refactor Contract: |
-
-  # Define as class.
-  class WidgetContract < Bronze::Contracts::Contract
-    constrain :name, String => true, :present => true
-
-    constrain :manufacturer, Manufacturer => true
-  end # class
-
-- Move ResourceOperations to Patina namespace.
 - Documentation Pass
 - Extract Bronze::Ci to standalone gem.
 - remove `result, errors =` pattern?
@@ -46,8 +36,6 @@
     - #{attribute}_changed?
     - #old_{attribute}
     - #clean!
-  - EntityContractBuilder
-    - configuration option for adding AttributeTypesConstraint by default => default is true
 - Query
   - #all returns with JSON envelope for advanced features?
   - #matching with non-equality predicates

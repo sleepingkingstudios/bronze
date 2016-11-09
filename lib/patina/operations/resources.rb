@@ -1,8 +1,8 @@
-# lib/bronze/operations/resources.rb
+# lib/patina/operations/resources.rb
 
-require 'bronze/operations'
+require 'patina/operations'
 
-module Bronze::Operations
+module Patina::Operations
   # Namespace for operations that act on a resource or collection of resources.
   module Resources; end
 end # module

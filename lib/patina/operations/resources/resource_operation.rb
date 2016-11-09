@@ -1,13 +1,13 @@
-# lib/bronze/operations/resources/resource_operation.rb
+# lib/patina/operations/resources/resource_operation.rb
 
 require 'sleeping_king_studios/tools/toolbox/mixin'
 
 require 'bronze/entities/contracts/entity_contract'
 require 'bronze/entities/transforms/entity_transform'
-require 'bronze/operations/resources'
 require 'bronze/operations/repository_operation'
+require 'patina/operations/resources'
 
-module Bronze::Operations::Resources
+module Patina::Operations::Resources
   # Shared functionality for operations on singular and plural resources.
   module ResourceOperation
     extend  SleepingKingStudios::Tools::Toolbox::Mixin

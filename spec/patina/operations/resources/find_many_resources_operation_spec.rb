@@ -1,22 +1,22 @@
-# spec/bronze/operations/resources/find_many_resources_operation_spec.rb
+# spec/patina/operations/resources/find_many_resources_operation_spec.rb
 
 require 'bronze/collections/reference/repository'
-require 'bronze/operations/resources/find_many_resources_operation'
-require 'bronze/operations/resources/resource_operation_examples'
+require 'patina/operations/resources/find_many_resources_operation'
+require 'patina/operations/resources/resource_operation_examples'
 
-RSpec.describe Bronze::Operations::Resources::FindManyResourcesOperation do
+RSpec.describe Patina::Operations::Resources::FindManyResourcesOperation do
   include Spec::Operations::ResourceOperationExamples
 
   include_context 'when a resource class is defined'
 
-  let(:described_class) { Spec::FindManyResourcesOperation }
+  let(:described_class) { Spec::Operations::FindManyResourcesOperation }
   let(:repository)      { Bronze::Collections::Reference::Repository.new }
   let(:instance)        { described_class.new repository }
 
   options = {
-    :base_class => Bronze::Operations::Resources::FindManyResourcesOperation
+    :base_class => Patina::Operations::Resources::FindManyResourcesOperation
   } # end options
-  mock_class Spec, :FindManyResourcesOperation, options do |klass|
+  mock_class Spec::Operations, :FindManyResourcesOperation, options do |klass|
     klass.send :resource_class=, resource_class
   end # mock_class
 

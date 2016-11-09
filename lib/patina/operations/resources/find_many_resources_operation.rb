@@ -1,8 +1,8 @@
-# lib/bronze/operations/resources/find_many_resources_operation.rb
+# lib/patina/operations/resources/find_many_resources_operation.rb
 
-require 'bronze/operations/resources/many_resources_operation'
+require 'patina/operations/resources/many_resources_operation'
 
-module Bronze::Operations::Resources
+module Patina::Operations::Resources
   # Operation class to query resources from a datastore.
   class FindManyResourcesOperation < ManyResourcesOperation
     private

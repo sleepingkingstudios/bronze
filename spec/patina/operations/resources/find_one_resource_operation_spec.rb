@@ -1,22 +1,22 @@
-# spec/bronze/operations/resources/destroy_one_resource_operation_spec.rb
+# spec/patina/operations/resources/find_one_resource_operation_spec.rb
 
 require 'bronze/collections/reference/repository'
-require 'bronze/operations/resources/resource_operation_examples'
-require 'bronze/operations/resources/destroy_one_resource_operation'
+require 'patina/operations/resources/find_one_resource_operation'
+require 'patina/operations/resources/resource_operation_examples'
 
-RSpec.describe Bronze::Operations::Resources::DestroyOneResourceOperation do
+RSpec.describe Patina::Operations::Resources::FindOneResourceOperation do
   include Spec::Operations::ResourceOperationExamples
 
   include_context 'when a resource class is defined'
 
-  let(:described_class) { Spec::DestroyOneResourceOperation }
+  let(:described_class) { Spec::Operations::FindOneResourceOperation }
   let(:repository)      { Bronze::Collections::Reference::Repository.new }
   let(:instance)        { described_class.new repository }
 
   options = {
-    :base_class => Bronze::Operations::Resources::DestroyOneResourceOperation
+    :base_class => Patina::Operations::Resources::FindOneResourceOperation
   } # end options
-  mock_class Spec, :DestroyOneResourceOperation, options do |klass|
+  mock_class Spec::Operations, :FindOneResourceOperation, options do |klass|
     klass.send :resource_class=, resource_class
   end # mock_class
 
@@ -27,7 +27,6 @@ RSpec.describe Bronze::Operations::Resources::DestroyOneResourceOperation do
   include_examples 'should implement the OneResourceOperation methods'
 
   describe '#call' do
-    let(:attributes)  { {} }
     let(:resource_id) { '0' }
 
     def call_operation
@@ -41,24 +40,14 @@ RSpec.describe Bronze::Operations::Resources::DestroyOneResourceOperation do
 
       describe 'with a valid resource id' do
         let(:resource_id) { resource.id }
+        let(:expected)    { resource }
 
-        it { expect(instance.call resource_id).to be true }
+        it { expect(call_operation).to be true }
 
         it 'should set the resource' do
-          instance.call resource_id
+          call_operation
 
-          resource = instance.resource
-
-          expect(resource).to be == resource
-        end # it
-
-        it 'should delete the persisted resource' do
-          collection = repository.collection(resource_class)
-
-          expect { instance.call resource_id }.
-            to change(collection, :count).by(-1)
-
-          expect(collection.find resource_id).to be nil
+          expect(instance.resource).to be == expected
         end # it
 
         it 'should clear the errors' do
@@ -68,7 +57,7 @@ RSpec.describe Bronze::Operations::Resources::DestroyOneResourceOperation do
 
           instance.instance_variable_set :@errors, previous_errors
 
-          instance.call resource_id
+          call_operation
 
           expect(instance.errors).to satisfy(&:empty?)
         end # it

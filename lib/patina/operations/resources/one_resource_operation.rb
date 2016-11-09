@@ -1,14 +1,14 @@
-# lib/bronze/operations/resources/one_resource_operation.rb
+# lib/patina/operations/resources/one_resource_operation.rb
 
 require 'bronze/collections/collection'
 require 'bronze/operations/operation'
-require 'bronze/operations/resources/resource_operation'
+require 'patina/operations/resources/resource_operation'
 
-module Bronze::Operations::Resources
+module Patina::Operations::Resources
   # Base class implementing query and persistence functionality on a single
   # resource, such as a RESTful #show or #create method.
   class OneResourceOperation < Bronze::Operations::Operation
-    include Bronze::Operations::Resources::ResourceOperation
+    include Patina::Operations::Resources::ResourceOperation
 
     # @return [Object] The root resource for the operation.
     attr_reader :resource
