@@ -20,7 +20,8 @@ Gem::Specification.new do |gem|
   gem.license     = 'MIT'
 
   gem.require_path = 'lib'
-  gem.files        = Dir["lib/**/*.rb", "LICENSE", "*.md"]
+  gem.files        =
+    Dir["lib/patina.rb", "lib/patina/version.rb", "LICENSE", "README.md"]
 
   gem.add_runtime_dependency 'bronze', '~> 0.0'
 end # gemspec

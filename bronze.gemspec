@@ -22,7 +22,8 @@ Gem::Specification.new do |gem|
   gem.license     = 'MIT'
 
   gem.require_path = 'lib'
-  gem.files        = Dir["lib/**/*.rb", "LICENSE", "*.md"]
+  gem.files        =
+    Dir["lib/bronze.rb", "lib/bronze/version.rb", "LICENSE", "README.md"]
 
   gem.add_runtime_dependency 'sysrandom', '~> 1.0.0', '>= 1.0.2'
   gem.add_runtime_dependency 'sleeping_king_studios-tools', '~> 0.5.0'
