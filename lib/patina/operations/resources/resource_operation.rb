@@ -2,6 +2,7 @@
 
 require 'sleeping_king_studios/tools/toolbox/mixin'
 
+require 'bronze/contracts/type_contract'
 require 'bronze/entities/contracts/entity_contract'
 require 'bronze/entities/transforms/entity_transform'
 require 'bronze/operations/repository_operation'
@@ -11,7 +12,7 @@ module Patina::Operations::Resources
   # Shared functionality for operations on singular and plural resources.
   module ResourceOperation
     extend  SleepingKingStudios::Tools::Toolbox::Mixin
-    include Bronze::Entities::Contracts::EntityContract
+    include Bronze::Contracts::TypeContract
     include Bronze::Operations::RepositoryOperation
 
     # Class methods to define when including ResourceOperation in a class.
@@ -45,6 +46,12 @@ module Patina::Operations::Resources
       protected
 
       attr_writer :resource_class
+
+      private
+
+      def build_contract
+        Bronze::Entities::Contracts::EntityContract.new
+      end # method contract_builder
     end # module
 
     # @param repository [Bronze::Collections::Repository] The repository used to
