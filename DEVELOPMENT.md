@@ -1,5 +1,13 @@
 # Development
 
+- integration tests
+  - collections
+    - transforms
+  - entities
+    - associations
+    - attributes
+    - contracts
+  - operations
 - Documentation Pass
 - Extract Bronze::Ci to standalone gem.
 - remove `result, errors =` pattern?
@@ -17,7 +25,9 @@
 - Collection
   - bulk operations
 - Constraint
-  - AttributeTypesConstraint # :except, :only?
+  - AttributeTypesConstraint
+    - :except, :only ?
+    - support attribute collections (use EachConstraint?)
   - EachConstraint # wraps another constraint, matches it against each array item
 - Contract
   - update syntax constrain :attribute, ClassName => true
@@ -25,6 +35,9 @@
     - otherwise adds TypeConstraint => Class
   - add_constraint Publisher.contract, :each => :publisher # Like :on, but wraps in an EachConstraint
 - Entity
+  - collection attributes
+    - Array[Object] => [Object]
+    - Hash[String, Object] => { String => Object }
   - configuration option for default value of :allow_nil => default is true
   - dependent_attribute
     - creates read-only method on entity
@@ -34,6 +47,14 @@
     - #{attribute}_changed?
     - #old_{attribute}
     - #clean!
+- Operations
+  - resources
+    - convert to modules ?
+    - DSL to include: |
+
+      class CreateOneBook < ApplicationOperation
+        create_one :book
+      end # class
 - Query
   - #all returns with JSON envelope for advanced features?
   - #matching with non-equality predicates
