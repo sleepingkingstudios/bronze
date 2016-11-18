@@ -1,11 +1,15 @@
 # lib/bronze/entities/attributes/attribute_metadata.rb
 
-require 'bronze/entities/attributes'
+require 'sleeping_king_studios/tools/toolbox/delegator'
+
+require 'bronze/entities/attributes/attribute_type'
 
 module Bronze::Entities::Attributes
   # Data class that characterizes an entity attribute and allows for reflection
   # on its properties and options.
   class AttributeMetadata
+    extend SleepingKingStudios::Tools::Toolbox::Delegator
+
     # @param attribute_name [String, Symbol] The name of the attribute.
     # @param attribute_type [Class] The type of the attribute.
     # @param attribute_options [Hash] Additional options for the attribute.
@@ -14,8 +18,7 @@ module Bronze::Entities::Attributes
       @reader_name    = attribute_name.intern
       @writer_name    = "#{attribute_name}=".intern
 
-      @attribute_type = attribute_type
-
+      @attribute_type    = AttributeType.new(attribute_type)
       @attribute_options = attribute_options
     end # method initialize
 
@@ -33,6 +36,8 @@ module Bronze::Entities::Attributes
 
     # @return [String, Symbol] The name of the attribute's writer method.
     attr_reader :writer_name
+
+    delegate :matches?, :object_type, :to => :@attribute_type
 
     # @return [Boolean] True if the attribute allows nil values, otherwise
     #   false.

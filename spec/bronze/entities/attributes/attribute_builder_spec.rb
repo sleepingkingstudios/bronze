@@ -84,13 +84,18 @@ RSpec.describe Bronze::Entities::Attributes::AttributeBuilder do
     end # it
 
     describe 'with a valid attribute name and attribute type' do
+      let(:attribute_type_class) do
+        Bronze::Entities::Attributes::AttributeType
+      end # let
+
       it 'should return the metadata' do
         metadata = instance.build attribute_name, attribute_type
         mt_class = Bronze::Entities::Attributes::AttributeMetadata
 
         expect(metadata).to be_a mt_class
         expect(metadata.attribute_name).to be == attribute_name
-        expect(metadata.attribute_type).to be == attribute_type
+        expect(metadata.attribute_type).to be_a attribute_type_class
+        expect(metadata.object_type).to be == attribute_type
 
         expect(metadata.allow_nil?).to be false
         expect(metadata.default).to be nil

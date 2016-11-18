@@ -11,6 +11,7 @@
 - Documentation Pass
 - Extract Bronze::Ci to standalone gem.
 - remove `result, errors =` pattern?
+- standardize error constant names - _ERROR suffix?
 
 ## Bug Fixes
 

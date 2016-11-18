@@ -37,9 +37,18 @@ RSpec.describe Bronze::Entities::Attributes::AttributeMetadata do
   end # describe
 
   describe '#attribute_type' do
-    include_examples 'should have reader', :attribute_type, lambda {
-      be == attribute_type
-    } # end lambda
+    let(:attribute_type_class) do
+      Bronze::Entities::Attributes::AttributeType
+    end # let
+
+    include_examples 'should have reader', :attribute_type
+
+    it 'should be an attribute type' do
+      attr_type = instance.attribute_type
+
+      expect(attr_type).to be_a attribute_type_class
+      expect(attr_type.object_type).to be String
+    end # it
   end # describe
 
   describe '#default' do
@@ -95,6 +104,19 @@ RSpec.describe Bronze::Entities::Attributes::AttributeMetadata do
 
       it { expect(instance.default?).to be true }
     end # context
+  end # describe
+
+  describe '#matches?' do
+    it 'should delegate the method' do
+      expect(instance).
+        to delegate_method(:matches?).
+        to(instance.attribute_type).
+        with_arguments(double('object'))
+    end # it
+  end # describe
+
+  describe '#object_type' do
+    include_examples 'should have reader', :object_type, ->() { attribute_type }
   end # describe
 
   describe '#read_only?' do

@@ -48,13 +48,11 @@ module Bronze::Entities::Constraints
     end # method defines_attributes?
 
     def matches_attribute_type? value, metadata
-      if value.is_a?(metadata.attribute_type)
-        true
-      elsif value.nil? && metadata.allow_nil?
-        true
-      else
-        false
-      end # if-else
+      return true if metadata.matches?(value)
+
+      return true if value.nil? && metadata.allow_nil?
+
+      false
     end # method matches_attribute_types?
 
     def matches_attribute_types? object
@@ -64,7 +62,7 @@ module Bronze::Entities::Constraints
         value = object.send(attr_name)
 
         unless matches_attribute_type?(value, metadata)
-          @mismatched_attributes[attr_name] = metadata.attribute_type
+          @mismatched_attributes[attr_name] = metadata.object_type
         end # unless
       end # all?
 

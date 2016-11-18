@@ -81,6 +81,9 @@ module Spec::Entities::Attributes::AttributesExamples
         let(:attribute_type) { String }
         let(:attribute_opts) { {} }
         let(:attributes)     { super().merge :title => 'The Ramayana' }
+        let(:attribute_type_class) do
+          Bronze::Entities::Attributes::AttributeType
+        end # let
 
         it 'should set and return the metadata' do
           metadata = described_class.attribute attribute_name, attribute_type
@@ -88,7 +91,8 @@ module Spec::Entities::Attributes::AttributesExamples
 
           expect(metadata).to be_a mt_class
           expect(metadata.attribute_name).to be == attribute_name
-          expect(metadata.attribute_type).to be == attribute_type
+          expect(metadata.attribute_type).to be_a attribute_type_class
+          expect(metadata.object_type).to be == attribute_type
 
           expect(described_class.attributes[attribute_name]).to be metadata
         end # it
