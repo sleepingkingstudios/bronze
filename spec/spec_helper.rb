@@ -47,14 +47,6 @@ RSpec.configure do |config|
     expectations.include_chain_clauses_in_custom_matcher_descriptions = true
   end # config
 
-  # rspec-expectations config goes here.
-  config.expect_with :rspec do |expectations|
-    # Enable only the newer, non-monkey-patching expect syntax.
-    expectations.syntax = :expect
-
-    expectations.include_chain_clauses_in_custom_matcher_descriptions = true
-  end # config
-
   # rspec-mocks config goes here. You can use an alternate test double
   # library (such as bogus or mocha) by changing the `mock_with` option here.
   config.mock_with :rspec do |mocks|

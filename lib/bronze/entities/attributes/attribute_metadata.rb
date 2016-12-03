@@ -28,7 +28,8 @@ module Bronze::Entities::Attributes
     # @return [Hash] Additional options for the attribute.
     attr_reader :attribute_options
 
-    # @return [Class] The type of the attribute.
+    # @return [Bronze::Entities::Attributes::AttributeType] The type of the
+    #   attribute.
     attr_reader :attribute_type
 
     # @return [String, Symbol] The name of the attribute's reader method.
@@ -37,7 +38,7 @@ module Bronze::Entities::Attributes
     # @return [String, Symbol] The name of the attribute's writer method.
     attr_reader :writer_name
 
-    delegate :matches?, :object_type, :to => :@attribute_type
+    delegate :collection?, :object_type, :to => :@attribute_type
 
     # @return [Boolean] True if the attribute allows nil values, otherwise
     #   false.

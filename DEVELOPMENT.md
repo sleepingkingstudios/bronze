@@ -11,6 +11,7 @@
 - Documentation Pass
 - Extract Bronze::Ci to standalone gem.
 - remove `result, errors =` pattern?
+- remove unnecessary custom error classes
 - standardize error constant names - _ERROR suffix?
 
 ## Bug Fixes
@@ -36,9 +37,12 @@
     - otherwise adds TypeConstraint => Class
   - add_constraint Publisher.contract, :each => :publisher # Like :on, but wraps in an EachConstraint
 - Entity
+  - attribute normalization (Symbol <=> String, etc)
   - collection attributes
     - Array[Object] => [Object]
     - Hash[String, Object] => { String => Object }
+    - configuration option for restricting entity Hash attribute key types
+      - options => String only, scalar only (String, Symbol, Integer?)
   - configuration option for default value of :allow_nil => default is true
   - dependent_attribute
     - creates read-only method on entity

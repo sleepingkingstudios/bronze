@@ -65,16 +65,6 @@ RSpec.describe Bronze::Entities::Attributes::AttributeBuilder do
           'attribute name must be a String or Symbol'
     end # it
 
-    it 'should validate the attribute type', :aggregate_failures do
-      expect { instance.build attribute_name, nil }.
-        to raise_error described_class::Error,
-          "attribute type can't be blank"
-
-      expect { instance.build attribute_name, Object.new }.
-        to raise_error described_class::Error,
-          'attribute type must be a Class'
-    end # it
-
     it 'should validate the attribute options' do
       opts = { :invalid_option => true }
 

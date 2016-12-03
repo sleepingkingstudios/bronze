@@ -24,57 +24,92 @@ module Bronze::Entities::Constraints
       object.class.attributes
     end # method attribute_definitions
 
-    def build_errors object
-      errors = super
+    def build_error_params metadata
+      hsh = { :type => metadata.object_type }
 
-      if defines_attributes?(object)
-        error_type = Bronze::Constraints::TypeConstraint::NOT_KIND_OF_ERROR
+      if Array == metadata.object_type
+        # hsh[:member_type] = metadata.attribute_type.member_type.object_type
+      end # if
 
-        @mismatched_attributes.each do |attr_name, attr_type|
-          errors[attr_name].add(error_type, :value => attr_type)
-        end # each
+      hsh
+    end # method build_error
 
-        errors
-      else
-        errors.add(MISSING_ATTRIBUTES_ERROR)
-      end # if-else
+    def build_errors _object
+      @errors
     end # method build_errors
 
     def defines_attributes? object
-      return @defines_attributes unless @defines_attributes.nil?
+      return true if object.respond_to?(:attributes) &&
+                     object.class.respond_to?(:attributes)
 
-      @defines_attributes =
-        object.respond_to?(:attributes) && object.class.respond_to?(:attributes)
-    end # method defines_attributes?
-
-    def matches_attribute_type? value, metadata
-      return true if metadata.matches?(value)
-
-      return true if value.nil? && metadata.allow_nil?
+      @errors.add(MISSING_ATTRIBUTES_ERROR)
 
       false
-    end # method matches_attribute_types?
+    end # method defines_attributes?
+
+    def match_array_attribute_type ary, attr_type, nesting
+      member_type = attr_type.member_type
+
+      ary.each.with_index do |member, index|
+        match_attribute_type member, member_type, nesting.dup.push(index)
+      end # each
+    end # match_array_attribute_type
+
+    def match_attribute_type value, attribute_type, nesting
+      error_type  = Bronze::Constraints::TypeConstraint::NOT_KIND_OF_ERROR
+      object_type = attribute_type.object_type
+
+      unless value.is_a?(object_type)
+        nested_errors(nesting).add(error_type, :type => object_type) && return
+      end # unless
+
+      if Array == object_type
+        match_array_attribute_type value, attribute_type, nesting
+      elsif Hash == object_type
+        match_hash_attribute_type value, attribute_type, nesting
+      end # if-elsif
+    end # method match_attribute_type
+
+    def match_hash_attribute_type hsh, attr_type, nesting
+      error_type  = Bronze::Constraints::TypeConstraint::NOT_KIND_OF_ERROR
+      key_type    = attr_type.key_type
+      member_type = attr_type.member_type
+
+      hsh.each do |key, value|
+        inner_nesting = nesting.dup.push(key)
+
+        unless key.is_a?(key_type)
+          nested_errors(inner_nesting).add(error_type, :type => key_type)
+        end # unless
+
+        match_attribute_type value, member_type, inner_nesting
+      end # each
+    end # method match_hash_attribute_type
 
     def matches_attribute_types? object
-      @mismatched_attributes = {}
-
       attribute_definitions(object).each do |attr_name, metadata|
         value = object.send(attr_name)
 
-        unless matches_attribute_type?(value, metadata)
-          @mismatched_attributes[attr_name] = metadata.object_type
-        end # unless
+        next if value.nil? && metadata.allow_nil?
+
+        match_attribute_type(value, metadata.attribute_type, [attr_name])
       end # all?
 
-      @mismatched_attributes.empty?
+      @errors.empty?
     end # method matches_attribute_types?
 
     def matches_object? object
+      @errors = Bronze::Errors::Errors.new
+
       defines_attributes?(object) && matches_attribute_types?(object)
     end # method matches_object?
 
     def negated_matches_object? _object
       raise_invalid_negation caller[1..-1]
     end # method negated_matches_object?
+
+    def nested_errors nesting
+      nesting.reduce(@errors) { |errors, fragment| errors[fragment] }
+    end # method nested_errors
   end # class
 end # module

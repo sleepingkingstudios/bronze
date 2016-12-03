@@ -65,7 +65,6 @@ module Bronze::Entities::Attributes
     #   or invalid.
     def build attribute_name, attribute_type, attribute_options = {}
       validate_attribute_name attribute_name
-      validate_attribute_type attribute_type
       validate_attribute_opts attribute_options
 
       metadata = characterize(
@@ -155,13 +154,5 @@ module Bronze::Entities::Attributes
         end # unless
       end # each
     end # method validate_attribute_opts
-
-    def validate_attribute_type attribute_type
-      raise_error "attribute type can't be blank" if attribute_type.nil?
-
-      return if attribute_type.is_a?(Class)
-
-      raise_error 'attribute type must be a Class'
-    end # method validate_attribute_type
   end # class
 end # class
