@@ -39,8 +39,6 @@
 - Entity
   - attribute normalization (Symbol <=> String, etc)
   - collection attributes
-    - Array[Object] => [Object]
-    - Hash[String, Object] => { String => Object }
     - configuration option for restricting entity Hash attribute key types
       - options => String only, scalar only (String, Symbol, Integer?)
   - configuration option for default value of :allow_nil => default is true
