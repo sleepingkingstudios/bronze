@@ -1,7 +1,7 @@
 # spec/patina/operations/resources/resource_operation_examples.rb
 
 require 'bronze/collections/collection'
-require 'bronze/constraints/constraints_examples'
+require 'bronze/constraints/constraint_examples'
 require 'bronze/constraints/failure_constraint'
 require 'bronze/constraints/success_constraint'
 require 'bronze/contracts/type_contract_examples'
@@ -331,7 +331,7 @@ module Spec::Operations
       end # describe
 
       describe '#resource_valid?' do
-        include Spec::Constraints::ConstraintsExamples
+        include Spec::Constraints::ConstraintExamples
 
         let(:match_method) { :resource_valid? }
         let(:object)       { Object.new }

@@ -1,6 +1,6 @@
 # spec/bronze/contracts/type_contract_examples.rb
 
-require 'bronze/constraints/constraints_examples'
+require 'bronze/constraints/constraint_examples'
 require 'bronze/constraints/failure_constraint'
 require 'bronze/constraints/success_constraint'
 
@@ -8,7 +8,7 @@ module Spec::Contracts
   module TypeContractExamples
     extend RSpec::SleepingKingStudios::Concerns::SharedExampleGroup
 
-    include Spec::Constraints::ConstraintsExamples
+    include Spec::Constraints::ConstraintExamples
 
     shared_examples 'should implement the TypeContract methods' do
       describe '::contract' do

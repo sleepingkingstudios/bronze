@@ -1,10 +1,10 @@
 # spec/bronze/constraints/type_constraint_spec.rb
 
-require 'bronze/constraints/constraints_examples'
+require 'bronze/constraints/constraint_examples'
 require 'bronze/constraints/type_constraint'
 
 RSpec.describe Bronze::Constraints::TypeConstraint do
-  include Spec::Constraints::ConstraintsExamples
+  include Spec::Constraints::ConstraintExamples
 
   shared_context 'when allow_nil is set to true' do
     let(:instance) { described_class.new expected, :allow_nil => true }

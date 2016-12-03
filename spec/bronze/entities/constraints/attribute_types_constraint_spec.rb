@@ -1,12 +1,12 @@
 # spec/bronze/entities/constraints/attribute_types_constraint_spec.rb
 
-require 'bronze/constraints/constraints_examples'
+require 'bronze/constraints/constraint_examples'
 require 'bronze/constraints/type_constraint'
 require 'bronze/entities/constraints/attribute_types_constraint'
 require 'bronze/entities/entity'
 
 RSpec.describe Bronze::Entities::Constraints::AttributeTypesConstraint do
-  include Spec::Constraints::ConstraintsExamples
+  include Spec::Constraints::ConstraintExamples
 
   let(:instance) { described_class.new }
 

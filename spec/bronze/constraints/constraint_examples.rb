@@ -1,7 +1,7 @@
-# spec/bronze/constraints/constraints_examples.rb
+# spec/bronze/constraints/constraint_examples.rb
 
 module Spec::Constraints
-  module ConstraintsExamples
+  module ConstraintExamples
     extend RSpec::SleepingKingStudios::Concerns::SharedExampleGroup
 
     shared_examples 'should return false and the errors object' do |proc = nil|

@@ -1,12 +1,12 @@
 # spec/bronze/constraints/contextual_constraint_spec.rb
 
 require 'bronze/constraints/constraint'
-require 'bronze/constraints/constraints_examples'
+require 'bronze/constraints/constraint_examples'
 require 'bronze/constraints/contextual_constraint'
 require 'bronze/constraints/type_constraint'
 
 RSpec.describe Bronze::Constraints::ContextualConstraint do
-  include Spec::Constraints::ConstraintsExamples
+  include Spec::Constraints::ConstraintExamples
 
   shared_context 'when the constraint is negated' do
     let(:params) { super().merge :negated => true }

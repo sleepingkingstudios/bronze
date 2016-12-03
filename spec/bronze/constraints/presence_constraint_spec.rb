@@ -1,10 +1,10 @@
 # spec/bronze/constraints/presence_constraint_spec.rb
 
-require 'bronze/constraints/constraints_examples'
+require 'bronze/constraints/constraint_examples'
 require 'bronze/constraints/presence_constraint'
 
 RSpec.describe Bronze::Constraints::PresenceConstraint do
-  include Spec::Constraints::ConstraintsExamples
+  include Spec::Constraints::ConstraintExamples
 
   let(:instance) { described_class.new }
 
