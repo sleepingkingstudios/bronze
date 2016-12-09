@@ -1,6 +1,6 @@
 # lib/bronze/constraints/contextual_constraint.rb
 
-require 'bronze/constraints'
+require 'bronze/constraints/constraint'
 
 module Bronze::Constraints
   # Wrapper object that encapsulates a constraint object and additional
@@ -59,14 +59,6 @@ module Bronze::Constraints
       end # if-else
     end # method apply_with_arity
 
-    def build_errors _object
-      @errors
-    end # method build_errors
-
-    def build_negated_errors _object
-      @errors
-    end # method build_errors
-
     def extract_value object
       return object unless property
 
@@ -76,27 +68,23 @@ module Bronze::Constraints
     end # method extract_value
 
     def matches_object? object
-      @errors = []
-
-      return true, @errors if skip?(object)
+      return true, [] if skip?(object)
 
       value        = extract_value object
       match_method = negated? ? :negated_match : :match
 
-      result, @errors = constraint.send(match_method, value)
+      result, _ = constraint.send(match_method, value, errors)
 
       result
     end # method matches_object?
 
     def negated_matches_object? object
-      @errors = []
-
-      return true, @errors if skip?(object)
+      return true, [] if skip?(object)
 
       value        = extract_value object
       match_method = negated? ? :match : :negated_match
 
-      result, @errors = constraint.send(match_method, value)
+      result, _ = constraint.send(match_method, value, errors)
 
       result
     end # method matches_object?

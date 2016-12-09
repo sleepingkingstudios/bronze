@@ -12,7 +12,7 @@ module Bronze::Entities::Constraints
     MISSING_ATTRIBUTES_ERROR = 'constraints.errors.missing_attributes'.freeze
 
     # (see Constraint#match)
-    def match object
+    def match object, passed_errors = nil
       @defines_attributes = nil
 
       super
@@ -34,15 +34,11 @@ module Bronze::Entities::Constraints
       hsh
     end # method build_error
 
-    def build_errors _object
-      @errors
-    end # method build_errors
-
     def defines_attributes? object
       return true if object.respond_to?(:attributes) &&
                      object.class.respond_to?(:attributes)
 
-      @errors.add(MISSING_ATTRIBUTES_ERROR)
+      errors.add(MISSING_ATTRIBUTES_ERROR)
 
       false
     end # method defines_attributes?
@@ -95,12 +91,10 @@ module Bronze::Entities::Constraints
         match_attribute_type(value, metadata.attribute_type, [attr_name])
       end # all?
 
-      @errors.empty?
+      errors.empty?
     end # method matches_attribute_types?
 
     def matches_object? object
-      @errors = Bronze::Errors::Errors.new
-
       defines_attributes?(object) && matches_attribute_types?(object)
     end # method matches_object?
 
@@ -109,7 +103,7 @@ module Bronze::Entities::Constraints
     end # method negated_matches_object?
 
     def nested_errors nesting
-      nesting.reduce(@errors) { |errors, fragment| errors[fragment] }
+      nesting.reduce(errors) { |errors, fragment| errors[fragment] }
     end # method nested_errors
   end # class
 end # module

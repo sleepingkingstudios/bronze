@@ -30,6 +30,17 @@ module Spec::Constraints
           end # if
         end # it
       end # describe
+
+      describe 'should update the errors object' do
+        let(:match_method)  { defined?(super()) ? super() : :match }
+        let(:passed_errors) { Bronze::Errors::Errors.new }
+
+        it do
+          _, errors = instance.send match_method, object, passed_errors
+
+          expect(passed_errors).to be == errors
+        end # it
+      end # describe
     end # shared_examples
 
     shared_examples 'should return true and an empty errors object' do
@@ -41,6 +52,17 @@ module Spec::Constraints
 
           expect(result).to be true
           expect(errors).to satisfy(&:empty?)
+        end # it
+      end # describe
+
+      describe 'should not update the errors object' do
+        let(:match_method)  { defined?(super()) ? super() : :match }
+        let(:passed_errors) { Bronze::Errors::Errors.new }
+
+        it do
+          _, errors = instance.send match_method, object, passed_errors
+
+          expect(passed_errors).to be == errors
         end # it
       end # describe
     end # shared_examples

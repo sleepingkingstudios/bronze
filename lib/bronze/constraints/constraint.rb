@@ -14,14 +14,18 @@ module Bronze::Constraints
     # Constraint must implement these methods.
     class NotImplementedError < StandardError; end
 
-    def match object
-      return [true, []] if matches_object? object
+    def match object, passed_errors = nil
+      @errors = passed_errors
+
+      return [true, errors] if matches_object? object
 
       [false, build_errors(object)]
     end # method match
 
-    def negated_match object
-      return [true, []] if negated_matches_object? object
+    def negated_match object, passed_errors = nil
+      @errors = passed_errors
+
+      return [true, errors] if negated_matches_object? object
 
       [false, build_negated_errors(object)]
     end # method negated_match
@@ -30,12 +34,16 @@ module Bronze::Constraints
     private
 
     def build_errors _object
-      Bronze::Errors::Errors.new
+      errors
     end # method build_errors
 
     def build_negated_errors _object
-      Bronze::Errors::Errors.new
+      errors
     end # method build_errors
+
+    def errors
+      @errors ||= Bronze::Errors::Errors.new
+    end # method errors
 
     def matches_object? _object
       raise NotImplementedError,

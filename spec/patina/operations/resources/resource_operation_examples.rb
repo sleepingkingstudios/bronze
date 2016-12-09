@@ -331,7 +331,47 @@ module Spec::Operations
       end # describe
 
       describe '#resource_valid?' do
-        include Spec::Constraints::ConstraintExamples
+        desc = 'should return false and the errors object'
+        shared_examples desc do |proc = nil|
+          describe 'should return false and the errors object' do
+            let(:match_method) { defined?(super()) ? super() : :match }
+
+            it do
+              result, errors = instance.send match_method, object
+
+              expect(result).to be false
+
+              if proc.is_a?(Proc)
+                instance_exec(errors, &proc)
+              elsif defined?(error_type)
+                expect(errors).to include { |error|
+                  next false unless error.type == error_type
+
+                  if defined?(error_params)
+                    next false unless error.params == error_params
+                  end # if
+
+                  true
+                } # end errors
+              else
+                expect(errors).not_to satisfy(&:empty?)
+              end # if
+            end # it
+          end # describe
+        end # shared_examples
+
+        shared_examples 'should return true and an empty errors object' do
+          describe 'should return false and the errors object' do
+            let(:match_method) { defined?(super()) ? super() : :match }
+
+            it do
+              result, errors = instance.send match_method, object
+
+              expect(result).to be true
+              expect(errors).to satisfy(&:empty?)
+            end # it
+          end # describe
+        end # shared_examples
 
         let(:match_method) { :resource_valid? }
         let(:object)       { Object.new }
