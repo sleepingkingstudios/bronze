@@ -1,22 +1,8 @@
 # Development
 
-- integration tests
-  - collections
-    - transforms
-  - entities
-    - associations
-    - attributes
-    - contracts
-  - operations
-- Documentation Pass
-- Extract Bronze::Ci to standalone gem.
-- remove `result, errors =` pattern?
-- remove unnecessary custom error classes
-- standardize error constant names - _ERROR suffix?
-
 ## Bug Fixes
 
-## Features
+## MVP
 
 - Associations
   - Entities
@@ -24,13 +10,25 @@
     - Bronze::Entities::Associations::AssociationMetadata
     - relation macros
     - nested attributes
+- Constraints
+  - EachConstraint # wraps another constraint, matches it against each array item
+- Operations
+  - resources
+    - convert to modules ?
+    - DSL to include: |
+
+      class CreateOneBook < ApplicationOperation
+        create_one :book
+      end # class
+
+## Features
+
 - Collection
   - bulk operations
 - Constraint
   - AttributeTypesConstraint
     - :except, :only ?
     - support attribute collections (use EachConstraint?)
-  - EachConstraint # wraps another constraint, matches it against each array item
 - Contract
   - update syntax constrain :attribute, ClassName => true
     - if ClassName::Contract or ClassName::contract, uses contract
@@ -50,14 +48,7 @@
     - #{attribute}_changed?
     - #old_{attribute}
     - #clean!
-- Operations
-  - resources
-    - convert to modules ?
-    - DSL to include: |
-
-      class CreateOneBook < ApplicationOperation
-        create_one :book
-      end # class
+- Errors#first
 - Query
   - #all returns with JSON envelope for advanced features?
   - #matching with non-equality predicates
@@ -93,6 +84,22 @@
 - Single Table Inheritance
   - #types attribute?
 - bronze/rails
+
+## Chores
+
+- integration tests
+  - collections
+    - transforms
+  - entities
+    - associations
+    - attributes
+    - contracts
+  - operations
+- Documentation Pass
+- Extract Bronze::Ci to standalone gem.
+- remove `result, errors =` pattern?
+- remove unnecessary custom error classes
+- standardize error constant names - _ERROR suffix?
 
 ## Optimization
 
