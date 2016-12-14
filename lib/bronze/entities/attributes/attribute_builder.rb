@@ -1,10 +1,10 @@
-# lib/bronze/entities/attributes/attributes_builder.rb
+# lib/bronze/entities/attributes/attribute_builder.rb
 
-require 'bronze/entities/attributes/metadata'
+require 'bronze/entities/attributes/attribute_metadata'
 
 module Bronze::Entities::Attributes
   # Service class to define attributes on an entity.
-  class AttributesBuilder
+  class AttributeBuilder
     # Error class for handling invalid attribute definitions.
     class Error < ::StandardError; end
 
@@ -34,7 +34,7 @@ module Bronze::Entities::Attributes
     #   book.title
     #   #=> NoMethodError: undefined method `title'
     #
-    #   builder = Bronze::Entities::Attributes::AttributesBuilder.new(Book)
+    #   builder = Bronze::Entities::Attributes::AttributeBuilder.new(Book)
     #   builder.define_attribute :title, String
     #
     #   book.title
@@ -58,13 +58,13 @@ module Bronze::Entities::Attributes
     # @option attribute_options [Boolean] :read_only If true, the writer method
     #   for the attribute will be set as private. Defaults to false.
     #
-    # @return [Attributes::Metadata] The generated metadata for the attribute.
+    # @return [Attributes::AttributeMetadata] The generated metadata for the
+    #   attribute.
     #
     # @raise Builder::Error if the attribute name or attribute type is missing
     #   or invalid.
     def build attribute_name, attribute_type, attribute_options = {}
       validate_attribute_name attribute_name
-      validate_attribute_type attribute_type
       validate_attribute_opts attribute_options
 
       metadata = characterize(
@@ -87,7 +87,7 @@ module Bronze::Entities::Attributes
         options[key.intern] = value
       end # options
 
-      Bronze::Entities::Attributes::Metadata.new(
+      Bronze::Entities::Attributes::AttributeMetadata.new(
         attribute_name,
         attribute_type,
         attribute_options
@@ -154,13 +154,5 @@ module Bronze::Entities::Attributes
         end # unless
       end # each
     end # method validate_attribute_opts
-
-    def validate_attribute_type attribute_type
-      raise_error "attribute type can't be blank" if attribute_type.nil?
-
-      return if attribute_type.is_a?(Class)
-
-      raise_error 'attribute type must be a Class'
-    end # method validate_attribute_type
   end # class
 end # class

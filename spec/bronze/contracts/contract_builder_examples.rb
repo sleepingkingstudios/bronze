@@ -1,6 +1,6 @@
 # spec/bronze/contracts/contract_builder_examples.rb
 
-require 'bronze/constraints/constraints_examples'
+require 'bronze/constraints/constraint_examples'
 require 'bronze/constraints/failure_constraint'
 require 'bronze/constraints/success_constraint'
 require 'bronze/constraints/type_constraint'
@@ -9,7 +9,7 @@ module Spec::Contracts
   module ContractBuilderExamples
     extend RSpec::SleepingKingStudios::Concerns::SharedExampleGroup
 
-    include Spec::Constraints::ConstraintsExamples
+    include Spec::Constraints::ConstraintExamples
 
     shared_examples 'should implement the ContractBuilder methods' do
       describe '#add_constraint' do

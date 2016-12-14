@@ -1,11 +1,11 @@
-# spec/bronze/entities/attributes/attributes_builder_spec.rb
+# spec/bronze/entities/attributes/attribute_builder_spec.rb
 
-require 'bronze/entities/attributes/attributes_builder'
-require 'bronze/entities/attributes/metadata'
+require 'bronze/entities/attributes/attribute_builder'
+require 'bronze/entities/attributes/attribute_metadata'
 
 require 'bronze/entities/attributes/attributes_examples'
 
-RSpec.describe Bronze::Entities::Attributes::AttributesBuilder do
+RSpec.describe Bronze::Entities::Attributes::AttributeBuilder do
   include Spec::Entities::Attributes::AttributesExamples
 
   let(:entity_class) do
@@ -65,16 +65,6 @@ RSpec.describe Bronze::Entities::Attributes::AttributesBuilder do
           'attribute name must be a String or Symbol'
     end # it
 
-    it 'should validate the attribute type', :aggregate_failures do
-      expect { instance.build attribute_name, nil }.
-        to raise_error described_class::Error,
-          "attribute type can't be blank"
-
-      expect { instance.build attribute_name, Object.new }.
-        to raise_error described_class::Error,
-          'attribute type must be a Class'
-    end # it
-
     it 'should validate the attribute options' do
       opts = { :invalid_option => true }
 
@@ -84,12 +74,18 @@ RSpec.describe Bronze::Entities::Attributes::AttributesBuilder do
     end # it
 
     describe 'with a valid attribute name and attribute type' do
+      let(:attribute_type_class) do
+        Bronze::Entities::Attributes::AttributeType
+      end # let
+
       it 'should return the metadata' do
         metadata = instance.build attribute_name, attribute_type
+        mt_class = Bronze::Entities::Attributes::AttributeMetadata
 
-        expect(metadata).to be_a Bronze::Entities::Attributes::Metadata
+        expect(metadata).to be_a mt_class
         expect(metadata.attribute_name).to be == attribute_name
-        expect(metadata.attribute_type).to be == attribute_type
+        expect(metadata.attribute_type).to be_a attribute_type_class
+        expect(metadata.object_type).to be == attribute_type
 
         expect(metadata.allow_nil?).to be false
         expect(metadata.default).to be nil

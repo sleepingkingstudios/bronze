@@ -1,24 +1,44 @@
 # Development
 
-- Documentation Pass
-- Extract Bronze::Ci to standalone gem.
-- remove `result, errors =` pattern?
-
 ## Bug Fixes
+
+## MVP
+
+- Associations
+  - Entities
+    - foreign_key => attribute
+    - Bronze::Entities::Associations::AssociationMetadata
+    - relation macros
+    - nested attributes
+- Constraints
+  - EachConstraint # wraps another constraint, matches it against each array item
+- Operations
+  - resources
+    - convert to modules ?
+    - DSL to include: |
+
+      class CreateOneBook < ApplicationOperation
+        create_one :book
+      end # class
 
 ## Features
 
 - Collection
   - bulk operations
 - Constraint
-  - AttributeTypesConstraint # :except, :only?
-  - EachConstraint # wraps another constraint, matches it against each array item
+  - AttributeTypesConstraint
+    - :except, :only ?
+    - support attribute collections (use EachConstraint?)
 - Contract
   - update syntax constrain :attribute, ClassName => true
     - if ClassName::Contract or ClassName::contract, uses contract
     - otherwise adds TypeConstraint => Class
   - add_constraint Publisher.contract, :each => :publisher # Like :on, but wraps in an EachConstraint
 - Entity
+  - attribute normalization (Symbol <=> String, etc)
+  - collection attributes
+    - configuration option for restricting entity Hash attribute key types
+      - options => String only, scalar only (String, Symbol, Integer?)
   - configuration option for default value of :allow_nil => default is true
   - dependent_attribute
     - creates read-only method on entity
@@ -28,6 +48,7 @@
     - #{attribute}_changed?
     - #old_{attribute}
     - #clean!
+- Errors#first
 - Query
   - #all returns with JSON envelope for advanced features?
   - #matching with non-equality predicates
@@ -54,12 +75,6 @@
     - not in
   - #order
   - #includes
-- Relations
-  - Entities
-    - foreign_key => attribute
-    - Bronze::Entities::Relations::Metadata
-    - relation macros
-    - nested attributes
 - Repository#except, #only - returns a copy of the repository that only has the given collections.
 - Scope |
 
@@ -69,6 +84,22 @@
 - Single Table Inheritance
   - #types attribute?
 - bronze/rails
+
+## Chores
+
+- integration tests
+  - collections
+    - transforms
+  - entities
+    - associations
+    - attributes
+    - contracts
+  - operations
+- Documentation Pass
+- Extract Bronze::Ci to standalone gem.
+- remove `result, errors =` pattern?
+- remove unnecessary custom error classes
+- standardize error constant names - _ERROR suffix?
 
 ## Optimization
 

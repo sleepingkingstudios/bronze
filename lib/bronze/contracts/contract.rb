@@ -42,27 +42,7 @@ module Bronze::Contracts
       true
     end # method empty?
 
-    def match object
-      @errors = Bronze::Errors::Errors.new
-
-      super
-    end # method match
-
-    def negated_match object
-      @errors = Bronze::Errors::Errors.new
-
-      super
-    end # method match
-
     private
-
-    def build_errors _object
-      @errors
-    end # method build_errors
-
-    def build_negated_errors _object
-      @errors
-    end # method build_errors
 
     def each_constraint &block
       @constraints.each(&block)
@@ -78,22 +58,24 @@ module Bronze::Contracts
 
     def matches_object? object
       each_constraint do |constraint_data|
-        _, errors = constraint_data.match(object)
+        property = constraint_data.property
+        nesting  = property ? errors[property] : errors
 
-        update_errors(constraint_data, errors) unless errors.empty?
+        constraint_data.match(object, nesting)
       end # each
 
-      @errors.empty?
+      errors.empty?
     end # method matches_object?
 
     def negated_matches_object? object
       each_constraint do |constraint_data|
-        _, errors = constraint_data.negated_match(object)
+        property = constraint_data.property
+        nesting  = property ? errors[property] : errors
 
-        update_errors(constraint_data, errors) unless errors.empty?
+        constraint_data.negated_match(object, nesting)
       end # each
 
-      @errors.empty?
+      errors.empty?
     end # method negated_matches_object?
 
     def update_errors constraint_data, errors
