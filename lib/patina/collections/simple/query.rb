@@ -4,7 +4,7 @@ require 'bronze/collections/query'
 require 'patina/collections/simple'
 
 criteria_pattern = File.join(
-  Bronze.gem_path, 'lib', 'patina', 'collections', 'simple', 'criteria',
+  Patina.lib_path, 'patina', 'collections', 'simple', 'criteria',
   '*criterion.rb'
 ) # end pattern
 SleepingKingStudios::Tools::CoreTools.require_each(criteria_pattern)

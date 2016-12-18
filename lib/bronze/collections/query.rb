@@ -3,7 +3,7 @@
 require 'bronze/collections'
 
 criteria_pattern = File.join(
-  Bronze.gem_path, 'lib', 'bronze', 'collections', 'criteria', '*criterion.rb'
+  Bronze.lib_path, 'bronze', 'collections', 'criteria', '*criterion.rb'
 ) # end pattern
 SleepingKingStudios::Tools::CoreTools.require_each(criteria_pattern)
 

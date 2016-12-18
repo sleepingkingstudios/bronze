@@ -2,10 +2,10 @@
 
 require 'bronze/constraints'
 
-criteria_pattern = File.join(
-  Bronze.gem_path, 'lib', 'bronze', 'constraints', '*_constraint.rb'
+constraints_pattern = File.join(
+  Bronze.lib_path, 'bronze', 'constraints', '*_constraint.rb'
 ) # end pattern
-SleepingKingStudios::Tools::CoreTools.require_each(criteria_pattern)
+SleepingKingStudios::Tools::CoreTools.require_each(constraints_pattern)
 
 module Bronze::Constraints
   # Domain-specific language for defining constraints.

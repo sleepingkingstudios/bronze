@@ -1,8 +1,8 @@
-# spec/bronze_spec.rb
+# spec/patina_spec.rb
 
-require 'bronze'
+require 'patina'
 
-RSpec.describe Bronze do
+RSpec.describe Patina do
   describe '::gem_path' do
     let(:root_path) { __dir__.sub %r{/spec\z}, '' }
 
