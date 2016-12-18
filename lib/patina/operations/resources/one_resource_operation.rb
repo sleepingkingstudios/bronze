@@ -1,13 +1,16 @@
 # lib/patina/operations/resources/one_resource_operation.rb
 
+require 'sleeping_king_studios/tools/toolbox/mixin'
+
 require 'bronze/collections/collection'
 require 'bronze/operations/operation'
 require 'patina/operations/resources/resource_operation'
 
 module Patina::Operations::Resources
-  # Base class implementing query and persistence functionality on a single
+  # Module implementing query and persistence functionality on a single
   # resource, such as a RESTful #show or #create method.
-  class OneResourceOperation < Bronze::Operations::Operation
+  module OneResourceOperation
+    extend  SleepingKingStudios::Tools::Toolbox::Mixin
     include Patina::Operations::Resources::ResourceOperation
 
     # @return [Object] The root resource for the operation.

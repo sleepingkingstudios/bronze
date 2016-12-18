@@ -1,12 +1,15 @@
 # lib/patina/operations/resources/many_resources_operation.rb
 
+require 'sleeping_king_studios/tools/toolbox/mixin'
+
 require 'bronze/operations/operation'
 require 'patina/operations/resources/resource_operation'
 
 module Patina::Operations::Resources
-  # Base class implementing query and persistence functionality on a group of
+  # Module implementing query and persistence functionality on a group of
   # resources, such as a RESTful #index method or a bulk operation.
-  class ManyResourcesOperation < Bronze::Operations::Operation
+  module ManyResourcesOperation
+    extend  SleepingKingStudios::Tools::Toolbox::Mixin
     include Patina::Operations::Resources::ResourceOperation
 
     # @return [Array] The root resource for the operation.
@@ -28,5 +31,5 @@ module Patina::Operations::Resources
     def resource_query
       @resource_query ||= resource_collection.query
     end # method resource_query
-  end # class
-end # class
+  end # module
+end # module

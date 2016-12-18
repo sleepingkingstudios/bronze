@@ -1,11 +1,16 @@
 # lib/patina/operations/resources/create_one_resource_operation.rb
 
+require 'sleeping_king_studios/tools/toolbox/mixin'
+
 require 'patina/operations/resources/one_resource_operation'
 
 module Patina::Operations::Resources
-  # Operation class to build, validate and persist an instance of a resource
+  # Operation module to build, validate and persist an instance of a resource
   # from an attributes hash.
-  class CreateOneResourceOperation < OneResourceOperation
+  module CreateOneResourceOperation
+    extend  SleepingKingStudios::Tools::Toolbox::Mixin
+    include Patina::Operations::Resources::OneResourceOperation
+
     private
 
     def process attributes
@@ -15,5 +20,5 @@ module Patina::Operations::Resources
 
       _, @errors = resource_collection.insert @resource
     end # method process
-  end # class
+  end # module
 end # module

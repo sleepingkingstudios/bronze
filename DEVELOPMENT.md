@@ -10,8 +10,6 @@
     - Bronze::Entities::Associations::AssociationMetadata
     - relation macros
     - nested attributes
-- Constraints
-  - EachConstraint # wraps another constraint, matches it against each array item
 - Operations
   - resources
     - convert to modules ?

@@ -1,14 +1,19 @@
 # lib/patina/operations/resources/find_many_resources_operation.rb
 
+require 'sleeping_king_studios/tools/toolbox/mixin'
+
 require 'patina/operations/resources/many_resources_operation'
 
 module Patina::Operations::Resources
-  # Operation class to query resources from a datastore.
-  class FindManyResourcesOperation < ManyResourcesOperation
+  # Operation module to query resources from a datastore.
+  module FindManyResourcesOperation
+    extend  SleepingKingStudios::Tools::Toolbox::Mixin
+    include Patina::Operations::Resources::ManyResourcesOperation
+
     private
 
     def process matching: nil
       find_resources :matching => matching
     end # method process
-  end # class
+  end # module
 end # module
