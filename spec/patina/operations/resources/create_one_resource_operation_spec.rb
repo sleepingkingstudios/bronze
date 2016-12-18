@@ -14,10 +14,11 @@ RSpec.describe Patina::Operations::Resources::CreateOneResourceOperation do
   let(:repository)      { Bronze::Collections::Reference::Repository.new }
   let(:instance)        { described_class.new repository }
 
-  options = {
-    :base_class => Patina::Operations::Resources::CreateOneResourceOperation
-  } # end options
+  options = { :base_class => Bronze::Operations::Operation }
   mock_class Spec::Operations, :CreateOneResourceOperation, options do |klass|
+    klass.send :include,
+      Patina::Operations::Resources::CreateOneResourceOperation
+
     klass.send :resource_class=, resource_class
   end # mock_class
 
