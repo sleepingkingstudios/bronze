@@ -10,14 +10,6 @@
     - Bronze::Entities::Associations::AssociationMetadata
     - relation macros
     - nested attributes
-- Operations
-  - resources
-    - convert to modules ?
-    - DSL to include: |
-
-      class CreateOneBook < ApplicationOperation
-        create_one :book
-      end # class
 
 ## Features
 

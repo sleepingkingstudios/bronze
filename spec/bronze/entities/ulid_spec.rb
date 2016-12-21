@@ -30,6 +30,64 @@ RSpec.describe Bronze::Entities::Ulid do
     it { expect(described_class).not_to be_constructible }
   end # describe
 
+  describe '::===' do
+    it { expect(described_class).to respond_to(:===).with(1).argument }
+
+    # rubocop:disable Style/CaseEquality
+
+    # rubocop:disable Style/NilComparison
+    describe 'with nil' do
+      it { expect(described_class === nil).to be false }
+    end # describe
+    # rubocop:enable Style/NilComparison
+
+    describe 'with an object' do
+      it { expect(described_class === Object.new).to be false }
+    end # describe
+
+    describe 'with an empty string' do
+      it { expect(described_class === '').to be false }
+    end # describe
+
+    describe 'with a string that is too short' do
+      let(:value) { 'A' * 25 }
+
+      it { expect(described_class === value).to be false }
+    end # describe
+
+    describe 'with a string that is too long' do
+      let(:value) { 'A' * 27 }
+
+      it { expect(described_class === value).to be false }
+    end # describe
+
+    describe 'with a string with invalid characters' do
+      let(:value) { 'A' * 25 + '?' }
+
+      it { expect(described_class === value).to be false }
+    end # describe
+
+    describe 'with a string with valid characters' do
+      let(:value) { 'A' * 26 }
+
+      it { expect(described_class === value).to be true }
+    end # describe
+
+    describe 'with a string with lowercase characters' do
+      let(:value) { 'a' * 26 }
+
+      it { expect(described_class === value).to be true }
+    end # describe
+
+    describe 'with a generated ULID' do
+      let(:value) { described_class.generate }
+
+      it { expect(described_class === value).to be true }
+    end # describe
+
+    # rubocop:enable Style/CaseEquality
+  end # describe
+
   describe '::generate' do
     it { expect(described_class).to respond_to(:generate).with(0).arguments }
 

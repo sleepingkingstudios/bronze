@@ -12,6 +12,12 @@ module Bronze::Entities
   class Entity
     include Bronze::Entities::Attributes
 
+    # Default attribute value for primary and foreign keys.
+    KEY_DEFAULT = ->() { Bronze::Entities::Ulid.generate }
+
+    # Attribute type for primary and foreign keys.
+    KEY_TYPE = String
+
     # @!attribute [r] id
     #   A statistically unique entity identifier string. The id is generated
     #   automatically when the entity is initialized, and does not change
@@ -24,8 +30,8 @@ module Bronze::Entities
     #
     #   @see Bronze::Entities::Ulid.generate
     attribute :id,
-      String,
-      :default   => ->() { Bronze::Entities::Ulid.generate },
+      KEY_TYPE,
+      :default   => KEY_DEFAULT,
       :read_only => true
   end # class
 end # module
