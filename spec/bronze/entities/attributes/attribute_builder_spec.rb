@@ -18,6 +18,18 @@ RSpec.describe Bronze::Entities::Attributes::AttributeBuilder do
   let(:entity)   { entity_class.new }
   let(:instance) { described_class.new(entity_class) }
 
+  describe '::VALID_BUILDER_OPTIONS' do
+    it 'should define the constant' do
+      expect(described_class).to have_immutable_constant :VALID_BUILDER_OPTIONS
+    end # it
+
+    it 'should list the valid options' do
+      expect(described_class::VALID_BUILDER_OPTIONS).to be == %w(
+        foreign_key
+      ) # end array
+    end # it
+  end # describe
+
   describe '::VALID_OPTIONS' do
     it { expect(described_class).to have_immutable_constant :VALID_OPTIONS }
 
@@ -49,7 +61,7 @@ RSpec.describe Bronze::Entities::Attributes::AttributeBuilder do
     let(:attribute_type) { String }
     let(:attribute_opts) { {} }
 
-    it { expect(instance).to respond_to(:build).with(2..3).arguments }
+    it { expect(instance).to respond_to(:build).with(2..4).arguments }
 
     it 'should validate the attribute name', :aggregate_failures do
       expect { instance.build nil, attribute_type }.
@@ -71,6 +83,14 @@ RSpec.describe Bronze::Entities::Attributes::AttributeBuilder do
       expect { instance.build attribute_name, attribute_type, opts }.
         to raise_error described_class::Error,
           'invalid attribute option :invalid_option'
+    end # it
+
+    it 'should validate the builder options' do
+      opts = { :invalid_option => true }
+
+      expect { instance.build attribute_name, attribute_type, {}, opts }.
+        to raise_error described_class::Error,
+          'invalid builder option :invalid_option'
     end # it
 
     describe 'with a valid attribute name and attribute type' do
@@ -98,6 +118,45 @@ RSpec.describe Bronze::Entities::Attributes::AttributeBuilder do
             instance.build attribute_name, attribute_type, :allow_nil => true
 
           expect(metadata.allow_nil?).to be true
+        end # it
+      end # describe
+
+      describe 'with :default => value' do
+        let(:default_value) { 'default' }
+
+        it 'should return the metadata' do
+          metadata =
+            instance.build(
+              attribute_name,
+              attribute_type,
+              :default => default_value
+            ) # end build
+
+          expect(metadata.default).to be default_value
+          expect(metadata.default?).to be true
+        end # it
+      end # describe
+
+      describe 'with :foreign_key => true' do
+        it 'should return the metadata' do
+          metadata =
+            instance.build(
+              attribute_name,
+              attribute_type,
+              {},
+              :foreign_key => true
+            ) # end build
+
+          expect(metadata.foreign_key?).to be true
+        end # it
+      end # describe
+
+      describe 'with :read_only => true' do
+        it 'should return the metadata' do
+          metadata =
+            instance.build attribute_name, attribute_type, :read_only => true
+
+          expect(metadata.read_only?).to be true
         end # it
       end # describe
 

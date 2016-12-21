@@ -1,5 +1,7 @@
 # spec/bronze/entities/attributes/attributes_examples.rb
 
+require 'bronze/entities/ulid'
+
 module Spec::Entities
   module Attributes; end
 end # module
@@ -61,6 +63,34 @@ module Spec::Entities::Attributes::AttributesExamples
   end # shared_examples
 
   shared_examples 'should implement the Attributes methods' do
+    describe '::KEY_DEFAULT' do
+      it 'should define the constant' do
+        expect(described_class).to have_constant :KEY_DEFAULT
+      end # it
+
+      it 'should generate new ULID objects' do
+        default = described_class::KEY_DEFAULT
+
+        expect(default).to be_a Proc
+
+        first  = default.call
+        second = default.call
+
+        # rubocop:disable Style/CaseEquality
+        expect(Bronze::Entities::Ulid).to be === first
+        expect(Bronze::Entities::Ulid).to be === second
+        # rubocop:enable Style/CaseEquality
+
+        expect(second).to be > first
+      end # it
+    end # describe
+
+    describe '::KEY_TYPE' do
+      it 'should define the constant' do
+        expect(described_class).to have_constant(:KEY_TYPE).with_value(String)
+      end # it
+    end # describe
+
     describe '::attribute' do
       shared_context 'when the attribute has been defined' do
         let!(:metadata) do
@@ -229,6 +259,49 @@ module Spec::Entities::Attributes::AttributesExamples
           end # it
         end # context
       end # wrap_context
+    end # describe
+
+    describe '::foreign_key' do
+      shared_context 'when the attribute has been defined' do
+        let!(:metadata) do
+          described_class.foreign_key(attribute_name)
+        end # let!
+      end # shared_context
+
+      it 'should respond to the method' do
+        expect(described_class).to respond_to(:foreign_key).with(1).arguments
+      end # it
+
+      describe 'with a valid attribute name' do
+        let(:attribute_name) { :association_id }
+        let(:attribute_type) { described_class::KEY_TYPE }
+        let(:attributes) do
+          super().merge :association_id => Bronze::Entities::Ulid.generate
+        end # let
+        let(:attribute_type_class) do
+          Bronze::Entities::Attributes::AttributeType
+        end # let
+
+        it 'should set and return the metadata' do
+          metadata = described_class.foreign_key attribute_name
+          mt_class = Bronze::Entities::Attributes::AttributeMetadata
+
+          expect(metadata).to be_a mt_class
+          expect(metadata.attribute_name).to be == attribute_name
+          expect(metadata.attribute_type).to be_a attribute_type_class
+          expect(metadata.object_type).to be == attribute_type
+          expect(metadata.foreign_key?).to be true
+
+          expect(described_class.attributes[attribute_name]).to be metadata
+        end # it
+
+        wrap_context 'when the attribute has been defined' do
+          let(:expected_value) { attributes.fetch attribute_name }
+          let(:updated_value)  { Bronze::Entities::Ulid.generate }
+
+          include_examples 'should define attribute', :association_id
+        end # wrap_context
+      end # describe
     end # describe
 
     describe '#==' do

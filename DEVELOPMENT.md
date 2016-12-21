@@ -6,9 +6,9 @@
 
 - Associations
   - Entities
-    - foreign_key => attribute
     - Bronze::Entities::Associations::AssociationMetadata
-    - relation macros
+    - Bronze::Entities::Associations::AssociationBuilder
+    - relation macros - on Bronze::Entities::Associations module
     - nested attributes
 
 ## Features
