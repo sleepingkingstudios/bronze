@@ -1,0 +1,383 @@
+# spec/bronze/entities/associations/associations_examples.rb
+
+require 'bronze/entities/attributes/attributes_examples'
+
+module Spec::Entities
+  module Associations; end
+end # module
+
+module Spec::Entities::Associations::AssociationsExamples
+  extend RSpec::SleepingKingStudios::Concerns::SharedExampleGroup
+
+  include Spec::Entities::Attributes::AttributesExamples
+
+  shared_context 'when associations are defined for the class' do
+    mock_class Spec, :Author, :base_class => Bronze::Entities::Entity
+
+    let(:described_class) do
+      Class.new(super()) do
+        references_one :author, :class_name => 'Spec::Author'
+      end # class
+    end # let
+  end # shared_context
+
+  shared_context 'with an associated entity' do
+    let(:association_value) do
+      defined?(super()) ? super() : association_class.new
+    end # let
+
+    before(:example) do
+      entity.send(:"#{association_name}=", association_value)
+    end # before example
+  end # wrap_context
+
+  desc = 'should define references_one association'
+  shared_examples desc do |assoc_name, assoc_opts = {}|
+    reader_name = assoc_name
+    writer_name = :"#{assoc_name}="
+    foreign_key = assoc_opts.fetch :foreign_key, :"#{assoc_name}_id"
+
+    describe "should define association :#{assoc_name}" do
+      let(:entity) { defined?(super()) ? super() : instance }
+
+      include_examples 'should define attribute', foreign_key, String
+
+      describe "##{foreign_key}" do
+        wrap_context 'with an associated entity' do
+          it { expect(entity.send foreign_key).to be == association_value.id }
+        end # wrap_context
+      end # describe
+
+      describe "##{reader_name}" do
+        it 'should define the reader' do
+          expect(entity).to have_reader(reader_name).with_value(nil)
+        end # it
+
+        wrap_context 'with an associated entity' do
+          it { expect(entity.send reader_name).to be association_value }
+        end # wrap_context
+      end # describe
+
+      describe "##{reader_name}?" do
+        it 'should define the predicate' do
+          expect(entity).to have_predicate(reader_name).with_value(false)
+        end # it
+
+        wrap_context 'with an associated entity' do
+          it { expect(entity.send :"#{reader_name}?").to be true }
+        end # wrap_context
+      end # describe
+
+      describe "##{writer_name}" do
+        define_method :safe_set_value do |value|
+          begin
+            entity.send writer_name, value
+          rescue ArgumentError
+            nil
+          end # begin-rescue
+        end # method safe_set_value
+
+        it 'should define the writer' do
+          expect(entity).to have_reader(writer_name)
+        end # it
+
+        describe 'with nil' do
+          it { expect(entity.send writer_name, nil).to be nil }
+
+          it 'should not change the foreign_key' do
+            expect { entity.send writer_name, nil }.
+              not_to change(entity, foreign_key)
+          end # it
+
+          it 'should not change the value' do
+            expect { entity.send writer_name, nil }.
+              not_to change(entity, reader_name)
+          end # it
+        end # describe
+
+        describe 'with an object' do
+          it 'should raise an error' do
+            expect { entity.send writer_name, Object.new }.
+              to raise_error ArgumentError,
+                "#{assoc_name} must be a #{association_class.name}"
+          end # it
+
+          it 'should not change the foreign_key' do
+            expect { safe_set_value Object.new }.
+              not_to change(entity, foreign_key)
+          end # it
+
+          it 'should not change the value' do
+            expect { safe_set_value Object.new }.
+              not_to change(entity, reader_name)
+          end # it
+        end # describe
+
+        describe 'with an entity' do
+          let(:other_class) { Class.new(Bronze::Entities::Entity) }
+          let(:other_value) { other_class.new }
+
+          it 'should raise an error' do
+            expect { entity.send writer_name, other_value }.
+              to raise_error ArgumentError,
+                "#{assoc_name} must be a #{association_class.name}"
+          end # it
+
+          it 'should not change the foreign_key' do
+            expect { safe_set_value other_value }.
+              not_to change(entity, foreign_key)
+          end # it
+
+          it 'should not change the value' do
+            expect { safe_set_value other_value }.
+              not_to change(entity, reader_name)
+          end # it
+        end # describe
+
+        describe 'with an instance of the association class' do
+          let(:other_value) { association_class.new }
+
+          it 'should return the changed value' do
+            expect(entity.send writer_name, other_value).to be other_value
+          end # it
+
+          it 'should change the foreign_key' do
+            expect { safe_set_value other_value }.
+              to change(entity, foreign_key).
+              to be == other_value.id
+          end # it
+
+          it 'should change the value' do
+            expect { safe_set_value other_value }.
+              to change(entity, reader_name).
+              to be == other_value
+          end # it
+        end # describe
+
+        wrap_context 'with an associated entity' do
+          describe 'with nil' do
+            it 'should return the changed value' do
+              expect(entity.send writer_name, nil).to be nil
+            end # it
+
+            it 'should clear the foreign_key' do
+              expect { entity.send writer_name, nil }.
+                to change(entity, foreign_key).
+                to be nil
+            end # it
+
+            it 'should clear the value' do
+              expect { entity.send writer_name, nil }.
+                to change(entity, reader_name).
+                to be_nil
+            end # it
+          end # describe
+
+          describe 'with an object' do
+            it 'should raise an error' do
+              expect { entity.send writer_name, Object.new }.
+                to raise_error ArgumentError,
+                  "#{assoc_name} must be a #{association_class.name}"
+            end # it
+
+            it 'should not change the foreign_key' do
+              expect { safe_set_value Object.new }.
+                not_to change(entity, foreign_key)
+            end # it
+
+            it 'should not change the value' do
+              expect { safe_set_value Object.new }.
+                not_to change(entity, reader_name)
+            end # it
+          end # describe
+
+          describe 'with an entity' do
+            let(:other_class) { Class.new(Bronze::Entities::Entity) }
+            let(:other_value) { other_class.new }
+
+            it 'should raise an error' do
+              expect { entity.send writer_name, other_value }.
+                to raise_error ArgumentError,
+                  "#{assoc_name} must be a #{association_class.name}"
+            end # it
+
+            it 'should not change the foreign_key' do
+              expect { safe_set_value other_value }.
+                not_to change(entity, foreign_key)
+            end # it
+
+            it 'should not change the value' do
+              expect { safe_set_value other_value }.
+                not_to change(entity, reader_name)
+            end # it
+          end # describe
+
+          describe 'with an instance of the association class' do
+            let(:other_value) { association_class.new }
+
+            it 'should return the changed value' do
+              expect(entity.send writer_name, other_value).to be other_value
+            end # it
+
+            it 'should change the foreign_key' do
+              expect { entity.send writer_name, other_value }.
+                to change(entity, foreign_key).
+                to be == other_value.id
+            end # it
+
+            it 'should change the value' do
+              expect { entity.send writer_name, other_value }.
+                to change(entity, reader_name).
+                to be == other_value
+            end # it
+          end # describe
+        end # wrap_context
+      end # describe
+    end # describe
+  end # shared_examples
+
+  shared_examples 'should implement the Associations methods' do
+    describe '::associations' do
+      it 'should define the reader' do
+        expect(described_class).
+          to have_reader(:associations).
+          with_value(an_instance_of Hash)
+      end # it
+
+      it 'should return a frozen copy of the associations hash' do
+        metadata =
+          Bronze::Entities::Associations::Metadata::AssociationMetadata.new(
+            :references_one,
+            :virus,
+            :class_name => 'Virus'
+          ) # end metadata
+
+        expect { described_class.associations[:infection] = metadata }.
+          to raise_error(RuntimeError)
+
+        expect(described_class.associations.keys).
+          to contain_exactly(*defined_associations.keys)
+      end # it
+
+      wrap_context 'when associations are defined for the class' do
+        let(:expected) do
+          [*defined_associations.keys, :author]
+        end # let
+
+        it 'should return the associations metadata' do
+          expect(described_class.associations.keys).
+            to contain_exactly(*expected)
+        end # it
+
+        context 'when an entity subclass is defined' do
+          mock_class Spec, :Publisher, :base_class => Bronze::Entities::Entity
+
+          let(:subclass) do
+            Class.new(described_class) do
+              references_one :publisher, :class_name => 'Spec::Publisher'
+            end # let
+          end # let
+
+          it 'should return the class and superclass attributes' do
+            expect(described_class.associations.keys).
+              to contain_exactly(*expected)
+
+            expect(subclass.associations.keys).
+              to contain_exactly(*expected, :publisher)
+          end # it
+        end # context
+      end # wrap_context
+    end # describe
+
+    describe '::references_one' do
+      shared_context 'when the association has been defined' do
+        let!(:metadata) do
+          described_class.references_one(
+            association_name,
+            association_opts
+          ) # end references_one
+        end # let!
+      end # shared_context
+
+      it 'should respond to the method' do
+        expect(described_class).
+          to respond_to(:references_one).
+          with(1..2).arguments
+      end # it
+
+      it 'should alias the method' do
+        expect(described_class).to alias_method(:references_one).as(:belongs_to)
+      end # it
+
+      describe 'with a valid association name' do
+        let(:association_name)  { :author }
+        let(:association_opts)  { { :class_name => 'Spec::Author' } }
+        let(:association_class) { Spec::Author }
+
+        mock_class Spec, :Author, :base_class => Bronze::Entities::Entity
+
+        it 'should set and return the metadata' do
+          metadata = described_class.references_one(
+            association_name,
+            association_opts
+          ) # end references_one
+          mt_class =
+            Bronze::Entities::Associations::Metadata::ReferencesOneMetadata
+
+          expect(metadata).to be_a mt_class
+          expect(metadata.association_name).to be == association_name
+          expect(metadata.association_type).to be == mt_class::ASSOCIATION_TYPE
+          expect(metadata.association_class).to be Spec::Author
+
+          expect(described_class.associations[association_name]).to be metadata
+        end # it
+
+        wrap_context 'when the association has been defined' do
+          include_examples 'should define references_one association', :author
+
+          context 'when the reader method is overwritten' do
+            let(:author)     { Spec::Author.new }
+            let(:attributes) { super().merge :author => author }
+
+            before(:example) do
+              described_class.send :define_method,
+                association_name,
+                lambda {
+                  value = super()
+
+                  value.inspect
+                } # end lambda
+            end # before example
+
+            it 'should inherit from the base definition' do
+              author = attributes[association_name]
+
+              expect(instance.send association_name).to be == author.inspect
+            end # it
+          end # context
+
+          context 'when the writer method is overwritten' do
+            let(:author) { Spec::Author.new }
+
+            before(:example) do
+              described_class.send :define_method,
+                "#{association_name}=",
+                ->(value) { super(value.dup.freeze) }
+            end # before example
+
+            it 'should inherit from the base definition' do
+              be_a_frozen_copy =
+                satisfy { |obj| obj == author }.
+                and satisfy { |obj| obj.object_id != author.object_id }.
+                and satisfy(&:frozen?)
+
+              expect { instance.send "#{association_name}=", author }.
+                to change(instance, association_name).
+                to be_a_frozen_copy
+            end # it
+          end # context
+        end # wrap_context
+      end # describe
+    end # describe
+  end # shared_examples
+end # module
