@@ -9,6 +9,10 @@
     - Bronze::Entities::Associations::AssociationMetadata
     - Bronze::Entities::Associations::AssociationBuilder
     - relation macros - on Bronze::Entities::Associations module
+    - references_one
+    - has_one
+    - has_many
+    - implicit inverse associations
     - nested attributes
 
 ## Features
