@@ -1,7 +1,8 @@
 # lib/bronze/entities/entity.rb
 
+require 'bronze/entities/associations'
 require 'bronze/entities/attributes'
-require 'bronze/entities/attributes/attribute_builder'
+require 'bronze/entities/base_entity'
 
 require 'bronze/entities/ulid'
 
@@ -9,7 +10,8 @@ module Bronze::Entities
   # Base class for implementing data entities, which store information about
   # business objects without making assumptions about or tying the
   # implementation to any specific framework or data repository.
-  class Entity
+  class Entity < BaseEntity
+    include Bronze::Entities::Associations
     include Bronze::Entities::Attributes
 
     # @!attribute [r] id

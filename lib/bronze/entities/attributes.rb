@@ -82,6 +82,8 @@ module Bronze::Entities
       @attributes = {}
 
       self.attributes = attributes.dup
+
+      super
     end # constructor
 
     # Compares with the other object and returns true if the other object has
