@@ -11,6 +11,9 @@ module Bronze::Entities
     extend  SleepingKingStudios::Tools::Toolbox::Mixin
     prepend Bronze::Entities::Attributes
 
+    autoload :Builders, 'bronze/entities/associations/builders'
+    autoload :Metadata, 'bronze/entities/associations/metadata'
+
     # Class methods to define when including Associations in a class.
     module ClassMethods
       # Returns the metadata for the associations defined for the current class.
@@ -71,13 +74,3 @@ module Bronze::Entities
     end # constructor
   end # module
 end # module
-
-builders_pattern = File.join(
-  Bronze.lib_path,
-  'bronze',
-  'entities',
-  'associations',
-  'builders',
-  '*builder.rb'
-) # end pattern
-SleepingKingStudios::Tools::CoreTools.require_each(builders_pattern)

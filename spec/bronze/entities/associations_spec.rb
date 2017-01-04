@@ -3,7 +3,7 @@
 require 'bronze/entities/associations'
 require 'bronze/entities/associations/associations_examples'
 require 'bronze/entities/attributes'
-require 'bronze/entities/base_entity'
+require 'bronze/entities/entity'
 
 RSpec.describe Bronze::Entities::Associations do
   include Spec::Entities::Associations::AssociationsExamples
