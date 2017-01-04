@@ -33,11 +33,11 @@ module Spec::Entities::Attributes::AttributesExamples
       describe "##{reader_name}" do
         it 'should define the reader' do
           if expected_value == undefined
-            expect(entity).to have_reader(attr_name)
+            expect(entity).to have_reader(reader_name)
           else
             expect(entity).
-              to have_reader(attr_name).
-              with_value(attributes.fetch attr_name)
+              to have_reader(reader_name).
+              with_value(expected_value)
           end # if-else
         end # it
       end # describe

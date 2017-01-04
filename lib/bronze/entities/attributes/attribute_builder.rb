@@ -115,8 +115,6 @@ module Bronze::Entities::Attributes
     def define_property_methods metadata
       define_reader(metadata)
       define_writer(metadata)
-
-      entity_class.include entity_class_attributes
     end # method define_property_methods
 
     def define_reader metadata
@@ -142,13 +140,16 @@ module Bronze::Entities::Attributes
     end # define_writer
 
     def entity_class_attributes
-      return @entity_class_attributes if @entity_class_attributes
+      @entity_class_attributes ||=
+        begin
+          unless entity_class.const_defined?(:Attributes)
+            entity_class.const_set(:Attributes, Module.new)
 
-      unless entity_class.const_defined?(:Attributes)
-        entity_class.const_set(:Attributes, Module.new)
-      end # unless
+            entity_class.include entity_class::Attributes
+          end # unless
 
-      @entity_class_attributes = entity_class::Attributes
+          entity_class::Attributes
+        end # begin
     end # method entity_class_attributes
 
     def raise_error error_message
