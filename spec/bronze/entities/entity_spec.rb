@@ -2,23 +2,28 @@
 
 require 'bronze/entities/entity'
 
+require 'bronze/entities/associations/associations_examples'
 require 'bronze/entities/attributes/attributes_examples'
 
 RSpec.describe Bronze::Entities::Entity do
+  include Spec::Entities::Associations::AssociationsExamples
   include Spec::Entities::Attributes::AttributesExamples
 
   shared_context 'when an entity class is defined' do
     let(:described_class) { Class.new(super()) }
   end # context
 
-  let(:described_class)    { Class.new(super()) }
-  let(:defined_attributes) { { :id => String } }
-  let(:attributes)         { {} }
-  let(:instance)           { described_class.new(attributes) }
+  let(:described_class)      { Class.new(super()) }
+  let(:defined_attributes)   { { :id => String } }
+  let(:defined_associations) { {} }
+  let(:attributes)           { {} }
+  let(:instance)             { described_class.new(attributes) }
 
   describe '::new' do
     it { expect(described_class).to be_constructible.with(0..1).arguments }
   end # describe
+
+  include_examples 'should implement the Associations methods'
 
   include_examples 'should implement the Attributes methods'
 
