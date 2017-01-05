@@ -105,6 +105,18 @@ module Spec::Entities::Associations
         include_examples 'should have reader', :foreign_key_writer_name
       end # describe
 
+      describe '#inverse?' do
+        include_examples 'should have predicate', :inverse?
+      end # describe
+
+      describe '#inverse_metadata' do
+        include_examples 'should have reader', :inverse_metadata
+      end # describe
+
+      describe '#inverse_name' do
+        include_examples 'should have reader', :inverse_name
+      end # describe
+
       describe '#reader_name' do
         include_examples 'should have reader',
           :reader_name,

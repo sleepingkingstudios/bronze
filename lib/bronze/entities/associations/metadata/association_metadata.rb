@@ -7,7 +7,7 @@ module Bronze::Entities::Associations::Metadata
   # reflection on its properties and options.
   class AssociationMetadata
     # Optional configuration keys for an association.
-    OPTIONAL_KEYS = %i().freeze
+    OPTIONAL_KEYS = %i(inverse).freeze
 
     # Required configuration keys for an association.
     REQUIRED_KEYS = %i(class_name).freeze
@@ -94,6 +94,23 @@ module Bronze::Entities::Associations::Metadata
 
       @foreign_key_writer_name ||= :"#{foreign_key}="
     end # method foreign_key_writer_name
+
+    # @return [Boolean] True if an inverse association is defined, otherwise
+    #   false.
+    def inverse?
+      !!inverse_name
+    end # method inverse?
+
+    # @return [AssociationMetadata] The metadata for the inverse association,
+    #   if any.
+    def inverse_metadata
+      association_class.associations[inverse_name]
+    end # method inverse_metadata
+
+    # @return [Symbol] The name of the inverse association, if any.
+    def inverse_name
+      @inverse_name ||= options[:inverse]
+    end # method inverse_name
 
     # @return [Symbol] The name of tbe association reader method.
     def reader_name

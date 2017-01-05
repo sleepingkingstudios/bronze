@@ -7,6 +7,23 @@ require 'bronze/entities/entity'
 RSpec.describe Bronze::Entities::Associations::Metadata::AssociationMetadata do
   include Spec::Entities::Associations::MetadataExamples
 
+  shared_context 'when options[:inverse] is set' do
+    let(:inverse_name)    { :books }
+    let(:inverse_options) { { :class_name => 'Spec::Book' } }
+    let(:inverse_metadata) do
+      described_class.new association_type, inverse_name, inverse_options
+    end # let
+    let(:association_options) do
+      super().merge :inverse => inverse_name
+    end # let
+
+    before(:example) do
+      allow(Spec::Author).
+        to receive(:associations).
+        and_return(inverse_name => inverse_metadata)
+    end # before example
+  end # shared_context
+
   mock_class Spec, :Author, :base_class => Bronze::Entities::Entity
 
   let(:association_type)    { :example_association }
@@ -18,7 +35,9 @@ RSpec.describe Bronze::Entities::Associations::Metadata::AssociationMetadata do
   end # let
 
   describe '::OPTIONAL_KEYS' do
-    let(:expected) { [] }
+    let(:expected) do
+      %i(inverse)
+    end # let
 
     it 'should define the constant' do
       expect(described_class).
@@ -95,5 +114,29 @@ RSpec.describe Bronze::Entities::Associations::Metadata::AssociationMetadata do
 
   describe '#foreign_key_writer_name' do
     it { expect(instance.foreign_key_writer_name).to be nil }
+  end # describe
+
+  describe '#inverse' do
+    it { expect(instance.inverse?).to be false }
+
+    wrap_context 'when options[:inverse] is set' do
+      it { expect(instance.inverse?).to be true }
+    end # wrap_context
+  end # describe
+
+  describe '#inverse_metadata' do
+    it { expect(instance.inverse_metadata).to be nil }
+
+    wrap_context 'when options[:inverse] is set' do
+      it { expect(instance.inverse_metadata).to be inverse_metadata }
+    end # wrap_context
+  end # describe
+
+  describe '#inverse_name' do
+    it { expect(instance.inverse_name).to be nil }
+
+    wrap_context 'when options[:inverse] is set' do
+      it { expect(instance.inverse_name).to be inverse_name }
+    end # wrap_context
   end # describe
 end # describe

@@ -1,15 +1,15 @@
-# lib/bronze/entities/associations/metadata/references_one_metadata.rb
+# lib/bronze/entities/associations/metadata/has_one_metadata.rb
 
 require 'bronze/entities/associations/metadata/association_metadata'
 
 module Bronze::Entities::Associations::Metadata
-  # Class that characterizes a references one entity association.
-  class ReferencesOneMetadata < AssociationMetadata
+  # Class that characterizes a has one entity association.
+  class HasOneMetadata < AssociationMetadata
     # The type key for the association.
-    ASSOCIATION_TYPE = :references_one
+    ASSOCIATION_TYPE = :has_one
 
-    # Required options for a references_one association.
-    REQUIRED_KEYS = %i(foreign_key).freeze
+    # Required options for a has_one association.
+    REQUIRED_KEYS = %i(inverse).freeze
 
     # @param association_name [String, Symbol] The name of the association.
     # @param association_options [Hash] Additional options for the association.
