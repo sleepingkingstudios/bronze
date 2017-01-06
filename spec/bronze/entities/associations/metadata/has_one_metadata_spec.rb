@@ -132,6 +132,14 @@ RSpec.describe Bronze::Entities::Associations::Metadata::HasOneMetadata do
     it { expect(instance.inverse_name).to be association_options[:inverse] }
   end # describe
 
+  describe '#many?' do
+    it { expect(instance.many?).to be false }
+  end # describe
+
+  describe '#one?' do
+    it { expect(instance.one?).to be true }
+  end # describe
+
   describe '#predicate_name' do
     include_examples 'should have reader',
       :predicate_name,

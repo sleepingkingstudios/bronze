@@ -14,6 +14,11 @@
     - has_many
     - implicit inverse associations
     - nested attributes
+    - improve testing/validation around missing/mismatched inverse associations
+      - inverse association expected but not defined
+      - inverse association has incompatible type
+      - inverse association already has other inverse
+    - :foreign_key is private writer? Or clears association(s).
 
 ## Features
 

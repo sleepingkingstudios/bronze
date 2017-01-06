@@ -1,8 +1,12 @@
 # lib/bronze/entities/associations/metadata/association_metadata.rb
 
+require 'sleeping_king_studios/tools/toolbelt'
+
 require 'bronze/entities/associations/metadata'
 
 module Bronze::Entities::Associations::Metadata
+  # rubocop:disable Metrics/ClassLength
+
   # Base class that characterizes an entity association and allows for
   # reflection on its properties and options.
   class AssociationMetadata
@@ -43,8 +47,7 @@ module Bronze::Entities::Associations::Metadata
       @association_name = association_name.intern
       @association_type = association_type
 
-      hash_tools = SleepingKingStudios::Tools::HashTools
-      options    = hash_tools.convert_keys_to_symbols(association_options)
+      options = tools.hash.convert_keys_to_symbols(association_options)
       validate_options(options)
       @association_options = options
     end # method initialize
@@ -98,7 +101,7 @@ module Bronze::Entities::Associations::Metadata
     # @return [Boolean] True if an inverse association is defined, otherwise
     #   false.
     def inverse?
-      !!inverse_name
+      options.key?(:inverse)
     end # method inverse?
 
     # @return [AssociationMetadata] The metadata for the inverse association,
@@ -109,8 +112,22 @@ module Bronze::Entities::Associations::Metadata
 
     # @return [Symbol] The name of the inverse association, if any.
     def inverse_name
-      @inverse_name ||= options[:inverse]
+      return nil unless inverse?
+
+      @inverse_name ||= normalize_inverse_name
     end # method inverse_name
+
+    # @return [Boolean] True if the association relates many objects, such as a
+    #   :has_many association; otherwise false.
+    def many?
+      false
+    end # method many?
+
+    # @return [Boolean] True if the association relates one object, such as a
+    #   :has_one or :references_one association; otherwise false.
+    def one?
+      false
+    end # method one?
 
     # @return [Symbol] The name of tbe association reader method.
     def reader_name
@@ -124,15 +141,25 @@ module Bronze::Entities::Associations::Metadata
 
     private
 
+    def normalize_inverse_name
+      name = options[:inverse].to_s
+      name = tools.string.underscore(name)
+
+      name.intern
+    end # method normalize_inverse_name
+
+    def tools
+      SleepingKingStudios::Tools::Toolbelt.new
+    end # method tools
+
     def validate_allowed_options keys
       invalid_options = keys - self.class.valid_keys
 
       return if invalid_options.empty?
 
-      tools   = SleepingKingStudios::Tools::ArrayTools
       message = 'invalid option'
       message << 's' if invalid_options.count > 1
-      message << ' ' << tools.humanize_list(invalid_options, &:inspect)
+      message << ' ' << tools.array.humanize_list(invalid_options, &:inspect)
 
       raise ArgumentError, message
     end # method validate_allowed_options
@@ -142,10 +169,9 @@ module Bronze::Entities::Associations::Metadata
 
       return if missing_options.empty?
 
-      tools   = SleepingKingStudios::Tools::ArrayTools
       message = 'missing option'
       message << 's' if missing_options.count > 1
-      message << ' ' << tools.humanize_list(missing_options, &:inspect)
+      message << ' ' << tools.array.humanize_list(missing_options, &:inspect)
 
       raise ArgumentError, message
     end # method validate_required_options
@@ -158,4 +184,6 @@ module Bronze::Entities::Associations::Metadata
       validate_required_options(keys)
     end # method validate_options
   end # class
+
+  # rubocop:enable Metrics/ClassLength
 end # module

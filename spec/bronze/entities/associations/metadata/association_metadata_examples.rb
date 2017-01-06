@@ -117,6 +117,14 @@ module Spec::Entities::Associations
         include_examples 'should have reader', :inverse_name
       end # describe
 
+      describe '#many?' do
+        include_examples 'should have predicate', :many?
+      end # describe
+
+      describe '#one?' do
+        include_examples 'should have predicate', :one?
+      end # describe
+
       describe '#reader_name' do
         include_examples 'should have reader',
           :reader_name,

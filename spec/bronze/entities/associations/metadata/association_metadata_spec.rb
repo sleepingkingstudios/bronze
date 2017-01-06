@@ -139,4 +139,12 @@ RSpec.describe Bronze::Entities::Associations::Metadata::AssociationMetadata do
       it { expect(instance.inverse_name).to be inverse_name }
     end # wrap_context
   end # describe
+
+  describe '#many?' do
+    it { expect(instance.many?).to be false }
+  end # describe
+
+  describe '#one?' do
+    it { expect(instance.one?).to be false }
+  end # describe
 end # describe

@@ -133,6 +133,14 @@ RSpec.describe Bronze::Entities::Associations::Metadata::ReferencesOneMetadata d
     it { expect(instance.foreign_key_writer_name).to be == expected }
   end # describe
 
+  describe '#many?' do
+    it { expect(instance.many?).to be false }
+  end # describe
+
+  describe '#one?' do
+    it { expect(instance.one?).to be true }
+  end # describe
+
   describe '#predicate_name' do
     include_examples 'should have reader',
       :predicate_name,
