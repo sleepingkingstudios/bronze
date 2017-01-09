@@ -7,6 +7,8 @@ module Bronze::Entities::Associations
   module Builders
     autoload :AssociationBuilder,
       'bronze/entities/associations/builders/association_builder'
+    autoload :HasOneBuilder,
+      'bronze/entities/associations/builders/has_one_builder'
     autoload :ReferencesOneBuilder,
       'bronze/entities/associations/builders/references_one_builder'
   end # module

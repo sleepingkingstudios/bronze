@@ -17,7 +17,8 @@ RSpec.describe Bronze::Entities::Entity do
     let(:described_class) { Class.new(super()) }
   end # context
 
-  let(:described_class)      { Class.new(super()) }
+  let(:described_class)      { Spec::Book }
+  let(:entity_class)         { described_class }
   let(:defined_attributes)   { { :id => String } }
   let(:defined_associations) { {} }
   let(:attributes)           { {} }

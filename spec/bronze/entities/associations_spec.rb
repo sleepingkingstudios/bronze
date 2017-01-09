@@ -9,13 +9,14 @@ require 'bronze/entities/primary_key'
 RSpec.describe Bronze::Entities::Associations do
   include Spec::Entities::Associations::AssociationsExamples
 
-  let(:described_class) do
-    klass = Class.new(Bronze::Entities::BaseEntity)
+  mock_class Spec, :Book, :base_class => Bronze::Entities::BaseEntity do |klass|
     klass.send :include, Bronze::Entities::Attributes
     klass.send :include, Bronze::Entities::PrimaryKey
-    klass.send :include, super()
-    klass
-  end # let
+    klass.send :include, Bronze::Entities::Associations
+  end # mock_class
+
+  let(:described_class)      { Spec::Book }
+  let(:entity_class)         { described_class }
   let(:defined_associations) { {} }
   let(:attributes)           { {} }
   let(:instance)             { described_class.new attributes }

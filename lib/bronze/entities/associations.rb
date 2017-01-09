@@ -85,5 +85,15 @@ module Bronze::Entities
 
       super
     end # constructor
+
+    protected
+
+    def get_association association_name
+      @associations[association_name]
+    end # method set_association
+
+    def set_association association_name, value
+      @associations[association_name] = value
+    end # method set_association
   end # module
 end # module

@@ -31,6 +31,311 @@ module Spec::Entities::Associations::AssociationsExamples
     end # before example
   end # wrap_context
 
+  desc = 'should define has_one association'
+  shared_examples desc do |assoc_name, assoc_opts = {}|
+    reader_name = assoc_name
+    writer_name = :"#{assoc_name}="
+
+    describe "should define association :#{assoc_name}" do
+      let(:entity) { defined?(super()) ? super() : instance }
+
+      describe "##{reader_name}" do
+        it 'should define the reader' do
+          expect(entity).to have_reader(reader_name).with_value(nil)
+        end # it
+
+        wrap_context 'with an associated entity' do
+          it { expect(entity.send reader_name).to be association_value }
+        end # wrap_context
+      end # describe
+
+      describe "##{reader_name}?" do
+        it 'should define the predicate' do
+          expect(entity).to have_predicate(reader_name).with_value(false)
+        end # it
+
+        wrap_context 'with an associated entity' do
+          it { expect(entity.send :"#{reader_name}?").to be true }
+        end # wrap_context
+      end # describe
+
+      describe "##{writer_name}" do
+        shared_context 'when the association already has an inverse object' do
+          let(:other_entity) { entity_class.new }
+
+          before(:example) do
+            other_entity.send(writer_name, other_value)
+          end # before
+        end # shared_context
+
+        let(:inverse_name) do
+          assoc_opts.fetch :inverse do
+            tools = SleepingKingStudios::Tools::Toolbelt.new
+            str   = entity_class.name.split('::').last
+            str   = tools.string.singularize(str)
+            str   = tools.string.underscore(str)
+
+            str.intern
+          end # fetch
+        end # let
+        let(:inverse_foreign_key) { :"#{inverse_name}_id" }
+
+        define_method :safe_set_value do |value|
+          begin
+            entity.send writer_name, value
+          rescue ArgumentError
+            nil
+          end # begin-rescue
+        end # method safe_set_value
+
+        it 'should define the writer' do
+          expect(entity).to have_reader(writer_name)
+        end # it
+
+        describe 'with nil' do
+          it { expect(entity.send writer_name, nil).to be nil }
+
+          it 'should not change the value' do
+            expect { entity.send writer_name, nil }.
+              not_to change(entity, reader_name)
+          end # it
+        end # describe
+
+        describe 'with an object' do
+          it 'should raise an error' do
+            expect { entity.send writer_name, Object.new }.
+              to raise_error ArgumentError,
+                "#{assoc_name} must be a #{association_class.name}"
+          end # it
+
+          it 'should not change the value' do
+            expect { safe_set_value Object.new }.
+              not_to change(entity, reader_name)
+          end # it
+        end # describe
+
+        describe 'with an entity' do
+          let(:other_class) { Class.new(Bronze::Entities::Entity) }
+          let(:other_value) { other_class.new }
+
+          it 'should raise an error' do
+            expect { entity.send writer_name, other_value }.
+              to raise_error ArgumentError,
+                "#{assoc_name} must be a #{association_class.name}"
+          end # it
+
+          it 'should not change the value' do
+            expect { safe_set_value other_value }.
+              not_to change(entity, reader_name)
+          end # it
+        end # describe
+
+        describe 'with an instance of the association class' do
+          let(:other_value) { association_class.new }
+
+          it 'should return the changed value' do
+            expect(entity.send writer_name, other_value).to be other_value
+          end # it
+
+          it 'should change the value' do
+            expect { entity.send writer_name, other_value }.
+              to change(entity, reader_name).
+              to be == other_value
+          end # it
+
+          it 'should change the inverse foreign_key' do
+            expect { entity.send writer_name, other_value }.
+              to change(other_value, inverse_foreign_key).
+              to be == entity.id
+          end # it
+
+          it 'should change the inverse association value' do
+            expect { entity.send writer_name, other_value }.
+              to change(other_value, inverse_name).
+              to be == entity
+          end # it
+
+          wrap_context 'when the association already has an inverse object' do
+            it 'should change the value' do
+              expect { entity.send writer_name, other_value }.
+                to change(entity, reader_name).
+                to be == other_value
+            end # it
+
+            it 'should change the inverse foreign_key' do
+              expect { entity.send writer_name, other_value }.
+                to change(other_value, inverse_foreign_key).
+                to be == entity.id
+            end # it
+
+            it 'should change the inverse association value' do
+              expect { entity.send writer_name, other_value }.
+                to change(other_value, inverse_name).
+                to be == entity
+            end # it
+
+            it 'should clear the old inverse association value' do
+              expect { entity.send writer_name, other_value }.
+                to change(other_entity, reader_name).
+                to be_nil
+            end # it
+          end # wrap_context
+        end # describe
+
+        wrap_context 'with an associated entity' do
+          describe 'with nil' do
+            it 'should return the changed value' do
+              expect(entity.send writer_name, nil).to be nil
+            end # it
+
+            it 'should clear the value' do
+              expect { entity.send writer_name, nil }.
+                to change(entity, reader_name).
+                to be_nil
+            end # it
+
+            it 'should clear the inverse foreign key' do
+              expect { entity.send writer_name, nil }.
+                to change(association_value, inverse_foreign_key).
+                to be_nil
+            end # it
+
+            it 'should change the inverse association value' do
+              expect { entity.send writer_name, nil }.
+                to change(association_value, inverse_name).
+                to be_nil
+            end # it
+          end # describe
+
+          describe 'with an object' do
+            it 'should raise an error' do
+              expect { entity.send writer_name, Object.new }.
+                to raise_error ArgumentError,
+                  "#{assoc_name} must be a #{association_class.name}"
+            end # it
+
+            it 'should not change the value' do
+              expect { safe_set_value Object.new }.
+                not_to change(entity, reader_name)
+            end # it
+
+            it 'should not change the inverse foreign key' do
+              expect { safe_set_value Object.new }.
+                not_to change(association_value, inverse_foreign_key)
+            end # it
+
+            it 'should change the inverse association value' do
+              expect { safe_set_value Object.new }.
+                not_to change(association_value, inverse_name)
+            end # it
+          end # describe
+
+          describe 'with an entity' do
+            let(:other_class) { Class.new(Bronze::Entities::Entity) }
+            let(:other_value) { other_class.new }
+
+            it 'should raise an error' do
+              expect { entity.send writer_name, other_value }.
+                to raise_error ArgumentError,
+                  "#{assoc_name} must be a #{association_class.name}"
+            end # it
+
+            it 'should not change the value' do
+              expect { safe_set_value other_value }.
+                not_to change(entity, reader_name)
+            end # it
+
+            it 'should not change the inverse foreign key' do
+              expect { safe_set_value other_value }.
+                not_to change(association_value, inverse_foreign_key)
+            end # it
+
+            it 'should change the inverse association value' do
+              expect { safe_set_value other_value }.
+                not_to change(association_value, inverse_name)
+            end # it
+          end # describe
+
+          describe 'with an instance of the association class' do
+            let(:other_value) { association_class.new }
+
+            it 'should return the changed value' do
+              expect(entity.send writer_name, other_value).to be other_value
+            end # it
+
+            it 'should change the value' do
+              expect { entity.send writer_name, other_value }.
+                to change(entity, reader_name).
+                to be == other_value
+            end # it
+
+            it 'should change the inverse foreign_key' do
+              expect { entity.send writer_name, other_value }.
+                to change(other_value, inverse_foreign_key).
+                to be == entity.id
+            end # it
+
+            it 'should change the inverse association value' do
+              expect { entity.send writer_name, other_value }.
+                to change(other_value, inverse_name).
+                to be == entity
+            end # it
+
+            it 'should clear the old inverse foreign key' do
+              expect { entity.send writer_name, nil }.
+                to change(association_value, inverse_foreign_key).
+                to be_nil
+            end # it
+
+            it 'should change the old inverse association value' do
+              expect { entity.send writer_name, nil }.
+                to change(association_value, inverse_name).
+                to be_nil
+            end # it
+
+            wrap_context 'when the association already has an inverse object' do
+              it 'should change the value' do
+                expect { entity.send writer_name, other_value }.
+                  to change(entity, reader_name).
+                  to be == other_value
+              end # it
+
+              it 'should change the inverse foreign_key' do
+                expect { entity.send writer_name, other_value }.
+                  to change(other_value, inverse_foreign_key).
+                  to be == entity.id
+              end # it
+
+              it 'should change the inverse association value' do
+                expect { entity.send writer_name, other_value }.
+                  to change(other_value, inverse_name).
+                  to be == entity
+              end # it
+
+              it 'should clear the old inverse foreign key' do
+                expect { entity.send writer_name, nil }.
+                  to change(association_value, inverse_foreign_key).
+                  to be_nil
+              end # it
+
+              it 'should change the old inverse association value' do
+                expect { entity.send writer_name, nil }.
+                  to change(association_value, inverse_name).
+                  to be_nil
+              end # it
+
+              it 'should clear the old inverse association value' do
+                expect { entity.send writer_name, other_value }.
+                  to change(other_entity, reader_name).
+                  to be_nil
+              end # it
+            end # wrap_context
+          end # describe
+        end # wrap_context
+      end # describe
+    end # describe
+  end # shared_examples
+
   desc = 'should define references_one association'
   shared_examples desc do |assoc_name, assoc_opts = {}|
     reader_name = assoc_name
