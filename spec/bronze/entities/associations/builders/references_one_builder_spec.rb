@@ -8,17 +8,10 @@ RSpec.describe Bronze::Entities::Associations::Builders::ReferencesOneBuilder do
   include Spec::Entities::Associations::AssociationsExamples
 
   mock_class Spec, :Author, :base_class => Bronze::Entities::Entity
+  mock_class Spec, :Book,   :base_class => Bronze::Entities::Entity
 
-  let(:entity_class) do
-    Class.new(Bronze::Entities::Entity) do
-      def initialize attrs = {}
-        @associations = {}
-
-        super attrs
-      end # method initialize
-    end # class
-  end # let
-  let(:instance) { described_class.new(entity_class) }
+  let(:entity_class) { Spec::Book }
+  let(:instance)     { described_class.new(entity_class) }
 
   describe '::new' do
     it { expect(described_class).to be_constructible.with(1).argument }
@@ -94,6 +87,18 @@ RSpec.describe Bronze::Entities::Associations::Builders::ReferencesOneBuilder do
       end # let
 
       include_examples 'should define references_one association', :author
+
+      describe 'with :inverse => one association' do
+        let(:association_opts) { super().merge :inverse => :book }
+
+        before(:example) do
+          Spec::Author.has_one :book, :class_name => 'Spec::Book'
+        end # before example
+
+        include_examples 'should define references_one association',
+          :author,
+          :inverse => :book
+      end # describe
     end # wrap_context
   end # describe
 

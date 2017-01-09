@@ -90,7 +90,9 @@ module Bronze::Entities
       #
       #   book.author = Author.new(:name => 'Luo Guanzhong')
       #   book.author
-      #   #=> #<Author>
+      #   #=> #<Author id=0>
+      #   book.author_id
+      #   #=> 0
       #
       # @param (see Associations::Builders::ReferencesOneBuilder#build)
       #

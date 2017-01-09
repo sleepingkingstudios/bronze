@@ -28,15 +28,6 @@ module Bronze::Entities::Associations::Builders
       entity_class.foreign_key(metadata.foreign_key)
     end # method define_foreign_key
 
-    def define_property_methods metadata
-      define_foreign_key(metadata)
-      define_predicate(metadata)
-      define_reader(metadata)
-      define_writer(metadata)
-
-      entity_class.include entity_class_associations
-    end # method define_property_methods
-
     def define_predicate metadata
       assoc_name = metadata.association_name
 
@@ -44,6 +35,13 @@ module Bronze::Entities::Associations::Builders
         metadata.predicate_name,
         ->() { !@associations[assoc_name].nil? }
     end # method define_predicate
+
+    def define_property_methods metadata
+      define_foreign_key(metadata)
+      define_predicate(metadata)
+      define_reader(metadata)
+      define_writer(metadata)
+    end # method define_property_methods
 
     def define_reader metadata
       assoc_name = metadata.association_name
@@ -53,25 +51,60 @@ module Bronze::Entities::Associations::Builders
         ->() { @associations[assoc_name] }
     end # method define_reader
 
+    # rubocop:disable Metrics/AbcSize
+    # rubocop:disable Metrics/CyclomaticComplexity
     # rubocop:disable Metrics/MethodLength
+    # rubocop:disable Metrics/PerceivedComplexity
     def define_writer metadata
       assoc_name = metadata.association_name
 
       entity_class_associations.send :define_method,
         metadata.writer_name,
         lambda { |entity|
+          # 1. break if old value == new value
+          # 2. locally cache prior values
+          # 3. update local values
+          # 4. update inverse association
+
           unless entity.nil? || entity.is_a?(metadata.association_class)
             raise ArgumentError,
               "#{assoc_name} must be a #{metadata.association_class}"
           end # unless
 
+          if metadata.inverse?
+            inverse_metadata = metadata.inverse_metadata
+            prior_value      = get_association(assoc_name)
+
+            # If a prior value exists, we need to clear its inverse association.
+            if prior_value
+              prior_value.set_association(inverse_metadata.name, nil)
+            end # if
+
+            unless entity.nil?
+              prior_inverse = entity.send(inverse_metadata.reader_name)
+
+              # If the entity already had an inverse, we need to clear the
+              # association on the inverse object.
+              if prior_inverse
+                prior_inverse.send(metadata.foreign_key_writer_name, nil)
+
+                prior_inverse.set_association(assoc_name, nil)
+              end # if
+
+              entity.set_association(inverse_metadata.name, self)
+            end # unless
+          end # if
+
           foreign_key = entity.nil? ? nil : entity.id
 
           send(metadata.foreign_key_writer_name, foreign_key)
-          @associations[assoc_name] = entity
+          set_association(assoc_name, entity)
         } # end lambda
     end # method define_writer
+    # rubocop:enable Metrics/AbcSize
+    # rubocop:enable Metrics/CyclomaticComplexity
     # rubocop:enable Metrics/MethodLength
+    # rubocop:enable Metrics/PerceivedComplexity
 
     def options_with_foreign_key options, name
       return options if options.key?(:foreign_key)

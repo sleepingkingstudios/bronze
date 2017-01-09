@@ -149,7 +149,7 @@ module Bronze::Entities::Associations::Metadata
     end # method normalize_inverse_name
 
     def tools
-      SleepingKingStudios::Tools::Toolbelt.new
+      SleepingKingStudios::Tools::Toolbelt.instance
     end # method tools
 
     def validate_allowed_options keys

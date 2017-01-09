@@ -38,7 +38,7 @@ module Bronze::Entities::Associations::Builders
     end # method options_with_class_name
 
     def tools
-      SleepingKingStudios::Tools::Toolbelt.new
+      SleepingKingStudios::Tools::Toolbelt.instance
     end # method tools
   end # class
 end # module
