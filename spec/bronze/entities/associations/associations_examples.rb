@@ -289,6 +289,49 @@ module Spec::Entities::Associations::AssociationsExamples
       end # wrap_context
     end # describe
 
+    describe '::foreign_key' do
+      shared_context 'when the attribute has been defined' do
+        let!(:metadata) do
+          described_class.foreign_key(attribute_name)
+        end # let!
+      end # shared_context
+
+      it 'should respond to the method' do
+        expect(described_class).to respond_to(:foreign_key).with(1).arguments
+      end # it
+
+      describe 'with a valid attribute name' do
+        let(:attribute_name) { :association_id }
+        let(:attribute_type) { described_class::KEY_TYPE }
+        let(:attributes) do
+          super().merge :association_id => Bronze::Entities::Ulid.generate
+        end # let
+        let(:attribute_type_class) do
+          Bronze::Entities::Attributes::AttributeType
+        end # let
+
+        it 'should set and return the metadata' do
+          metadata = described_class.foreign_key attribute_name
+          mt_class = Bronze::Entities::Attributes::AttributeMetadata
+
+          expect(metadata).to be_a mt_class
+          expect(metadata.attribute_name).to be == attribute_name
+          expect(metadata.attribute_type).to be_a attribute_type_class
+          expect(metadata.object_type).to be == attribute_type
+          expect(metadata.foreign_key?).to be true
+
+          expect(described_class.attributes[attribute_name]).to be metadata
+        end # it
+
+        wrap_context 'when the attribute has been defined' do
+          let(:expected_value) { attributes.fetch attribute_name }
+          let(:updated_value)  { Bronze::Entities::Ulid.generate }
+
+          include_examples 'should define attribute', :association_id
+        end # wrap_context
+      end # describe
+    end # describe
+
     describe '::references_one' do
       shared_context 'when the association has been defined' do
         let!(:metadata) do

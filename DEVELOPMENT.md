@@ -19,6 +19,7 @@
       - inverse association has incompatible type
       - inverse association already has other inverse
     - :foreign_key is private writer? Or clears association(s).
+    - ::foreign_key takes optional type argument
 
 ## Features
 
@@ -47,6 +48,10 @@
     - #{attribute}_changed?
     - #old_{attribute}
     - #clean!
+  - primary key types
+    - PrimaryKey::Integer  # SQL
+    - PrimaryKey::ObjectId # MongoDB
+    - PrimaryKey::Ulid
 - Errors#first
 - Query
   - #all returns with JSON envelope for advanced features?

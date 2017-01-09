@@ -10,12 +10,6 @@ module Bronze::Entities
   module Attributes
     extend SleepingKingStudios::Tools::Toolbox::Mixin
 
-    # Default attribute value for primary and foreign keys.
-    KEY_DEFAULT = ->() { Bronze::Entities::Ulid.generate }
-
-    # Attribute type for primary and foreign keys.
-    KEY_TYPE = String
-
     # Class methods to define when including Attributes in a class.
     module ClassMethods
       # Defines an attribute with the specified name and type.
@@ -61,19 +55,6 @@ module Bronze::Entities
           (@attributes ||= {}).dup.freeze
         end # if-else
       end # class method attributes
-
-      # Defines a foreign key attribute.
-      def foreign_key attribute_name
-        builder  = Bronze::Entities::Attributes::AttributeBuilder.new(self)
-        metadata = builder.build(
-          attribute_name,
-          KEY_TYPE,
-          {},
-          :foreign_key => true
-        ) # end build
-
-        (@attributes ||= {})[metadata.attribute_name] = metadata
-      end # class method foreign_key
     end # module
 
     # @param attributes [Hash] The default attributes with which to initialize

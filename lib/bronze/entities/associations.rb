@@ -28,6 +28,19 @@ module Bronze::Entities
         end # if-else
       end # class method associations
 
+      # Defines a foreign key attribute.
+      def foreign_key attribute_name
+        builder  = Bronze::Entities::Attributes::AttributeBuilder.new(self)
+        metadata = builder.build(
+          attribute_name,
+          Bronze::Entities::PrimaryKey::KEY_TYPE,
+          {},
+          :foreign_key => true
+        ) # end build
+
+        (@attributes ||= {})[metadata.attribute_name] = metadata
+      end # class method foreign_key
+
       # Defines a references_one association with the specified entity.
       #
       # @example Defining an Association
