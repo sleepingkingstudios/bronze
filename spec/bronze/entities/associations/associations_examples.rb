@@ -637,6 +637,96 @@ module Spec::Entities::Associations::AssociationsExamples
       end # describe
     end # describe
 
+    describe '::has_one' do
+      shared_context 'when the association has been defined' do
+        let!(:metadata) do
+          described_class.has_one(
+            association_name,
+            association_opts
+          ) # end has_one
+        end # let!
+      end # shared_context
+
+      it 'should respond to the method' do
+        expect(described_class).
+          to respond_to(:has_one).
+          with(1..2).arguments
+      end # it
+
+      describe 'with a valid association name' do
+        let(:association_class) { Spec::Cover }
+        let(:association_name)  { :cover }
+        let(:association_opts) do
+          { :class_name => 'Spec::Cover', :inverse => :book }
+        end # let
+
+        options = { :base_class => Bronze::Entities::Entity }
+        mock_class Spec, :Cover, options do |klass|
+          klass.references_one :book, :class_name => 'Spec::Book'
+        end # mock_class
+
+        it 'should set and return the metadata' do
+          metadata = described_class.has_one(
+            association_name,
+            association_opts
+          ) # end references_one
+          mt_class = Bronze::Entities::Associations::Metadata::HasOneMetadata
+
+          expect(metadata).to be_a mt_class
+          expect(metadata.association_name).to be == association_name
+          expect(metadata.association_type).to be == mt_class::ASSOCIATION_TYPE
+          expect(metadata.association_class).to be Spec::Cover
+          expect(metadata.inverse_name).to be == :book
+
+          expect(described_class.associations[association_name]).to be metadata
+        end # it
+
+        wrap_context 'when the association has been defined' do
+          include_examples 'should define has_one association', :cover
+
+          context 'when the reader method is overwritten' do
+            let(:cover)      { Spec::Cover.new }
+            let(:attributes) { super().merge :cover => cover }
+
+            before(:example) do
+              described_class.send :define_method,
+                association_name,
+                lambda {
+                  value = super()
+
+                  value.inspect
+                } # end lambda
+            end # before example
+
+            it 'should inherit from the base definition' do
+              expect(instance.send association_name).to be == cover.inspect
+            end # it
+          end # context
+
+          context 'when the writer method is overwritten' do
+            let(:cover) { Spec::Cover.new }
+
+            before(:example) do
+              described_class.send :define_method,
+                "#{association_name}=",
+                ->(value) { super(value.dup.freeze) }
+            end # before example
+
+            it 'should inherit from the base definition' do
+              be_a_frozen_copy =
+                satisfy { |obj| obj == cover }.
+                and satisfy { |obj| obj.object_id != cover.object_id }.
+                and satisfy(&:frozen?)
+
+              expect { instance.send "#{association_name}=", cover }.
+                to change(instance, association_name).
+                to be_a_frozen_copy
+            end # it
+          end # context
+        end # wrap_context
+      end # describe
+    end # describe
+
     describe '::references_one' do
       shared_context 'when the association has been defined' do
         let!(:metadata) do

@@ -49,6 +49,8 @@
     - #old_{attribute}
     - #clean!
   - primary key types
+    - AttributeMetadata#primary_key?
+    - PrimaryKey::primary_key macro
     - PrimaryKey::Integer  # SQL
     - PrimaryKey::ObjectId # MongoDB
     - PrimaryKey::Ulid

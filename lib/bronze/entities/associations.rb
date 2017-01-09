@@ -41,6 +41,43 @@ module Bronze::Entities
         (@attributes ||= {})[metadata.attribute_name] = metadata
       end # class method foreign_key
 
+      # rubocop:disable Style/PredicateName
+
+      # Defines a has_one association with the specified entity.
+      #
+      # @example Defining an Association
+      #   class Book < Bronze::Entities::Entity
+      #     has_one :cover
+      #   end # class
+      #
+      #   book.id
+      #   #=> 0
+      #   book.cover
+      #   #=> nil
+      #
+      #   book.cover = Cover.new(:name => 'Luo Guanzhong')
+      #   book.cover
+      #   #=> #<Cover>
+      #   cover.book_id
+      #   #=> 0
+      #
+      # @param (see Associations::Builders::HasOneBuilder#build)
+      #
+      # @option (see Associations::Builders::HasOneBuilder#build)
+      #
+      # @return (see Associations::Builders::HasOneBuilder#build)
+      #
+      # @raise (see Associations::Builders::HasOneBuilder#build)
+      def has_one association_name, association_options = {}
+        builders = Bronze::Entities::Associations::Builders
+        builder  = builders::HasOneBuilder.new(self)
+        metadata = builder.build(association_name, association_options)
+
+        (@associations ||= {})[metadata.association_name] = metadata
+      end # class method has_one
+
+      # rubocop:enable Style/PredicateName
+
       # Defines a references_one association with the specified entity.
       #
       # @example Defining an Association
