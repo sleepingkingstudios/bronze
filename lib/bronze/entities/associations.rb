@@ -127,12 +127,106 @@ module Bronze::Entities
 
     protected
 
-    def get_association association_name
-      @associations[association_name]
+    def get_association metadata
+      @associations[metadata.name]
     end # method set_association
 
-    def set_association association_name, value
-      @associations[association_name] = value
+    def set_association metadata, value
+      @associations[metadata.name] = value
     end # method set_association
+
+    def set_foreign_key metadata, value
+      send(metadata.foreign_key_writer_name, value)
+    end # method set_foreign_key
+
+    private
+
+    # rubocop:disable Metrics/AbcSize
+    # rubocop:disable Metrics/CyclomaticComplexity
+    # rubocop:disable Metrics/MethodLength
+    def write_has_one_association metadata, new_value
+      validate_association! metadata, new_value
+
+      # 1. Locally cache prior values
+      inverse_metadata = metadata.inverse_metadata
+      prior_value      = get_association(metadata)
+
+      # 2. Break if old value == new value
+      return if prior_value == new_value
+
+      # 3. Clear local values
+      set_association(metadata, nil)
+
+      # 4. Clear prior inverse
+      if prior_value && inverse_metadata
+        prior_value.send(inverse_metadata.writer_name, nil)
+      end # if
+
+      return if new_value.nil?
+
+      # 5. Clear new inverse
+      if inverse_metadata
+        # new_value.send(inverse_metadata.writer_name, nil)
+      end # if
+
+      # 6. Set local values
+      set_association(metadata, new_value)
+
+      # 7. Set new inverse
+      if inverse_metadata
+        new_value.send(inverse_metadata.writer_name, self)
+      end # if
+
+      new_value
+    end # method write_has_one_association
+
+    def write_references_one_association metadata, new_value
+      validate_association! metadata, new_value
+
+      # 1. Locally cache prior values
+      inverse_metadata = metadata.inverse_metadata
+      prior_value      = get_association(metadata)
+
+      # 2. Break if old value == new value
+      return if prior_value == new_value
+
+      # 3. Clear local values
+      set_association(metadata, nil)
+      set_foreign_key(metadata, nil)
+
+      # 4. Clear prior inverse
+      if inverse_metadata && prior_value
+        prior_value.send(inverse_metadata.writer_name, nil)
+      end # if
+
+      return if new_value.nil?
+
+      # 5. Clear new inverse
+      if inverse_metadata
+        # new_value.send(inverse_metadata.writer_name, nil)
+      end # if
+
+      # 6. Set local values
+      set_association(metadata, new_value)
+      set_foreign_key(metadata, new_value.id)
+
+      # 7. Set new inverse
+      if inverse_metadata
+        new_value.send(inverse_metadata.writer_name, self)
+      end # if
+
+      new_value
+    end # method write_references_one_association
+    # rubocop:enable Metrics/AbcSize
+    # rubocop:enable Metrics/CyclomaticComplexity
+    # rubocop:enable Metrics/MethodLength
+
+    def validate_association! metadata, value
+      return if value.nil? || value.is_a?(metadata.association_class)
+
+      raise ArgumentError,
+        "#{metadata.name} must be a #{metadata.association_class}",
+        caller[1..-1]
+    end # method validate_association!
   end # module
 end # module

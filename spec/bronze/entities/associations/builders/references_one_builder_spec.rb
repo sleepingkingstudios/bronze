@@ -2,13 +2,13 @@
 
 require 'bronze/entities/associations/associations_examples'
 require 'bronze/entities/associations/builders/references_one_builder'
-require 'bronze/entities/entity'
+require 'support/example_entity'
 
 RSpec.describe Bronze::Entities::Associations::Builders::ReferencesOneBuilder do
   include Spec::Entities::Associations::AssociationsExamples
 
-  mock_class Spec, :Author, :base_class => Bronze::Entities::Entity
-  mock_class Spec, :Book,   :base_class => Bronze::Entities::Entity
+  mock_class Spec, :Author, :base_class => Spec::ExampleEntity
+  mock_class Spec, :Book,   :base_class => Spec::ExampleEntity
 
   let(:entity_class) { Spec::Book }
   let(:instance)     { described_class.new(entity_class) }
@@ -92,7 +92,15 @@ RSpec.describe Bronze::Entities::Associations::Builders::ReferencesOneBuilder do
         let(:association_opts) { super().merge :inverse => :book }
 
         before(:example) do
-          Spec::Author.has_one :book, :class_name => 'Spec::Book'
+          Spec::Author.has_one(
+            :book,
+            :class_name => 'Spec::Book',
+            :inverse => :author
+          ) # end has_one
+
+          associations = { association_name => metadata }
+
+          entity_class.instance_variable_set(:@associations, associations)
         end # before example
 
         include_examples 'should define references_one association',

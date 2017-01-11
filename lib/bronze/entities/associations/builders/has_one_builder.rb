@@ -46,45 +46,11 @@ module Bronze::Entities::Associations::Builders
         ->() { @associations[assoc_name] }
     end # method define_reader
 
-    # rubocop:disable Metrics/AbcSize, Metrics/MethodLength
     def define_writer metadata
-      assoc_name = metadata.association_name
-
       entity_class_associations.send :define_method,
         metadata.writer_name,
-        lambda { |entity|
-          unless entity.nil? || entity.is_a?(metadata.association_class)
-            raise ArgumentError,
-              "#{assoc_name} must be a #{metadata.association_class}"
-          end # unless
-
-          inverse_metadata = metadata.inverse_metadata
-          prior_value      = get_association(assoc_name)
-
-          # If a prior value exists, we need to clear its inverse association.
-          if prior_value
-            prior_value.send(inverse_metadata.foreign_key_writer_name, nil)
-            prior_value.set_association(inverse_metadata.name, nil)
-          end # if
-
-          # If the new value exists, we need to update its inverse association.
-          if entity
-            prior_inverse = entity.send(inverse_metadata.reader_name)
-
-            # If the entity already had an inverse, we need to clear the
-            # association on the inverse object.
-            prior_inverse.set_association(assoc_name, nil) if prior_inverse
-
-            # Next, we set the inverse association and foreign key.
-            entity.send(inverse_metadata.foreign_key_writer_name, id)
-            entity.set_association(inverse_metadata.name, self)
-          end # if
-
-          # Finally, we set the association to the new value.
-          set_association(assoc_name, entity)
-        } # end lambda
+        ->(entity) { write_has_one_association(metadata, entity) }
     end # method define_writer
-    # rubocop:enable Metrics/AbcSize, Metrics/MethodLength
 
     def options_with_inverse_name options
       return options if options.key?(:inverse)

@@ -3,6 +3,7 @@
 require 'sleeping_king_studios/tools/toolbelt'
 
 require 'bronze/entities/attributes/attributes_examples'
+require 'support/example_entity'
 
 module Spec::Entities
   module Associations; end
@@ -38,7 +39,7 @@ module Spec::Entities::Associations::AssociationsExamples
     reader_name = assoc_name
     writer_name = :"#{assoc_name}="
 
-    describe "should define association :#{assoc_name}" do
+    describe "should define association has_one :#{assoc_name}" do
       let(:entity) { defined?(super()) ? super() : instance }
 
       describe "##{reader_name}" do
@@ -347,7 +348,7 @@ module Spec::Entities::Associations::AssociationsExamples
     tools        = SleepingKingStudios::Tools::Toolbelt.instance
     inverse_name = assoc_opts[:inverse]
 
-    describe "should define association :#{assoc_name}" do
+    describe "should define association references_one :#{assoc_name}" do
       let(:entity) { defined?(super()) ? super() : instance }
 
       include_examples 'should define attribute', foreign_key, String
@@ -804,9 +805,13 @@ module Spec::Entities::Associations::AssociationsExamples
           { :class_name => 'Spec::Cover', :inverse => :book }
         end # let
 
-        options = { :base_class => Bronze::Entities::Entity }
+        options = { :base_class => Spec::ExampleEntity }
         mock_class Spec, :Cover, options do |klass|
-          klass.references_one :book, :class_name => 'Spec::Book'
+          klass.references_one(
+            :book,
+            :class_name => 'Spec::Book',
+            :inverse    => :cover
+          ) # end references_one
         end # mock_class
 
         it 'should set and return the metadata' do

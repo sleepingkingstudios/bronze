@@ -2,16 +2,16 @@
 
 require 'bronze/entities/associations/associations_examples'
 require 'bronze/entities/associations/builders/has_one_builder'
-require 'bronze/entities/entity'
+require 'support/example_entity'
 
 RSpec.describe Bronze::Entities::Associations::Builders::HasOneBuilder do
   include Spec::Entities::Associations::AssociationsExamples
 
-  mock_class Spec, :Dragon, :base_class => Bronze::Entities::Entity do |klass|
-    klass.references_one :lair, :class_name => 'Spec::Lair'
+  mock_class Spec, :Dragon, :base_class => Spec::ExampleEntity do |klass|
+    klass.references_one :lair, :class_name => 'Spec::Lair', :inverse => :dragon
   end # mock_class
 
-  mock_class Spec, :Lair, :base_class => Bronze::Entities::Entity
+  mock_class Spec, :Lair, :base_class => Spec::ExampleEntity
 
   let(:entity_class) { Spec::Lair }
   let(:instance)     { described_class.new(entity_class) }
@@ -88,6 +88,12 @@ RSpec.describe Bronze::Entities::Associations::Builders::HasOneBuilder do
       let(:association_opts) do
         super().merge :class_name => association_class.name
       end # let
+
+      before(:example) do
+        associations = { association_name => metadata }
+
+        entity_class.instance_variable_set(:@associations, associations)
+      end # before
 
       include_examples 'should define has_one association', :dragon
     end # wrap_context
