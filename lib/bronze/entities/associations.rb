@@ -2,6 +2,7 @@
 
 require 'sleeping_king_studios/tools/toolbox/mixin'
 
+require 'bronze/entities/associations/helpers'
 require 'bronze/entities/attributes'
 
 module Bronze::Entities
@@ -9,6 +10,7 @@ module Bronze::Entities
   # entity associations.
   module Associations
     extend  SleepingKingStudios::Tools::Toolbox::Mixin
+    include Bronze::Entities::Associations::Helpers
     prepend Bronze::Entities::Attributes
 
     autoload :Builders, 'bronze/entities/associations/builders'
@@ -125,24 +127,8 @@ module Bronze::Entities
       super
     end # constructor
 
-    protected
-
-    def get_association metadata
-      @associations[metadata.name]
-    end # method set_association
-
-    def set_association metadata, value
-      @associations[metadata.name] = value
-    end # method set_association
-
-    def set_foreign_key metadata, value
-      send(metadata.foreign_key_writer_name, value)
-    end # method set_foreign_key
-
     private
 
-    # rubocop:disable Metrics/AbcSize
-    # rubocop:disable Metrics/CyclomaticComplexity
     # rubocop:disable Metrics/MethodLength
     def write_has_one_association metadata, new_value
       validate_association! metadata, new_value
@@ -164,15 +150,10 @@ module Bronze::Entities
 
       return if new_value.nil?
 
-      # 5. Clear new inverse
-      if inverse_metadata
-        # new_value.send(inverse_metadata.writer_name, nil)
-      end # if
-
-      # 6. Set local values
+      # 5. Set local values
       set_association(metadata, new_value)
 
-      # 7. Set new inverse
+      # 6. Set new inverse
       if inverse_metadata
         new_value.send(inverse_metadata.writer_name, self)
       end # if
@@ -201,32 +182,17 @@ module Bronze::Entities
 
       return if new_value.nil?
 
-      # 5. Clear new inverse
-      if inverse_metadata
-        # new_value.send(inverse_metadata.writer_name, nil)
-      end # if
-
-      # 6. Set local values
+      # 5. Set local values
       set_association(metadata, new_value)
       set_foreign_key(metadata, new_value.id)
 
-      # 7. Set new inverse
+      # 6. Set new inverse
       if inverse_metadata
         new_value.send(inverse_metadata.writer_name, self)
       end # if
 
       new_value
     end # method write_references_one_association
-    # rubocop:enable Metrics/AbcSize
-    # rubocop:enable Metrics/CyclomaticComplexity
     # rubocop:enable Metrics/MethodLength
-
-    def validate_association! metadata, value
-      return if value.nil? || value.is_a?(metadata.association_class)
-
-      raise ArgumentError,
-        "#{metadata.name} must be a #{metadata.association_class}",
-        caller[1..-1]
-    end # method validate_association!
   end # module
 end # module
