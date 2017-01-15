@@ -8,6 +8,8 @@ module Bronze::Entities::Associations
   module Metadata
     autoload :AssociationMetadata,
       'bronze/entities/associations/metadata/association_metadata'
+    autoload :HasManyMetadata,
+      'bronze/entities/associations/metadata/has_many_metadata'
     autoload :HasOneMetadata,
       'bronze/entities/associations/metadata/has_one_metadata'
     autoload :ReferencesOneMetadata,
