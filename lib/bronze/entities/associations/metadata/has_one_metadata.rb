@@ -17,7 +17,7 @@ module Bronze::Entities::Associations::Metadata
       super(ASSOCIATION_TYPE, association_name, association_options)
     end # method initialize
 
-    # (see AssociationMetadata#one)
+    # (see AssociationMetadata#one?)
     def one?
       true
     end # method one?

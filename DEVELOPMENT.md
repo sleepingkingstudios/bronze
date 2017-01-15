@@ -19,7 +19,6 @@
       - inverse association has incompatible type
       - inverse association already has other inverse
     - :foreign_key is private writer? Or clears association(s).
-    - ::foreign_key takes optional type argument
 
 ## Features
 
@@ -35,6 +34,8 @@
     - otherwise adds TypeConstraint => Class
   - add_constraint Publisher.contract, :each => :publisher # Like :on, but wraps in an EachConstraint
 - Entity
+  - associations
+    - query interface for _many associations?
   - attribute normalization (Symbol <=> String, etc)
   - collection attributes
     - configuration option for restricting entity Hash attribute key types
@@ -48,12 +49,14 @@
     - #{attribute}_changed?
     - #old_{attribute}
     - #clean!
+    - for _many attributes, track :added, :removed
   - primary key types
     - AttributeMetadata#primary_key?
     - PrimaryKey::primary_key macro
     - PrimaryKey::Integer  # SQL
     - PrimaryKey::ObjectId # MongoDB
     - PrimaryKey::Ulid
+    - ::foreign_key takes optional type argument
 - Errors#first
 - Query
   - #all returns with JSON envelope for advanced features?
