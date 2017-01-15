@@ -532,6 +532,7 @@ module Spec::Entities::Associations::AssociationsExamples
       it 'should return a frozen copy of the associations hash' do
         metadata =
           Bronze::Entities::Associations::Metadata::AssociationMetadata.new(
+            entity_class,
             :references_one,
             :virus,
             :class_name => 'Virus'

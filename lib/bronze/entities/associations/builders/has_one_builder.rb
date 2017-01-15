@@ -15,7 +15,7 @@ module Bronze::Entities::Associations::Builders
       options = options_with_inverse_name(options)
 
       mt_class = Bronze::Entities::Associations::Metadata::HasOneMetadata
-      metadata = mt_class.new(name, options)
+      metadata = mt_class.new(entity_class, name, options)
 
       define_property_methods(metadata)
 

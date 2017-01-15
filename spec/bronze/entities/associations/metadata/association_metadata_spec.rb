@@ -11,7 +11,12 @@ RSpec.describe Bronze::Entities::Associations::Metadata::AssociationMetadata do
     let(:inverse_name)    { :books }
     let(:inverse_options) { { :class_name => 'Spec::Book' } }
     let(:inverse_metadata) do
-      described_class.new association_type, inverse_name, inverse_options
+      described_class.new(
+        association_class,
+        association_type,
+        inverse_name,
+        inverse_options
+      ) # end new
     end # let
     let(:association_options) do
       super().merge :inverse => inverse_name
@@ -25,13 +30,20 @@ RSpec.describe Bronze::Entities::Associations::Metadata::AssociationMetadata do
   end # shared_context
 
   mock_class Spec, :Author, :base_class => Bronze::Entities::Entity
+  mock_class Spec, :Book,   :base_class => Bronze::Entities::Entity
 
+  let(:entity_class)        { Spec::Book }
   let(:association_type)    { :example_association }
   let(:association_name)    { :author }
   let(:association_class)   { Spec::Author }
   let(:association_options) { { :class_name => association_class.name } }
   let(:instance) do
-    described_class.new(association_type, association_name, association_options)
+    described_class.new(
+      entity_class,
+      association_type,
+      association_name,
+      association_options
+    ) # end new
   end # let
 
   describe '::OPTIONAL_KEYS' do
@@ -59,7 +71,7 @@ RSpec.describe Bronze::Entities::Associations::Metadata::AssociationMetadata do
   end # describe
 
   describe '::new' do
-    it { expect(described_class).to be_constructible.with(3).arguments }
+    it { expect(described_class).to be_constructible.with(4).arguments }
 
     describe 'should validate the options' do
       describe 'with an invalid option' do
@@ -68,6 +80,7 @@ RSpec.describe Bronze::Entities::Associations::Metadata::AssociationMetadata do
         it 'should raise an error' do
           expect do
             described_class.new(
+              entity_class,
               association_type,
               association_name,
               association_options
@@ -100,12 +113,20 @@ RSpec.describe Bronze::Entities::Associations::Metadata::AssociationMetadata do
     it { expect(instance.class_name).to be == association_options[:class_name] }
   end # describe
 
+  describe '#entity_class' do
+    it { expect(instance.entity_class).to be == entity_class }
+  end # describe
+
   describe '#foreign_key' do
     it { expect(instance.foreign_key).to be nil }
   end # describe
 
   describe '#foreign_key?' do
     it { expect(instance.foreign_key?).to be false }
+  end # describe
+
+  describe '#foreign_key_metadata' do
+    it { expect(instance.foreign_key_metadata).to be nil }
   end # describe
 
   describe '#foreign_key_reader_name' do

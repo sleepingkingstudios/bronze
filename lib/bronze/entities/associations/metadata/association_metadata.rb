@@ -40,16 +40,23 @@ module Bronze::Entities::Associations::Metadata
       end # method valid_keys
     end # class << self
 
+    # @param entity_class [Class] The class of entity whose association is
+    #   characterized by the metadata.
     # @param association_type [Symbol] The type of the association.
     # @param association_name [String, Symbol] The name of the association.
     # @param association_options [Hash] Additional options for the association.
-    def initialize association_type, association_name, association_options
+    def initialize(
+      entity_class,
+      association_type,
+      association_name,
+      association_options
+    ) # end params
+      @entity_class     = entity_class
       @association_name = association_name.intern
       @association_type = association_type
 
       options = tools.hash.convert_keys_to_symbols(association_options)
-      validate_options(options)
-      @association_options = options
+      @association_options = validate_options(options)
     end # method initialize
 
     # @return [Symbol] The name of the association.
@@ -63,6 +70,10 @@ module Bronze::Entities::Associations::Metadata
     # @return [Hash] Additional options for the association.
     attr_reader :association_options
     alias_method :options, :association_options
+
+    # @return [Class] The class of entity whose association is characterized by
+    #   the metadata.
+    attr_reader :entity_class
 
     # @return [Class] The associated class.
     def association_class
@@ -86,16 +97,32 @@ module Bronze::Entities::Associations::Metadata
       @foreign_key_defined ||= !!foreign_key
     end # method foreign_key?
 
+    # @return [AttributeMetadata] The metadata for the foreign key attribute.
+    def foreign_key_metadata
+      return nil unless foreign_key?
+
+      @foreign_key_metadata = entity_class.attributes[foreign_key]
+    end # method foreign_key_metadata
+
     # @return [Symbol] The name of the foreign key reader method, if any.
     def foreign_key_reader_name
-      foreign_key
+      return nil unless foreign_key_metadata
+
+      foreign_key_metadata.reader_name
     end # method foreign_key_reader_name
+
+    # @return [Class] The type of the foreign key, if any.
+    def foreign_key_type
+      return nil unless foreign_key_metadata
+
+      foreign_key_metadata.object_type
+    end # method foreign_key_type
 
     # @return [Symbol] The name of the foreign key writer method, if any.
     def foreign_key_writer_name
-      return nil unless foreign_key?
+      return nil unless foreign_key_metadata
 
-      @foreign_key_writer_name ||= :"#{foreign_key}="
+      foreign_key_metadata.writer_name
     end # method foreign_key_writer_name
 
     # @return [Boolean] True if an inverse association is defined, otherwise
@@ -182,6 +209,8 @@ module Bronze::Entities::Associations::Metadata
       validate_allowed_options(keys)
 
       validate_required_options(keys)
+
+      opts
     end # method validate_options
   end # class
 

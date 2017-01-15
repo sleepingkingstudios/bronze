@@ -42,6 +42,7 @@ RSpec.describe Bronze::Entities::Associations::Builders::HasOneBuilder do
       metadata = instance.build association_name
 
       expect(metadata).to be_a metadata_class
+      expect(metadata.entity_class).to be == entity_class
       expect(metadata.association_name).to be == association_name
       expect(metadata.association_type).
         to be == metadata_class::ASSOCIATION_TYPE

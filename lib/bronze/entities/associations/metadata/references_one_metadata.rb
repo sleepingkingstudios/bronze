@@ -11,10 +11,17 @@ module Bronze::Entities::Associations::Metadata
     # Required options for a references_one association.
     REQUIRED_KEYS = %i(foreign_key).freeze
 
+    # @param entity_class [Class] The class of entity whose association is
+    #   characterized by the metadata.
     # @param association_name [String, Symbol] The name of the association.
     # @param association_options [Hash] Additional options for the association.
-    def initialize association_name, association_options
-      super(ASSOCIATION_TYPE, association_name, association_options)
+    def initialize entity_class, association_name, association_options
+      super(
+        entity_class,
+        ASSOCIATION_TYPE,
+        association_name,
+        association_options
+      ) # end super
     end # method initialize
 
     # (see AssociationMetadata#one)

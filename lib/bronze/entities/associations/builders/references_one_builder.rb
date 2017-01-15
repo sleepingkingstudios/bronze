@@ -15,7 +15,7 @@ module Bronze::Entities::Associations::Builders
       options = options_with_foreign_key(options, name)
 
       mt_class = Bronze::Entities::Associations::Metadata::ReferencesOneMetadata
-      metadata = mt_class.new(name, options)
+      metadata = mt_class.new(entity_class, name, options)
 
       define_property_methods(metadata)
 

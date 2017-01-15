@@ -3,12 +3,13 @@
 require 'bronze/entities/associations/metadata/association_metadata_examples'
 require 'bronze/entities/associations/metadata/has_one_metadata'
 require 'bronze/entities/associations/metadata/references_one_metadata'
-require 'bronze/entities/entity'
+require 'support/example_entity'
 
 RSpec.describe Bronze::Entities::Associations::Metadata::HasOneMetadata do
   include Spec::Entities::Associations::MetadataExamples
 
-  mock_class Spec, :Dragon, :base_class => Bronze::Entities::Entity
+  mock_class Spec, :Lair,   :base_class => Spec::ExampleEntity
+  mock_class Spec, :Dragon, :base_class => Spec::ExampleEntity
 
   let(:association_name)  { :dragon }
   let(:association_class) { Spec::Dragon }
@@ -20,14 +21,15 @@ RSpec.describe Bronze::Entities::Associations::Metadata::HasOneMetadata do
     } # end hash
   end # let
   let(:inverse_metadata) do
-    metadata_class =
-      Bronze::Entities::Associations::Metadata::ReferencesOneMetadata
-    metadata_class.new inverse_name,
+    Bronze::Entities::Associations::Metadata::ReferencesOneMetadata.new \
+      association_class,
+      inverse_name,
       :class_name  => 'Spec::Lair',
       :foreign_key => :lair_id
   end # let
+  let(:entity_class) { Spec::Lair }
   let(:instance) do
-    described_class.new(association_name, association_options)
+    described_class.new(entity_class, association_name, association_options)
   end # let
 
   before(:example) do
@@ -55,7 +57,7 @@ RSpec.describe Bronze::Entities::Associations::Metadata::HasOneMetadata do
   end # describe
 
   describe '::new' do
-    it { expect(described_class).to be_constructible.with(2).arguments }
+    it { expect(described_class).to be_constructible.with(3).arguments }
 
     describe 'should validate the options' do
       describe 'with an invalid option' do
@@ -64,6 +66,7 @@ RSpec.describe Bronze::Entities::Associations::Metadata::HasOneMetadata do
         it 'should raise an error' do
           expect do
             described_class.new(
+              entity_class,
               association_name,
               association_options
             ) # end new
@@ -83,6 +86,7 @@ RSpec.describe Bronze::Entities::Associations::Metadata::HasOneMetadata do
         it 'should raise an error' do
           expect do
             described_class.new(
+              entity_class,
               association_name,
               association_options
             ) # end new

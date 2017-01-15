@@ -2,14 +2,18 @@
 
 require 'bronze/entities/associations/metadata/association_metadata_examples'
 require 'bronze/entities/associations/metadata/references_one_metadata'
-require 'bronze/entities/entity'
+require 'support/example_entity'
 
 # rubocop:disable Metrics/LineLength
 RSpec.describe Bronze::Entities::Associations::Metadata::ReferencesOneMetadata do
   # rubocop:enable Metrics/LineLength
   include Spec::Entities::Associations::MetadataExamples
 
-  mock_class Spec, :Author, :base_class => Bronze::Entities::Entity
+  mock_class Spec, :Author, :base_class => Spec::ExampleEntity
+
+  mock_class Spec, :Book, :base_class => Spec::ExampleEntity do |klass|
+    klass.foreign_key :author_id
+  end # mock_class
 
   let(:association_name)  { :author }
   let(:association_class) { Spec::Author }
@@ -19,8 +23,9 @@ RSpec.describe Bronze::Entities::Associations::Metadata::ReferencesOneMetadata d
       :foreign_key => :author_id
     } # end hash
   end # let
+  let(:entity_class) { Spec::Book }
   let(:instance) do
-    described_class.new(association_name, association_options)
+    described_class.new(entity_class, association_name, association_options)
   end # let
 
   describe '::ASSOCIATION_TYPE' do
@@ -42,7 +47,7 @@ RSpec.describe Bronze::Entities::Associations::Metadata::ReferencesOneMetadata d
   end # describe
 
   describe '::new' do
-    it { expect(described_class).to be_constructible.with(2).arguments }
+    it { expect(described_class).to be_constructible.with(3).arguments }
 
     describe 'should validate the options' do
       describe 'with an invalid option' do
@@ -51,6 +56,7 @@ RSpec.describe Bronze::Entities::Associations::Metadata::ReferencesOneMetadata d
         it 'should raise an error' do
           expect do
             described_class.new(
+              entity_class,
               association_name,
               association_options
             ) # end new
@@ -70,6 +76,7 @@ RSpec.describe Bronze::Entities::Associations::Metadata::ReferencesOneMetadata d
         it 'should raise an error' do
           expect do
             described_class.new(
+              entity_class,
               association_name,
               association_options
             ) # end new
@@ -118,10 +125,33 @@ RSpec.describe Bronze::Entities::Associations::Metadata::ReferencesOneMetadata d
     it { expect(instance.foreign_key?).to be true }
   end # describe
 
+  describe '#foreign_key_metadata' do
+    let(:expected) do
+      foreign_key = association_options.fetch(:foreign_key)
+
+      entity_class.attributes[foreign_key]
+    end # let
+
+    it { expect(instance.foreign_key_metadata).to be expected }
+  end # describe
+
   describe '#foreign_key_reader_name' do
     it 'should return the option value' do
       expect(instance.foreign_key_reader_name).
         to be == association_options.fetch(:foreign_key)
+    end # it
+  end # describe
+
+  describe '#foreign_key_type' do
+    let(:expected) do
+      foreign_key = association_options.fetch(:foreign_key)
+
+      entity_class.attributes[foreign_key].object_type
+    end # let
+
+    it 'should return the option value' do
+      expect(instance.foreign_key_type).
+        to be == expected
     end # it
   end # describe
 

@@ -89,6 +89,12 @@ module Spec::Entities::Associations
         it { expect(instance).to alias_method(:association_type).as(:type) }
       end # describe
 
+      describe '#entity_class' do
+        include_examples 'should have reader',
+          :entity_class,
+          ->() { entity_class }
+      end # describe
+
       describe '#foreign_key' do
         include_examples 'should have reader', :foreign_key
       end # describe
@@ -97,8 +103,16 @@ module Spec::Entities::Associations
         include_examples 'should have predicate', :foreign_key?
       end # describe
 
+      describe '#foreign_key_metadata' do
+        include_examples 'should have reader', :foreign_key_metadata
+      end # describe
+
       describe '#foreign_key_reader_name' do
         include_examples 'should have reader', :foreign_key_reader_name
+      end # describe
+
+      describe '#foreign_key_type' do
+        include_examples 'should have reader', :foreign_key_type
       end # describe
 
       describe '#foreign_key_writer_name' do
