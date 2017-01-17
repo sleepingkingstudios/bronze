@@ -120,10 +120,33 @@ module Spec::Entities::Associations::AssociationsExamples
         to be == entity
     end # shared_example
 
+    shared_example 'should increment the new value inverse collection count' do
+      expect { set_value new_value }.
+        to change(new_value.send(inverse_name), :count).
+        by(1)
+    end # shared_example
+
+    desc = 'should add the entity to the new value inverse collection items'
+    shared_example desc do
+      expect { set_value new_value }.
+        to change(new_value.send(inverse_name), :to_a).
+        to include(entity)
+    end # shared_example
+
+    shared_example 'should not change the prior inverse association value' do
+      expect { set_value new_value }.
+        not_to change(prior_inverse, reader_name)
+    end # shared_example
+
     shared_example 'should clear the prior inverse association value' do
       expect { set_value new_value }.
         to change(prior_inverse, reader_name).
         to be nil
+    end # shared_example
+
+    shared_example 'should not change the prior inverse foreign key' do
+      expect { set_value new_value }.
+        not_to change(prior_inverse, foreign_key)
     end # shared_example
 
     shared_example 'should clear the prior inverse foreign key' do
@@ -156,6 +179,21 @@ module Spec::Entities::Associations::AssociationsExamples
       expect { set_value new_value }.
         to change(prior_value, inverse_name).
         to be nil
+    end # shared_example
+
+    desc = 'should decrement the prior value inverse collection count'
+    shared_example desc do
+      expect { set_value new_value }.
+        to change(prior_value.send(inverse_name), :count).
+        by(-1)
+    end # shared_example
+
+    desc = 'should remove the entity from the prior value inverse collection ' \
+           'items'
+    shared_example desc do
+      expect { set_value new_value }.
+        to change(prior_value.send(inverse_name), :to_a).
+        to satisfy { |items| !items.include?(entity) }
     end # shared_example
   end # shared_examples
 
@@ -1141,6 +1179,8 @@ module Spec::Entities::Associations::AssociationsExamples
           describe 'with an instance of the association class' do
             let(:new_value) { association_class.new }
 
+            include_examples 'should change the new value inverse value'
+
             wrap_context 'when the association already has an inverse object' do
               include_examples 'should change the new value inverse value'
 
@@ -1178,7 +1218,85 @@ module Spec::Entities::Associations::AssociationsExamples
               end # wrap_context
             end # describe
           end # wrap_context
-        end # if
+        elsif inverse_name
+          describe 'with an instance of the association class' do
+            let(:new_value) { association_class.new }
+
+            include_examples \
+              'should increment the new value inverse collection count'
+
+            include_examples \
+              'should add the entity to the new value inverse collection items'
+
+            wrap_context 'when the association already has an inverse object' do
+              include_examples \
+                'should increment the new value inverse collection count'
+
+              include_examples \
+                'should add the entity to the new value inverse ' \
+                'collection items'
+
+              include_examples \
+                'should not change the prior inverse association value'
+
+              include_examples 'should not change the prior inverse foreign key'
+            end # wrap_context
+          end # describe
+
+          wrap_context 'with an associated entity' do
+            describe 'with nil' do
+              let(:new_value) { nil }
+
+              include_examples \
+                'should decrement the prior value inverse collection count'
+
+              include_examples \
+                'should remove the entity from the prior value inverse ' \
+                'collection items'
+            end # describe
+
+            describe 'with an instance of the association class' do
+              let(:new_value) { association_class.new }
+
+              include_examples \
+                'should decrement the prior value inverse collection count'
+
+              include_examples \
+                'should remove the entity from the prior value inverse ' \
+                'collection items'
+
+              include_examples \
+                'should increment the new value inverse collection count'
+
+              include_examples \
+                'should add the entity to the new value inverse ' \
+                'collection items'
+
+              desc = 'when the association already has an inverse object'
+              wrap_context desc do
+                include_examples \
+                  'should decrement the prior value inverse collection count'
+
+                include_examples \
+                  'should remove the entity from the prior value inverse ' \
+                  'collection items'
+
+                include_examples \
+                  'should increment the new value inverse collection count'
+
+                include_examples \
+                  'should add the entity to the new value inverse collection ' \
+                  'items'
+
+                include_examples \
+                  'should not change the prior inverse association value'
+
+                include_examples 'should not change the prior inverse ' \
+                'foreign key'
+              end # wrap_context
+            end # describe
+          end # wrap_context
+        end # if-elsif
       end # describe
     end # describe
   end # shared_examples
@@ -1584,6 +1702,18 @@ module Spec::Entities::Associations::AssociationsExamples
             include_examples 'should define references_one association',
               :author,
               :inverse => :book
+          end # describe
+
+          describe 'with :inverse => many association' do
+            let(:association_opts) { super().merge :inverse => :books }
+
+            before(:example) do
+              Spec::Author.has_many :books, :class_name => 'Spec::Book'
+            end # before example
+
+            include_examples 'should define references_one association',
+              :author,
+              :inverse => :books
           end # describe
         end # wrap_context
       end # describe

@@ -234,6 +234,7 @@ module Bronze::Entities
     # rubocop:disable Metrics/AbcSize
     # rubocop:disable Metrics/CyclomaticComplexity
     # rubocop:disable Metrics/MethodLength
+    # rubocop:disable Metrics/PerceivedComplexity
     def write_references_one_association metadata, new_value
       validate_association! metadata, new_value
 
@@ -262,6 +263,8 @@ module Bronze::Entities
       # 6. Set new inverse
       if inverse_metadata && inverse_metadata.one?
         new_value.send(inverse_metadata.writer_name, self)
+      elsif inverse_metadata
+        new_value.send(inverse_metadata.reader_name) << self
       end # if
 
       new_value
@@ -269,5 +272,6 @@ module Bronze::Entities
     # rubocop:enable Metrics/AbcSize
     # rubocop:enable Metrics/CyclomaticComplexity
     # rubocop:enable Metrics/MethodLength
+    # rubocop:enable Metrics/PerceivedComplexity
   end # module
 end # module
