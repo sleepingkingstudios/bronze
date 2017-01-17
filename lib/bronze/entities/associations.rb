@@ -189,7 +189,11 @@ module Bronze::Entities
 
       new_value
     end # method write_has_one_association
+    # rubocop:enable Metrics/MethodLength
 
+    # rubocop:disable Metrics/AbcSize
+    # rubocop:disable Metrics/CyclomaticComplexity
+    # rubocop:disable Metrics/MethodLength
     def write_references_one_association metadata, new_value
       validate_association! metadata, new_value
 
@@ -216,12 +220,14 @@ module Bronze::Entities
       set_foreign_key(metadata, new_value.id)
 
       # 6. Set new inverse
-      if inverse_metadata
+      if inverse_metadata && inverse_metadata.one?
         new_value.send(inverse_metadata.writer_name, self)
       end # if
 
       new_value
     end # method write_references_one_association
+    # rubocop:enable Metrics/AbcSize
+    # rubocop:enable Metrics/CyclomaticComplexity
     # rubocop:enable Metrics/MethodLength
   end # module
 end # module

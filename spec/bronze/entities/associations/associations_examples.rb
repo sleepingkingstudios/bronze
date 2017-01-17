@@ -296,6 +296,516 @@ module Spec::Entities::Associations::AssociationsExamples
     end # shared_example
   end # shared_examples
 
+  desc = 'should define has_many association'
+  shared_examples desc do |assoc_name, assoc_opts = {}|
+    reader_name = assoc_name
+    writer_name = :"#{assoc_name}="
+
+    describe "should define association has_many :#{assoc_name}" do
+      let(:entity)      { defined?(super()) ? super() : instance }
+      let(:assoc_name)  { assoc_name }
+      let(:reader_name) { reader_name }
+      let(:writer_name) { writer_name }
+      let(:collection)  { entity.send(reader_name) }
+
+      describe "##{reader_name}" do
+        it 'should define the reader' do
+          expect(entity).to have_reader(reader_name)
+
+          collection = entity.send(reader_name)
+          expect(collection).to be_a Bronze::Entities::Associations::Collection
+          expect(collection.entity).to be entity
+          expect(collection.metadata).to be metadata
+          expect(collection.empty?).to be true
+        end # it
+
+        wrap_context 'when the collection has many entities' do
+          it { expect(entity.send reader_name).to be == prior_values }
+        end # wrap_context
+      end # describe
+
+      describe "##{writer_name}" do
+        shared_context 'when the association already has inverse objects' do
+          let(:prior_inverse) { entity_class.new }
+
+          before(:example) do
+            new_values = [new_value].flatten
+
+            new_values.each do |value|
+              prior_inverse.send(reader_name) << value
+            end # each
+          end # before
+        end # shared_context
+
+        include_examples 'should update the association state'
+        include_examples 'should update the collection state'
+
+        let(:inverse_name) do
+          assoc_opts.fetch :inverse do
+            tools = SleepingKingStudios::Tools::Toolbelt.instance
+            str   = entity_class.name.split('::').last
+            str   = tools.string.singularize(str)
+            str   = tools.string.underscore(str)
+
+            str.intern
+          end # fetch
+        end # let
+        let(:inverse_foreign_key) { :"#{inverse_name}_id" }
+
+        define_method :set_value do |value|
+          entity.send writer_name, value
+        end # method
+
+        it 'should define the writer' do
+          expect(entity).to have_reader(writer_name)
+        end # it
+
+        describe 'with nil' do
+          let(:new_value) { nil }
+
+          include_examples 'should return an empty collection'
+
+          include_examples 'should not change the collection count'
+
+          include_examples 'should not change the collection items'
+        end # describe
+
+        describe 'with an object' do
+          let(:new_value) { Object.new }
+
+          include_examples 'should raise a collection validation error'
+
+          include_examples 'should not change the collection count'
+
+          include_examples 'should not change the collection items'
+        end # describe
+
+        describe 'with an entity' do
+          let(:other_class) { Class.new(Bronze::Entities::Entity) }
+          let(:new_value)   { other_class.new }
+
+          include_examples 'should raise a collection validation error'
+
+          include_examples 'should not change the collection count'
+
+          include_examples 'should not change the collection items'
+        end # describe
+
+        describe 'with an empty array' do
+          let(:new_value) { [] }
+
+          include_examples 'should return an empty collection'
+
+          include_examples 'should not change the collection count'
+
+          include_examples 'should not change the collection items'
+        end # describe
+
+        describe 'with an array of nils' do
+          let(:new_value) { Array.new(3) { nil } }
+
+          include_examples 'should raise a validation error'
+
+          include_examples 'should not change the collection count'
+
+          include_examples 'should not change the collection items'
+        end # describe
+
+        describe 'with an array of objects' do
+          let(:new_value) { Array.new(3) { Object.new } }
+
+          include_examples 'should raise a validation error'
+
+          include_examples 'should not change the collection count'
+
+          include_examples 'should not change the collection items'
+        end # describe
+
+        describe 'with an array of entities' do
+          let(:other_class) { Class.new(Bronze::Entities::Entity) }
+          let(:new_value)   { Array.new(3) { other_class.new } }
+
+          include_examples 'should raise a validation error'
+
+          include_examples 'should not change the collection count'
+
+          include_examples 'should not change the collection items'
+        end # describe
+
+        describe 'with an array of association class instances' do
+          let(:new_value) { Array.new(3) { association_class.new } }
+
+          include_examples 'should return the updated collection'
+
+          include_examples 'should change the collection count'
+
+          include_examples 'should change the collection items'
+
+          include_examples 'should change the new values inverse foreign keys'
+
+          include_examples 'should change the new values inverse values'
+
+          wrap_context 'when the association already has inverse objects' do
+            include_examples 'should change the collection count'
+
+            include_examples 'should change the collection items'
+
+            include_examples 'should change the new values inverse foreign keys'
+
+            include_examples 'should change the new values inverse values'
+
+            include_examples 'should clear the prior inverse collection count'
+
+            include_examples 'should clear the prior inverse collection items'
+          end # wrap_context
+        end # describe
+
+        describe 'with an empty collection' do
+          let(:new_value) do
+            Bronze::Entities::Associations::Collection.new(
+              entity,
+              metadata
+            ) # end new
+          end # let
+
+          include_examples 'should return an empty collection'
+
+          include_examples 'should not change the collection count'
+
+          include_examples 'should not change the collection items'
+        end # describe
+
+        describe 'with an collection of entities' do
+          mock_class Spec, :MagazineArticle, :base_class => Spec::ExampleEntity
+
+          let(:other_class) { Spec::MagazineArticle }
+          let(:other_metadata) do
+            Bronze::Entities::Associations::Metadata::HasManyMetadata.new(
+              entity_class,
+              :magazine_articles,
+              :class_name => other_class.name,
+              :inverse    => :author
+            ) # end new
+          end # let
+          let(:new_value) do
+            collection =
+              Bronze::Entities::Associations::Collection.new(
+                entity,
+                other_metadata
+              ) # end new
+
+            Array.new(3) { other_class.new }.each do |item|
+              collection << item
+            end # each
+          end # let
+
+          include_examples 'should raise a validation error'
+
+          include_examples 'should not change the collection count'
+
+          include_examples 'should not change the collection items'
+        end # describe
+
+        describe 'with a collection of association class instances' do
+          let(:other_entity) { entity_class.new }
+          let(:new_value) do
+            collection =
+              Bronze::Entities::Associations::Collection.new(
+                other_entity,
+                metadata
+              ) # end new
+
+            Array.new(3) { association_class.new }.each do |item|
+              collection << item
+            end # each
+          end # let
+
+          include_examples 'should return the updated collection'
+
+          include_examples 'should change the collection count'
+
+          include_examples 'should change the collection items'
+
+          include_examples 'should change the new values inverse foreign keys'
+
+          include_examples 'should change the new values inverse values'
+
+          wrap_context 'when the association already has inverse objects' do
+            include_examples 'should change the collection count'
+
+            include_examples 'should change the collection items'
+
+            include_examples 'should change the new values inverse foreign keys'
+
+            include_examples 'should change the new values inverse values'
+
+            include_examples 'should clear the prior inverse collection count'
+
+            include_examples 'should clear the prior inverse collection items'
+          end # wrap_context
+        end # describe
+
+        wrap_context 'when the collection has many entities' do
+          describe 'with nil' do
+            let(:new_value) { nil }
+
+            include_examples 'should return an empty collection'
+
+            include_examples 'should set the collection count to zero'
+
+            include_examples 'should clear the collection items'
+
+            include_examples \
+              'should clear the prior values inverse foreign keys'
+
+            include_examples 'should clear the prior values inverse values'
+          end # describe
+
+          describe 'with an object' do
+            let(:new_value) { Object.new }
+
+            include_examples 'should raise a collection validation error'
+
+            include_examples 'should not change the collection count'
+
+            include_examples 'should not change the collection items'
+
+            include_examples \
+              'should not change the prior values inverse foreign keys'
+
+            include_examples 'should not change the prior values inverse values'
+          end # describe
+
+          describe 'with an entity' do
+            let(:other_class) { Class.new(Bronze::Entities::Entity) }
+            let(:new_value)   { other_class.new }
+
+            include_examples 'should raise a collection validation error'
+
+            include_examples 'should not change the collection count'
+
+            include_examples 'should not change the collection items'
+
+            include_examples \
+              'should not change the prior values inverse foreign keys'
+
+            include_examples 'should not change the prior values inverse values'
+          end # describe
+
+          describe 'with an empty array' do
+            let(:new_value) { [] }
+
+            include_examples 'should return an empty collection'
+
+            include_examples 'should set the collection count to zero'
+
+            include_examples 'should clear the collection items'
+
+            include_examples \
+              'should clear the prior values inverse foreign keys'
+
+            include_examples 'should clear the prior values inverse values'
+          end # describe
+
+          describe 'with an array of nils' do
+            let(:new_value) { Array.new(3) { nil } }
+
+            include_examples 'should raise a validation error'
+
+            include_examples 'should not change the collection count'
+
+            include_examples 'should not change the collection items'
+
+            include_examples \
+              'should not change the prior values inverse foreign keys'
+
+            include_examples 'should not change the prior values inverse values'
+          end # describe
+
+          describe 'with an array of objects' do
+            let(:new_value) { Array.new(3) { Object.new } }
+
+            include_examples 'should raise a validation error'
+
+            include_examples 'should not change the collection count'
+
+            include_examples 'should not change the collection items'
+
+            include_examples \
+              'should not change the prior values inverse foreign keys'
+
+            include_examples 'should not change the prior values inverse values'
+          end # describe
+
+          describe 'with an array of entities' do
+            let(:other_class) { Class.new(Bronze::Entities::Entity) }
+            let(:new_value)   { Array.new(3) { other_class.new } }
+
+            include_examples 'should raise a validation error'
+
+            include_examples 'should not change the collection count'
+
+            include_examples 'should not change the collection items'
+
+            include_examples \
+              'should not change the prior values inverse foreign keys'
+
+            include_examples 'should not change the prior values inverse values'
+          end # describe
+
+          describe 'with an array of association class instances' do
+            let(:new_value) { Array.new(3) { association_class.new } }
+
+            include_examples 'should return the updated collection'
+
+            include_examples 'should not change the collection count'
+
+            include_examples 'should change the collection items'
+
+            include_examples \
+              'should clear the prior values inverse foreign keys'
+
+            include_examples 'should clear the prior values inverse values'
+
+            include_examples 'should change the new values inverse foreign keys'
+
+            include_examples 'should change the new values inverse values'
+
+            wrap_context 'when the association already has inverse objects' do
+              include_examples 'should not change the collection count'
+
+              include_examples 'should change the collection items'
+
+              include_examples \
+                'should clear the prior values inverse foreign keys'
+
+              include_examples 'should clear the prior values inverse values'
+
+              include_examples \
+                'should change the new values inverse foreign keys'
+
+              include_examples 'should change the new values inverse values'
+
+              include_examples 'should clear the prior inverse collection count'
+
+              include_examples 'should clear the prior inverse collection items'
+            end # wrap_context
+          end # describe
+
+          describe 'with an empty collection' do
+            let(:new_value) do
+              Bronze::Entities::Associations::Collection.new(
+                entity,
+                metadata
+              ) # end new
+            end # let
+
+            include_examples 'should return an empty collection'
+
+            include_examples 'should set the collection count to zero'
+
+            include_examples 'should clear the collection items'
+
+            include_examples \
+              'should clear the prior values inverse foreign keys'
+
+            include_examples 'should clear the prior values inverse values'
+          end # describe
+
+          describe 'with an collection of entities' do
+            mock_class(
+              Spec,
+              :MagazineArticle,
+              :base_class => Spec::ExampleEntity
+            ) # end mock_class
+
+            let(:other_class) { Spec::MagazineArticle }
+            let(:other_metadata) do
+              Bronze::Entities::Associations::Metadata::HasManyMetadata.new(
+                entity_class,
+                :magazine_articles,
+                :class_name => other_class.name,
+                :inverse    => :author
+              ) # end new
+            end # let
+            let(:new_value) do
+              collection =
+                Bronze::Entities::Associations::Collection.new(
+                  entity,
+                  other_metadata
+                ) # end new
+
+              Array.new(3) { other_class.new }.each do |item|
+                collection << item
+              end # each
+            end # let
+
+            include_examples 'should raise a validation error'
+
+            include_examples 'should not change the collection count'
+
+            include_examples 'should not change the collection items'
+
+            include_examples \
+              'should not change the prior values inverse foreign keys'
+
+            include_examples 'should not change the prior values inverse values'
+          end # describe
+
+          describe 'with a collection of association class instances' do
+            let(:other_entity) { entity_class.new }
+            let(:new_value) do
+              collection =
+                Bronze::Entities::Associations::Collection.new(
+                  other_entity,
+                  metadata
+                ) # end new
+
+              Array.new(3) { association_class.new }.each do |item|
+                collection << item
+              end # each
+            end # let
+
+            include_examples 'should return the updated collection'
+
+            include_examples 'should not change the collection count'
+
+            include_examples 'should change the collection items'
+
+            include_examples \
+              'should clear the prior values inverse foreign keys'
+
+            include_examples 'should clear the prior values inverse values'
+
+            include_examples 'should change the new values inverse foreign keys'
+
+            include_examples 'should change the new values inverse values'
+
+            wrap_context 'when the association already has inverse objects' do
+              include_examples 'should not change the collection count'
+
+              include_examples 'should change the collection items'
+
+              include_examples \
+                'should clear the prior values inverse foreign keys'
+
+              include_examples 'should clear the prior values inverse values'
+
+              include_examples \
+                'should change the new values inverse foreign keys'
+
+              include_examples 'should change the new values inverse values'
+
+              include_examples 'should clear the prior inverse collection count'
+
+              include_examples 'should clear the prior inverse collection items'
+            end # wrap_context
+          end # describe
+        end # wrap_context
+      end # describe
+    end # describe
+  end # shared_examples
+
   desc = 'should define has_one association'
   shared_examples desc do |assoc_name, assoc_opts = {}|
     reader_name = assoc_name
