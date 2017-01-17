@@ -22,7 +22,6 @@ module Bronze::Entities
 
       private
 
-      # rubocop:disable Metrics/MethodLength
       def validate_association!(
         metadata,
         value,
@@ -43,7 +42,6 @@ module Bronze::Entities
           "#{name} must be a #{metadata.association_class}",
           caller[1..-1]
       end # method validate_association!
-      # rubocop:enable Metrics/MethodLength
 
       # rubocop:disable Metrics/MethodLength
       def validate_collection! metadata, collection
