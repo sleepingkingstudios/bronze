@@ -78,6 +78,46 @@ module Bronze::Entities
         (@associations ||= {})[metadata.association_name] = metadata
       end # class method has_one
 
+      # Defines a has_many association with the specified entity.
+      #
+      # @example Defining an Association
+      #   class Author < Bronze::Entities::Entity
+      #     has_many :books
+      #   end # class
+      #
+      #   author.id
+      #   #=> 0
+      #   author.books
+      #   #=> []
+      #
+      #   book = Book.new(:name => 'Romance of the Three Kingdoms')
+      #   book.author
+      #   #=> nil
+      #   book.author_id
+      #   #=> nil
+      #
+      #   author.books << book
+      #   #=> [#<Book>]
+      #   book.author
+      #   #=> #<Author>
+      #   book.author_id
+      #   #=> 0
+      #
+      # @param (see Associations::Builders::HasManyBuilder#build)
+      #
+      # @option (see Associations::Builders::HasManyBuilder#build)
+      #
+      # @return (see Associations::Builders::HasManyBuilder#build)
+      #
+      # @raise (see Associations::Builders::HasManyBuilder#build)
+      def has_many association_name, association_options = {}
+        builders = Bronze::Entities::Associations::Builders
+        builder  = builders::HasManyBuilder.new(self)
+        metadata = builder.build(association_name, association_options)
+
+        (@associations ||= {})[metadata.association_name] = metadata
+      end # class method has_many
+
       # rubocop:enable Style/PredicateName
 
       # Defines a references_one association with the specified entity.

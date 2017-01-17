@@ -1280,6 +1280,120 @@ module Spec::Entities::Associations::AssociationsExamples
       end # describe
     end # describe
 
+    describe '::has_many' do
+      shared_context 'when the association has been defined' do
+        let!(:metadata) do
+          described_class.has_many(
+            association_name,
+            association_opts
+          ) # end has_one
+        end # let!
+      end # shared_context
+
+      it 'should respond to the method' do
+        expect(described_class).
+          to respond_to(:has_many).
+          with(1..2).arguments
+      end # it
+
+      describe 'with a valid association name' do
+        let(:association_class) { Spec::Chapter }
+        let(:association_name)  { :chapters }
+        let(:association_opts) do
+          { :class_name => 'Spec::Chapter', :inverse => :book }
+        end # let
+
+        options = { :base_class => Spec::ExampleEntity }
+        mock_class Spec, :Chapter, options do |klass|
+          klass.references_one(
+            :book,
+            :class_name => 'Spec::Book',
+            :inverse    => :chapters
+          ) # end references_one
+        end # mock_class
+
+        it 'should set and return the metadata' do
+          metadata = described_class.has_many(
+            association_name,
+            association_opts
+          ) # end has_many
+          mt_class = Bronze::Entities::Associations::Metadata::HasManyMetadata
+
+          expect(metadata).to be_a mt_class
+          expect(metadata.association_name).to be == association_name
+          expect(metadata.association_type).to be == mt_class::ASSOCIATION_TYPE
+          expect(metadata.association_class).to be Spec::Chapter
+          expect(metadata.inverse_name).to be == :book
+
+          expect(described_class.associations[association_name]).to be metadata
+        end # it
+
+        wrap_context 'when the association has been defined' do
+          include_examples 'should define has_many association', :chapters
+
+          context 'when the reader method is overwritten' do
+            let(:titles) do
+              [
+                'Yellow Turban Rebellion and the Ten Attendants',
+                "Dong Zhuo's tyranny",
+                'Conflict among the various warlords and nobles',
+                'Sun Ce builds a dynasty in Jiangdong',
+                "Liu Bei's ambition",
+                'Battle of Red Cliffs'
+              ] # end array
+            end # let
+            let(:chapters) do
+              titles.map { |title| Spec::Chapter.new(:title => title) }
+            end # let
+
+            before(:example) do
+              Spec::Chapter.attribute :title, String
+
+              described_class.send :define_method,
+                association_name,
+                ->() { super().map(&:title) }
+
+              instance.send(:"#{association_name}=", chapters)
+            end # before example
+
+            it 'should inherit from the base definition' do
+              expect(instance.send association_name).to be == titles
+            end # it
+          end # context
+
+          context 'when the writer method is overwritten' do
+            let(:titles) do
+              [
+                'Yellow Turban Rebellion and the Ten Attendants',
+                "Dong Zhuo's tyranny",
+                'Conflict among the various warlords and nobles',
+                'Sun Ce builds a dynasty in Jiangdong',
+                "Liu Bei's ambition",
+                'Battle of Red Cliffs'
+              ] # end array
+            end # let
+            let!(:chapters) do
+              titles.map { |title| Spec::Chapter.new(:title => title) }
+            end # let
+
+            before(:example) do
+              described_class.send :define_method,
+                "#{association_name}=",
+                ->(value) { super(value.map(&:freeze)) }
+            end # before example
+
+            it 'should inherit from the base definition' do
+              instance.send "#{association_name}=", chapters
+
+              collection = instance.send(association_name)
+              expect(collection).to be == chapters
+              expect(collection.all?(&:frozen?)).to be true
+            end # it
+          end # context
+        end # wrap_context
+      end # describe
+    end # describe
+
     describe '::has_one' do
       shared_context 'when the association has been defined' do
         let!(:metadata) do
