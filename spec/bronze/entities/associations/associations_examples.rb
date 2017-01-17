@@ -34,6 +34,14 @@ module Spec::Entities::Associations::AssociationsExamples
     end # before example
   end # shared_context
 
+  shared_context 'when the collection has many entities' do
+    let(:prior_values) { Array.new(3) { association_class.new } }
+
+    before(:example) do
+      prior_values.each { |entity| collection << entity }
+    end # before example
+  end # shared_context
+
   shared_examples 'should update the association state' do
     def safe_set_value value
       set_value value
@@ -42,9 +50,16 @@ module Spec::Entities::Associations::AssociationsExamples
     end # method safe_set_value
 
     shared_example 'should raise a validation error' do
+      tools = SleepingKingStudios::Tools::Toolbelt.instance
+      name  = tools.string.singularize assoc_name.to_s
+
       expect { set_value new_value }.
         to raise_error ArgumentError,
-          "#{assoc_name} must be a #{association_class.name}"
+          "#{name} must be a #{association_class.name}"
+    end # shared_example
+
+    shared_example 'should return nil' do
+      expect(set_value new_value).to be nil
     end # shared_example
 
     shared_example 'should return the new value' do
@@ -141,6 +156,143 @@ module Spec::Entities::Associations::AssociationsExamples
       expect { set_value new_value }.
         to change(prior_value, inverse_name).
         to be nil
+    end # shared_example
+  end # shared_examples
+
+  shared_examples 'should update the collection state' do
+    shared_example 'should return an empty collection' do
+      expect(set_value new_value).
+        to be_a(Bronze::Entities::Associations::Collection).
+        and be_empty
+    end # shared_example
+
+    shared_example 'should return the updated collection' do
+      expect(set_value new_value).
+        to be_a(Bronze::Entities::Associations::Collection).
+        and satisfy { |collection| collection == new_value }
+    end # shared_example
+
+    shared_example 'should raise a collection validation error' do
+      expect { set_value new_value }.
+        to raise_error ArgumentError,
+          "#{assoc_name} must be a collection of #{association_class.name}"\
+          ' entities'
+    end # shared_example
+
+    ############################################################################
+    ###                          Collection Values                           ###
+    ############################################################################
+
+    shared_example 'should not change the collection count' do
+      expect { safe_set_value new_value }.
+        not_to change(collection, :count)
+    end # shared_example
+
+    shared_example 'should increment the collection count' do
+      expect { set_value new_value }.
+        to change(collection, :count).
+        by(1)
+    end # shared_example
+
+    shared_example 'should decrement the collection count' do
+      expect { set_value new_value }.
+        to change(collection, :count).
+        by(-1)
+    end # shared_example
+
+    shared_example 'should set the collection count to zero' do
+      expect { set_value new_value }.
+        to change(collection, :count).
+        to be 0
+    end # shared_example
+
+    shared_example 'should change the collection count' do
+      expect { safe_set_value new_value }.
+        to change(collection, :count).
+        to be new_value.count
+    end # shared_example
+
+    shared_example 'should not change the collection items' do
+      expect { safe_set_value new_value }.
+        not_to change(collection, :to_a)
+    end # shared_example
+
+    shared_example 'should add the entity to the collection items' do
+      expect { safe_set_value new_value }.
+        to change(collection, :to_a).
+        to include(new_value)
+    end # shared_example
+
+    shared_example 'should remove the entity from the collection items' do
+      expect { safe_set_value new_value }.
+        to change(collection, :to_a).
+        to satisfy { |items| !items.include?(new_value) }
+    end # shared_example
+
+    shared_example 'should clear the collection items' do
+      expect { safe_set_value new_value }.
+        to change(collection, :to_a).
+        to be_empty
+    end # shared_example
+
+    shared_example 'should change the collection items' do
+      expect { safe_set_value new_value }.
+        to change(collection, :to_a).
+        to be == new_value
+    end # shared_example
+
+    ############################################################################
+    ###                          New Value Inverses                          ###
+    ############################################################################
+
+    shared_example 'should change the new values inverse foreign keys' do
+      expect { set_value new_value }.
+        to change { new_value.map(&inverse_foreign_key) }.
+        to be == Array.new(new_value.count) { entity.id }
+    end # shared_example
+
+    shared_example 'should change the new values inverse values' do
+      expect { set_value new_value }.
+        to change { new_value.map(&inverse_name) }.
+        to be == Array.new(new_value.count) { entity }
+    end # shared_example
+
+    shared_example 'should clear the prior inverse collection count' do
+      expect { safe_set_value new_value }.
+        to change(prior_inverse.send(reader_name), :count).
+        to be 0
+    end # shared_example
+
+    shared_example 'should clear the prior inverse collection items' do
+      expect { safe_set_value new_value }.
+        to change(prior_inverse.send(reader_name), :to_a).
+        to be_empty
+    end # shared_examples
+
+    ############################################################################
+    ###                         Prior Value Inverses                         ###
+    ############################################################################
+
+    shared_example 'should not change the prior values inverse foreign keys' do
+      expect { safe_set_value new_value }.
+        not_to change { prior_values.map(&inverse_foreign_key) }
+    end # shared_example
+
+    shared_example 'should clear the prior values inverse foreign keys' do
+      expect { set_value new_value }.
+        to change { prior_values.map(&inverse_foreign_key) }.
+        to be == Array.new(prior_values.count)
+    end # shared_example
+
+    shared_example 'should not change the prior values inverse values' do
+      expect { safe_set_value new_value }.
+        not_to change { prior_values.map(&inverse_name) }
+    end # shared_example
+
+    shared_example 'should clear the prior values inverse values' do
+      expect { set_value new_value }.
+        to change { prior_values.map(&inverse_name) }.
+        to be == Array.new(prior_values.count)
     end # shared_example
   end # shared_examples
 
@@ -654,7 +806,7 @@ module Spec::Entities::Associations::AssociationsExamples
           metadata = described_class.has_one(
             association_name,
             association_opts
-          ) # end references_one
+          ) # end has_one
           mt_class = Bronze::Entities::Associations::Metadata::HasOneMetadata
 
           expect(metadata).to be_a mt_class

@@ -90,7 +90,7 @@ module Bronze::Entities
       #   book.author
       #   #=> nil
       #
-      #   book.author = Author.new(:name => 'Luo Guanzhong')
+      #   book.author = Author.new
       #   book.author
       #   #=> #<Author id=0>
       #   book.author_id
@@ -128,6 +128,35 @@ module Bronze::Entities
     end # constructor
 
     private
+
+    # rubocop:disable Metrics/MethodLength
+    def write_has_many_association metadata, new_values
+      validate_collection! metadata, new_values
+
+      # 1. Locally cache prior values
+      collection = get_association(metadata)
+
+      unless collection
+        collection ||=
+          Bronze::Entities::Associations::Collection.new(self, metadata)
+
+        set_association(metadata, collection)
+      end # unless
+
+      # 2. Break if old value == new value
+      return collection if collection == new_values
+
+      # 3. Clear local values
+      collection.clear
+
+      return collection if new_values.nil? || new_values.empty?
+
+      # 5. Set local values
+      new_values.each { |item| collection << item }
+
+      collection
+    end # method write_has_many_association
+    # rubocop:enable Metrics/MethodLength
 
     # rubocop:disable Metrics/MethodLength
     def write_has_one_association metadata, new_value
