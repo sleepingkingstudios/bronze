@@ -39,7 +39,7 @@ module Bronze::Entities
         metadata = builder.build(
           attribute_name,
           Bronze::Entities::PrimaryKey::KEY_TYPE,
-          {},
+          { :read_only => true },
           :foreign_key => true
         ) # end build
 

@@ -1044,7 +1044,10 @@ module Spec::Entities::Associations::AssociationsExamples
       let(:reader_name) { reader_name }
       let(:writer_name) { writer_name }
 
-      include_examples 'should define attribute', foreign_key, String
+      include_examples 'should define attribute',
+        foreign_key,
+        String,
+        :read_only => true
 
       describe "##{foreign_key}" do
         wrap_context 'with an associated entity' do
@@ -1393,7 +1396,10 @@ module Spec::Entities::Associations::AssociationsExamples
           let(:expected_value) { attributes.fetch attribute_name }
           let(:updated_value)  { Bronze::Entities::Ulid.generate }
 
-          include_examples 'should define attribute', :association_id
+          include_examples 'should define attribute',
+            :association_id,
+            String,
+            :read_only => true
         end # wrap_context
       end # describe
     end # describe
