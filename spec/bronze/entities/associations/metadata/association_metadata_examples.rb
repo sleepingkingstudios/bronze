@@ -8,6 +8,99 @@ module Spec::Entities::Associations
   module MetadataExamples
     extend RSpec::SleepingKingStudios::Concerns::SharedExampleGroup
 
+    shared_context 'when options[:inverse] is nil' do
+      let(:association_options) do
+        super().merge :inverse => nil
+      end # let
+    end # shared_context
+
+    shared_context 'when options[:inverse] is unset' do
+      let(:association_options) do
+        super().tap { |hsh| hsh.delete :inverse }
+      end # let
+    end # shared_context
+
+    shared_context 'when the inverse relation is undefined' do
+      before(:example) do
+        allow(association_class).to receive(:associations).and_return({})
+      end # before example
+    end # shared_context
+
+    shared_examples 'should validate the inverse metadata inverse' do
+      context 'when the inverse metadata has other metadata as its inverse' do
+        let(:error_class) do
+          Bronze::Entities::Associations::InverseAssociationError
+        end # let
+        let(:other_name) { :invalid_association }
+        let(:other_metadata) do
+          described_class.new(entity_class, other_name, association_options)
+        end # let
+        let(:expected_message) do
+          "#{instance.send(:expected_inverse_message)}, but " \
+          ":#{inverse_metadata.name} already has inverse association " \
+          "#{other_metadata.type} :#{other_metadata.name}"
+        end # let
+
+        before(:example) do
+          allow(inverse_metadata).
+            to receive(:get_inverse_metadata).
+            and_return(other_metadata)
+        end # before example
+
+        it 'should not raise an error' do
+          expect { call_method }.
+            to raise_error error_class, expected_message
+        end # it
+      end # context
+
+      context 'when the inverse metadata has the metadata as its inverse' do
+        before(:example) do
+          allow(inverse_metadata).
+            to receive(:get_inverse_metadata).
+            and_return(instance)
+        end # before example
+
+        it 'should not raise an error' do
+          expect { call_method }.not_to raise_error
+        end # it
+      end # context
+    end # shared_examples
+
+    shared_examples 'should validate the inverse metadata presence' do
+      let(:error_class) do
+        Bronze::Entities::Associations::InverseAssociationError
+      end # let
+      let(:expected_message) do
+        "#{instance.send(:expected_inverse_message)}, but does not define " \
+        'the inverse association'
+      end # let
+
+      it 'should raise an error' do
+        expect { call_method }.
+          to raise_error error_class, expected_message
+      end # it
+    end # shared_examples
+
+    shared_examples 'should validate the inverse metadata type' do
+      context 'when the inverse metadata type is invalid' do
+        let(:inverse_metadata) do
+          build_invalid_inverse_metadata(inverse_name)
+        end # let
+        let(:error_class) do
+          Bronze::Entities::Associations::InverseAssociationError
+        end # let
+        let(:expected_message) do
+          "#{instance.send(:expected_inverse_message)}, but :#{inverse_name} " \
+          "is a #{inverse_metadata.type} association"
+        end # let
+
+        it 'should raise an error' do
+          expect { call_method }.
+            to raise_error error_class, expected_message
+        end # it
+      end # context
+    end # shared_examples
+
     shared_examples 'should implement the AssociationMetadata methods' do
       describe '::optional_keys' do
         it 'should define the reader' do

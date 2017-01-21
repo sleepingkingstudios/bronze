@@ -33,7 +33,7 @@ RSpec.describe Bronze::Entities::Associations::Builders::HasManyBuilder do
 
     let(:association_name)  { :books }
     let(:association_class) { Spec::Book }
-    let(:association_opts)  { {} }
+    let(:association_opts)  { { :class_name => association_class.name } }
     let(:metadata_class) do
       Bronze::Entities::Associations::Metadata::HasManyMetadata
     end # let
@@ -43,7 +43,7 @@ RSpec.describe Bronze::Entities::Associations::Builders::HasManyBuilder do
     end # it
 
     it 'should return the metadata' do
-      metadata = instance.build association_name
+      metadata = instance.build association_name, association_opts
 
       expect(metadata).to be_a metadata_class
       expect(metadata.entity_class).to be == entity_class
@@ -75,11 +75,20 @@ RSpec.describe Bronze::Entities::Associations::Builders::HasManyBuilder do
     describe 'with :inverse => value' do
       let(:inverse_name) { :writer }
 
+      before(:example) do
+        association_class.references_one(
+          :writer,
+          :class_name => 'Spec::Author',
+          :inverse    => :books
+        ) # end references_one
+      end # before example
+
       it 'should return the metadata' do
         metadata =
           instance.build(
             association_name,
-            :inverse => inverse_name
+            :class_name => 'Spec::Book',
+            :inverse    => inverse_name
           ) # end build
 
         expect(metadata).to be_a metadata_class

@@ -16,6 +16,9 @@ module Bronze::Entities
     autoload :Builders, 'bronze/entities/associations/builders'
     autoload :Metadata, 'bronze/entities/associations/metadata'
 
+    # Error class for handling invalid inverse associations.
+    class InverseAssociationError < StandardError; end
+
     # Class methods to define when including Associations in a class.
     module ClassMethods
       # Returns the metadata for the associations defined for the current class.

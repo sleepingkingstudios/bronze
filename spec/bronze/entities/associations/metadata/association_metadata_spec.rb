@@ -26,6 +26,10 @@ RSpec.describe Bronze::Entities::Associations::Metadata::AssociationMetadata do
       allow(Spec::Author).
         to receive(:associations).
         and_return(inverse_name => inverse_metadata)
+
+      allow(instance).
+        to receive(:expected_inverse_types).
+        and_return([association_type])
     end # before example
   end # shared_context
 

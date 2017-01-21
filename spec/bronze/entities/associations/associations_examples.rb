@@ -513,17 +513,19 @@ module Spec::Entities::Associations::AssociationsExamples
           include_examples 'should not change the collection items'
         end # describe
 
-        describe 'with an collection of entities' do
-          mock_class Spec, :MagazineArticle, :base_class => Spec::ExampleEntity
+        describe 'with a collection of entities' do
+          options = { :base_class => Spec::ExampleEntity }
+          mock_class Spec, :MagazineArticle, options do |klass|
+            klass.references_one :author, :class_name => entity_class.name
+          end # mock_class
 
           let(:other_class) { Spec::MagazineArticle }
           let(:other_metadata) do
-            Bronze::Entities::Associations::Metadata::HasManyMetadata.new(
-              entity_class,
+            entity_class.has_many(
               :magazine_articles,
               :class_name => other_class.name,
               :inverse    => :author
-            ) # end new
+            ) # end has_many
           end # let
           let(:new_value) do
             collection =
@@ -750,21 +752,19 @@ module Spec::Entities::Associations::AssociationsExamples
             include_examples 'should clear the prior values inverse values'
           end # describe
 
-          describe 'with an collection of entities' do
-            mock_class(
-              Spec,
-              :MagazineArticle,
-              :base_class => Spec::ExampleEntity
-            ) # end mock_class
+          describe 'with a collection of entities' do
+            options = { :base_class => Spec::ExampleEntity }
+            mock_class Spec, :MagazineArticle, options do |klass|
+              klass.references_one :author, :class_name => entity_class.name
+            end # mock_class
 
             let(:other_class) { Spec::MagazineArticle }
             let(:other_metadata) do
-              Bronze::Entities::Associations::Metadata::HasManyMetadata.new(
-                entity_class,
+              entity_class.has_many(
                 :magazine_articles,
                 :class_name => other_class.name,
                 :inverse    => :author
-              ) # end new
+              ) # end has_many
             end # let
             let(:new_value) do
               collection =

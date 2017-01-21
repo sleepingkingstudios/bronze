@@ -12,12 +12,12 @@
     - references_one
     - has_one
     - has_many
-    - implicit inverse associations
-    - nested attributes
     - improve testing/validation around missing/mismatched inverse associations
       - inverse association expected but not defined
       - inverse association has incompatible type
       - inverse association already has other inverse
+    - implicit inverse associations
+    - nested attributes
     - :foreign_key is private writer? Or clears association(s).
 
 ## Features
@@ -35,6 +35,7 @@
   - add_constraint Publisher.contract, :each => :publisher # Like :on, but wraps in an EachConstraint
 - Entity
   - associations
+    - builder methods - build_{association}, collection.build
     - query interface for _many associations?
   - attribute normalization (Symbol <=> String, etc)
   - collection attributes

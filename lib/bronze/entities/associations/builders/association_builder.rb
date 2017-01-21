@@ -34,7 +34,10 @@ module Bronze::Entities::Associations::Builders
     def options_with_class_name options, name
       return options if options.key?(:class_name)
 
-      options.update(:class_name => tools.string.camelize(name))
+      name = tools.string.camelize(name)
+      name = tools.string.singularize(name)
+
+      options.update(:class_name => name)
     end # method options_with_class_name
 
     def tools

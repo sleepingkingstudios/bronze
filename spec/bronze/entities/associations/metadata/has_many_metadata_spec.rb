@@ -8,6 +8,24 @@ require 'support/example_entity'
 RSpec.describe Bronze::Entities::Associations::Metadata::HasManyMetadata do
   include Spec::Entities::Associations::MetadataExamples
 
+  shared_examples 'should validate the inverse metadata' do
+    wrap_examples 'should validate the inverse metadata inverse'
+
+    wrap_examples 'should validate the inverse metadata type'
+
+    wrap_context 'when options[:inverse] is nil' do
+      include_examples 'should validate the inverse metadata presence'
+    end # wrap_context
+
+    wrap_context 'when options[:inverse] is unset' do
+      include_examples 'should validate the inverse metadata presence'
+    end # wrap_context
+
+    wrap_context 'when the inverse relation is undefined' do
+      include_examples 'should validate the inverse metadata presence'
+    end # wrap_context
+  end # shared_examples
+
   mock_class Spec, :Author, :base_class => Spec::ExampleEntity
   mock_class Spec, :Book,   :base_class => Spec::ExampleEntity
 
@@ -21,16 +39,29 @@ RSpec.describe Bronze::Entities::Associations::Metadata::HasManyMetadata do
     } # end hash
   end # let
   let(:inverse_metadata) do
-    Bronze::Entities::Associations::Metadata::ReferencesOneMetadata.new \
-      association_class,
-      inverse_name,
-      :class_name  => 'Spec::Author',
-      :foreign_key => :author_id
+    build_valid_inverse_metadata(inverse_name)
   end # let
   let(:entity_class) { Spec::Author }
   let(:instance) do
     described_class.new(entity_class, association_name, association_options)
   end # let
+
+  def build_invalid_inverse_metadata inverse_name
+    Bronze::Entities::Associations::Metadata::HasOneMetadata.new(
+      association_class,
+      inverse_name,
+      :class_name => 'Spec::Author'
+    ) # end new
+  end # method build_valid_inverse_metadata
+
+  def build_valid_inverse_metadata inverse_name
+    Bronze::Entities::Associations::Metadata::ReferencesOneMetadata.new(
+      association_class,
+      inverse_name,
+      :class_name  => 'Spec::Author',
+      :foreign_key => :author_id
+    ) # end new
+  end # method build_valid_inverse_metadata
 
   before(:example) do
     allow(Spec::Book).
@@ -43,16 +74,6 @@ RSpec.describe Bronze::Entities::Associations::Metadata::HasManyMetadata do
       expect(described_class).
         to have_immutable_constant(:ASSOCIATION_TYPE).
         with_value(:has_many)
-    end # it
-  end # describe
-
-  describe '::REQUIRED_KEYS' do
-    let(:expected) { %i(inverse) }
-
-    it 'should define the constant' do
-      expect(described_class).
-        to have_immutable_constant(:REQUIRED_KEYS).
-        with_value(expected)
     end # it
   end # describe
 
@@ -110,7 +131,7 @@ RSpec.describe Bronze::Entities::Associations::Metadata::HasManyMetadata do
     let(:expected) do
       base_class = Bronze::Entities::Associations::Metadata::AssociationMetadata
 
-      base_class::REQUIRED_KEYS + described_class::REQUIRED_KEYS
+      base_class::REQUIRED_KEYS
     end # let
 
     it { expect(described_class.required_keys).to contain_exactly(*expected) }
@@ -125,15 +146,33 @@ RSpec.describe Bronze::Entities::Associations::Metadata::HasManyMetadata do
   end # describe
 
   describe '#inverse?' do
+    def call_method
+      instance.inverse?
+    end # method call_method
+
     it { expect(instance.inverse?).to be true }
+
+    include_examples 'should validate the inverse metadata'
   end # describe
 
   describe '#inverse_metadata' do
+    def call_method
+      instance.inverse_metadata
+    end # method call_method
+
     it { expect(instance.inverse_metadata).to be inverse_metadata }
+
+    include_examples 'should validate the inverse metadata'
   end # describe
 
   describe '#inverse_name' do
+    def call_method
+      instance.inverse_name
+    end # method call_method
+
     it { expect(instance.inverse_name).to be association_options[:inverse] }
+
+    include_examples 'should validate the inverse metadata'
   end # describe
 
   describe '#many?' do

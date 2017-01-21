@@ -29,7 +29,7 @@ RSpec.describe Bronze::Entities::Associations::Builders::HasOneBuilder do
 
     let(:association_name)  { :dragon }
     let(:association_class) { Spec::Dragon }
-    let(:association_opts)  { {} }
+    let(:association_opts)  { { :class_name => association_class.name } }
     let(:metadata_class) do
       Bronze::Entities::Associations::Metadata::HasOneMetadata
     end # let
@@ -39,7 +39,7 @@ RSpec.describe Bronze::Entities::Associations::Builders::HasOneBuilder do
     end # it
 
     it 'should return the metadata' do
-      metadata = instance.build association_name
+      metadata = instance.build association_name, association_opts
 
       expect(metadata).to be_a metadata_class
       expect(metadata.entity_class).to be == entity_class
@@ -71,11 +71,20 @@ RSpec.describe Bronze::Entities::Associations::Builders::HasOneBuilder do
     describe 'with :inverse => value' do
       let(:inverse_name) { :crib }
 
+      before(:example) do
+        association_class.references_one(
+          inverse_name,
+          :class_name => 'Spec::Lair',
+          :inverse    => :dragon
+        ) # end references_one
+      end # before example
+
       it 'should return the metadata' do
         metadata =
           instance.build(
             association_name,
-            :inverse => inverse_name
+            :class_name => association_class.name,
+            :inverse    => inverse_name
           ) # end build
 
         expect(metadata).to be_a metadata_class

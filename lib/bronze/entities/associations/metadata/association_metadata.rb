@@ -128,20 +128,32 @@ module Bronze::Entities::Associations::Metadata
     # @return [Boolean] True if an inverse association is defined, otherwise
     #   false.
     def inverse?
-      options.key?(:inverse)
+      return @has_inverse unless @has_inverse.nil?
+
+      find_inverse_metadata
+
+      @has_inverse
     end # method inverse?
 
     # @return [AssociationMetadata] The metadata for the inverse association,
     #   if any.
     def inverse_metadata
-      association_class.associations[inverse_name]
+      return nil if @has_inverse == false
+
+      return @inverse_metadata if @inverse_metadata
+
+      find_inverse_metadata
+
+      @inverse_metadata
     end # method inverse_metadata
 
     # @return [Symbol] The name of the inverse association, if any.
     def inverse_name
-      return nil unless inverse?
+      return nil if @has_inverse == false
 
-      @inverse_name ||= normalize_inverse_name
+      find_inverse_metadata
+
+      @inverse_name
     end # method inverse_name
 
     # @return [Boolean] True if the association relates many objects, such as a
@@ -166,14 +178,62 @@ module Bronze::Entities::Associations::Metadata
       @writer_name ||= :"#{association_name}="
     end # method writer_name
 
+    protected
+
+    # rubocop:disable Style/AccessorMethodName
+    def get_inverse_metadata
+      @inverse_metadata
+    end # method get_inverse_metadata
+    # rubocop:enable Style/AccessorMethodName
+
     private
 
-    def normalize_inverse_name
-      name = options[:inverse].to_s
+    def expected_inverse_message
+      "expected #{association_class} to define inverse association " \
+      "#{expected_inverse_names}"
+    end # method expected_inverse_message
+
+    def expected_inverse_names
+      'unknown association'
+    end # method expected_inverse_names
+
+    def expected_inverse_types
+      []
+    end # method expected_inverse_types
+
+    def find_inverse_metadata
+      @inverse_name = normalize_inverse_name options[:inverse]
+
+      @inverse_metadata = association_class.associations[@inverse_name]
+
+      validate_inverse_metadata
+
+      @has_inverse = !@inverse_metadata.nil?
+    end # method find_inverse_metadata
+
+    def normalize_inverse_name name
+      return nil unless name
+
+      name = name.to_s
       name = tools.string.underscore(name)
 
       name.intern
     end # method normalize_inverse_name
+
+    def predict_inverse_name plural: false
+      name = entity_class.name.split('::').last
+      name = tools.string.underscore(name)
+
+      if plural
+        tools.string.pluralize(name)
+      else
+        tools.string.singularize(name)
+      end # if-else
+    end # method predict_inverse_name
+
+    def require_inverse?
+      false
+    end # method require_inverse?
 
     def tools
       SleepingKingStudios::Tools::Toolbelt.instance
@@ -190,6 +250,54 @@ module Bronze::Entities::Associations::Metadata
 
       raise ArgumentError, message
     end # method validate_allowed_options
+
+    def validate_double_inverse
+      double_inverse = @inverse_metadata.send(:get_inverse_metadata)
+
+      return unless double_inverse && double_inverse != self
+
+      message = "#{expected_inverse_message}, but :#{@inverse_metadata.name} " \
+        "already has inverse association #{double_inverse.type} " \
+        ":#{double_inverse.name}"
+
+      raise Bronze::Entities::Associations::InverseAssociationError,
+        message,
+        caller[2..-1]
+    end # method validate_double_inverse
+
+    def validate_inverse_metadata
+      validate_inverse_metadata_presence
+
+      return unless @inverse_metadata
+
+      validate_inverse_metadata_type
+
+      validate_double_inverse
+    end # method validate_inverse_metadata
+
+    def validate_inverse_metadata_presence
+      return if @inverse_metadata
+
+      return if !require_inverse? && !@inverse_name
+
+      message = "#{expected_inverse_message}, but does not define the inverse" \
+                ' association'
+
+      raise Bronze::Entities::Associations::InverseAssociationError,
+        message,
+        caller[2..-1]
+    end # method validate_inverse_metadata
+
+    def validate_inverse_metadata_type
+      return if expected_inverse_types.include?(inverse_metadata.type)
+
+      message = "#{expected_inverse_message}, but :#{@inverse_name} is a " \
+                "#{inverse_metadata.type} association"
+
+      raise Bronze::Entities::Associations::InverseAssociationError,
+        message,
+        caller[2..-1]
+    end # method inverse_metadata_type
 
     def validate_required_options keys
       missing_options = self.class.required_keys - keys
