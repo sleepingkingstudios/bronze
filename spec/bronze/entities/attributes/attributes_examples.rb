@@ -60,6 +60,34 @@ module Spec::Entities::Attributes::AttributesExamples
         end # it
       end # describe
     end # describe
+
+    describe "should not define attribute :#{attr_name} on other entities" do
+      let(:entity) { defined?(super()) ? super() : instance }
+      let(:other_entity_class) do
+        Class.new(Bronze::Entities::BaseEntity) do
+          include Bronze::Entities::Attributes
+        end # class
+      end # let
+      let(:other_entity) { other_entity_class.new }
+
+      describe "##{reader_name}" do
+        it 'should not define the reader' do
+          return if defined?(Bronze::Entities::Entity) &&
+                    entity.class == Bronze::Entities::Entity
+
+          expect(other_entity).not_to have_reader(reader_name)
+        end # it
+      end # describe
+
+      describe "##{writer_name}" do
+        it 'should not define the writer' do
+          return if defined?(Bronze::Entities::Entity) &&
+                    entity.class == Bronze::Entities::Entity
+
+          expect(other_entity).not_to have_writer(writer_name)
+        end # it
+      end # describe
+    end # describe
   end # shared_examples
 
   shared_examples 'should implement the Attributes methods' do

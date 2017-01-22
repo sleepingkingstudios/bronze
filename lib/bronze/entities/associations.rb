@@ -154,6 +154,10 @@ module Bronze::Entities
         (@associations ||= {})[metadata.association_name] = metadata
       end # class method references_one
       alias_method :belongs_to, :references_one
+
+      private
+
+      attr_accessor :associations_module
     end # module
 
     # @param attributes [Hash] The default attributes with which to initialize

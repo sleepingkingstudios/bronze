@@ -55,6 +55,10 @@ module Bronze::Entities
           (@attributes ||= {}).dup.freeze
         end # if-else
       end # class method attributes
+
+      private
+
+      attr_accessor :attributes_module
     end # module
 
     # @param attributes [Hash] The default attributes with which to initialize

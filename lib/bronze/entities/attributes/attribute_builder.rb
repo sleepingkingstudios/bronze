@@ -142,13 +142,15 @@ module Bronze::Entities::Attributes
     def entity_class_attributes
       @entity_class_attributes ||=
         begin
-          unless entity_class.const_defined?(:Attributes)
-            entity_class.const_set(:Attributes, Module.new)
+          unless entity_class.send(:attributes_module)
+            mod = entity_class.send(:attributes_module=, Module.new)
 
-            entity_class.include entity_class::Attributes
+            entity_class.const_set(:AttributesMethods, mod)
+
+            entity_class.include entity_class::AttributesMethods
           end # unless
 
-          entity_class::Attributes
+          entity_class::AttributesMethods
         end # begin
     end # method entity_class_attributes
 

@@ -2,6 +2,8 @@
 
 require 'bronze/entities/attributes/attribute_builder'
 require 'bronze/entities/attributes/attribute_metadata'
+require 'bronze/entities/attributes'
+require 'bronze/entities/base_entity'
 
 require 'bronze/entities/attributes/attributes_examples'
 
@@ -9,10 +11,8 @@ RSpec.describe Bronze::Entities::Attributes::AttributeBuilder do
   include Spec::Entities::Attributes::AttributesExamples
 
   let(:entity_class) do
-    Class.new do
-      def initialize
-        @attributes = {}
-      end # constructor
+    Class.new(Bronze::Entities::BaseEntity) do
+      include Bronze::Entities::Attributes
     end # class
   end # let
   let(:entity)   { entity_class.new }

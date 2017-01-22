@@ -21,13 +21,15 @@ module Bronze::Entities::Associations::Builders
     def entity_class_associations
       @entity_class_associations ||=
         begin
-          unless entity_class.const_defined?(:Associations)
-            entity_class.const_set(:Associations, Module.new)
+          unless entity_class.send(:associations_module)
+            mod = entity_class.send(:associations_module=, Module.new)
 
-            entity_class.include entity_class::Associations
+            entity_class.const_set(:AssociationsMethods, mod)
+
+            entity_class.include entity_class::AssociationsMethods
           end # unless
 
-          entity_class::Associations
+          entity_class::AssociationsMethods
         end # begin
     end # method entity_class_associations
 
