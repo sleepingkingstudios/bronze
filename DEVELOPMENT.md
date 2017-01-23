@@ -51,6 +51,10 @@
     - #old_{attribute}
     - #clean!
     - for _many attributes, track :added, :removed
+  - attributes
+    - Boolean attributes
+      - defineable Boolean type - Bronze::Entities::Attributes::Boolean ?
+      - predicate method
   - primary key types
     - AttributeMetadata#primary_key?
     - PrimaryKey::primary_key macro
@@ -93,6 +97,8 @@
 
 - Single Table Inheritance
   - #types attribute?
+- Ulid
+  - automatically freeze after generation?
 - bronze/rails
 
 ## Chores
