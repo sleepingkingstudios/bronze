@@ -14,14 +14,27 @@ module Bronze::Entities
     # character) ordered by ASCII code points, so encoded numbers are sortable
     # as strings in order of numeric value.
     ENCODING = '0123456789ABCDEFGHJKMNPQRSTVWXYZ'.freeze
+    MATCHER  = /\A[#{ENCODING}]+\z/
     REVERSED =
       ENCODING.split('').each.with_index.with_object({}) do |(char, i), hsh|
         hsh[char] = i
       end. # each with object
       freeze
+    private_constant :MATCHER
     private_constant :REVERSED
 
     class << self
+      # @return [Boolean] True if the value is a valid ULID, otherwise false.
+      def === other
+        return false unless other.is_a?(String)
+
+        return false unless other.length == 26
+
+        return false unless other.upcase =~ MATCHER
+
+        true
+      end # method ===
+
       # Generates a ULID.
       #
       # Encodes a 48-bit timestamp and an 80-bit random value as a string with a

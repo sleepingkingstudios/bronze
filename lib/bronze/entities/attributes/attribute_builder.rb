@@ -8,6 +8,12 @@ module Bronze::Entities::Attributes
     # Error class for handling invalid attribute definitions.
     class Error < ::StandardError; end
 
+    # Provides a list of the valid options for the builder_options parameter
+    # for Builder#build.
+    VALID_BUILDER_OPTIONS = %w(
+      foreign_key
+    ).map(&:freeze).freeze
+
     # Provides a list of the valid options for the attribute_options parameter
     # for Builder#build.
     VALID_OPTIONS = %w(
@@ -24,6 +30,8 @@ module Bronze::Entities::Attributes
 
     # @return [Class] The entity class on which attributes will be defined.
     attr_reader :entity_class
+
+    # rubocop:disable Metrics/MethodLength
 
     # Defines an attribute on the entity class.
     #
@@ -63,9 +71,17 @@ module Bronze::Entities::Attributes
     #
     # @raise Builder::Error if the attribute name or attribute type is missing
     #   or invalid.
-    def build attribute_name, attribute_type, attribute_options = {}
+    def build(
+      attribute_name,
+      attribute_type,
+      attribute_options = {},
+      builder_options = {}
+    ) # end arguments
       validate_attribute_name attribute_name
       validate_attribute_opts attribute_options
+      validate_builder_opts   builder_options
+
+      attribute_options.update(builder_options)
 
       metadata = characterize(
         attribute_name,
@@ -77,6 +93,8 @@ module Bronze::Entities::Attributes
 
       metadata
     end # method build
+
+    # rubocop:enable Metrics/MethodLength
 
     private
 
@@ -97,8 +115,6 @@ module Bronze::Entities::Attributes
     def define_property_methods metadata
       define_reader(metadata)
       define_writer(metadata)
-
-      entity_class.include entity_class_attributes
     end # method define_property_methods
 
     def define_reader metadata
@@ -124,13 +140,18 @@ module Bronze::Entities::Attributes
     end # define_writer
 
     def entity_class_attributes
-      return @entity_class_attributes if @entity_class_attributes
+      @entity_class_attributes ||=
+        begin
+          unless entity_class.send(:attributes_module)
+            mod = entity_class.send(:attributes_module=, Module.new)
 
-      unless entity_class.const_defined?(:Attributes)
-        entity_class.const_set(:Attributes, Module.new)
-      end # unless
+            entity_class.const_set(:AttributesMethods, mod)
 
-      @entity_class_attributes = entity_class::Attributes
+            entity_class.include entity_class::AttributesMethods
+          end # unless
+
+          entity_class::AttributesMethods
+        end # begin
     end # method entity_class_attributes
 
     def raise_error error_message
@@ -154,5 +175,13 @@ module Bronze::Entities::Attributes
         end # unless
       end # each
     end # method validate_attribute_opts
+
+    def validate_builder_opts builder_options
+      builder_options.each do |key, _|
+        unless VALID_BUILDER_OPTIONS.include?(key.to_s)
+          raise_error "invalid builder option #{key.inspect}"
+        end # unless
+      end # each
+    end # method validate_builder_opts
   end # class
 end # class

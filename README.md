@@ -22,6 +22,10 @@ Mainly symbolism. In metallurgy, bronze is an alloy composed chiefly of copper a
 
 A patina is the surface layer of aged copper that gives the metal its distinctive green coloration, as well protection from corrosion and weathering. The Patina gem provides a finishing layer of additional functionality and features to developers using the Bronze framework.
 
+### Dedication
+
+This project is dedicated to my grandfather, who taught me the joy of flight.
+
 ## Bronze Features
 
 The Bronze gem provides the core tools and objects for building an application. Wherever possible, these tools can be used on their own as part of another framework or project - use as much or as little as you want.

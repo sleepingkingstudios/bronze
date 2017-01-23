@@ -1,5 +1,7 @@
 # spec/bronze/entities/attributes/attributes_examples.rb
 
+require 'bronze/entities/ulid'
+
 module Spec::Entities
   module Attributes; end
 end # module
@@ -31,11 +33,11 @@ module Spec::Entities::Attributes::AttributesExamples
       describe "##{reader_name}" do
         it 'should define the reader' do
           if expected_value == undefined
-            expect(entity).to have_reader(attr_name)
+            expect(entity).to have_reader(reader_name)
           else
             expect(entity).
-              to have_reader(attr_name).
-              with_value(attributes.fetch attr_name)
+              to have_reader(reader_name).
+              with_value(expected_value)
           end # if-else
         end # it
       end # describe
@@ -55,6 +57,34 @@ module Spec::Entities::Attributes::AttributesExamples
               to change(entity, reader_name).
               to be == updated_value
           end # if-else
+        end # it
+      end # describe
+    end # describe
+
+    describe "should not define attribute :#{attr_name} on other entities" do
+      let(:entity) { defined?(super()) ? super() : instance }
+      let(:other_entity_class) do
+        Class.new(Bronze::Entities::BaseEntity) do
+          include Bronze::Entities::Attributes
+        end # class
+      end # let
+      let(:other_entity) { other_entity_class.new }
+
+      describe "##{reader_name}" do
+        it 'should not define the reader' do
+          return if defined?(Bronze::Entities::Entity) &&
+                    entity.class == Bronze::Entities::Entity
+
+          expect(other_entity).not_to have_reader(reader_name)
+        end # it
+      end # describe
+
+      describe "##{writer_name}" do
+        it 'should not define the writer' do
+          return if defined?(Bronze::Entities::Entity) &&
+                    entity.class == Bronze::Entities::Entity
+
+          expect(other_entity).not_to have_writer(writer_name)
         end # it
       end # describe
     end # describe

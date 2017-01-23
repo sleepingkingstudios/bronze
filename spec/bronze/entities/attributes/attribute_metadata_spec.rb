@@ -158,6 +158,16 @@ RSpec.describe Bronze::Entities::Attributes::AttributeMetadata do
     end # context
   end # describe
 
+  describe '#foreign_key?' do
+    include_examples 'should have predicate', :foreign_key?, false
+
+    context 'when the foreign key value is set to true' do
+      let(:attribute_options) { { :foreign_key => true } }
+
+      it { expect(instance.foreign_key?).to be true }
+    end # context
+  end # describe
+
   describe '#object_type' do
     include_examples 'should have reader', :object_type, ->() { attribute_type }
 

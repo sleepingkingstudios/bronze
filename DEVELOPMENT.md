@@ -6,18 +6,17 @@
 
 - Associations
   - Entities
-    - foreign_key => attribute
     - Bronze::Entities::Associations::AssociationMetadata
-    - relation macros
-    - nested attributes
-- Operations
-  - resources
-    - convert to modules ?
-    - DSL to include: |
-
-      class CreateOneBook < ApplicationOperation
-        create_one :book
-      end # class
+    - Bronze::Entities::Associations::AssociationBuilder
+    - relation macros - on Bronze::Entities::Associations module
+    - references_one
+    - has_one
+    - has_many
+    - improve testing/validation around missing/mismatched inverse associations
+      - inverse association expected but not defined
+      - inverse association has incompatible type
+      - inverse association already has other inverse
+    - :foreign_key is private writer? Or clears association(s).
 
 ## Features
 
@@ -33,6 +32,11 @@
     - otherwise adds TypeConstraint => Class
   - add_constraint Publisher.contract, :each => :publisher # Like :on, but wraps in an EachConstraint
 - Entity
+  - associations
+    - implicit inverse associations
+    - nested attributes
+    - builder methods - build_{association}, collection.build
+    - query interface for _many associations?
   - attribute normalization (Symbol <=> String, etc)
   - collection attributes
     - configuration option for restricting entity Hash attribute key types
@@ -46,6 +50,14 @@
     - #{attribute}_changed?
     - #old_{attribute}
     - #clean!
+    - for _many attributes, track :added, :removed
+  - primary key types
+    - AttributeMetadata#primary_key?
+    - PrimaryKey::primary_key macro
+    - PrimaryKey::Integer  # SQL
+    - PrimaryKey::ObjectId # MongoDB
+    - PrimaryKey::Ulid
+    - ::foreign_key takes optional type argument
 - Errors#first
 - Query
   - #all returns with JSON envelope for advanced features?

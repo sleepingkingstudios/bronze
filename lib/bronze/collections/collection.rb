@@ -1,10 +1,11 @@
 # lib/bronze/collections/collection.rb
 
+require 'sleeping_king_studios/tools/toolbox/constant_map'
+require 'sleeping_king_studios/tools/toolbox/delegator'
+
 require 'bronze/collections'
 require 'bronze/errors/errors'
 require 'bronze/transforms/copy_transform'
-require 'sleeping_king_studios/tools/toolbox/constant_map'
-require 'sleeping_king_studios/tools/toolbox/delegator'
 
 module Bronze::Collections
   # A module for wrapping a set of data from a datastore. The data may be a

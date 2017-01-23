@@ -57,7 +57,12 @@ module Bronze::Entities::Attributes
     # @return [Boolean] True if the default value is set, otherwise false.
     def default?
       !@attribute_options[:default].nil?
-    end # method default
+    end # method default?
+
+    # @return [Boolean] True if the attribute is a foreign key, otherwise false.
+    def foreign_key?
+      !!@attribute_options[:foreign_key]
+    end # method foreign_key?
 
     # @return [Boolean] True if the attribute is read-only, otherwise false.
     def read_only?
