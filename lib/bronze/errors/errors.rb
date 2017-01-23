@@ -6,6 +6,7 @@ require 'sleeping_king_studios/tools/toolbox/delegator'
 module Bronze::Errors
   # Class for encapsulating errors encountered during an operation or process.
   class Errors
+    include Enumerable
     extend SleepingKingStudios::Tools::Toolbox::Delegator
 
     # @param nesting [Array] The nesting of the current errors object.
@@ -28,13 +29,7 @@ module Bronze::Errors
     #   Iterates through the errors and yields each error to the given block.
     #
     #   @yieldparam error [Bronze::Errors::Error] The current error object.
-
-    # @!method map
-    #   Iterates through the errors and yields each error to the given block,
-    #   returning an array containing the results of each yield.
-    #
-    #   @yieldparam error [Bronze::Errors::Error] The current error object.
-    delegate :each, :include?, :map, :to => :to_a
+    delegate :each, :to => :to_a
 
     # @return [Boolean] True if the other object is an Errors object of the same
     #   class and has the same errors.
@@ -49,6 +44,8 @@ module Bronze::Errors
     #
     # @param child_name [String, Symbol] The name of the child errors object.
     def [] child_name
+      child_name = child_name.intern if child_name.is_a?(String)
+
       children[child_name]
     end # method []
 
@@ -83,6 +80,17 @@ module Bronze::Errors
 
       children.any? { |_, child| child.detect(&block) }
     end # method detect
+
+    # Returns a deeply nested errors object by its nesting.
+    #
+    # @param fragments [Array<Symbol>] The nesting of the desired errors object.
+    #
+    # @return [Errors] The nested errors object.
+    def dig *fragments
+      fragments.reduce(self) do |errors, fragment|
+        errors[fragment]
+      end # reduce
+    end # method dig
 
     # @return [Boolean] True if there are no errors on the object or on any
     #   child errors object; otherwise false.

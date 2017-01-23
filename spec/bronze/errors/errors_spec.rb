@@ -199,8 +199,15 @@ RSpec.describe Bronze::Errors::Errors do
       it 'should return a nested errors object' do
         child = instance[child_name]
 
+        expected_name =
+          if child_name.is_a?(String)
+            child_name.intern
+          else
+            child_name
+          end # if
+
         expect(child).to be_a described_class
-        expect(child.nesting).to be == (nesting + [child_name])
+        expect(child.nesting).to be == (nesting + [expected_name])
 
         expect(child.send :parent).to be instance
       end # it
@@ -212,8 +219,20 @@ RSpec.describe Bronze::Errors::Errors do
 
     include_examples 'should return a nested errors object'
 
+    describe 'with a string' do
+      let(:child_name) { super().to_s }
+
+      include_examples 'should return a nested errors object'
+    end # describe
+
     wrap_context 'when there are many ancestors' do
       include_examples 'should return a nested errors object'
+
+      describe 'with a string' do
+        let(:child_name) { super().to_s }
+
+        include_examples 'should return a nested errors object'
+      end # describe
     end # wrap_context
 
     wrap_context 'when there are many descendants' do
@@ -235,6 +254,33 @@ RSpec.describe Bronze::Errors::Errors do
 
         expect(ary).to contain_exactly(*expected)
       end # it
+
+      describe 'with a string' do
+        let(:child_name) { super().to_s }
+
+        it 'should return the existing errors object' do
+          child = instance[child_name]
+
+          expected_name =
+            if child_name.is_a?(String)
+              child_name.intern
+            else
+              child_name
+            end # if
+
+          expect(child).to be_a described_class
+          expect(child.nesting).to be == (nesting + [expected_name])
+
+          expect(child.send :parent).to be instance
+
+          ary = child.to_a
+          ary = ary.map do |error|
+            [error.nesting, error.type, error.params]
+          end # ary
+
+          expect(ary).to contain_exactly(*expected)
+        end # it
+      end # describe
     end # wrap_context
   end # describe
 
@@ -283,6 +329,47 @@ RSpec.describe Bronze::Errors::Errors do
         let(:error_type) { :must_be_present }
 
         include_examples 'should append an error'
+      end # describe
+    end # wrap_context
+  end # describe
+
+  describe '#any?' do
+    let(:error_type) { :require_more_minerals }
+    let(:block)      { ->(e) { e.type == error_type } }
+
+    it { expect(instance).to respond_to(:any?).with(0).arguments }
+
+    it { expect(instance.any?(&block)).to be false }
+
+    wrap_context 'when many errors are added' do
+      it { expect(instance.any?(&block)).to be false }
+
+      describe 'with a matching error' do
+        let(:error_type) { errors.first[0] }
+
+        it { expect(instance.any?(&block)).to be true }
+      end # describe
+    end # wrap_context
+
+    wrap_context 'when there are many descendants' do
+      it { expect(instance.any?(&block)).to be false }
+
+      describe 'with a matching error' do
+        let(:error_type) { children[:_].first[0] }
+
+        it { expect(instance.any?(&block)).to be true }
+      end # describe
+
+      describe 'with a nested matching error' do
+        let(:error_nesting) { [:articles, 0, :tags] }
+        let(:error_type) do
+          error_data =
+            error_nesting.reduce(children) { |hsh, key| hsh[key] }[:_]
+
+          error_data.first[0]
+        end # let
+
+        it { expect(instance.any?(&block)).to be true }
       end # describe
     end # wrap_context
   end # describe
@@ -337,6 +424,49 @@ RSpec.describe Bronze::Errors::Errors do
         end # let
 
         it { expect(instance.detect { |e| e == error }).to be true }
+      end # describe
+    end # wrap_context
+  end # describe
+
+  describe '#dig' do
+    it 'should define the method' do
+      expect(instance).
+        to respond_to(:dig).
+        with(1).argument.
+        and_unlimited_arguments
+    end # it
+
+    describe 'with a nesting with no errors' do
+      it 'should return an empty errors object' do
+        expected = instance[:name]
+
+        expect(instance.dig :name).to be expected
+      end # it
+    end # describe
+
+    wrap_context 'when there are many descendants' do
+      describe 'with a nesting with no errors' do
+        it 'should return an empty errors object' do
+          expected = instance[:name]
+
+          expect(instance.dig :name).to be expected
+        end # it
+      end # describe
+
+      describe 'with a nesting with errors' do
+        it 'should return the errors object' do
+          expected = instance[:publisher]
+
+          expect(instance.dig :publisher).to be expected
+        end # it
+      end # describe
+
+      describe 'with a deep nesting with errors' do
+        it 'should return the errors object' do
+          expected = instance[:articles][0][:tags]
+
+          expect(instance.dig :articles, 0, :tags).to be expected
+        end # it
       end # describe
     end # wrap_context
   end # describe
@@ -437,7 +567,7 @@ RSpec.describe Bronze::Errors::Errors do
   end # describe
 
   describe '#map' do
-    it { expect(instance).to respond_to(:map).with(0).arguments.and_a_block }
+    it { expect(instance).to respond_to(:map).with(0).arguments }
 
     wrap_context 'when many errors are added' do
       it 'should yield the errors' do
