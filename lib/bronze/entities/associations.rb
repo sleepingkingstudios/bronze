@@ -33,18 +33,25 @@ module Bronze::Entities
         end # if-else
       end # class method associations
 
+      # rubocop:disable Metrics/MethodLength
+
       # Defines a foreign key attribute.
       def foreign_key attribute_name
         builder  = Bronze::Entities::Attributes::AttributeBuilder.new(self)
         metadata = builder.build(
           attribute_name,
           Bronze::Entities::PrimaryKey::KEY_TYPE,
-          { :read_only => true },
+          {
+            :allow_nil => true,
+            :read_only => true
+          }, # end options
           :foreign_key => true
         ) # end build
 
         (@attributes ||= {})[metadata.attribute_name] = metadata
       end # class method foreign_key
+
+      # rubocop:enable Metrics/MethodLength
 
       # rubocop:disable Style/PredicateName
 
