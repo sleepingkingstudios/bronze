@@ -1387,6 +1387,7 @@ module Spec::Entities::Associations::AssociationsExamples
           expect(metadata.attribute_name).to be == attribute_name
           expect(metadata.attribute_type).to be_a attribute_type_class
           expect(metadata.object_type).to be == attribute_type
+          expect(metadata.allow_nil?).to be true
           expect(metadata.foreign_key?).to be true
 
           expect(described_class.attributes[attribute_name]).to be metadata
