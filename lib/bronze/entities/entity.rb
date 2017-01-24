@@ -3,6 +3,7 @@
 require 'bronze/entities/associations'
 require 'bronze/entities/attributes'
 require 'bronze/entities/base_entity'
+require 'bronze/entities/normalization'
 require 'bronze/entities/primary_key'
 
 require 'bronze/entities/ulid'
@@ -15,5 +16,6 @@ module Bronze::Entities
     include Bronze::Entities::Attributes
     include Bronze::Entities::Associations
     include Bronze::Entities::PrimaryKey
+    include Bronze::Entities::Normalization
   end # class
 end # module
