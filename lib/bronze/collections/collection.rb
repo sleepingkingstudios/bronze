@@ -137,7 +137,7 @@ module Bronze::Collections
     #
     # @return [Bronze::Transform] The transform object.
     def transform
-      @transform ||= Bronze::Transforms::CopyTransform.new
+      @transform ||= default_transform
     end # method transform
 
     # Updates the specified hash in the datastore.
@@ -160,6 +160,10 @@ module Bronze::Collections
     def build_errors
       ::Bronze::Errors::Errors.new
     end # method build_errors
+
+    def default_transform
+      Bronze::Transforms::CopyTransform.new
+    end # method default_transform
 
     def wrap_errors
       errors = yield

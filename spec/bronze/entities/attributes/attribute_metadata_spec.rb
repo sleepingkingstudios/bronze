@@ -81,7 +81,11 @@ RSpec.describe Bronze::Entities::Attributes::AttributeMetadata do
         expect(attr_type).to be_a attribute_type_class
         expect(attr_type.collection?).to be true
         expect(attr_type.object_type).to be Hash
-        expect(attr_type.key_type).to be Symbol
+
+        key_type = attr_type.key_type
+        expect(key_type).to be_a attribute_type_class
+        expect(key_type.collection?).to be false
+        expect(key_type.object_type).to be Symbol
 
         member_type = attr_type.member_type
         expect(member_type).to be_a attribute_type_class

@@ -67,16 +67,13 @@ module Bronze::Entities::Constraints
     end # method match_attribute_type
 
     def match_hash_attribute_type hsh, attr_type, nesting
-      error_type  = Bronze::Constraints::TypeConstraint::NOT_KIND_OF_ERROR
       key_type    = attr_type.key_type
       member_type = attr_type.member_type
 
       hsh.each do |key, value|
         inner_nesting = nesting.dup.push(key)
 
-        unless key.is_a?(key_type)
-          nested_errors(inner_nesting).add(error_type, :type => key_type)
-        end # unless
+        match_attribute_type key, key_type, inner_nesting
 
         match_attribute_type value, member_type, inner_nesting
       end # each

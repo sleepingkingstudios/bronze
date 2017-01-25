@@ -1,5 +1,8 @@
 # spec/bronze/entities/attributes/attribute_type_spec.rb
 
+require 'bigdecimal'
+require 'date'
+
 require 'bronze/entities/attributes/attribute_type'
 
 RSpec.describe Bronze::Entities::Attributes::AttributeType do
@@ -106,6 +109,18 @@ RSpec.describe Bronze::Entities::Attributes::AttributeType do
     end # describe
   end # describe
 
+  describe '#array?' do
+    include_examples 'should have predicate', :array?, false
+
+    wrap_context 'when the attribute type is an Array' do
+      it { expect(instance.array?).to be true }
+    end # wrap_context
+
+    wrap_context 'when the attribute type is a Hash' do
+      it { expect(instance.array?).to be false }
+    end # wrap_context
+  end # describe
+
   describe '#collection?' do
     include_examples 'should have predicate', :collection?, false
 
@@ -118,6 +133,95 @@ RSpec.describe Bronze::Entities::Attributes::AttributeType do
     end # wrap_context
   end # describe
 
+  describe '#denormalize' do
+    it { expect(instance).to respond_to(:denormalize).with(1).argument }
+
+    it 'should return the value' do
+      expect(instance.denormalize 0).to be 0
+    end # it
+
+    context 'with the attribute type is BigDecimal' do
+      let(:attribute_type) { BigDecimal }
+      let(:value)          { BigDecimal.new('5.0') }
+
+      it { expect(instance.denormalize value.to_s).to be == value }
+    end # context
+
+    context 'with the attribute type is Date' do
+      let(:attribute_type) { Date }
+      let(:value)          { '1982-07-09' }
+
+      it { expect(instance.denormalize value).to be == Date.new(1982, 7, 9) }
+    end # context
+
+    context 'with the attribute type is DateTime' do
+      let(:attribute_type) { DateTime }
+      let(:value)          { '1982-07-09T12:30:00+0000' }
+      let(:expected)       { DateTime.new(1982, 7, 9, 12, 30, 0) }
+
+      it { expect(instance.denormalize value).to be == expected }
+    end # context
+
+    context 'with the attribute type is Symbol' do
+      let(:attribute_type) { Symbol }
+      let(:value)          { 'symbol_value' }
+
+      it { expect(instance.denormalize value.to_s).to be == :symbol_value }
+    end # context
+
+    context 'when the attribute type is an Array' do
+      let(:attribute_type) { Array[Date] }
+      let(:value) do
+        [
+          '1977-05-25',
+          '1980-06-20',
+          '1983-05-25'
+        ] # end strings
+      end # let
+      let(:expected) do
+        [
+          Date.new(1977, 5, 25),
+          Date.new(1980, 6, 20),
+          Date.new(1983, 5, 25)
+        ] # end dates
+      end # let
+
+      it { expect(instance.denormalize value).to be == expected }
+    end # context
+
+    context 'when the attribute type is a Hash' do
+      let(:attribute_type) { Hash[Symbol, Date] }
+      let(:value) do
+        {
+          'anh'  => '1977-05-25',
+          'esb'  => '1980-06-20',
+          'rotj' => '1983-05-25'
+        } # end strings
+      end # let
+      let(:expected) do
+        {
+          :anh  => Date.new(1977, 5, 25),
+          :esb  => Date.new(1980, 6, 20),
+          :rotj => Date.new(1983, 5, 25)
+        } # end dates
+      end # let
+
+      it { expect(instance.denormalize value).to be == expected }
+    end # context
+  end # describe
+
+  describe '#hash?' do
+    include_examples 'should have predicate', :hash?, false
+
+    wrap_context 'when the attribute type is an Array' do
+      it { expect(instance.hash?).to be false }
+    end # wrap_context
+
+    wrap_context 'when the attribute type is a Hash' do
+      it { expect(instance.hash?).to be true }
+    end # wrap_context
+  end # describe
+
   describe '#key_type' do
     include_examples 'should have reader', :key_type, nil
 
@@ -126,7 +230,13 @@ RSpec.describe Bronze::Entities::Attributes::AttributeType do
     end # wrap_context
 
     wrap_context 'when the attribute type is a Hash' do
-      it { expect(instance.key_type).to be Symbol }
+      it 'should be an attribute type' do
+        attr_type = instance.key_type
+
+        expect(attr_type).to be_a described_class
+        expect(attr_type.collection?).to be false
+        expect(attr_type.object_type).to be Symbol
+      end # it
     end # wrap_context
   end # describe
 
@@ -152,6 +262,83 @@ RSpec.describe Bronze::Entities::Attributes::AttributeType do
         expect(attr_type.object_type).to be String
       end # it
     end # wrap_context
+  end # describe
+
+  describe '#normalize' do
+    it { expect(instance).to respond_to(:normalize).with(1).argument }
+
+    it 'should return the value' do
+      expect(instance.normalize 0).to be 0
+    end # it
+
+    context 'with the attribute type is BigDecimal' do
+      let(:attribute_type) { BigDecimal }
+      let(:value)          { BigDecimal.new('5.0') }
+
+      it { expect(instance.normalize value).to be == value.to_s }
+    end # context
+
+    context 'with the attribute type is Date' do
+      let(:attribute_type) { Date }
+      let(:value)          { Date.new(1982, 7, 9) }
+
+      it { expect(instance.normalize value).to be == '1982-07-09' }
+    end # context
+
+    context 'with the attribute type is DateTime' do
+      let(:attribute_type) { DateTime }
+      let(:value)          { DateTime.new(1982, 7, 9, 12, 30, 0) }
+      let(:expected)       { '1982-07-09T12:30:00+0000' }
+
+      it { expect(instance.normalize value).to be == expected }
+    end # context
+
+    context 'with the attribute type is Symbol' do
+      let(:attribute_type) { Symbol }
+      let(:value)          { :symbol_value }
+
+      it { expect(instance.normalize value).to be == 'symbol_value' }
+    end # context
+
+    context 'when the attribute type is an Array' do
+      let(:attribute_type) { Array[Date] }
+      let(:value) do
+        [
+          Date.new(1977, 5, 25),
+          Date.new(1980, 6, 20),
+          Date.new(1983, 5, 25)
+        ] # end dates
+      end # let
+      let(:expected) do
+        [
+          '1977-05-25',
+          '1980-06-20',
+          '1983-05-25'
+        ] # end strings
+      end # let
+
+      it { expect(instance.normalize value).to be == expected }
+    end # context
+
+    context 'when the attribute type is a Hash' do
+      let(:attribute_type) { Hash[Symbol, Date] }
+      let(:value) do
+        {
+          :anh  => Date.new(1977, 5, 25),
+          :esb  => Date.new(1980, 6, 20),
+          :rotj => Date.new(1983, 5, 25)
+        } # end dates
+      end # let
+      let(:expected) do
+        {
+          'anh'  => '1977-05-25',
+          'esb'  => '1980-06-20',
+          'rotj' => '1983-05-25'
+        } # end strings
+      end # let
+
+      it { expect(instance.normalize value).to be == expected }
+    end # context
   end # describe
 
   describe '#object_type' do
