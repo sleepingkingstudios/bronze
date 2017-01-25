@@ -262,6 +262,40 @@ module Spec::Collections
 
       include_examples 'should run queries against the datastore'
 
+      describe '#clone' do
+        let(:copy_transform_class) do
+          Class.new(Bronze::Transforms::AttributesTransform) do
+            attributes :title, :author
+          end # class
+        end # let
+        let(:copy_transform) do
+          copy_transform_class.new(entity_class)
+        end # let
+        let(:copy) { instance.clone }
+
+        it 'should return a copy of the collection' do
+          expect(copy.to_a).to be == instance.to_a
+
+          expect { copy.insert :id => '0', :title => 'The Hobbit' }.
+            to change(instance, :count).by(1)
+
+          expect { copy.send(:transform=, copy_transform) }.
+            not_to change(instance, :transform)
+        end # it
+
+        wrap_context 'when the collection contains many items' do
+          it 'should return a copy of the collection' do
+            expect(copy.to_a).to be == instance.to_a
+
+            expect { copy.insert :id => '0', :title => 'The Hobbit' }.
+              to change(instance, :count).by(1)
+
+            expect { copy.send(:transform=, copy_transform) }.
+              not_to change(instance, :transform)
+          end # it
+        end # wrap_context
+      end # describe
+
       describe '#delete' do
         wrap_context 'when the collection contains many items' do
           describe 'with a valid id' do
