@@ -38,6 +38,12 @@ RSpec.describe Bronze::Entities::Attributes::Transforms::SymbolTransform do
 
       it { expect(instance.denormalize str).to be == :string_value }
     end # describe
+
+    describe 'with a Symbol' do
+      let(:value) { :symbol_value }
+
+      it { expect(instance.denormalize value).to be == value }
+    end # describe
   end # describe
 
   describe '#normalize' do

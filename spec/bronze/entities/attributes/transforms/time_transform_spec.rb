@@ -32,6 +32,12 @@ RSpec.describe Bronze::Entities::Attributes::Transforms::TimeTransform do
 
       it { expect(instance.denormalize value.to_i).to be == value }
     end # describe
+
+    describe 'with a Time' do
+      let(:value) { Time.new(1982, 7, 9) }
+
+      it { expect(instance.denormalize value).to be == value }
+    end # describe
   end # describe
 
   describe '#normalize' do

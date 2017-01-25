@@ -71,6 +71,16 @@ RSpec.describe Bronze::Entities::Attributes::Transforms::DateTimeTransform do
         end # it
       end # method wrap_context
     end # describe
+
+    describe 'with a Date' do
+      let(:value) { DateTime.new(1982, 7, 9, 12, 30, 0) }
+
+      it { expect(instance.denormalize value).to be == value }
+
+      wrap_context 'when a custom date format is defined' do
+        it { expect(instance.denormalize value).to be == value }
+      end # method wrap_context
+    end # describe
   end # describe
 
   describe '#format' do

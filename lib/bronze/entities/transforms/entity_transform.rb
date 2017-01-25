@@ -8,12 +8,19 @@ module Bronze::Entities::Transforms
   class EntityTransform < Bronze::Transforms::Transform
     # @param entity_class [Class] The class into which data hashes will be
     #   denormalized.
-    def initialize entity_class
+    # @param options [Hash] Configuration options that will be passed to
+    #   #normalize and #denormalize.
+    def initialize entity_class, **options
       @entity_class = entity_class
+      @options      = options
     end # constructor
 
     # @return [Class] The class into which data hashes will be denormalized.
     attr_reader :entity_class
+
+    # return [Hash] Configuration options that will be passed to #normalize and
+    #   #denormalize.
+    attr_reader :options
 
     # Converts a data hash into an entity instance and sets the value of the
     # entity attribute to the values of the hash for each attribute defined by
@@ -25,7 +32,7 @@ module Bronze::Entities::Transforms
     #
     # @see #entity_class.
     def denormalize attributes
-      entity_class.denormalize(attributes || {})
+      entity_class.denormalize(attributes || {}, options)
     end # method denormalize
 
     # Converts the entity into a data hash, with the keys being the defined
@@ -37,7 +44,7 @@ module Bronze::Entities::Transforms
     def normalize entity
       return {} if entity.nil?
 
-      entity.normalize
+      entity.normalize(options)
     end # method normalize
   end # class
 end # module

@@ -11,13 +11,33 @@ RSpec.describe Bronze::Entities::Transforms::EntityTransform do
       attribute :preface, String
     end # class
   end # let
-  let(:instance) { described_class.new entity_class }
+  let(:options)  { {} }
+  let(:instance) { described_class.new entity_class, options }
 
   describe '::new' do
-    it { expect(described_class).to be_constructible.with(1).argument }
+    it 'should define the constructor' do
+      expect(described_class).
+        to be_constructible.
+        with(1).argument.
+        and_arbitrary_keywords
+    end # it
   end # describe
 
   describe '#denormalize' do
+    shared_examples 'should forward the options to the entity class' do
+      context 'when options are set for the transform' do
+        let(:options) { { :permit => Symbol } }
+
+        it 'should forward the options to the entity' do
+          expect(entity_class).
+            to receive(:denormalize).
+            with(attributes, options)
+
+          instance.denormalize attributes
+        end # it
+      end # context
+    end # shared_examples
+
     let(:expected) do
       entity = entity_class.new
 
@@ -45,8 +65,10 @@ RSpec.describe Bronze::Entities::Transforms::EntityTransform do
     end # describe
 
     describe 'with an empty attributes hash' do
+      let(:attributes) { {} }
+
       it 'should return an empty entity' do
-        entity = instance.denormalize({})
+        entity = instance.denormalize(attributes)
 
         expect(entity).to be_a entity_class
 
@@ -56,6 +78,8 @@ RSpec.describe Bronze::Entities::Transforms::EntityTransform do
           expect(entity.send attr_name).to be nil
         end # each
       end # it
+
+      include_examples 'should forward the options to the entity class'
     end # describe
 
     describe 'with an attributes hash' do
@@ -64,6 +88,8 @@ RSpec.describe Bronze::Entities::Transforms::EntityTransform do
       end # let
 
       it { expect(instance.denormalize attributes).to be == expected }
+
+      include_examples 'should forward the options to the entity class'
     end # describe
   end # describe
 
@@ -71,7 +97,23 @@ RSpec.describe Bronze::Entities::Transforms::EntityTransform do
     include_examples 'should have reader', :entity_class, ->() { entity_class }
   end # describe
 
+  describe '#options' do
+    include_examples 'should have reader', :options, {}
+  end # describe
+
   describe '#normalize' do
+    shared_examples 'should forward the options to the entity' do
+      context 'when options are set for the transform' do
+        let(:options) { { :permit => Symbol } }
+
+        it 'should forward the options to the entity' do
+          expect(entity).to receive(:normalize).with(options)
+
+          instance.normalize entity
+        end # it
+      end # context
+    end # shared_examples
+
     let(:expected) do
       entity_class.attributes.each_key.with_object({}) do |attr_name, hsh|
         hsh[attr_name] = entity.send(attr_name)
@@ -81,8 +123,6 @@ RSpec.describe Bronze::Entities::Transforms::EntityTransform do
     it { expect(instance).to respond_to(:normalize).with(1).argument }
 
     describe 'with nil' do
-      let(:entity) { entity_class.new }
-
       it { expect(instance.normalize nil).to be == {} }
     end # describe
 
@@ -90,6 +130,8 @@ RSpec.describe Bronze::Entities::Transforms::EntityTransform do
       let(:entity) { entity_class.new }
 
       it { expect(instance.normalize entity).to be == expected }
+
+      include_examples 'should forward the options to the entity'
     end # describe
 
     describe 'with an entity with set attributes' do
@@ -98,6 +140,8 @@ RSpec.describe Bronze::Entities::Transforms::EntityTransform do
       end # let
 
       it { expect(instance.normalize entity).to be == expected }
+
+      include_examples 'should forward the options to the entity'
     end # describe
   end # describe
 end # describe

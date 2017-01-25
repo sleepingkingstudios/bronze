@@ -11,10 +11,12 @@ module Bronze::Entities
 
     # Class methods to define when including Normalization in a class.
     module ClassMethods
+      # rubocop:disable Lint/UnusedMethodArgument
+
       # Returns an entity instance from the given normalized representation.
       #
       # @return [Bronze::Entities::Entity] The entity.
-      def denormalize hsh
+      def denormalize hsh, permit: nil
         entity = new
 
         attributes.each do |attr_name, metadata|
@@ -26,6 +28,8 @@ module Bronze::Entities
 
         entity
       end # method denormalize
+
+      # rubocop:enable Lint/UnusedMethodArgument
     end # module
 
     # Returns a normalized representation of the entity. The normal
@@ -34,12 +38,16 @@ module Bronze::Entities
     # Array of normal values, or a Hash with String keys and normal values.
     #
     # @return [Hash] The normal representation.
-    def normalize
-      hsh = {}
+    def normalize permit: nil
+      hsh       = {}
+      permitted = Array(permit).compact
 
       self.class.attributes.each do |attr_name, metadata|
         value = send(metadata.reader_name)
-        value = metadata.attribute_type.normalize(value)
+
+        unless permitted.include?(metadata.object_type)
+          value = metadata.attribute_type.normalize(value)
+        end # unless
 
         hsh[attr_name] = value
       end # each

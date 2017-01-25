@@ -78,6 +78,12 @@ RSpec.describe Bronze::Entities::Attributes::Transforms::BigDecimalTransform do
 
       it { expect(instance.denormalize str).to be == BigDecimal.new(str) }
     end # describe
+
+    describe 'with a BigDecimal' do
+      let(:value) { BigDecimal.new('3.14') }
+
+      it { expect(instance.denormalize value).to be == value }
+    end # describe
   end # describe
 
   describe '#normalize' do

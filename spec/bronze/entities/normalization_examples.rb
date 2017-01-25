@@ -51,7 +51,10 @@ module Spec::Entities
         end # let
 
         it 'should define the method' do
-          expect(described_class).to respond_to(:denormalize).with(1).argument
+          expect(described_class).
+            to respond_to(:denormalize).
+            with(1).argument.
+            and_keywords(:permit)
         end # it
 
         it 'should return an entity' do
@@ -86,7 +89,12 @@ module Spec::Entities
       describe '#normalize' do
         let(:expected) { instance.attributes }
 
-        it { expect(instance).to respond_to(:normalize).with(0).arguments }
+        it 'should define the method' do
+          expect(instance).
+            to respond_to(:normalize).
+            with(0).arguments.
+            and_keywords(:permit)
+        end # it
 
         it { expect(instance.normalize).to be == expected }
 
@@ -97,6 +105,33 @@ module Spec::Entities
             let(:expected) { super().merge normalized }
 
             it { expect(instance.normalize).to be == expected }
+
+            describe 'with :permit => Class' do
+              let(:expected) do
+                super().merge :happiness => attributes[:happiness]
+              end # let
+
+              it 'should normalize the values' do
+                result = instance.normalize :permit => BigDecimal
+
+                expect(result).to be == expected
+              end # it
+            end # describe
+
+            describe 'with :permit => [Class, Class]' do
+              let(:expected) do
+                super().merge(
+                  :happiness   => attributes[:happiness],
+                  :captured_at => attributes[:captured_at]
+                ) # end expected
+              end # let
+
+              it 'should normalize the values' do
+                result = instance.normalize :permit => [BigDecimal, DateTime]
+
+                expect(result).to be == expected
+              end # it
+            end # describe
           end # wrap_context
         end # wrap_context
       end # describe

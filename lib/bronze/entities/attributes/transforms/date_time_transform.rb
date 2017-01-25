@@ -17,6 +17,8 @@ module Bronze::Entities::Attributes::Transforms
     end # method initialize
 
     def denormalize value
+      return value if value.is_a?(DateTime)
+
       return nil if value.nil? || value.empty?
 
       DateTime.strptime(value, format_for_read)
