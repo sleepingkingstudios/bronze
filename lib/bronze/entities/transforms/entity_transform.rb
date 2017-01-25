@@ -25,15 +25,7 @@ module Bronze::Entities::Transforms
     #
     # @see #entity_class.
     def denormalize attributes
-      return entity_class.new if attributes.nil?
-
-      entity = entity_class.new
-
-      entity_class.attributes.each do |attr_name, _|
-        entity.send(:"#{attr_name}=", attributes[attr_name])
-      end # each
-
-      entity
+      entity_class.denormalize(attributes || {})
     end # method denormalize
 
     # Converts the entity into a data hash, with the keys being the defined
@@ -45,13 +37,7 @@ module Bronze::Entities::Transforms
     def normalize entity
       return {} if entity.nil?
 
-      hsh = {}
-
-      entity_class.attributes.each do |attr_name, _|
-        hsh[attr_name] = entity.send(attr_name)
-      end # each
-
-      hsh
+      entity.normalize
     end # method normalize
   end # class
 end # module

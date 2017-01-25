@@ -18,7 +18,10 @@ module Bronze::Entities
         entity = new
 
         attributes.each do |attr_name, metadata|
-          entity.send(metadata.writer_name, hsh[attr_name])
+          value = hsh[attr_name]
+          value = metadata.attribute_type.denormalize(value)
+
+          entity.send(metadata.writer_name, value)
         end # each
 
         entity
@@ -35,7 +38,10 @@ module Bronze::Entities
       hsh = {}
 
       self.class.attributes.each do |attr_name, metadata|
-        hsh[attr_name] = send(metadata.reader_name)
+        value = send(metadata.reader_name)
+        value = metadata.attribute_type.normalize(value)
+
+        hsh[attr_name] = value
       end # each
 
       hsh

@@ -27,14 +27,21 @@ module Spec::Entities
             :captured_at  => DateTime.new(1996, 2, 27, 12, 0, 0)
           } # end attributes
         end # let
+        let(:normalized) do
+          attributes.merge(
+            :happiness   => attributes[:happiness].to_s,
+            :captured_at => attributes[:captured_at].strftime('%FT%T%z')
+          ) # end normalized
+        end # let
       end # shared_context
 
       describe '::denormalize' do
-        let(:entity) { described_class.denormalize attributes }
+        let(:entity) { described_class.denormalize normalized }
+        let(:normalized) { attributes }
         let(:expected) do
           hsh = {}
 
-          described_class.attributes.each_key do |attr_name|
+          described_class.attributes.each do |attr_name, _metadata|
             hsh[attr_name] = be == attributes[attr_name]
           end # each
 
@@ -77,17 +84,7 @@ module Spec::Entities
       end # describe
 
       describe '#normalize' do
-        let(:expected) do
-          hsh = {}
-
-          described_class.attributes.each_key do |attr_name|
-            hsh[attr_name] = attributes[attr_name]
-          end # each
-
-          hsh[:id] = instance.id if instance.respond_to?(:id)
-
-          hsh
-        end # let
+        let(:expected) { instance.attributes }
 
         it { expect(instance).to respond_to(:normalize).with(0).arguments }
 
@@ -97,6 +94,8 @@ module Spec::Entities
           it { expect(instance.normalize).to be == expected }
 
           wrap_context 'when the entity has attribute values' do
+            let(:expected) { super().merge normalized }
+
             it { expect(instance.normalize).to be == expected }
           end # wrap_context
         end # wrap_context
