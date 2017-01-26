@@ -101,7 +101,9 @@ RSpec.describe Bronze::Transforms::AttributesTransform do
     let(:attribute_names) { [:id] }
     let(:expected) do
       attribute_names.each.with_object(object_class.new) do |attr_name, entity|
-        entity.send(:"#{attr_name}=", attributes[attr_name])
+        attr_value = attributes[attr_name] || attributes[attr_name.to_s]
+
+        entity.send(:"#{attr_name}=", attr_value)
       end # each
     end # let
 
@@ -115,7 +117,15 @@ RSpec.describe Bronze::Transforms::AttributesTransform do
       it { expect(instance.denormalize({})).to be == object_class.new }
     end # describe
 
-    describe 'with an attributes hash' do
+    describe 'with an attributes hash with string keys' do
+      let(:attributes) do
+        { 'id' => '0', 'title' => 'The Art of War', 'author' => 'Sun Tzu' }
+      end # let
+
+      it { expect(instance.denormalize attributes).to be == expected }
+    end # describe
+
+    describe 'with an attributes hash with symbol keys' do
       let(:attributes) do
         { :id => '0', :title => 'The Art of War', :author => 'Sun Tzu' }
       end # let
@@ -130,7 +140,15 @@ RSpec.describe Bronze::Transforms::AttributesTransform do
         it { expect(instance.denormalize({})).to be == object_class.new }
       end # describe
 
-      describe 'with an attributes hash' do
+      describe 'with an attributes hash with string keys' do
+        let(:attributes) do
+          { 'id' => '0', 'title' => 'The Art of War', 'author' => 'Sun Tzu' }
+        end # let
+
+        it { expect(instance.denormalize attributes).to be == expected }
+      end # describe
+
+      describe 'with an attributes hash with symbol keys' do
         let(:attributes) do
           { :id => '0', :title => 'The Art of War', :author => 'Sun Tzu' }
         end # let

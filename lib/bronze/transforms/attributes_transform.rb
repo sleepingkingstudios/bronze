@@ -74,7 +74,9 @@ module Bronze::Transforms
       object = object_class.new
 
       attribute_names.each do |attr_name|
-        object.send(:"#{attr_name}=", attributes[attr_name])
+        attr_value = attributes[attr_name] || attributes[attr_name.to_s]
+
+        object.send(:"#{attr_name}=", attr_value)
       end # each
 
       object
