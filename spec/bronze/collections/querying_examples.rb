@@ -5,7 +5,7 @@ module Spec::Collections
     extend RSpec::SleepingKingStudios::Concerns::SharedExampleGroup
 
     shared_context 'when the data contains many items' do
-      let(:data) do
+      let(:raw_data) do
         [
           {
             :id     => '1',

@@ -9,7 +9,8 @@ RSpec.describe Patina::Collections::Simple::Collection do
   extend RSpec::SleepingKingStudios::Concerns::SharedExampleGroup
   include Spec::Collections::CollectionExamples
 
-  let(:data)        { [] }
+  let(:raw_data)    { [] }
+  let(:data)        { raw_data }
   let(:instance)    { described_class.new data }
   let(:query_class) { Patina::Collections::Simple::Query }
 

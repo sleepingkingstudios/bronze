@@ -8,7 +8,8 @@ require 'bronze/transforms/identity_transform'
 RSpec.describe Bronze::Collections::Reference::Collection do
   include Spec::Collections::CollectionExamples
 
-  let(:data)        { [] }
+  let(:raw_data)    { [] }
+  let(:data)        { raw_data }
   let(:instance)    { described_class.new data }
   let(:query_class) { Bronze::Collections::Reference::Query }
 

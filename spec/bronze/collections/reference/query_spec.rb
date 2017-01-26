@@ -10,7 +10,8 @@ RSpec.describe Bronze::Collections::Reference::Query do
   let(:transform) do
     Bronze::Transforms::IdentityTransform.new
   end # let
-  let(:data)     { [] }
+  let(:raw_data) { [] }
+  let(:data)     { raw_data }
   let(:instance) { described_class.new(data, transform) }
 
   describe '::new' do
