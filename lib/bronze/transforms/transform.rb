@@ -11,6 +11,16 @@ module Bronze::Transforms
     # Subclasses of Transform must implement these methods.
     class NotImplementedError < StandardError; end
 
+    # Creates a transform chain with the current transform followed by the given
+    # transform.
+    #
+    # @param transform [Bronze::Transforms::Transform]
+    #
+    # @return [Bronze::Transforms::TransformChain]
+    def chain transform
+      TransformChain.new(self, transform)
+    end # method chain
+
     # Converts an object from its normalized form.
     #
     # @param _object [Object] The object to convert.
