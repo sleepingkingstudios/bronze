@@ -1,6 +1,7 @@
 # lib/patina/collections/simple/criteria/limit_criterion.rb
 
 require 'bronze/collections/criteria/limit_criterion'
+
 require 'patina/collections/simple/query'
 
 module Patina::Collections::Simple

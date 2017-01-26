@@ -1,6 +1,7 @@
 # lib/patina/collections/simple/criteria/match_criterion.rb
 
 require 'bronze/collections/criteria/match_criterion'
+
 require 'patina/collections/simple/query'
 
 module Patina::Collections::Simple

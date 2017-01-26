@@ -1,6 +1,7 @@
 # lib/patina/collections/simple/query.rb
 
 require 'bronze/collections/query'
+
 require 'patina/collections/simple'
 
 criteria_pattern = File.join(

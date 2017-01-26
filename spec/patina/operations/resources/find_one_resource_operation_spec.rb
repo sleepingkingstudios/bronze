@@ -1,6 +1,7 @@
 # spec/patina/operations/resources/find_one_resource_operation_spec.rb
 
 require 'bronze/collections/reference/repository'
+
 require 'patina/operations/resources/find_one_resource_operation'
 require 'patina/operations/resources/resource_operation_examples'
 

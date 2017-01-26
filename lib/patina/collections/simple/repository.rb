@@ -2,6 +2,7 @@
 
 require 'bronze/collections/repository'
 require 'bronze/entities/collections/entity_repository'
+
 require 'patina/collections/simple/collection'
 require 'patina/collections/simple/collection_builder'
 

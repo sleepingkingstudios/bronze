@@ -1,6 +1,7 @@
 # lib/patina/collections/simple/collection.rb
 
 require 'bronze/collections/collection'
+
 require 'patina/collections/simple/query'
 
 module Patina::Collections::Simple

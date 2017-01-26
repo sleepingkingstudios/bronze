@@ -2,6 +2,7 @@
 
 require 'bronze/collections/reference/repository'
 require 'bronze/errors/errors'
+
 require 'patina/operations/resources/create_one_resource_operation'
 require 'patina/operations/resources/resource_operation_examples'
 

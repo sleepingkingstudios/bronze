@@ -1,8 +1,9 @@
 # spec/patina/collections/simple/query_spec.rb
 
 require 'bronze/collections/query_examples'
-require 'patina/collections/simple/query'
 require 'bronze/transforms/identity_transform'
+
+require 'patina/collections/simple/query'
 
 RSpec.describe Patina::Collections::Simple::Query do
   include Spec::Collections::QueryExamples
