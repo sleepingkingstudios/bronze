@@ -23,4 +23,6 @@ Gem::Specification.new do |gem|
   gem.files        = Dir["lib/**/*.rb", "LICENSE", "*.md"]
 
   gem.add_runtime_dependency 'bronze', '~> 0.0'
+
+  gem.add_development_dependency 'mongo', '~> 2.4', '>= 2.4.1'
 end # gemspec

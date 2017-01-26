@@ -12,3 +12,5 @@ script:
 # Travis-CI Configuration
 cache: bundler
 sudo:  false # Enable containerized builds.
+services:
+- mongodb
