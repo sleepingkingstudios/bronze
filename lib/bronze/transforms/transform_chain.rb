@@ -1,11 +1,11 @@
 # lib/bronze/transforms/transform_chain.rb
 
-require 'bronze/transforms'
+require 'bronze/transforms/transform'
 
 module Bronze::Transforms
   # Collection object that encapsulates a sequence of Transform objects and
   # implements the Transform interface.
-  class TransformChain
+  class TransformChain < Bronze::Transforms::Transform
     # @param transforms [Array<Bronze::Transforms::Transform>] The ordered
     #   sequence of transforms.
     def initialize *transforms

@@ -34,11 +34,47 @@ RSpec.describe Bronze::Collections::Reference::Collection do
   include_examples 'should implement the Collection methods'
 
   describe '#transform' do
+    let(:default_transform_class) { Bronze::Transforms::CopyTransform }
+
+    it { expect(instance.transform).to be_a default_transform_class }
+
     context 'when the instance is initialized with a transform' do
       let(:transform) { Bronze::Transforms::IdentityTransform.new }
       let(:instance)  { described_class.new data, transform }
 
       it { expect(instance.transform).to be transform }
+    end # context
+  end # describe
+
+  describe '#transform=' do
+    let(:new_transform) do
+      Bronze::Transforms::AttributesTransform.new(entity_class)
+    end # let
+
+    it 'should set the transform' do
+      instance.send :transform=, new_transform
+
+      expect(instance.transform).to be new_transform
+    end # it
+
+    context 'when the instance is initialized with a transform' do
+      let(:transform) { Bronze::Transforms::IdentityTransform.new }
+      let(:instance)  { described_class.new data, transform }
+
+      it 'should set the transform' do
+        instance.send :transform=, new_transform
+
+        expect(instance.transform).to be new_transform
+      end # it
+
+      describe 'with nil' do
+        it 'should set the transform to the default' do
+          instance.send :transform=, nil
+
+          expect(instance.transform).
+            to be_a Bronze::Transforms::CopyTransform
+        end # it
+      end # describe
     end # context
   end # describe
 end # describe

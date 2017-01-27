@@ -112,6 +112,6 @@ module Patina::Collections::Simple
       else
         []
       end # if-elsif-else
-    end # method validate_id_presense
+    end # method validate_id_presence
   end # class
 end # class
