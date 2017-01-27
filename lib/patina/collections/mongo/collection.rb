@@ -5,6 +5,7 @@ require 'bronze/collections/collection'
 require 'patina/collections/mongo'
 require 'patina/collections/mongo/primary_key_transform'
 require 'patina/collections/mongo/query'
+require 'patina/collections/validation'
 
 module Patina::Collections::Mongo
   # Implementation of Bronze::Collections::Collection for a MongoDB
@@ -13,6 +14,7 @@ module Patina::Collections::Mongo
   # @see Mongo::Query
   class Collection
     include Bronze::Collections::Collection
+    include Patina::Collections::Validation
 
     # @param mongo_collection [::Mongo::Collection] The collection object for
     #   the data from the native Mongo ruby driver.
@@ -52,6 +54,18 @@ module Patina::Collections::Mongo
       Patina::Collections::Mongo::Query.new(mongo_collection, transform)
     end # method base_query
 
+    def build_mongo_operation_failure_errors message, id, attributes
+      # rubocop:disable Style/EmptyCaseCondition
+      case
+      when message.include?('cannot change _id'),          # MongoDB 2.x
+           message.include?('_id field cannot be changed') # MongoDB 3.x
+        build_primary_key_invalid_error(id, attributes)
+      when message.include?('duplicate key error index')
+        build_errors.add(Errors.record_already_exists, :id => id)
+      end # case
+      # rubocop:enable Style/EmptyCaseCondition
+    end # method build_mongo_operation_failure_errors
+
     def build_primary_key_invalid_error id, attributes
       primary_key = attributes['_id'] || attributes[:_id]
 
@@ -84,11 +98,7 @@ module Patina::Collections::Mongo
       yield
     rescue Mongo::Error::OperationFailure => exception
       errors =
-        if exception.message.include?('_id field cannot be changed')
-          build_primary_key_invalid_error(id, attributes)
-        elsif exception.message.include?('duplicate key error index')
-          build_errors.add(Errors.record_already_exists, :id => id)
-        end # if
+        build_mongo_operation_failure_errors(exception.message, id, attributes)
 
       return errors if errors
 
@@ -136,23 +146,5 @@ module Patina::Collections::Mongo
         build_errors.add(Errors.record_not_found, :id => id)
       end # handle mongo_exceptions
     end # method update_one
-
-    def validate_attributes attributes
-      return build_errors.add(Errors.data_missing) if attributes.nil?
-
-      unless attributes.is_a?(Hash)
-        return build_errors.add(Errors.data_invalid, :attributes => attributes)
-      end # unless
-
-      []
-    end # method validate_attributes
-
-    def validate_id id
-      if id.nil?
-        return build_errors.add(Errors.primary_key_missing, :key => :id)
-      end # if
-
-      []
-    end # method validate_id
   end # class
 end # module
