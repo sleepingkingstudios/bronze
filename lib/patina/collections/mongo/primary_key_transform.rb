@@ -9,6 +9,8 @@ module Patina::Collections::Mongo
   class PrimaryKeyTransform < Bronze::Transforms::Transform
     # (see Bronze::Transforms::Transform#denormalize)
     def denormalize hsh
+      return hsh unless hsh.is_a?(Hash)
+
       hsh = hsh.dup
 
       hsh['id'] = hsh.delete '_id' if hsh.key?('_id')
@@ -18,6 +20,8 @@ module Patina::Collections::Mongo
 
     # (see Bronze::Transforms::Transform#normalize)
     def normalize hsh
+      return hsh unless hsh.is_a?(Hash)
+
       hsh = hsh.dup
 
       hsh['_id'] = hsh.delete 'id' if hsh.key?('id')

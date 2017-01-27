@@ -55,10 +55,6 @@ module Patina::Collections::Mongo
 
     protected
 
-    def primary_key_transform
-      @primary_key_transform ||= PrimaryKeyTransform.new
-    end # method primary_key_transform
-
     def transform= transform
       @transform =
         if transform.is_a?(PrimaryKeyTransform)
@@ -86,5 +82,9 @@ module Patina::Collections::Mongo
     def find_each
       apply_criteria.each { |hsh| yield hsh }
     end # method find_each
+
+    def primary_key_transform
+      @primary_key_transform ||= PrimaryKeyTransform.new
+    end # method primary_key_transform
   end # class
 end # module
