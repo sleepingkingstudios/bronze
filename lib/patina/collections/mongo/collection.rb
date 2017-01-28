@@ -77,6 +77,12 @@ module Patina::Collections::Mongo
       ) # end errors
     end # method build_primary_key_invalid_error
 
+    def clear_collection
+      mongo_collection.delete_many({})
+
+      []
+    end # method clear_collection
+
     def default_transform
       primary_key_transform
     end # method default_transform
