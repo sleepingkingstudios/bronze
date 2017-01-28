@@ -24,7 +24,7 @@ module Bronze::Entities::Attributes
       def attribute *args
         metadata = super
 
-        wrap_property_methods(metadata)
+        define_attribute_change_tracking_methods(metadata)
 
         metadata
       end # method attribute
@@ -32,6 +32,22 @@ module Bronze::Entities::Attributes
       private
 
       attr_accessor :attributes_dirty_tracking_module
+
+      def define_attribute_change_tracking_methods metadata
+        wrap_writer_with_change_tracking(metadata)
+
+        define_attribute_changed_predicate(metadata)
+      end # method define_attribute_change_tracking_methods
+
+      def define_attribute_changed_predicate metadata
+        attr_name = metadata.attribute_name
+
+        entity_class_attribute_dirty_tracking.send :define_method,
+          :"#{attr_name}_changed?",
+          lambda {
+            @attribute_changes.key? attr_name
+          } # end lambda
+      end # method define_attribute_changed_predicate
 
       # rubocop:disable Metrics/MethodLength
       def entity_class_attribute_dirty_tracking
@@ -56,12 +72,8 @@ module Bronze::Entities::Attributes
       end # method entity_class_attribute_dirty_tracking
       # rubocop:enable Metrics/MethodLength
 
-      def wrap_property_methods metadata
-        wrap_writer(metadata)
-      end # method wrap_property_methods
-
       # rubocop:disable Metrics/MethodLength
-      def wrap_writer metadata
+      def wrap_writer_with_change_tracking metadata
         entity_class_attribute_dirty_tracking.send :define_method,
           metadata.writer_name,
           lambda { |value|
@@ -76,7 +88,7 @@ module Bronze::Entities::Attributes
           :private,
           metadata.writer_name
         ) # end send
-      end # wrap_writer
+      end # wrap_writer_with_change_tracking
       # rubocop:enable Metrics/MethodLength
     end # module
 

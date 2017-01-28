@@ -22,11 +22,24 @@ module Spec::Entities::Attributes::DirtyTrackingExamples
       end # let
       let(:updated_value) { defined?(super()) ? super() : undefined }
 
+      describe "##{reader_name}_changed?" do
+        it 'should define the predicate' do
+          expect(instance).
+            to have_predicate(:"#{reader_name}_changed?").
+            with_value false
+        end # it
+      end # describe
+
       describe "##{writer_name}" do
         describe 'with the existing value' do
           it 'should not mark the entity as changed' do
             expect { entity.send(writer_name, prior_value) }.
               not_to change(entity, :attributes_changed?)
+          end # it
+
+          it 'should not mark the attribute as changed' do
+            expect { entity.send(writer_name, prior_value) }.
+              not_to change(entity, :"#{reader_name}_changed?")
           end # it
         end # describe
 
@@ -35,6 +48,12 @@ module Spec::Entities::Attributes::DirtyTrackingExamples
             entity.send(writer_name, updated_value)
 
             expect(entity.attributes_changed?).to be true
+          end # it
+
+          it 'should not mark the attribute as changed' do
+            entity.send(writer_name, updated_value)
+
+            expect(entity.send(:"#{reader_name}_changed?")).to be true
           end # it
         end # describe
       end # describe

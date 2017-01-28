@@ -6,7 +6,6 @@
 
 - Entity
   - dirty_tracking
-    - #changed? - alias #dirty?
     - #changes
     - #{attribute}_changed?
     - #{attribute}_was
