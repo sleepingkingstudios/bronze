@@ -22,6 +22,12 @@ module Bronze::Collections::Reference
       Bronze::Collections::Reference::Query.new(@data, transform)
     end # method base_query
 
+    def clear_collection
+      @data.clear
+
+      []
+    end # method clear_collection
+
     def delete_one id
       index = @data.index { |hsh| hsh[:id] == id }
 

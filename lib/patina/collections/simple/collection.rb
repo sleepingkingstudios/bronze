@@ -28,6 +28,12 @@ module Patina::Collections::Simple
       Patina::Collections::Simple::Query.new(@data, transform)
     end # method base_query
 
+    def clear_collection
+      @data.clear
+
+      []
+    end # method clear_collection
+
     def delete_one id
       errors = validate_id_with_presence(id, :present => true)
 

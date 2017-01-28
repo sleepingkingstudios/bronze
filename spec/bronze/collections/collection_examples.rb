@@ -92,6 +92,12 @@ module Spec::Collections
         it { expect(instance).to respond_to(:delete).with(1).argument }
       end # describe
 
+      describe '#delete_all' do
+        it { expect(instance).to respond_to(:delete_all).with(0).arguments }
+
+        it { expect(instance).to alias_method(:delete_all).as(:clear) }
+      end # describe
+
       describe '#each' do
         it 'should define the method' do
           expect(instance).to respond_to(:each).with(0).arguments.and_a_block
@@ -305,6 +311,37 @@ module Spec::Collections
 
             include_examples 'should delete the item'
           end # describe
+        end # wrap_context
+      end # describe
+
+      describe '#delete_all' do
+        it 'should not change the collection' do
+          result = nil
+          errors = nil
+
+          expect { result, errors = instance.delete_all }.
+            not_to change(instance, :count)
+
+          expect(result).to be true
+          expect(errors).to be == []
+
+          expect(instance.query.to_a).to be == []
+        end # it
+
+        wrap_context 'when the collection contains many items' do
+          it 'should not clear the collection' do
+            result = nil
+            errors = nil
+
+            expect { result, errors = instance.delete_all }.
+              to change(instance, :count).
+              to be 0
+
+            expect(result).to be true
+            expect(errors).to be == []
+
+            expect(instance.query.to_a).to be == []
+          end # it
         end # wrap_context
       end # describe
 

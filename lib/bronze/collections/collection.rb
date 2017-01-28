@@ -104,6 +104,15 @@ module Bronze::Collections
       wrap_errors { delete_one(id) }
     end # method delete
 
+    # Deletes all items from the datastore.
+    #
+    # @return [Array[Boolean, Hash]] If the update succeeds, returns true and
+    #   an empty array. Otherwise, returns false and an array of error messages.
+    def delete_all
+      wrap_errors { clear_collection }
+    end # method delete_all
+    alias_method :clear, :delete_all
+
     # Queries for and returns the resource hash with the requested id from the
     #   datastore.
     def find id
