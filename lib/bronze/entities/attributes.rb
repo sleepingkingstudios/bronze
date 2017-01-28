@@ -66,7 +66,7 @@ module Bronze::Entities
     def initialize attributes = {}
       @attributes = {}
 
-      self.attributes = attributes.dup
+      assign_with_defaults attributes.dup, :force => true
 
       super
     end # constructor
@@ -115,8 +115,6 @@ module Bronze::Entities
       end # each
     end # method attributes
 
-    # rubocop:disable Metrics/AbcSize
-
     # Sets the values of the attributes. If an attribute is missing, it is
     # restored to its default value, or nil if no default value is set for that
     # attribute. Values that are not valid attributes are discarded.
@@ -128,15 +126,22 @@ module Bronze::Entities
     #
     # @see #assign.
     def attributes= values
+      assign_with_defaults values
+    end # method attributes=
+
+    private
+
+    # rubocop:disable Metrics/AbcSize
+    def assign_with_defaults values, force: false
       missing = self.class.attributes.keys - values.keys
       missing.each do |key|
-        unless self.class.attributes[key].read_only?
-          values[key] = self.class.attributes[key].default_value
-        end # unless
+        next if !force && self.class.attributes[key].read_only?
+
+        values[key] = self.class.attributes[key].default_value
       end # each
 
       assign values
-    end # method attributes=
+    end # method assign_with_defaults
     # rubocop:enable Metrics/AbcSize
   end # module
 end # module

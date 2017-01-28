@@ -122,7 +122,7 @@ module Bronze::Entities::Attributes
 
       entity_class_attributes.send :define_method,
         metadata.reader_name,
-        ->() { @attributes[attr_name] ||= metadata.default }
+        ->() { @attributes[attr_name] }
     end # method define_reader
 
     def define_writer metadata

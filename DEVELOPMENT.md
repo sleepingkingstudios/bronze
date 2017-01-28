@@ -4,15 +4,17 @@
 
 ## MVP
 
-- Collection
-  - delete_all
 - Entity
   - dirty_tracking
     - #changed? - alias #dirty?
+    - #changes
     - #{attribute}_changed?
-    - #old_{attribute}
+    - #{attribute}_was
     - #clean!
-    - for _many attributes, track :added, :removed
+    - #previous_changes
+- Association::Collection
+  - dirty tracking
+    - as above, plus #added, #removed ?
 - Query
   - #matching with non-equality predicates
     - $in (element in array)
@@ -21,6 +23,8 @@
 
 - Collection
   - bulk operations
+  - #raw - returns clone with identity transform
+  - use native data types where possible (BigDecimal, Date, etc)
 - Constraint
   - AttributeTypesConstraint
     - :except, :only ?

@@ -172,19 +172,34 @@ RSpec.describe Bronze::Entities::Attributes::AttributeBuilder do
             ->() { "Book #{books_count += 1}" }
           end # let
           let(:attribute_opts) { super().merge :default => default }
-          let(:expected)       { ['Book 1', 'Book 2', 'Book 3'] }
+          let(:books)          { Array.new(3) { entity_class.new } }
+          let(:expected)       { Array.new(3) }
 
-          it 'should set the title to the default value' do
-            books = Array.new(3) { entity_class.new }
+          it { expect(books.map(&:title)).to be == expected }
 
-            expect(books.map(&:title)).to be == expected
-          end # it
+          context 'when the attribute is initialized' do
+            let(:expected) { ['Book 1', 'Book 2', 'Book 3'] }
+
+            before(:example) { books.each { |book| book.title = nil } }
+
+            it 'should set the title to the default value' do
+              expect(books.map(&:title)).to be == expected
+            end # it
+          end # context
         end # describe
 
         describe 'with :default => value' do
           let(:attribute_opts) { super().merge :default => 'Untitled Book' }
 
-          it { expect(entity.title).to be == attribute_opts[:default] }
+          it { expect(entity.title).to be nil }
+
+          describe 'with nil' do
+            it 'should set the value to the default' do
+              expect { entity.title = nil }.
+                to change(entity, :title).
+                to be == attribute_opts[:default]
+            end # describe
+          end # describe
 
           context 'when a value is set' do
             before(:example) { entity.title = 'The Lay of Beleriand' }
