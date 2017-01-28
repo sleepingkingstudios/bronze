@@ -5,7 +5,7 @@ module Spec::Collections
     extend RSpec::SleepingKingStudios::Concerns::SharedExampleGroup
 
     shared_context 'when the data contains many items' do
-      let(:data) do
+      let(:raw_data) do
         [
           {
             :id     => '1',
@@ -159,16 +159,26 @@ module Spec::Collections
       describe '#matching' do
         shared_examples 'should return the items matching the selector' do
           it 'should return the items matching the selector' do
-            query = instance.matching(selector)
+            query      = instance.matching(selector)
+            hash_tools = SleepingKingStudios::Tools::HashTools
+
+            results =
+              query.to_a.map do |obj|
+                if obj.is_a?(Hash)
+                  hash_tools.convert_keys_to_symbols(obj)
+                else
+                  obj
+                end # if-else
+              end # map
 
             expect(query.count).to be expected.count
-            expect(query.to_a).to be == expected
+            expect(results).to be == expected
           end # it
         end # shared_examples
 
         let(:selector) { { :id => '0' } }
         let(:expected) do
-          data.select { |hsh| hsh >= selector }
+          raw_data.select { |hsh| hsh >= selector }
         end # let
 
         include_examples 'should return a query' do
@@ -235,16 +245,21 @@ module Spec::Collections
               { :author => 'Edgar Rice Burroughs' }
             end # let
             let(:expected) do
-              data.select { |hsh| hsh >= first_selector }.
+              raw_data.
+                select { |hsh| hsh >= first_selector }.
                 select { |hsh| hsh >= second_selector }
             end # let
 
             it 'should return the items matching the selector' do
-              query = instance.matching(first_selector)
-              query = query.matching(second_selector)
+              query      = instance.matching(first_selector)
+              query      = query.matching(second_selector)
+              hash_tools = SleepingKingStudios::Tools::HashTools
 
-              expect(query.count).to be 1
-              expect(query.to_a).to be == expected
+              results =
+                query.to_a.map { |hsh| hash_tools.convert_keys_to_symbols(hsh) }
+
+              expect(query.count).to be expected.count
+              expect(results).to be == expected
             end # it
           end # describe
 
@@ -265,7 +280,8 @@ module Spec::Collections
                 { :author => 'Edgar Rice Burroughs' }
               end # let
               let(:expected) do
-                data.select { |hsh| hsh >= first_selector }.
+                raw_data.
+                  select { |hsh| hsh >= first_selector }.
                   select { |hsh| hsh >= second_selector }.
                   map { |hsh| instance.transform.denormalize hsh }
               end # let
@@ -397,9 +413,16 @@ module Spec::Collections
       describe 'chaining criteria' do
         shared_examples 'should return the items matching the criteria' do
           it 'should return the items matching the criteria' do
+            hash_tools = SleepingKingStudios::Tools::HashTools
+
+            results =
+              query.to_a.map do |obj|
+                hash_tools.convert_keys_to_symbols(obj)
+              end # map
+
             expect(query.count).to be expected.count
             expect(query.exists?).to be(expected.count > 0)
-            expect(query.to_a).to be == expected
+            expect(results).to be == expected
           end # it
         end # shared_examples
 
@@ -408,7 +431,7 @@ module Spec::Collections
           let(:count)    { 2 }
           let(:query)    { instance.limit(count).matching(selector) }
           let(:expected) do
-            data.select { |hsh| hsh >= selector }[0...count]
+            raw_data.select { |hsh| hsh >= selector }[0...count]
           end # let
 
           include_examples 'should return the items matching the criteria'
@@ -423,7 +446,7 @@ module Spec::Collections
           let(:count)    { 2 }
           let(:query)    { instance.matching(selector).limit(count) }
           let(:expected) do
-            data.select { |hsh| hsh >= selector }[0...count]
+            raw_data.select { |hsh| hsh >= selector }[0...count]
           end # let
 
           include_examples 'should return the items matching the criteria'

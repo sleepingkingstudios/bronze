@@ -3,6 +3,7 @@
 require 'sleeping_king_studios/tools/toolbox/mixin'
 
 require 'bronze/collections/collection'
+
 require 'patina/operations/resources/one_resource_operation'
 
 module Patina::Operations::Resources

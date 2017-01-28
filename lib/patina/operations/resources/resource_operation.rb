@@ -6,6 +6,7 @@ require 'bronze/contracts/type_contract'
 require 'bronze/entities/contracts/entity_contract'
 require 'bronze/entities/transforms/entity_transform'
 require 'bronze/operations/repository_operation'
+
 require 'patina/operations/resources'
 
 module Patina::Operations::Resources

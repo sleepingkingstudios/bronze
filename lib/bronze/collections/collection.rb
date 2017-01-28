@@ -151,11 +151,13 @@ module Bronze::Collections
       wrap_errors { update_one(id, transform.normalize(attributes)) }
     end # method update
 
-    private
+    protected
 
     attr_writer :name
     attr_writer :repository
     attr_writer :transform
+
+    private
 
     def build_errors
       ::Bronze::Errors::Errors.new

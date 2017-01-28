@@ -1,11 +1,12 @@
 # lib/patina/collections/simple/collection_builder.rb
 
 require 'bronze/collections/collection_builder'
+
 require 'patina/collections/simple/collection'
 
 module Patina::Collections::Simple
   # Builder object for creating instances of
-  # Patina::Collections::SimpleCollection.
+  # Patina::Collections::Simple::Collection.
   class CollectionBuilder < ::Bronze::Collections::CollectionBuilder
     # @param (see Bronze::Collections::CollectionBuilder#initialize)
     # @param @data [Hash] The repository's data hash.

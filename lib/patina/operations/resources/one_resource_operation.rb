@@ -4,6 +4,7 @@ require 'sleeping_king_studios/tools/toolbox/mixin'
 
 require 'bronze/collections/collection'
 require 'bronze/operations/operation'
+
 require 'patina/operations/resources/resource_operation'
 
 module Patina::Operations::Resources

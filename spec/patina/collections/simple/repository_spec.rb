@@ -3,6 +3,7 @@
 require 'bronze/entities/transforms/entity_transform'
 require 'bronze/transforms/copy_transform'
 require 'bronze/transforms/identity_transform'
+
 require 'patina/collections/simple/collection'
 require 'patina/collections/simple/repository'
 

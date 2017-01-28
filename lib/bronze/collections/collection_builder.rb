@@ -55,11 +55,14 @@ module Bronze::Collections
     end # method build_collection
 
     def normalize_collection_name name
-      tools = ::SleepingKingStudios::Tools::StringTools
-      name  = tools.underscore(name.to_s)
-      name  = tools.pluralize(name)
+      name = string_tools.underscore(name.to_s)
+      name = string_tools.pluralize(name)
 
       name
     end # method normalize_collection_name
+
+    def string_tools
+      ::SleepingKingStudios::Tools::StringTools
+    end # method string_tools
   end # class
 end # module

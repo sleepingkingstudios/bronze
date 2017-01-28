@@ -116,6 +116,9 @@ module Spec::Collections
           Bronze::Collections::Criteria::MatchCriterion
         end # let
         let(:selector) { { :id => '0' } }
+        let(:expected_selector) do
+          defined?(super()) ? super() : selector
+        end # let
 
         def perform_action
           instance.matching selector
@@ -128,7 +131,7 @@ module Spec::Collections
 
           criterion = query.send(:criteria).last
           expect(criterion).to be_a criterion_class
-          expect(criterion.selector).to be == selector
+          expect(criterion.selector).to be == expected_selector
         end # it
 
         it 'should not mutate the query' do

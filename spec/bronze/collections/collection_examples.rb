@@ -34,7 +34,7 @@ module Spec::Collections
     end # module
 
     shared_context 'when the collection contains many items' do
-      let(:data) do
+      let(:raw_data) do
         [
           {
             :id     => '1',
@@ -225,8 +225,10 @@ module Spec::Collections
         expect(result).to be true
         expect(errors).to be == []
 
-        item = instance.query.to_a.last
-        hsh  = item.is_a?(Hash) ? item : item.attributes
+        hash_tools = SleepingKingStudios::Tools::HashTools
+        item       = instance.query.to_a.last
+        raw        = item.is_a?(Hash) ? item : item.attributes
+        hsh        = hash_tools.convert_keys_to_symbols(raw)
 
         expect(hsh).to be >= attributes
       end # it
@@ -261,6 +263,40 @@ module Spec::Collections
       end # let
 
       include_examples 'should run queries against the datastore'
+
+      describe '#clone' do
+        let(:copy_transform_class) do
+          Class.new(Bronze::Transforms::AttributesTransform) do
+            attributes :title, :author
+          end # class
+        end # let
+        let(:copy_transform) do
+          copy_transform_class.new(entity_class)
+        end # let
+        let(:copy) { instance.clone }
+
+        it 'should return a copy of the collection' do
+          expect(copy.to_a).to be == instance.to_a
+
+          expect { copy.insert :id => '0', :title => 'The Hobbit' }.
+            to change(instance, :count).by(1)
+
+          expect { copy.send(:transform=, copy_transform) }.
+            not_to change(instance, :transform)
+        end # it
+
+        wrap_context 'when the collection contains many items' do
+          it 'should return a copy of the collection' do
+            expect(copy.to_a).to be == instance.to_a
+
+            expect { copy.insert :id => '0', :title => 'The Hobbit' }.
+              to change(instance, :count).by(1)
+
+            expect { copy.send(:transform=, copy_transform) }.
+              not_to change(instance, :transform)
+          end # it
+        end # wrap_context
+      end # describe
 
       describe '#delete' do
         wrap_context 'when the collection contains many items' do
@@ -357,44 +393,6 @@ module Spec::Collections
         include_examples 'should return a query' do
           let(:query) { instance.query }
         end # include_examples
-      end # describe
-
-      describe '#transform' do
-        let(:default_transform_class) do
-          Bronze::Transforms::CopyTransform
-        end # let
-
-        it { expect(instance.transform).to be_a default_transform_class }
-
-        wrap_context 'when a transform is set' do
-          it { expect(instance.transform).to be == transform }
-        end # wrap_context
-      end # describe
-
-      describe '#transform=' do
-        let(:transform) do
-          Bronze::Transforms::AttributesTransform.new(entity_class)
-        end # let
-
-        it 'should set the transform' do
-          expect { instance.send :transform=, transform }.
-            to change(instance, :transform).
-            to be transform
-        end # it
-
-        wrap_context 'when a transform is set' do
-          let(:default_transform_class) do
-            Bronze::Transforms::CopyTransform
-          end # let
-
-          describe 'with nil' do
-            it 'should clear the transform' do
-              expect { instance.send :transform=, nil }.
-                to change(instance, :transform).
-                to be_a default_transform_class
-            end # it
-          end # describe
-        end # wrap_context
       end # describe
 
       describe '#update' do

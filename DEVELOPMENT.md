@@ -4,19 +4,18 @@
 
 ## MVP
 
-- Associations
-  - Entities
-    - Bronze::Entities::Associations::AssociationMetadata
-    - Bronze::Entities::Associations::AssociationBuilder
-    - relation macros - on Bronze::Entities::Associations module
-    - references_one
-    - has_one
-    - has_many
-    - improve testing/validation around missing/mismatched inverse associations
-      - inverse association expected but not defined
-      - inverse association has incompatible type
-      - inverse association already has other inverse
-    - :foreign_key is private writer? Or clears association(s).
+- Collection
+  - delete_all
+- Entity
+  - dirty_tracking
+    - #changed? - alias #dirty?
+    - #{attribute}_changed?
+    - #old_{attribute}
+    - #clean!
+    - for _many attributes, track :added, :removed
+- Query
+  - #matching with non-equality predicates
+    - $in (element in array)
 
 ## Features
 
@@ -37,7 +36,10 @@
     - nested attributes
     - builder methods - build_{association}, collection.build
     - query interface for _many associations?
-  - attribute normalization (Symbol <=> String, etc)
+  - attributes
+    - Boolean attributes
+      - defineable Boolean type - Bronze::Entities::Attributes::Boolean ?
+      - predicate method
   - collection attributes
     - configuration option for restricting entity Hash attribute key types
       - options => String only, scalar only (String, Symbol, Integer?)
@@ -45,16 +47,6 @@
   - dependent_attribute
     - creates read-only method on entity
     - collection writes the attribute but does not read it
-  - dirty_tracking
-    - #changed? - alias #dirty?
-    - #{attribute}_changed?
-    - #old_{attribute}
-    - #clean!
-    - for _many attributes, track :added, :removed
-  - attributes
-    - Boolean attributes
-      - defineable Boolean type - Bronze::Entities::Attributes::Boolean ?
-      - predicate method
   - primary key types
     - AttributeMetadata#primary_key?
     - PrimaryKey::primary_key macro
@@ -120,4 +112,6 @@
 ## Optimization
 
 - benchmarks!!!
-- stateless constraints? e.g. instead of TypeConstaint.new(klass).match(obj), TypeConstaint.match(obj, klass)
+- reduce object allocation
+  - stateless constraints? e.g. instead of TypeConstaint.new(klass).match(obj), TypeConstaint.match(obj, klass)
+  - or ::instance

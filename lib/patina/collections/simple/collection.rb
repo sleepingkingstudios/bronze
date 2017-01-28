@@ -1,7 +1,10 @@
 # lib/patina/collections/simple/collection.rb
 
 require 'bronze/collections/collection'
+
+require 'patina/collections/simple'
 require 'patina/collections/simple/query'
+require 'patina/collections/validation'
 
 module Patina::Collections::Simple
   # Implementation of Bronze::Collections::Collection for an Array-of-Hashes
@@ -10,6 +13,7 @@ module Patina::Collections::Simple
   # @see Simple::Query
   class Collection
     include Bronze::Collections::Collection
+    include Patina::Collections::Validation
 
     # @param transform [Bronze::Entities::Transform] The transform object used
     #   to map collection objects to and from raw data.
@@ -25,7 +29,7 @@ module Patina::Collections::Simple
     end # method base_query
 
     def delete_one id
-      errors = validate_id(id, :present => true)
+      errors = validate_id_with_presence(id, :present => true)
 
       return errors unless errors.empty?
 
@@ -41,7 +45,7 @@ module Patina::Collections::Simple
 
       return errors unless errors.empty?
 
-      errors = validate_id(attributes[:id], :present => false)
+      errors = validate_id_with_presence(attributes[:id], :present => false)
 
       return errors unless errors.empty?
 
@@ -51,7 +55,7 @@ module Patina::Collections::Simple
     end # method insert_one
 
     def update_one id, attributes
-      errors = validate_id(id, :present => true)
+      errors = validate_id_with_presence(id, :present => true)
 
       return errors unless errors.empty?
 
@@ -69,26 +73,6 @@ module Patina::Collections::Simple
 
       []
     end # method update_one
-
-    def validate_attributes attributes
-      return build_errors.add(Errors.data_missing) if attributes.nil?
-
-      unless attributes.is_a?(Hash)
-        return build_errors.add(Errors.data_invalid, :attributes => attributes)
-      end # unless
-
-      []
-    end # method validate_attributes
-
-    def validate_id id, present: nil
-      if id.nil?
-        return build_errors.add(Errors.primary_key_missing, :key => :id)
-      end # if
-
-      return [] if present.nil?
-
-      validate_id_presence id, :present => present
-    end # method validate_id
 
     def validate_id_matches id, attributes
       unless attributes[:id].nil? || id == attributes[:id]
@@ -111,6 +95,14 @@ module Patina::Collections::Simple
       else
         []
       end # if-elsif-else
-    end # method validate_id_presense
+    end # method validate_id_presence
+
+    def validate_id_with_presence id, present:
+      errors = validate_id(id)
+
+      return errors unless errors.empty?
+
+      validate_id_presence(id, :present => present)
+    end # method validate_id_with_presence
   end # class
 end # class

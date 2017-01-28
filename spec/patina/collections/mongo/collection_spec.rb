@@ -1,30 +1,49 @@
-# spec/patina/collections/simple/collection_spec.rb
+# spec/patina/collections/mongo/collection_spec.rb
 
 require 'bronze/collections/collection_examples'
 require 'bronze/transforms/identity_transform'
-require 'patina/collections/simple/collection'
-require 'patina/collections/simple/query'
 
-RSpec.describe Patina::Collections::Simple::Collection do
+require 'patina/collections/mongo/collection'
+
+RSpec.describe Patina::Collections::Mongo::Collection do
   extend RSpec::SleepingKingStudios::Concerns::SharedExampleGroup
   include Spec::Collections::CollectionExamples
 
-  let(:raw_data)    { [] }
-  let(:data)        { raw_data }
-  let(:instance)    { described_class.new data }
-  let(:query_class) { Patina::Collections::Simple::Query }
+  let(:raw_data) { [] }
+  let(:data) do
+    hash_tools = SleepingKingStudios::Tools::HashTools
+
+    raw_data.map { |hsh| hash_tools.convert_keys_to_strings(hsh) }
+  end # let
+  let(:mongo_collection) { Spec.mongo_client[:books] }
+  let(:instance)         { described_class.new mongo_collection }
+  let(:query_class)      { Patina::Collections::Mongo::Query }
 
   def find_item id
-    items = instance.query.to_a
+    raw = mongo_collection.find('_id' => id).first
 
-    if items.empty?
-      nil
-    elsif items.first.is_a?(Hash)
-      items.find { |hsh| hsh[:id] == id }
-    else
-      items.find { |obj| obj.id == id }
-    end # if-elsif-else
+    instance.transform.denormalize(raw)
   end # method find_item
+
+  around(:example) do |example|
+    begin
+      mongo_collection.delete_many
+
+      mapped = data.map do |hsh|
+        hsh = hsh.dup
+
+        hsh['_id'] = hsh.delete('id') if hsh.key?('id')
+
+        hsh
+      end # mapped
+
+      mongo_collection.insert_many(mapped)
+
+      example.call
+    ensure
+      mongo_collection.delete_many
+    end # begin-ensure
+  end # before context
 
   describe '::new' do
     it { expect(described_class).to be_constructible.with(1..2).arguments }
@@ -32,7 +51,11 @@ RSpec.describe Patina::Collections::Simple::Collection do
 
   include_examples 'should implement the Collection interface'
 
-  include_examples 'should implement the Collection methods'
+  include_examples 'should implement the Collection methods' do
+    let(:default_transform_class) do
+      Patina::Collections::Mongo::PrimaryKeyTransform
+    end # let
+  end # include_examples
 
   describe '#delete' do
     def perform_action
@@ -118,16 +141,33 @@ RSpec.describe Patina::Collections::Simple::Collection do
     end # wrap_context
   end # describe
 
-  describe '#transform' do
-    let(:default_transform_class) { Bronze::Transforms::CopyTransform }
+  describe '#mongo_collection' do
+    include_examples 'should have reader',
+      :mongo_collection,
+      ->() { mongo_collection }
+  end # describe
 
-    it { expect(instance.transform).to be_a default_transform_class }
+  describe '#transform' do
+    it 'should chain the transform with a primary key transform' do
+      expect(instance.transform).
+        to be_a Patina::Collections::Mongo::PrimaryKeyTransform
+    end # it
 
     context 'when the instance is initialized with a transform' do
       let(:transform) { Bronze::Transforms::IdentityTransform.new }
       let(:instance)  { described_class.new data, transform }
 
-      it { expect(instance.transform).to be transform }
+      it 'should chain the transform with a primary key transform' do
+        result = instance.transform
+
+        expect(result).to be_a Bronze::Transforms::TransformChain
+
+        transforms = instance.transform.transforms
+        expect(transforms.count).to be 2
+        expect(transforms.first).to be transform
+        expect(transforms.last).
+          to be_a Patina::Collections::Mongo::PrimaryKeyTransform
+      end # it
     end # context
   end # describe
 
@@ -136,20 +176,36 @@ RSpec.describe Patina::Collections::Simple::Collection do
       Bronze::Transforms::AttributesTransform.new(entity_class)
     end # let
 
-    it 'should set the transform' do
+    it 'should chain the transform with a primary key transform' do
       instance.send :transform=, new_transform
 
-      expect(instance.transform).to be new_transform
+      result = instance.transform
+
+      expect(result).to be_a Bronze::Transforms::TransformChain
+
+      transforms = instance.transform.transforms
+      expect(transforms.count).to be 2
+      expect(transforms.first).to be new_transform
+      expect(transforms.last).
+        to be_a Patina::Collections::Mongo::PrimaryKeyTransform
     end # it
 
     context 'when the instance is initialized with a transform' do
       let(:transform) { Bronze::Transforms::IdentityTransform.new }
       let(:instance)  { described_class.new data, transform }
 
-      it 'should set the transform' do
+      it 'should chain the transform with a primary key transform' do
         instance.send :transform=, new_transform
 
-        expect(instance.transform).to be new_transform
+        result = instance.transform
+
+        expect(result).to be_a Bronze::Transforms::TransformChain
+
+        transforms = instance.transform.transforms
+        expect(transforms.count).to be 2
+        expect(transforms.first).to be new_transform
+        expect(transforms.last).
+          to be_a Patina::Collections::Mongo::PrimaryKeyTransform
       end # it
 
       describe 'with nil' do
@@ -157,7 +213,7 @@ RSpec.describe Patina::Collections::Simple::Collection do
           instance.send :transform=, nil
 
           expect(instance.transform).
-            to be_a Bronze::Transforms::CopyTransform
+            to be_a Patina::Collections::Mongo::PrimaryKeyTransform
         end # it
       end # describe
     end # context
@@ -179,6 +235,18 @@ RSpec.describe Patina::Collections::Simple::Collection do
     with_params :id => 0 do
       include_examples 'should fail with error',
         described_class::Errors::RECORD_NOT_FOUND, :id => 0
+    end # with_params
+
+    with_params :attributes => nil do
+      include_examples 'should fail with error',
+        described_class::Errors::DATA_MISSING
+    end # with_params
+
+    invalid_attributes = Struct.new(:id).new
+    with_params :attributes => invalid_attributes do
+      include_examples 'should fail with error',
+        described_class::Errors::DATA_INVALID,
+        :attributes => invalid_attributes
     end # with_params
 
     wrap_context 'when the collection contains many items' do
