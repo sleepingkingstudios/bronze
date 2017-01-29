@@ -4,23 +4,23 @@
 
 ## MVP
 
-- Collection
-  - delete_all
 - Entity
   - dirty_tracking
-    - #changed? - alias #dirty?
-    - #{attribute}_changed?
-    - #old_{attribute}
+    - #{attribute}_changed_from
     - #clean!
-    - for _many attributes, track :added, :removed
 - Query
   - #matching with non-equality predicates
     - $in (element in array)
 
 ## Features
 
+- Association::Collection
+  - dirty tracking
+    - as above, plus #added, #removed ?
 - Collection
   - bulk operations
+  - #raw - returns clone with identity transform
+  - use native data types where possible (BigDecimal, Date, etc)
 - Constraint
   - AttributeTypesConstraint
     - :except, :only ?
@@ -47,6 +47,11 @@
   - dependent_attribute
     - creates read-only method on entity
     - collection writes the attribute but does not read it
+  - dirty_tracking
+    - #changes
+    - #previous_changes
+    - restore_{attribute}
+    - restore_attributes
   - primary key types
     - AttributeMetadata#primary_key?
     - PrimaryKey::primary_key macro
@@ -105,6 +110,8 @@
   - operations
 - Documentation Pass
 - Extract Bronze::Ci to standalone gem.
+- Extract Patina::Collections::Mongo to standalone gem.
+  - Test against MongoDB 2.x, 3.x
 - remove `result, errors =` pattern?
 - remove unnecessary custom error classes
 - standardize error constant names - _ERROR suffix?

@@ -2,6 +2,7 @@
 
 require 'bronze/entities/associations'
 require 'bronze/entities/attributes'
+require 'bronze/entities/attributes/dirty_tracking'
 require 'bronze/entities/base_entity'
 require 'bronze/entities/normalization'
 require 'bronze/entities/primary_key'
@@ -14,6 +15,7 @@ module Bronze::Entities
   # implementation to any specific framework or data repository.
   class Entity < BaseEntity
     include Bronze::Entities::Attributes
+    include Bronze::Entities::Attributes::DirtyTracking
     include Bronze::Entities::Associations
     include Bronze::Entities::PrimaryKey
     include Bronze::Entities::Normalization

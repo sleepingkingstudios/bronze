@@ -4,12 +4,14 @@ require 'bronze/entities/entity'
 
 require 'bronze/entities/associations/associations_examples'
 require 'bronze/entities/attributes/attributes_examples'
+require 'bronze/entities/attributes/dirty_tracking_examples'
 require 'bronze/entities/normalization_examples'
 require 'bronze/entities/primary_key_examples'
 
 RSpec.describe Bronze::Entities::Entity do
   include Spec::Entities::Associations::AssociationsExamples
   include Spec::Entities::Attributes::AttributesExamples
+  include Spec::Entities::Attributes::DirtyTrackingExamples
   include Spec::Entities::NormalizationExamples
   include Spec::Entities::PrimaryKeyExamples
 
@@ -33,6 +35,8 @@ RSpec.describe Bronze::Entities::Entity do
   include_examples 'should implement the Associations methods'
 
   include_examples 'should implement the Attributes methods'
+
+  include_examples 'should implement the Attributes::DirtyTracking methods'
 
   include_examples 'should implement the Normalization methods'
 

@@ -46,10 +46,6 @@ RSpec.describe Bronze::Entities::Attributes::AttributeBuilder do
     it { expect(described_class).to be_constructible.with(1).argument }
   end # describe
 
-  describe '#entity_class' do
-    include_examples 'should have reader', :entity_class, ->() { entity_class }
-  end # describe
-
   describe '#build' do
     shared_context 'when the attribute has been defined' do
       let!(:metadata) do
@@ -172,19 +168,34 @@ RSpec.describe Bronze::Entities::Attributes::AttributeBuilder do
             ->() { "Book #{books_count += 1}" }
           end # let
           let(:attribute_opts) { super().merge :default => default }
-          let(:expected)       { ['Book 1', 'Book 2', 'Book 3'] }
+          let(:books)          { Array.new(3) { entity_class.new } }
+          let(:expected)       { Array.new(3) }
 
-          it 'should set the title to the default value' do
-            books = Array.new(3) { entity_class.new }
+          it { expect(books.map(&:title)).to be == expected }
 
-            expect(books.map(&:title)).to be == expected
-          end # it
+          context 'when the attribute is initialized' do
+            let(:expected) { ['Book 1', 'Book 2', 'Book 3'] }
+
+            before(:example) { books.each { |book| book.title = nil } }
+
+            it 'should set the title to the default value' do
+              expect(books.map(&:title)).to be == expected
+            end # it
+          end # context
         end # describe
 
         describe 'with :default => value' do
           let(:attribute_opts) { super().merge :default => 'Untitled Book' }
 
-          it { expect(entity.title).to be == attribute_opts[:default] }
+          it { expect(entity.title).to be nil }
+
+          describe 'with nil' do
+            it 'should set the value to the default' do
+              expect { entity.title = nil }.
+                to change(entity, :title).
+                to be == attribute_opts[:default]
+            end # describe
+          end # describe
 
           context 'when a value is set' do
             before(:example) { entity.title = 'The Lay of Beleriand' }
@@ -209,5 +220,9 @@ RSpec.describe Bronze::Entities::Attributes::AttributeBuilder do
         end # describe
       end # wrap_context
     end # describe
+  end # describe
+
+  describe '#entity_class' do
+    include_examples 'should have reader', :entity_class, ->() { entity_class }
   end # describe
 end # describe
