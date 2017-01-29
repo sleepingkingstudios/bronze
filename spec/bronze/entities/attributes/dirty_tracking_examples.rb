@@ -110,5 +110,45 @@ module Spec::Entities::Attributes::DirtyTrackingExamples
           with_value(false)
       end # it
     end # describe
+
+    describe '#clean_attributes' do
+      it { expect(instance).to respond_to(:clean_attributes).with(0).arguments }
+
+      it 'should mark the entity as unchanged' do
+        instance.clean_attributes
+
+        expect(instance.attributes_changed?).to be false
+
+        instance.class.attributes.each do |_, metadata|
+          attr_changed_name      = :"#{metadata.reader_name}_changed?"
+          attr_changed_from_name = :"#{metadata.reader_name}_changed_from"
+
+          expect(instance.send attr_changed_name).to be false
+          expect(instance.send attr_changed_from_name).to be nil
+        end # each
+      end # it
+
+      context 'when the attribute values have been changed' do
+        before(:example) do
+          described_class.attribute :title, String
+
+          instance.title = 'The Tale of Genji'
+        end # before example
+
+        it 'should mark the entity as unchanged' do
+          instance.clean_attributes
+
+          expect(instance.attributes_changed?).to be false
+
+          instance.class.attributes.each do |_, metadata|
+            attr_changed_name      = :"#{metadata.reader_name}_changed?"
+            attr_changed_from_name = :"#{metadata.reader_name}_changed_from"
+
+            expect(instance.send attr_changed_name).to be false
+            expect(instance.send attr_changed_from_name).to be nil
+          end # each
+        end # it
+      end # context
+    end # describe
   end # shared_examples
 end # module

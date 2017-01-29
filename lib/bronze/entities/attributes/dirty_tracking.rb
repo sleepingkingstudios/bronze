@@ -47,7 +47,7 @@ module Bronze::Entities::Attributes
 
       super
 
-      clean_attribute_changes
+      clean_attributes
     end # constructor
 
     # @return [Boolean] True if any of the entity's attributes have been changed
@@ -56,11 +56,14 @@ module Bronze::Entities::Attributes
       !@attribute_changes.empty?
     end # method attributes_changed?
 
-    private
-
-    def clean_attribute_changes
+    # Marks the entity's attributes as clean, i.e. unchanged from the last point
+    # of reference (typically a persistence event, such as loading from or
+    # saving to a datastore).
+    def clean_attributes
       @attribute_changes = {}
-    end # method clean_attribute_changes
+    end # method clean_attributes
+
+    private
 
     def track_attribute_changes_for_attribute metadata, new_value
       attr_name   = metadata.attribute_name
