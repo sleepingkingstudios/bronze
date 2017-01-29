@@ -68,7 +68,7 @@ module Bronze::Entities::Attributes
 
       return if prior_value == new_value
 
-      @attribute_changes[attr_name] = new_value
+      @attribute_changes[attr_name] = prior_value
     end # method track_attribute_changes_for_attribute
   end # module
 end # module

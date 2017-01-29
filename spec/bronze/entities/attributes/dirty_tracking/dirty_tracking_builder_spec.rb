@@ -18,7 +18,7 @@ RSpec.describe Bronze::Entities::Attributes::DirtyTracking::DirtyTrackingBuilder
       include Bronze::Entities::Attributes::DirtyTracking
     end # class
   end # let
-  let(:entity)   { entity_class.new }
+  let(:entity)   { entity_class.new :title => 'The Epic of Gilgamesh' }
   let(:instance) { described_class.new(entity_class) }
 
   describe '::new' do

@@ -6,19 +6,17 @@
 
 - Entity
   - dirty_tracking
-    - #changes
-    - #{attribute}_was
+    - #{attribute}_changed_from
     - #clean!
-    - #previous_changes
-- Association::Collection
-  - dirty tracking
-    - as above, plus #added, #removed ?
 - Query
   - #matching with non-equality predicates
     - $in (element in array)
 
 ## Features
 
+- Association::Collection
+  - dirty tracking
+    - as above, plus #added, #removed ?
 - Collection
   - bulk operations
   - #raw - returns clone with identity transform
@@ -49,6 +47,11 @@
   - dependent_attribute
     - creates read-only method on entity
     - collection writes the attribute but does not read it
+  - dirty_tracking
+    - #changes
+    - #previous_changes
+    - restore_{attribute}
+    - restore_attributes
   - primary key types
     - AttributeMetadata#primary_key?
     - PrimaryKey::primary_key macro
@@ -107,6 +110,7 @@
   - operations
 - Documentation Pass
 - Extract Bronze::Ci to standalone gem.
+- Extract Patina::Collections::Mongo to standalone gem.
 - remove `result, errors =` pattern?
 - remove unnecessary custom error classes
 - standardize error constant names - _ERROR suffix?

@@ -28,8 +28,19 @@ module Bronze::Entities::Attributes::DirtyTracking
     def define_attribute_change_tracking_methods metadata
       wrap_writer_with_change_tracking(metadata)
 
+      define_attribute_changed_from_reader(metadata)
       define_attribute_changed_predicate(metadata)
     end # method define_attribute_change_tracking_methods
+
+    def define_attribute_changed_from_reader metadata
+      attr_name = metadata.attribute_name
+
+      entity_class_attribute_dirty_tracking.send :define_method,
+        :"#{attr_name}_changed_from",
+        lambda {
+          @attribute_changes[attr_name]
+        } # end lambda
+    end # method define_attribute_changed_from_reader
 
     def define_attribute_changed_predicate metadata
       attr_name = metadata.attribute_name

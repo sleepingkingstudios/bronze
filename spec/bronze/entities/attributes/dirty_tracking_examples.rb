@@ -30,6 +30,14 @@ module Spec::Entities::Attributes::DirtyTrackingExamples
         end # it
       end # describe
 
+      describe "##{reader_name}_changed_from" do
+        it 'should define the predicate' do
+          expect(entity).
+            to have_reader(:"#{reader_name}_changed_from").
+            with_value nil
+        end # it
+      end # describe
+
       describe "##{writer_name}" do
         describe 'with the existing value' do
           it 'should not mark the entity as changed' do
@@ -41,6 +49,11 @@ module Spec::Entities::Attributes::DirtyTrackingExamples
             expect { entity.send(writer_name, prior_value) }.
               not_to change(entity, :"#{reader_name}_changed?")
           end # it
+
+          it 'should not change the cached prior attribute value' do
+            expect { entity.send(writer_name, prior_value) }.
+              not_to change(entity, :"#{reader_name}_changed_from")
+          end # it
         end # describe
 
         describe 'with a new value' do
@@ -50,10 +63,16 @@ module Spec::Entities::Attributes::DirtyTrackingExamples
             expect(entity.attributes_changed?).to be true
           end # it
 
-          it 'should not mark the attribute as changed' do
+          it 'should mark the attribute as changed' do
             entity.send(writer_name, updated_value)
 
             expect(entity.send(:"#{reader_name}_changed?")).to be true
+          end # it
+
+          it 'should set the cached prior attribute value' do
+            expect { entity.send(writer_name, updated_value) }.
+              to change(entity, :"#{reader_name}_changed_from").
+              to be == prior_value
           end # it
         end # describe
       end # describe
