@@ -24,7 +24,7 @@ module Spec::Entities::Attributes::DirtyTrackingExamples
 
       describe "##{reader_name}_changed?" do
         it 'should define the predicate' do
-          expect(instance).
+          expect(entity).
             to have_predicate(:"#{reader_name}_changed?").
             with_value false
         end # it

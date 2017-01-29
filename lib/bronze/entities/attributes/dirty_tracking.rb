@@ -9,6 +9,9 @@ module Bronze::Entities::Attributes
   module DirtyTracking
     extend SleepingKingStudios::Tools::Toolbox::Mixin
 
+    autoload :DirtyTrackingBuilder,
+      'bronze/entities/attributes/dirty_tracking/dirty_tracking_builder'
+
     # Class methods to define when including Attributes::DirtyTracking in a
     # class.
     module ClassMethods
@@ -23,8 +26,11 @@ module Bronze::Entities::Attributes
       # @raise (see Attributes::attribute)
       def attribute *args
         metadata = super
+        builder  =
+          Bronze::Entities::Attributes::DirtyTracking::DirtyTrackingBuilder.
+          new(self)
 
-        define_attribute_change_tracking_methods(metadata)
+        builder.build(metadata)
 
         metadata
       end # method attribute
@@ -32,64 +38,6 @@ module Bronze::Entities::Attributes
       private
 
       attr_accessor :attributes_dirty_tracking_module
-
-      def define_attribute_change_tracking_methods metadata
-        wrap_writer_with_change_tracking(metadata)
-
-        define_attribute_changed_predicate(metadata)
-      end # method define_attribute_change_tracking_methods
-
-      def define_attribute_changed_predicate metadata
-        attr_name = metadata.attribute_name
-
-        entity_class_attribute_dirty_tracking.send :define_method,
-          :"#{attr_name}_changed?",
-          lambda {
-            @attribute_changes.key? attr_name
-          } # end lambda
-      end # method define_attribute_changed_predicate
-
-      # rubocop:disable Metrics/MethodLength
-      def entity_class_attribute_dirty_tracking
-        entity_class = self
-
-        @entity_class_attribute_dirty_tracking ||=
-          begin
-            unless entity_class.send(:attributes_dirty_tracking_module)
-              mod =
-                entity_class.send(
-                  :attributes_dirty_tracking_module=,
-                  Module.new
-                ) # end module
-
-              entity_class.const_set(:AttributesDirtyTrackingMethods, mod)
-
-              entity_class.include entity_class::AttributesDirtyTrackingMethods
-            end # unless
-
-            entity_class::AttributesDirtyTrackingMethods
-          end # begin
-      end # method entity_class_attribute_dirty_tracking
-      # rubocop:enable Metrics/MethodLength
-
-      # rubocop:disable Metrics/MethodLength
-      def wrap_writer_with_change_tracking metadata
-        entity_class_attribute_dirty_tracking.send :define_method,
-          metadata.writer_name,
-          lambda { |value|
-            track_attribute_changes_for_attribute(metadata, value)
-
-            super(value)
-          } # end lambda
-
-        return unless metadata.read_only?
-
-        entity_class_attribute_dirty_tracking.send(
-          :private,
-          metadata.writer_name
-        ) # end send
-      end # wrap_writer_with_change_tracking
-      # rubocop:enable Metrics/MethodLength
     end # module
 
     # @param attributes [Hash] The default attributes with which to initialize

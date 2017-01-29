@@ -46,10 +46,6 @@ RSpec.describe Bronze::Entities::Attributes::AttributeBuilder do
     it { expect(described_class).to be_constructible.with(1).argument }
   end # describe
 
-  describe '#entity_class' do
-    include_examples 'should have reader', :entity_class, ->() { entity_class }
-  end # describe
-
   describe '#build' do
     shared_context 'when the attribute has been defined' do
       let!(:metadata) do
@@ -224,5 +220,9 @@ RSpec.describe Bronze::Entities::Attributes::AttributeBuilder do
         end # describe
       end # wrap_context
     end # describe
+  end # describe
+
+  describe '#entity_class' do
+    include_examples 'should have reader', :entity_class, ->() { entity_class }
   end # describe
 end # describe

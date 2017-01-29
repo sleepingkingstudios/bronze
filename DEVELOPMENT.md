@@ -7,7 +7,6 @@
 - Entity
   - dirty_tracking
     - #changes
-    - #{attribute}_changed?
     - #{attribute}_was
     - #clean!
     - #previous_changes
