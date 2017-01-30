@@ -34,12 +34,11 @@ module Bronze::Entities
       #
       # @raise (see Attributes::AttributeBuilder#build)
       def attribute attribute_name, attribute_type, attribute_options = {}
-        builder  = Bronze::Entities::Attributes::AttributeBuilder.new(self)
-        metadata = builder.build(
+        metadata = build_attribute(
           attribute_name,
           attribute_type,
           attribute_options
-        ) # end build
+        ) # end build_attribute
 
         (@attributes ||= {})[metadata.attribute_name] = metadata
       end # class method attribute
@@ -59,6 +58,21 @@ module Bronze::Entities
       private
 
       attr_accessor :attributes_module
+
+      def build_attribute(
+        attribute_name,
+        attribute_type,
+        attribute_options,
+        builder_opts = {}
+      )
+        builder = Bronze::Entities::Attributes::AttributeBuilder.new(self)
+        builder.build(
+          attribute_name,
+          attribute_type,
+          attribute_options,
+          builder_opts
+        ) # end build
+      end # method build_attribute
     end # module
 
     # @param attributes [Hash] The default attributes with which to initialize
