@@ -15,17 +15,13 @@ module Bronze::Entities::Attributes
     # Class methods to define when including Attributes::DirtyTracking in a
     # class.
     module ClassMethods
-      # Adds dirty tracking to the specified attribute.
-      #
-      # @param (see Attributes::attribute)
-      #
-      # @option (see Attributes::attribute)
-      #
-      # @return (see Attributes::attribute)
-      #
-      # @raise (see Attributes::attribute)
-      def attribute *args
+      private
+
+      attr_accessor :attributes_dirty_tracking_module
+
+      def build_attribute *args
         metadata = super
+
         builder  =
           Bronze::Entities::Attributes::DirtyTracking::DirtyTrackingBuilder.
           new(self)
@@ -33,11 +29,7 @@ module Bronze::Entities::Attributes
         builder.build(metadata)
 
         metadata
-      end # method attribute
-
-      private
-
-      attr_accessor :attributes_dirty_tracking_module
+      end # method build_attribute
     end # module
 
     # @param attributes [Hash] The default attributes with which to initialize
