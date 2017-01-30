@@ -103,6 +103,25 @@ module Spec::Entities::Attributes::DirtyTrackingExamples
       end # describe
     end # describe
 
+    describe '::foreign_key' do
+      describe 'with a valid attribute name' do
+        let(:attribute_name) { :association_id }
+        let(:attribute_type) { described_class::KEY_TYPE }
+        let(:attributes) do
+          super().merge :association_id => Bronze::Entities::Ulid.generate
+        end # let
+        let(:attribute_type_class) do
+          Bronze::Entities::Attributes::AttributeType
+        end # let
+
+        context 'when the attribute has been defined' do
+          before(:example) { described_class.foreign_key(attribute_name) }
+
+          include_examples 'should track changes to attribute', :association_id
+        end # wrap_context
+      end # describe
+    end # describe
+
     describe '#attributes_changed?' do
       it 'should define the predicate' do
         expect(instance).
@@ -120,6 +139,8 @@ module Spec::Entities::Attributes::DirtyTrackingExamples
         expect(instance.attributes_changed?).to be false
 
         instance.class.attributes.each do |_, metadata|
+          next if metadata.attribute_name == :id
+
           attr_changed_name      = :"#{metadata.reader_name}_changed?"
           attr_changed_from_name = :"#{metadata.reader_name}_changed_from"
 
@@ -141,6 +162,8 @@ module Spec::Entities::Attributes::DirtyTrackingExamples
           expect(instance.attributes_changed?).to be false
 
           instance.class.attributes.each do |_, metadata|
+            next if metadata.attribute_name == :id
+
             attr_changed_name      = :"#{metadata.reader_name}_changed?"
             attr_changed_from_name = :"#{metadata.reader_name}_changed_from"
 

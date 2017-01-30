@@ -1,8 +1,10 @@
 # spec/bronze/entities/attributes/dirty_tracking_spec.rb
 
+require 'bronze/entities/associations'
 require 'bronze/entities/attributes/dirty_tracking'
 require 'bronze/entities/attributes/dirty_tracking_examples'
 require 'bronze/entities/base_entity'
+require 'bronze/entities/primary_key'
 
 RSpec.describe Bronze::Entities::Attributes::DirtyTracking do
   include Spec::Entities::Attributes::DirtyTrackingExamples
@@ -10,6 +12,8 @@ RSpec.describe Bronze::Entities::Attributes::DirtyTracking do
   let(:described_class) do
     klass = Class.new(Bronze::Entities::BaseEntity)
     klass.send :include, Bronze::Entities::Attributes
+    klass.send :include, Bronze::Entities::Associations
+    klass.send :include, Bronze::Entities::PrimaryKey
     klass.send :include, super()
     klass
   end # let
