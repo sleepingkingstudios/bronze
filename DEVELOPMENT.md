@@ -5,9 +5,9 @@
 ## MVP
 
 - Entity
-  - dirty_tracking
-    - #{attribute}_changed_from
-    - #clean!
+  - persistence
+    - persisted?
+    - persisted!
 - Query
   - #matching with non-equality predicates
     - $in (element in array)

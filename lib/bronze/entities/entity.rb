@@ -5,6 +5,7 @@ require 'bronze/entities/attributes'
 require 'bronze/entities/attributes/dirty_tracking'
 require 'bronze/entities/base_entity'
 require 'bronze/entities/normalization'
+require 'bronze/entities/persistence'
 require 'bronze/entities/primary_key'
 
 require 'bronze/entities/ulid'
@@ -19,5 +20,6 @@ module Bronze::Entities
     include Bronze::Entities::Associations
     include Bronze::Entities::PrimaryKey
     include Bronze::Entities::Normalization
+    include Bronze::Entities::Persistence
   end # class
 end # module
