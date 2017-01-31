@@ -36,6 +36,10 @@ RSpec.describe Patina::Operations::Resources::FindManyResourcesOperation do
         instance.call(*arguments)
 
         expect(instance.resources).to be == expected
+
+        instance.resources.each do |resource|
+          expect(resource.persisted?).to be true
+        end # each
       end # it
 
       it 'should clear the errors' do

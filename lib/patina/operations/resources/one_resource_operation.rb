@@ -35,6 +35,10 @@ module Patina::Operations::Resources
     # @return [Object] The resource.
     def find_resource resource_id
       @resource = resource_collection.find(resource_id)
+
+      @resource.persist if @resource
+
+      @resource
     end # method resource_id
 
     # Finds the requested instance of the resource class in the repository. If

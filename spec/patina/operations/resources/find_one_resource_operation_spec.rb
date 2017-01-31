@@ -49,6 +49,7 @@ RSpec.describe Patina::Operations::Resources::FindOneResourceOperation do
           call_operation
 
           expect(instance.resource).to be == expected
+          expect(instance.resource.persisted?).to be true
         end # it
 
         it 'should clear the errors' do
