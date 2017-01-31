@@ -41,6 +41,8 @@ RSpec.describe Patina::Operations::Resources::CreateOneResourceOperation do
         expect(resource).to be_a resource_class
         expect(resource.title).to be == attributes[:title]
         expect(resource.volume).to be == attributes[:volume]
+
+        expect(resource.attributes_changed?).to be false
         expect(resource.persisted?).to be true
       end # it
 
@@ -92,6 +94,8 @@ RSpec.describe Patina::Operations::Resources::CreateOneResourceOperation do
         expect(resource).to be_a resource_class
         expect(resource.title).to be == attributes[:title]
         expect(resource.volume).to be == attributes[:volume]
+
+        expect(resource.attributes_changed?).to be false
         expect(resource.persisted?).to be false
       end # it
 
@@ -131,6 +135,8 @@ RSpec.describe Patina::Operations::Resources::CreateOneResourceOperation do
         expect(resource).to be_a resource_class
         expect(resource.title).to be == attributes[:title]
         expect(resource.volume).to be == attributes[:volume]
+
+        expect(resource.attributes_changed?).to be false
         expect(resource.persisted?).to be false
       end # it
 

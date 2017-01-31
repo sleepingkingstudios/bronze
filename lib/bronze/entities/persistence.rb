@@ -13,7 +13,7 @@ module Bronze::Entities
       super
     end # constructor
 
-    # Marks the entity as persiste.
+    # Marks the entity as persisted.
     def persist
       @persisted = true
     end # method persist
@@ -23,5 +23,10 @@ module Bronze::Entities
     def persisted?
       @persisted
     end # method persisted?
+
+    # Marks the entity as not persisted.
+    def unpersist
+      @persisted = false
+    end # method unpersist
   end # module
 end # module

@@ -38,6 +38,7 @@ RSpec.describe Patina::Operations::Resources::FindManyResourcesOperation do
         expect(instance.resources).to be == expected
 
         instance.resources.each do |resource|
+          expect(resource.attributes_changed?).to be false
           expect(resource.persisted?).to be true
         end # each
       end # it

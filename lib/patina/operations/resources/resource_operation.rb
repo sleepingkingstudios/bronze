@@ -4,10 +4,10 @@ require 'sleeping_king_studios/tools/toolbox/mixin'
 
 require 'bronze/contracts/type_contract'
 require 'bronze/entities/contracts/entity_contract'
-require 'bronze/entities/transforms/entity_transform'
 require 'bronze/operations/repository_operation'
 
 require 'patina/operations/resources'
+require 'patina/transforms/resource_transform'
 
 module Patina::Operations::Resources
   # Shared functionality for operations on singular and plural resources.
@@ -132,7 +132,7 @@ module Patina::Operations::Resources
     # rubocop:enable Style/PredicateName
 
     def resource_transform_for resource_class
-      Bronze::Entities::Transforms::EntityTransform.new resource_class
+      Patina::Transforms::ResourceTransform.new resource_class
     end # method resource_transform_for
   end # module
 end # module

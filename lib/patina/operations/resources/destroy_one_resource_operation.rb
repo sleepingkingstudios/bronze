@@ -15,7 +15,9 @@ module Patina::Operations::Resources
     def process resource_id
       return unless require_resource(resource_id)
 
-      _, @errors = resource_collection.delete resource_id
+      result, @errors = resource_collection.delete resource_id
+
+      @resource.unpersist if result
     end # method process
   end # module
 end # module

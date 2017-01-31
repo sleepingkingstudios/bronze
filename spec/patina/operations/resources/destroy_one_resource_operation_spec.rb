@@ -52,6 +52,7 @@ RSpec.describe Patina::Operations::Resources::DestroyOneResourceOperation do
           resource = instance.resource
 
           expect(resource).to be == resource
+          expect(resource.persisted?).to be false
         end # it
 
         it 'should delete the persisted resource' do
