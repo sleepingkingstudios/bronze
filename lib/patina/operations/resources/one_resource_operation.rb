@@ -36,7 +36,8 @@ module Patina::Operations::Resources
     def find_resource resource_id
       @resource = resource_collection.find(resource_id)
 
-      @resource.persist if @resource
+      @resource.clean_attributes if @resource
+      @resource.persist          if @resource
 
       @resource
     end # method resource_id

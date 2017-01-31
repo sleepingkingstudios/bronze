@@ -28,7 +28,10 @@ module Patina::Operations::Resources
 
       @resources = query.to_a
 
-      @resources.each(&:persist)
+      @resources.each do |resource|
+        resource.clean_attributes
+        resource.persist
+      end # each
     end # method find_resources
 
     def resource_query

@@ -50,8 +50,9 @@ RSpec.describe Patina::Operations::Resources::UpdateOneResourceOperation do
           expect(resource).to be_a resource_class
           expect(resource.title).to be == resource_attributes[:title]
           expect(resource.volume).to be == attributes[:volume]
-          expect(resource.persisted?).to be true
+
           expect(resource.attributes_changed?).to be false
+          expect(resource.persisted?).to be true
         end # it
 
         it 'should update the persisted resource' do
@@ -108,8 +109,9 @@ RSpec.describe Patina::Operations::Resources::UpdateOneResourceOperation do
           expect(resource).to be_a resource_class
           expect(resource.title).to be == resource_attributes[:title]
           expect(resource.volume).to be == attributes[:volume]
-          expect(resource.persisted?).to be true
+
           expect(resource.attributes_changed?).to be true
+          expect(resource.persisted?).to be true
         end # it
 
         it 'should not update the persisted resource' do
@@ -149,8 +151,9 @@ RSpec.describe Patina::Operations::Resources::UpdateOneResourceOperation do
           expect(resource).to be_a resource_class
           expect(resource.title).to be == resource_attributes[:title]
           expect(resource.volume).to be == attributes[:volume]
-          expect(resource.persisted?).to be true
+
           expect(resource.attributes_changed?).to be true
+          expect(resource.persisted?).to be true
         end # it
 
         it 'should not update the persisted resource' do
