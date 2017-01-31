@@ -2,10 +2,9 @@
 
 ## Bug Fixes
 
-- Implement Dirty Tracking for foreign keys!
-
 ## MVP
 
+- update resource operations to set Entity#persisted
 - Query
   - #matching with non-equality predicates
     - $in (element in array)

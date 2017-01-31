@@ -41,6 +41,7 @@ RSpec.describe Patina::Operations::Resources::CreateOneResourceOperation do
         expect(resource).to be_a resource_class
         expect(resource.title).to be == attributes[:title]
         expect(resource.volume).to be == attributes[:volume]
+        expect(resource.persisted?).to be true
       end # it
 
       it 'should persist the resource' do
@@ -91,6 +92,7 @@ RSpec.describe Patina::Operations::Resources::CreateOneResourceOperation do
         expect(resource).to be_a resource_class
         expect(resource.title).to be == attributes[:title]
         expect(resource.volume).to be == attributes[:volume]
+        expect(resource.persisted?).to be false
       end # it
 
       it 'should not persist the resource' do
@@ -129,6 +131,7 @@ RSpec.describe Patina::Operations::Resources::CreateOneResourceOperation do
         expect(resource).to be_a resource_class
         expect(resource.title).to be == attributes[:title]
         expect(resource.volume).to be == attributes[:volume]
+        expect(resource.persisted?).to be false
       end # it
 
       it 'should not persist the resource' do

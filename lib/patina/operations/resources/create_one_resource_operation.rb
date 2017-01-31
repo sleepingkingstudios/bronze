@@ -18,7 +18,9 @@ module Patina::Operations::Resources
 
       return unless validate_resource(@resource)
 
-      _, @errors = resource_collection.insert @resource
+      result, @errors = resource_collection.insert @resource
+
+      resource.persist if result
     end # method process
   end # module
 end # module

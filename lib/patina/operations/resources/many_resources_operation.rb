@@ -27,6 +27,8 @@ module Patina::Operations::Resources
       query = query.matching(matching) if matching.is_a?(Hash)
 
       @resources = query.to_a
+
+      @resources.each(&:persist)
     end # method find_resources
 
     def resource_query

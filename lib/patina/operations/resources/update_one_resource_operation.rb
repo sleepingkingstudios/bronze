@@ -20,7 +20,9 @@ module Patina::Operations::Resources
 
       return unless validate_resource(@resource)
 
-      _, @errors = resource_collection.update resource_id, @resource
+      result, @errors = resource_collection.update resource_id, @resource
+
+      @resource.clean_attributes if result
     end # method process
   end # module
 end # module
