@@ -42,6 +42,9 @@ module Patina::Operations::Resources
         raise ArgumentError, "unknown resource #{resource_name.inspect}", caller
       end # method resource_class_for
 
+      define_macro :build_one,
+        Patina::Operations::Resources::BuildOneResourceOperation
+
       define_macro :create_one,
         Patina::Operations::Resources::CreateOneResourceOperation
 
