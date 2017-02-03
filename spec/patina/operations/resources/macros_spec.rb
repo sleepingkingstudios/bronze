@@ -65,6 +65,18 @@ RSpec.describe Patina::Operations::Resources::Macros do
 
   mock_class Spec, :Periodical, :base_class => Bronze::Entities::Entity
 
+  describe '::build_one' do
+    let(:mixin) { Patina::Operations::Resources::BuildOneResourceOperation }
+
+    def call_macro resource
+      described_class.build_one resource
+    end # method call_macro
+
+    it { expect(described_class).to respond_to(:build_one).with(1).argument }
+
+    include_examples 'should include the mixin and set the resource class'
+  end # describe
+
   describe '::create_one' do
     let(:mixin) { Patina::Operations::Resources::CreateOneResourceOperation }
 
