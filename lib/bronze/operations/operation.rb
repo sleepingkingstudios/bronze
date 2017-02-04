@@ -20,6 +20,7 @@ module Bronze::Operations
     def call *args
       @called = false
       @errors = Bronze::Errors::Errors.new
+      @failure_message = nil
 
       process(*args)
 
@@ -28,6 +29,8 @@ module Bronze::Operations
       success?
     end # method run
     alias_method :run, :call
+
+    attr_reader :failure_message
 
     # Returns the errors from the operation.
     #
@@ -39,16 +42,22 @@ module Bronze::Operations
     # @return [Boolean] True if the operation was run but encountered an error,
     #   otherwise false.
     def failure?
-      (@called && !@errors.empty?) || false
+      return false unless @called
+
+      !@errors.empty? || !(@failure_message.nil? || @failure_message.empty?)
     end # method failure?
 
     # @return [Boolean] True if the operation was run successfully, otherwise
     #   false.
     def success?
-      (@called && @errors.empty?) || false
+      return false unless @called
+
+      @errors.empty? && (@failure_message.nil? || @failure_message.empty?)
     end # method success?
 
     protected
+
+    attr_writer :failure_message
 
     def process *_args
       raise NotImplementedError,

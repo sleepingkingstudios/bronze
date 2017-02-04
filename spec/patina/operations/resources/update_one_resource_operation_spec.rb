@@ -77,6 +77,16 @@ RSpec.describe Patina::Operations::Resources::UpdateOneResourceOperation do
 
           expect(instance.errors).to satisfy(&:empty?)
         end # it
+
+        it 'should clear the failure message' do
+          previous_message = 'We require more minerals.'
+
+          instance.instance_variable_set :@failure_message, previous_message
+
+          call_operation
+
+          expect(instance.failure_message).to be nil
+        end # it
       end # shared_examples
 
       let(:resource_id) { resource.id }
@@ -176,6 +186,13 @@ RSpec.describe Patina::Operations::Resources::UpdateOneResourceOperation do
             error.type == Spec::Constraints::FailureConstraint::INVALID_ERROR
           } # end include
         end # it
+
+        it 'should set the failure message' do
+          instance.call resource_id, attributes
+
+          expect(instance.failure_message).
+            to be == described_class::INVALID_RESOURCE
+        end # describe
       end # describe
 
       describe 'with a passing validation' do

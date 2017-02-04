@@ -80,6 +80,13 @@ module Spec::Operations
           expect(instance.resource).to be nil
         end # it
 
+        it 'should set the failure message' do
+          call_operation
+
+          expect(instance.failure_message).
+            to be == described_class::RESOURCE_NOT_FOUND
+        end # it
+
         it 'should set the errors' do
           previous_errors = Bronze::Errors::Errors.new
           previous_errors[:resources].add :require_more_minerals

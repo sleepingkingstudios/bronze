@@ -64,6 +64,16 @@ RSpec.describe Patina::Operations::Resources::FindOneResourceOperation do
 
           expect(instance.errors).to satisfy(&:empty?)
         end # it
+
+        it 'should clear the failure message' do
+          previous_message = 'We require more minerals.'
+
+          instance.instance_variable_set :@failure_message, previous_message
+
+          call_operation
+
+          expect(instance.failure_message).to be nil
+        end # it
       end # describe
     end # wrap_context
   end # describe

@@ -4,7 +4,7 @@
 
 ## MVP
 
-- update resource operations to set Entity#persisted
+- operation#failure_reason
 - Query
   - #matching with non-equality predicates
     - $in (element in array)
