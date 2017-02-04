@@ -14,6 +14,12 @@ module Patina::Operations::Resources
     extend  SleepingKingStudios::Tools::Toolbox::Mixin
     include Patina::Operations::Resources::ResourceOperation
 
+    # Failure message when the expected resource is not found.
+    RESOURCE_NOT_FOUND = 'operations.resources.resource_not_found'.freeze
+
+    # Failure message when the resource fails validation.
+    INVALID_RESOURCE = 'operations.resources.invalid_resource'.freeze
+
     # @return [Object] The root resource for the operation.
     attr_reader :resource
 
@@ -52,6 +58,8 @@ module Patina::Operations::Resources
         error_definitions::RECORD_NOT_FOUND,
         :id => resource_id
       ) # end errors
+
+      @failure_message = RESOURCE_NOT_FOUND
 
       false
     end # method require_resource

@@ -18,7 +18,11 @@ module Patina::Operations::Resources
 
       resource.assign(attributes)
 
-      return unless validate_resource(@resource)
+      unless validate_resource(@resource)
+        @failure_message = INVALID_RESOURCE
+
+        return
+      end # unless
 
       result, @errors = resource_collection.update resource_id, @resource
 

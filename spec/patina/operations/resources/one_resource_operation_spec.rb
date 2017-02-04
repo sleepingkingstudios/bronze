@@ -25,5 +25,21 @@ RSpec.describe Patina::Operations::Resources::OneResourceOperation do
     it { expect(described_class).to be_constructible.with(1).argument }
   end # describe
 
+  describe '::INVALID_RESOURCE' do
+    it 'should define the constant' do
+      expect(described_class).
+        to have_immutable_constant(:INVALID_RESOURCE).
+        with_value('operations.resources.invalid_resource')
+    end # it
+  end # describe
+
+  describe '::RESOURCE_NOT_FOUND' do
+    it 'should define the constant' do
+      expect(described_class).
+        to have_immutable_constant(:RESOURCE_NOT_FOUND).
+        with_value('operations.resources.resource_not_found')
+    end # it
+  end # describe
+
   include_examples 'should implement the OneResourceOperation methods'
 end # describe

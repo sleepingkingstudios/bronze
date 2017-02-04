@@ -20,6 +20,7 @@ module Bronze::Operations
     def call *args
       @called = false
       @errors = Bronze::Errors::Errors.new
+      @failure_message = nil
 
       process(*args)
 
