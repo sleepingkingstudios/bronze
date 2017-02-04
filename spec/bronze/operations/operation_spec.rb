@@ -21,6 +21,7 @@ RSpec.describe Bronze::Operations::Operation do
         ) # end error
       ] # end array
     end # let
+
     before(:example) do
       errors = expected_errors
 
@@ -32,6 +33,17 @@ RSpec.describe Bronze::Operations::Operation do
 
           nesting.add(error.type, **error.params)
         end # each
+      end # allow
+    end # before example
+  end # shared_context
+
+  shared_context 'when the operation runs and sets a failure message' do
+    let(:expected_message) { 'We require more vespene gas.' }
+    before(:example) do
+      message = expected_message
+
+      allow(instance).to receive(:process) do
+        instance.send :failure_message=, message
       end # allow
     end # before example
   end # shared_context
@@ -109,6 +121,14 @@ RSpec.describe Bronze::Operations::Operation do
       end # it
     end # wrap_context
 
+    wrap_context 'when the operation runs and sets a failure message' do
+      it 'should return true' do
+        instance.call
+
+        expect(instance.failure?).to be true
+      end # it
+    end # wrap_context
+
     wrap_context 'when the operation runs successfully' do
       it 'should return false' do
         instance.call
@@ -118,10 +138,30 @@ RSpec.describe Bronze::Operations::Operation do
     end # wrap_context
   end # describe
 
+  describe '#failure_message' do
+    include_examples 'should have reader', :failure_message, nil
+
+    wrap_context 'when the operation runs and sets a failure message' do
+      it 'should return the failure message' do
+        instance.call
+
+        expect(instance.failure_message).to be == expected_message
+      end # it
+    end # wrap_context
+  end # describe
+
   describe '#success?' do
     include_examples 'should have predicate', :success, false
 
     wrap_context 'when the operation runs and generates errors' do
+      it 'should return false' do
+        instance.call
+
+        expect(instance.success?).to be false
+      end # it
+    end # wrap_context
+
+    wrap_context 'when the operation runs and sets a failure message' do
       it 'should return false' do
         instance.call
 
