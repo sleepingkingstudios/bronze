@@ -31,6 +31,9 @@ module Patina::Operations::Resources
     #
     # @return [Object] The resource.
     def build_resource attributes
+      hash_tools = SleepingKingStudios::Tools::HashTools
+      attributes = hash_tools.convert_keys_to_symbols(attributes)
+
       @resource = resource_class.new(attributes)
     end # method build_resource
 
