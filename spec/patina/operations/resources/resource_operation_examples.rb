@@ -1,5 +1,7 @@
 # spec/patina/operations/resources/resource_operation_examples.rb
 
+require 'sleeping_king_studios/tools/toolbelt'
+
 require 'bronze/collections/collection'
 require 'bronze/constraints/constraint_examples'
 require 'bronze/constraints/failure_constraint'
@@ -513,6 +515,47 @@ module Spec::Operations
 
           expect(instance.resource).to be == resource
         end # it
+
+        describe 'with a hash with String keys' do
+          let(:attributes) do
+            { 'title' => 'Parapsychology Weekly', 'volume' => 0 }
+          end # let
+
+          it 'should build an instance of the resource class' do
+            tools    = SleepingKingStudios::Tools::Toolbelt.instance
+            resource = instance.send :build_resource, attributes
+            expected = tools.hash.convert_keys_to_symbols(attributes)
+
+            resource_class.attributes.each do |attr_name, _|
+              expected[attr_name] ||= attributes[attr_name]
+            end # each
+
+            expected = expected.merge(:id => resource.id)
+
+            expect(resource).to be_a resource_class
+            expect(resource.attributes).to be == expected
+          end # it
+        end # describe
+
+        describe 'with a hash with Symbol keys' do
+          let(:attributes) do
+            { :title => 'Parapsychology Weekly', :volume => 0 }
+          end # let
+
+          it 'should build an instance of the resource class' do
+            resource = instance.send :build_resource, attributes
+            expected = attributes
+
+            resource_class.attributes.each do |attr_name, _|
+              expected[attr_name] ||= attributes[attr_name]
+            end # each
+
+            expected = expected.merge(:id => resource.id)
+
+            expect(resource).to be_a resource_class
+            expect(resource.attributes).to be == expected
+          end # it
+        end # describe
       end # describe
 
       describe '#find_resource' do
