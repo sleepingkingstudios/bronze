@@ -51,8 +51,8 @@ module Patina::Operations::Resources
       define_macro :destroy_one,
         Patina::Operations::Resources::DestroyOneResourceOperation
 
-      define_macro :find_many,
-        Patina::Operations::Resources::FindManyResourcesOperation
+      define_macro :find_matching,
+        Patina::Operations::Resources::FindMatchingResourcesOperation
 
       define_macro :find_one,
         Patina::Operations::Resources::FindOneResourceOperation

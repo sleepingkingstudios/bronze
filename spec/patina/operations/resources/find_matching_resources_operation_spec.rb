@@ -1,23 +1,24 @@
-# spec/patina/operations/resources/find_many_resources_operation_spec.rb
+# spec/patina/operations/resources/find_matching_resources_operation_spec.rb
 
 require 'bronze/collections/reference/repository'
 
-require 'patina/operations/resources/find_many_resources_operation'
+require 'patina/operations/resources/find_matching_resources_operation'
 require 'patina/operations/resources/resource_operation_examples'
 
-RSpec.describe Patina::Operations::Resources::FindManyResourcesOperation do
+RSpec.describe Patina::Operations::Resources::FindMatchingResourcesOperation do
   include Spec::Operations::ResourceOperationExamples
 
   include_context 'when a resource class is defined'
 
-  let(:described_class) { Spec::Operations::FindManyResourcesOperation }
+  let(:described_class) { Spec::Operations::FindMatchingResourcesOperation }
   let(:repository)      { Bronze::Collections::Reference::Repository.new }
   let(:instance)        { described_class.new repository }
 
   options = { :base_class => Bronze::Operations::Operation }
-  mock_class Spec::Operations, :FindManyResourcesOperation, options do |klass|
+  mock_class Spec::Operations, :FindMatchingResourcesOperation, options \
+  do |klass|
     klass.send :include,
-      Patina::Operations::Resources::FindManyResourcesOperation
+      Patina::Operations::Resources::FindMatchingResourcesOperation
 
     klass.send :resource_class=, resource_class
   end # mock_class
