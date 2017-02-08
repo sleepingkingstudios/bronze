@@ -421,7 +421,7 @@ module Spec::Operations
       end # describe
     end # shared_examples
 
-    shared_examples 'should implement the ManyResourcesOperation methods' do
+    shared_examples 'should implement the MatchingResourcesOperation methods' do
       include_examples 'should implement the ResourceOperation methods'
 
       describe '#find_resources' do

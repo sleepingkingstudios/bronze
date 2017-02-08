@@ -27,7 +27,7 @@ RSpec.describe Patina::Operations::Resources::FindMatchingResourcesOperation do
     it { expect(described_class).to be_constructible.with(1).argument }
   end # describe
 
-  include_examples 'should implement the ManyResourcesOperation methods'
+  include_examples 'should implement the MatchingResourcesOperation methods'
 
   describe '#call' do
     shared_examples 'should find the resources' do

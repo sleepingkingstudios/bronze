@@ -1,4 +1,4 @@
-# lib/patina/operations/resources/many_resources_operation.rb
+# lib/patina/operations/resources/matching_resources_operation.rb
 
 require 'sleeping_king_studios/tools/toolbox/mixin'
 
@@ -9,7 +9,7 @@ require 'patina/operations/resources/resource_operation'
 module Patina::Operations::Resources
   # Module implementing query and persistence functionality on a group of
   # resources, such as a RESTful #index method or a bulk operation.
-  module ManyResourcesOperation
+  module MatchingResourcesOperation
     extend  SleepingKingStudios::Tools::Toolbox::Mixin
     include Patina::Operations::Resources::ResourceOperation
 

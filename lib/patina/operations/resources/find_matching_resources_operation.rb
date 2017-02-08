@@ -2,13 +2,13 @@
 
 require 'sleeping_king_studios/tools/toolbox/mixin'
 
-require 'patina/operations/resources/many_resources_operation'
+require 'patina/operations/resources/matching_resources_operation'
 
 module Patina::Operations::Resources
   # Operation module to query resources from a datastore.
   module FindMatchingResourcesOperation
     extend  SleepingKingStudios::Tools::Toolbox::Mixin
-    include Patina::Operations::Resources::ManyResourcesOperation
+    include Patina::Operations::Resources::MatchingResourcesOperation
 
     private
 
