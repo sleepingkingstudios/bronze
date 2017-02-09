@@ -14,8 +14,22 @@ module Patina::Collections::Mongo
       def call args
         filter, options = *args
 
-        [filter.merge(selector), options]
+        hsh = mongoize_hash(selector)
+
+        [filter.merge(hsh), options]
       end # method call
+
+      private
+
+      def mongoize_hash hsh
+        hsh.each.with_object({}) do |(key, value), other|
+          other_key = key.to_s.start_with?('__') ? "$#{key.to_s[2..-1]}" : key
+
+          other_value = value.is_a?(Hash) ? mongoize_hash(value) : value
+
+          other[other_key] = other_value
+        end # each
+      end # method mongoize_hash
     end # class
   end # module
 end # module

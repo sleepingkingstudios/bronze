@@ -1,6 +1,7 @@
 # lib/patina/collections/simple/criteria/match_criterion.rb
 
 require 'bronze/collections/criteria/match_criterion'
+require 'bronze/utilities/hash_filter'
 
 require 'patina/collections/simple/query'
 
@@ -12,7 +13,9 @@ module Patina::Collections::Simple
     class MatchCriterion < Bronze::Collections::Criteria::MatchCriterion
       # (see Bronze::Collections::Criteria::Criterion#call)
       def call data
-        data.select { |hsh| hsh >= selector }
+        filter = Bronze::Utilities::HashFilter.new(selector)
+
+        data.select { |hsh| filter.matches?(hsh) }
       end # method call
     end # class
   end # module
