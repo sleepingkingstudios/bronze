@@ -361,6 +361,96 @@ module Spec::Collections
         end # wrap_context
       end # describe
 
+      describe '#matching $in' do
+        let(:expected_titles) do
+          [
+            'A Princess of Mars',
+            'The Gods of Mars',
+            'The Warlord of Mars'
+          ] # end titles
+        end # let
+        let(:selector) { { :title => { :__in => expected_titles } } }
+        let(:expected) do
+          raw_data.select { |hsh| expected_titles.include?(hsh[:title]) }
+        end # let
+
+        include_examples 'should return a query' do
+          let(:query) { instance.matching(selector) }
+        end # include_examples
+
+        include_examples 'should return the items matching the selector'
+
+        wrap_context 'when the data contains many items' do
+          describe 'with an empty selector' do
+            let(:expected_titles) { [] }
+
+            include_examples 'should return the items matching the selector'
+          end # describe
+
+          describe 'with a selector that matches none of the items' do
+            let(:expected_titles) do
+              [
+                'Pirates of Venus',
+                'Lost on Venus',
+                'Carson of Venus'
+              ] # end titles
+            end # let
+
+            include_examples 'should return the items matching the selector'
+          end # describe
+
+          describe 'with a selector that matches one of the items' do
+            let(:expected_titles) do
+              [
+                'Tarzan of the Apes',
+                'At the Earth\'s Core',
+                'A Princess of Mars'
+              ] # end titles
+            end # let
+
+            include_examples 'should return the items matching the selector'
+          end # describe
+
+          describe 'with a selector that matches many of the items' do
+            let(:expected_titles) do
+              [
+                'A Princess of Mars',
+                'The Gods of Mars',
+                'A Warlord of Mars'
+              ] # end titles
+            end # let
+
+            include_examples 'should return the items matching the selector'
+          end # describe
+
+          describe 'with a chained selector' do
+            let(:first_selector) do
+              { :title => { :__in => expected_titles } }
+            end # let
+            let(:second_selector) do
+              { :author => 'Edgar Rice Burroughs' }
+            end # let
+            let(:expected) do
+              raw_data.
+                select { |hsh| expected_titles.include?(hsh[:title]) }.
+                select { |hsh| hsh >= second_selector }
+            end # let
+
+            it 'should return the items matching the selector' do
+              query      = instance.matching(first_selector)
+              query      = query.matching(second_selector)
+              hash_tools = SleepingKingStudios::Tools::HashTools
+
+              results =
+                query.to_a.map { |hsh| hash_tools.convert_keys_to_symbols(hsh) }
+
+              expect(query.count).to be expected.count
+              expect(results).to be == expected
+            end # it
+          end # describe
+        end # wrap_context
+      end # describe
+
       describe '#one' do
         it { expect(instance.one).to be nil }
 
