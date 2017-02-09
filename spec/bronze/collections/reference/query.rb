@@ -2,6 +2,7 @@
 
 require 'bronze/collections/query'
 require 'bronze/collections/reference'
+require 'bronze/utilities/hash_filter'
 
 module Bronze::Collections::Reference
   # Reference implementation of Bronze::Collections::Query.
@@ -19,7 +20,9 @@ module Bronze::Collections::Reference
       class MatchCriterion < Bronze::Collections::Criteria::MatchCriterion
         # (see Bronze::Collections::Criteria::Criterion#call)
         def call data
-          data.select { |hsh| hsh >= selector }
+          filter = Bronze::Utilities::HashFilter.new(selector)
+
+          data.select { |hsh| filter.matches?(hsh) }
         end # method call
       end # class
     end # module
