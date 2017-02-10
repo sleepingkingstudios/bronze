@@ -16,6 +16,9 @@ module Patina::Operations::Resources
     # @return [Array] The root resource for the operation.
     attr_reader :resources
 
+    # @return [Integer] The number of resources found.
+    attr_reader :resources_count
+
     private
 
     # Finds the requested instances of the resource class in the repository.
@@ -26,7 +29,10 @@ module Patina::Operations::Resources
 
       query = query.matching(matching) if matching.is_a?(Hash)
 
-      @resources = query.to_a
+      @resources       = query.to_a
+      @resources_count = @resources.size
+
+      @resources
     end # method find_resources
 
     def resource_query

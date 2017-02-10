@@ -439,6 +439,7 @@ module Spec::Operations
               to change(instance, :resources)
 
             expect(instance.resources).to be == expected
+            expect(instance.resources_count).to be == expected.count
           end # it
         end # shared_examples
 
@@ -480,6 +481,10 @@ module Spec::Operations
 
       describe '#resources' do
         include_examples 'should have reader', :resources, nil
+      end # describe
+
+      describe '#resources_count' do
+        include_examples 'should have reader', :resources_count, nil
       end # describe
     end # shared_examples
 
