@@ -67,6 +67,10 @@ module Patina::Operations::Resources
       false
     end # method require_resource
 
+    def resource_key
+      :resource
+    end # method resource_key
+
     # Matches the resource against the operation contract and sets the operation
     # errors accordingly.
     #
@@ -78,9 +82,5 @@ module Patina::Operations::Resources
 
       result
     end # method validate_resource
-
-    def resource_key
-      :resource
-    end # method resource_key
   end # module
 end # module

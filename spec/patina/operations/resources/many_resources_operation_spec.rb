@@ -26,5 +26,13 @@ RSpec.describe Patina::Operations::Resources::ManyResourcesOperation do
     it { expect(described_class).to be_constructible.with(1).argument }
   end # describe
 
+  describe '::RESOURCES_NOT_FOUND' do
+    it 'should define the constant' do
+      expect(described_class).
+        to have_immutable_constant(:RESOURCES_NOT_FOUND).
+        with_value('operations.resources.resources_not_found')
+    end # it
+  end # describe
+
   include_examples 'should implement the ManyResourcesOperation methods'
 end # describe
