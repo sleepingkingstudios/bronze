@@ -421,6 +421,237 @@ module Spec::Operations
       end # describe
     end # shared_examples
 
+    shared_examples 'should implement the ManyResourcesOperation methods' do
+      include_examples 'should implement the ResourceOperation methods'
+
+      describe '#expected_count' do
+        include_examples 'should have reader', :expected_count, nil
+      end # describe
+
+      describe '#find_resources' do
+        shared_examples 'should set and return the resources' do
+          let(:ids_count)   { arguments.flatten.count }
+          let(:missing_ids) { arguments.flatten - resources.map(&:id) }
+
+          it 'should return the resources' do
+            resources = instance.send(:find_resources, *arguments)
+
+            expect(resources).to be == expected
+          end # it
+
+          it 'should set the resources' do
+            resources = nil
+
+            expect { resources = instance.send(:find_resources, *arguments) }.
+              to change(instance, :resources)
+
+            expect(instance.resources).to be == expected
+            expect(instance.resources_count).to be == expected.count
+            expect(instance.expected_count).to be == ids_count
+            expect(instance.missing_resource_ids).to be == missing_ids
+          end # it
+        end # shared_examples
+
+        let(:arguments) { [] }
+        let(:expected)  { [] }
+        let(:resources) { [] }
+
+        it 'should define the method' do
+          expect(instance).
+            to respond_to(:find_resources, true).
+            with_unlimited_arguments
+        end # it
+
+        include_examples 'should set and return the resources'
+
+        wrap_context 'when the collection contains many resources' do
+          include_examples 'should set and return the resources'
+
+          describe 'with a non-matching list of ids' do
+            let(:arguments) { Array.new(3) { Bronze::Entities::Ulid.generate } }
+
+            include_examples 'should set and return the resources'
+
+            describe 'with an array of ids' do
+              let(:arguments) { [super()] }
+
+              include_examples 'should set and return the resources'
+            end # describe
+          end # describe
+
+          describe 'with a partially matching list of ids' do
+            let(:arguments) do
+              resources[0...3].map(&:id).concat(
+                Array.new(3) { Bronze::Entities::Ulid.generate }
+              ) # end concat
+            end # let
+            let(:expected) { resources[0...3] }
+
+            include_examples 'should set and return the resources'
+
+            describe 'with an array of ids' do
+              let(:arguments) { [super()] }
+
+              include_examples 'should set and return the resources'
+            end # describe
+          end # describe
+
+          describe 'with a matching list of ids' do
+            let(:arguments) do
+              resources[0...3].map(&:id)
+            end # let
+            let(:expected) { resources[0...3] }
+
+            include_examples 'should set and return the resources'
+
+            describe 'with an array of ids' do
+              let(:arguments) { [super()] }
+
+              include_examples 'should set and return the resources'
+            end # describe
+          end # describe
+        end # wrap_context
+      end # describe
+
+      describe '#missing_resource_ids' do
+        include_examples 'should have reader', :missing_resource_ids, nil
+      end # describe
+
+      describe '#require_resources' do
+        shared_examples 'should set the resources' do
+          it 'should set the resources' do
+            expect { instance.send(:require_resources, *arguments) }.
+              to change(instance, :resources)
+
+            expect(instance.resources).to be == expected
+          end # it
+        end # shared_examples
+
+        shared_examples 'should return false and set the errors' do
+          let(:missing_ids) { arguments.flatten - resources.map(&:id) }
+
+          before(:example) do
+            instance.instance_variable_set :@errors, Bronze::Errors::Errors.new
+          end # before example
+
+          include_examples 'should set the resources'
+
+          it 'should return false' do
+            expect(instance.send :require_resources, *arguments).to be false
+          end # it
+
+          it 'should append the errors' do
+            error_definitions = Bronze::Collections::Collection::Errors
+
+            instance.send :require_resources, *arguments
+
+            missing_ids.each do |missing_id|
+              expected =
+                Bronze::Errors::Error.new [:resources, missing_id.to_s.intern],
+                  error_definitions::RECORD_NOT_FOUND,
+                  :id => missing_id
+
+              expect(instance.errors).to include expected
+            end # each
+          end # it
+
+          it 'should set the failure message' do
+            instance.send :require_resources, *arguments
+
+            expect(instance.failure_message).
+              to be == described_class::RESOURCES_NOT_FOUND
+          end # it
+        end # shared_examples
+
+        shared_examples 'should return true and set the resources' do
+          include_examples 'should set the resources'
+
+          it 'should return true' do
+            expect(instance.send :require_resources, *arguments).to be true
+          end # it
+
+          it 'should not append an error' do
+            expect { instance.send :require_resources, *arguments }.
+              not_to change(instance, :errors)
+          end # it
+
+          it 'should not set a failure message' do
+            instance.send :require_resources, *arguments
+
+            expect(instance.failure_message).to be nil
+          end # it
+        end # shared_examples
+
+        let(:arguments) { [] }
+        let(:expected)  { [] }
+        let(:resources) { [] }
+
+        it 'should define the method' do
+          expect(instance).
+            to respond_to(:find_resources, true).
+            with_unlimited_arguments
+        end # it
+
+        include_examples 'should return true and set the resources'
+
+        wrap_context 'when the collection contains many resources' do
+          include_examples 'should return true and set the resources'
+
+          describe 'with a non-matching list of ids' do
+            let(:arguments) { Array.new(3) { Bronze::Entities::Ulid.generate } }
+
+            include_examples 'should return false and set the errors'
+
+            describe 'with an array of ids' do
+              let(:arguments) { [super()] }
+
+              include_examples 'should return false and set the errors'
+            end # describe
+          end # describe
+
+          describe 'with a partially matching list of ids' do
+            let(:arguments) do
+              resources[0...3].map(&:id).concat(
+                Array.new(3) { Bronze::Entities::Ulid.generate }
+              ) # end concat
+            end # let
+            let(:expected) { resources[0...3] }
+
+            include_examples 'should return false and set the errors'
+
+            describe 'with an array of ids' do
+              let(:arguments) { [super()] }
+
+              include_examples 'should return false and set the errors'
+            end # describe
+          end # describe
+
+          describe 'with a matching list of ids' do
+            let(:arguments) do
+              resources[0...3].map(&:id)
+            end # let
+            let(:expected) { resources[0...3] }
+
+            include_examples 'should return true and set the resources'
+
+            describe 'with an array of ids' do
+              let(:arguments) { [super()] }
+
+              include_examples 'should return true and set the resources'
+            end # describe
+          end # describe
+        end # describe
+      end # describe
+
+      describe '#resources' do
+        include_examples 'should have reader', :resources, nil
+      end # describe
+
+      describe '#resources_count' do
+        include_examples 'should have reader', :resources_count, nil
+      end # describe
+    end # shared_examples
+
     shared_examples 'should implement the MatchingResourcesOperation methods' do
       include_examples 'should implement the ResourceOperation methods'
 
@@ -439,6 +670,7 @@ module Spec::Operations
               to change(instance, :resources)
 
             expect(instance.resources).to be == expected
+            expect(instance.resources_count).to be == expected.count
           end # it
         end # shared_examples
 
@@ -480,6 +712,10 @@ module Spec::Operations
 
       describe '#resources' do
         include_examples 'should have reader', :resources, nil
+      end # describe
+
+      describe '#resources_count' do
+        include_examples 'should have reader', :resources_count, nil
       end # describe
     end # shared_examples
 
@@ -638,21 +874,20 @@ module Spec::Operations
         context 'when the repository has the requested resource' do
           before(:example) { instance.resource_collection.insert(resource) }
 
-          it 'should return the resource' do
-            expect(instance.send :find_resource, resource_id).to be == resource
+          it 'should return true' do
+            expect(instance.send :require_resource, resource_id).to be true
           end # it
 
           it 'should set the resource' do
-            expect { instance.send :find_resource, resource_id }.
+            expect { instance.send :require_resource, resource_id }.
               to change(instance, :resource)
 
             expect(instance.resource).to be == resource
           end # it
 
           it 'should not append an error' do
-            instance.send :require_resource, resource_id
-
-            expect { instance.errors }.not_to change(instance, :errors)
+            expect { instance.send :require_resource, resource_id }.
+              not_to change(instance, :errors)
           end # it
         end # context
       end # describe

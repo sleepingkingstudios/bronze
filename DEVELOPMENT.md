@@ -81,6 +81,7 @@
     - after (alias greater than?)
     - in (element is in array)
     - not in
+    - full word converts to shorthand: __not_equal(_to) => :ne
   - #order
   - #includes
 - Repository#except, #only - returns a copy of the repository that only has the given collections.

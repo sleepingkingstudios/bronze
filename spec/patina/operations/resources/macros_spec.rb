@@ -117,6 +117,18 @@ RSpec.describe Patina::Operations::Resources::Macros do
     include_examples 'should include the mixin and set the resource class'
   end # describe
 
+  describe '::find_many' do
+    let(:mixin) { Patina::Operations::Resources::FindManyResourcesOperation }
+
+    def call_macro resource
+      described_class.find_many resource
+    end # method call_macro
+
+    it { expect(described_class).to respond_to(:find_many).with(1).argument }
+
+    include_examples 'should include the mixin and set the resource class'
+  end # describe
+
   describe '::find_one' do
     let(:mixin) { Patina::Operations::Resources::FindOneResourceOperation }
 
