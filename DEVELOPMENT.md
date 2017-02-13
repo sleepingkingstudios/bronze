@@ -4,11 +4,6 @@
 
 ## MVP
 
-- operation#failure_reason
-- Query
-  - #matching with non-equality predicates
-    - $in (element in array)
-
 ## Features
 
 - Association::Collection
