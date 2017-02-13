@@ -76,6 +76,14 @@ RSpec.describe Bronze::Operations::Operation do
       end # it
     end # wrap_context
 
+    wrap_context 'when the operation runs and sets a failure message' do
+      it 'should return false' do
+        expect(instance.call).to be false
+
+        expect(instance.failure_message).to be == expected_message
+      end # it
+    end # wrap_context
+
     wrap_context 'when the operation runs successfully' do
       it 'should return true' do
         expect(instance.call).to be true
@@ -83,6 +91,200 @@ RSpec.describe Bronze::Operations::Operation do
         expect(instance.errors).to be_a Bronze::Errors::Errors
         expect(instance.errors.empty?).to be true
       end # it
+    end # wrap_context
+  end # describe
+
+  describe '#called?' do
+    include_examples 'should have predicate', :called, false
+
+    wrap_context 'when the operation runs and generates errors' do
+      it { expect(instance.execute.called?).to be true }
+    end # wrap_context
+
+    wrap_context 'when the operation runs and sets a failure message' do
+      it { expect(instance.execute.called?).to be true }
+    end # wrap_context
+
+    wrap_context 'when the operation runs successfully' do
+      it { expect(instance.execute.called?).to be true }
+    end # wrap_context
+  end # describe
+
+  describe '#else' do
+    it 'should define the method' do
+      expect(instance).to respond_to(:else).with(0..1).arguments.and_a_block
+    end # it
+
+    wrap_context 'when the operation runs and generates errors' do
+      it 'should call the block' do
+        yielded = nil
+
+        returned = instance.execute.else do |operation|
+          yielded = operation
+        end # else
+
+        expect(returned).to be instance
+        expect(yielded).to be instance
+      end # it
+
+      describe 'with a block that returns an operation' do
+        let(:other_instance) do
+          described_class.new.tap do |operation|
+            allow(operation).to receive(:process)
+          end # tap
+        end # let
+
+        it 'should call the block' do
+          yielded = nil
+
+          returned = instance.execute.else do |operation|
+            yielded = operation
+
+            other_instance
+          end # else
+
+          expect(returned).to be other_instance
+          expect(yielded).to be instance
+        end # it
+      end # describe
+    end # wrap_context
+
+    wrap_context 'when the operation runs and sets a failure message' do
+      it 'should call the block' do
+        yielded = nil
+
+        returned = instance.execute.else do |operation|
+          yielded = operation
+        end # else
+
+        expect(returned).to be instance
+        expect(yielded).to be instance
+      end # it
+
+      describe 'with a block that returns an operation' do
+        let(:other_instance) do
+          described_class.new.tap do |operation|
+            allow(operation).to receive(:process)
+          end # tap
+        end # let
+
+        it 'should call the block' do
+          yielded = nil
+
+          returned = instance.execute.else do |operation|
+            yielded = operation
+
+            other_instance
+          end # else
+
+          expect(returned).to be other_instance
+          expect(yielded).to be instance
+        end # it
+      end # describe
+
+      describe 'with a non-matching expected message' do
+        it 'should not call the block' do
+          yielded = nil
+          message = 'You must spawn more overlords.'
+
+          returned = instance.execute.else(message) do |operation|
+            yielded = operation
+          end # else
+
+          expect(returned).to be instance
+          expect(yielded).to be nil
+        end # it
+
+        describe 'with a block that returns an operation' do
+          let(:other_instance) do
+            described_class.new.tap do |operation|
+              allow(operation).to receive(:process)
+            end # tap
+          end # let
+
+          it 'should not call the block' do
+            yielded = nil
+            message = 'You must spawn more overlords.'
+
+            returned = instance.execute.else(message) do |operation|
+              yielded = operation
+
+              other_instance
+            end # else
+
+            expect(returned).to be instance
+            expect(yielded).to be nil
+          end # it
+        end # describe
+      end # describe
+
+      describe 'with a matching expected message' do
+        it 'should call the block' do
+          yielded = nil
+
+          returned = instance.execute.else(expected_message) do |operation|
+            yielded = operation
+          end # else
+
+          expect(returned).to be instance
+          expect(yielded).to be instance
+        end # it
+
+        describe 'with a block that returns an operation' do
+          let(:other_instance) do
+            described_class.new.tap do |operation|
+              allow(operation).to receive(:process)
+            end # tap
+          end # let
+
+          it 'should call the block' do
+            yielded = nil
+
+            returned = instance.execute.else(expected_message) do |operation|
+              yielded = operation
+
+              other_instance
+            end # else
+
+            expect(returned).to be other_instance
+            expect(yielded).to be instance
+          end # it
+        end # describe
+      end # describe
+    end # wrap_context
+
+    wrap_context 'when the operation runs successfully' do
+      it 'should not call the block' do
+        yielded = nil
+
+        returned = instance.execute.else do |operation|
+          yielded = operation
+        end # else
+
+        expect(returned).to be instance
+        expect(yielded).to be nil
+      end # it
+
+      describe 'with a block that returns an operation' do
+        let(:other_instance) do
+          described_class.new.tap do |operation|
+            allow(operation).to receive(:process)
+          end # tap
+        end # let
+
+        it 'should not call the block' do
+          yielded = nil
+
+          returned = instance.execute.else do |operation|
+            yielded = operation
+
+            other_instance
+          end # else
+
+          expect(returned).to be instance
+          expect(yielded).to be nil
+        end # it
+      end # describe
     end # wrap_context
   end # describe
 
@@ -110,31 +312,49 @@ RSpec.describe Bronze::Operations::Operation do
     end # wrap_context
   end # describe
 
-  describe '#failure?' do
-    include_examples 'should have predicate', :failure, false
+  describe '#execute' do
+    it { expect(instance).to respond_to(:execute).with_unlimited_arguments }
+
+    it 'should raise an error' do
+      expect { instance.execute }.
+        to raise_error described_class::NotImplementedError,
+          "#{described_class.name} does not implement :process"
+    end # it
 
     wrap_context 'when the operation runs and generates errors' do
-      it 'should return true' do
-        instance.call
+      it 'should return false' do
+        expect(instance.execute).to be instance
 
-        expect(instance.failure?).to be true
-      end # it
-    end # wrap_context
+        expect(instance.errors).to be_a Bronze::Errors::Errors
+        expect(instance.errors.empty?).to be false
 
-    wrap_context 'when the operation runs and sets a failure message' do
-      it 'should return true' do
-        instance.call
-
-        expect(instance.failure?).to be true
+        expect(instance.errors.to_a).to contain_exactly(*expected_errors)
       end # it
     end # wrap_context
 
     wrap_context 'when the operation runs successfully' do
-      it 'should return false' do
-        instance.call
+      it 'should return true' do
+        expect(instance.execute).to be instance
 
-        expect(instance.failure?).to be false
+        expect(instance.errors).to be_a Bronze::Errors::Errors
+        expect(instance.errors.empty?).to be true
       end # it
+    end # wrap_context
+  end # describe
+
+  describe '#failure?' do
+    include_examples 'should have predicate', :failure, false
+
+    wrap_context 'when the operation runs and generates errors' do
+      it { expect(instance.execute.failure?).to be true }
+    end # wrap_context
+
+    wrap_context 'when the operation runs and sets a failure message' do
+      it { expect(instance.execute.failure?).to be true }
+    end # wrap_context
+
+    wrap_context 'when the operation runs successfully' do
+      it { expect(instance.execute.failure?).to be false }
     end # wrap_context
   end # describe
 
@@ -154,27 +374,123 @@ RSpec.describe Bronze::Operations::Operation do
     include_examples 'should have predicate', :success, false
 
     wrap_context 'when the operation runs and generates errors' do
-      it 'should return false' do
-        instance.call
-
-        expect(instance.success?).to be false
-      end # it
+      it { expect(instance.execute.success?).to be false }
     end # wrap_context
 
     wrap_context 'when the operation runs and sets a failure message' do
-      it 'should return false' do
-        instance.call
-
-        expect(instance.success?).to be false
-      end # it
+      it { expect(instance.execute.success?).to be false }
     end # wrap_context
 
     wrap_context 'when the operation runs successfully' do
-      it 'should return true' do
-        instance.call
+      it { expect(instance.execute.success?).to be true }
+    end # wrap_context
+  end # describe
 
-        expect(instance.success?).to be true
+  describe '#then' do
+    it 'should define the method' do
+      expect(instance).to respond_to(:then).with(0).arguments.and_a_block
+    end # it
+
+    wrap_context 'when the operation runs and generates errors' do
+      it 'should not call the block' do
+        yielded = nil
+
+        returned = instance.execute.then do |operation|
+          yielded = operation
+        end # then
+
+        expect(returned).to be instance
+        expect(yielded).to be nil
       end # it
+
+      describe 'with a block that returns an operation' do
+        let(:other_instance) do
+          described_class.new.tap do |operation|
+            allow(operation).to receive(:process)
+          end # tap
+        end # let
+
+        it 'should not call the block' do
+          yielded = nil
+
+          returned = instance.execute.then do |operation|
+            yielded = operation
+
+            other_instance
+          end # then
+
+          expect(returned).to be instance
+          expect(yielded).to be nil
+        end # it
+      end # describe
+    end # wrap_context
+
+    wrap_context 'when the operation runs and sets a failure message' do
+      it 'should not call the block' do
+        yielded = nil
+
+        returned = instance.execute.then do |operation|
+          yielded = operation
+        end # then
+
+        expect(returned).to be instance
+        expect(yielded).to be nil
+      end # it
+
+      describe 'with a block that returns an operation' do
+        let(:other_instance) do
+          described_class.new.tap do |operation|
+            allow(operation).to receive(:process)
+          end # tap
+        end # let
+
+        it 'should not call the block' do
+          yielded = nil
+
+          returned = instance.execute.then do |operation|
+            yielded = operation
+
+            other_instance
+          end # then
+
+          expect(returned).to be instance
+          expect(yielded).to be nil
+        end # it
+      end # describe
+    end # wrap_context
+
+    wrap_context 'when the operation runs successfully' do
+      it 'should call the block' do
+        yielded = nil
+
+        returned = instance.execute.then do |operation|
+          yielded = operation
+        end # then
+
+        expect(returned).to be instance
+        expect(yielded).to be instance
+      end # it
+
+      describe 'with a block that returns an operation' do
+        let(:other_instance) do
+          described_class.new.tap do |operation|
+            allow(operation).to receive(:process)
+          end # tap
+        end # let
+
+        it 'should call the block' do
+          yielded = nil
+
+          returned = instance.execute.then do |operation|
+            yielded = operation
+
+            other_instance
+          end # then
+
+          expect(returned).to be other_instance
+          expect(yielded).to be instance
+        end # it
+      end # describe
     end # wrap_context
   end # describe
 end # describe
