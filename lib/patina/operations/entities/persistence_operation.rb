@@ -12,6 +12,8 @@ module Patina::Operations::Entities
     # @param repository [Bronze::Collections::Repository] The repository used to
     #   query the resource and any child resources.
     # @param resource_class [Class] The class of entity to query for.
+    # @param transform [Bronze::Transforms::Transform] The transform used to
+    #   query or persist the resource.
     def initialize repository, resource_class, transform = nil
       @repository     = repository
       @resource_class = resource_class

@@ -52,7 +52,7 @@ RSpec.describe Patina::Operations::Entities::FindManyOperation do
         expect(instance.failure_message).to be nil
       end # it
 
-      it 'should append the error' do
+      it 'should clear the errors' do
         instance.call primary_keys
 
         expect(instance.errors.empty?).to be true
