@@ -1,6 +1,5 @@
 # spec/patina/operations/entities/build_one_operation_spec.rb
 
-require 'patina/collections/simple'
 require 'patina/operations/entities/build_one_operation'
 
 require 'support/example_entity'
