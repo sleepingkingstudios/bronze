@@ -5,20 +5,15 @@ require 'sleeping_king_studios/tools/toolbelt'
 require 'bronze/operations/operation'
 
 require 'patina/operations/entities'
+require 'patina/operations/entities/resource_operation'
 
 module Patina::Operations::Entities
   # Builds an instance of the given resource class with the given attributes.
   class BuildOneOperation < Bronze::Operations::Operation
-    # @param resource_class [Class] The class of entity to build.
-    def initialize resource_class
-      @resource_class = resource_class
-    end # constructor
+    include Patina::Operations::Entities::ResourceOperation
 
     # @return [Bronze::Entities::Entity] The built resource.
     attr_reader :resource
-
-    # @return [Class] The class of entity to build.
-    attr_reader :resource_class
 
     private
 
@@ -26,9 +21,5 @@ module Patina::Operations::Entities
       attributes = tools.hash.convert_keys_to_symbols(attributes || {})
       @resource  = resource_class.new(attributes)
     end # method process
-
-    def tools
-      SleepingKingStudios::Tools::Toolbelt.instance
-    end # method tools
   end # class
 end # module

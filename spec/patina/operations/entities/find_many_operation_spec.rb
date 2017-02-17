@@ -1,5 +1,7 @@
 # spec/patina/operations/entities/find_many_operation_spec.rb
 
+require 'bronze/collections/collection'
+
 require 'patina/collections/simple'
 require 'patina/operations/entities/entity_operation_examples'
 require 'patina/operations/entities/find_many_operation'

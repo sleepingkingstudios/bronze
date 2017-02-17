@@ -13,7 +13,6 @@ RSpec.describe Patina::Operations::Entities::PersistenceOperation do
       include Patina::Operations::Entities::PersistenceOperation
     end # class
   end # let
-  # let(:instance)
   let(:repository)     { Patina::Collections::Simple::Repository.new }
   let(:resource_class) { Spec::ArchivedPeriodical }
   let(:instance)       { described_class.new repository, resource_class }
