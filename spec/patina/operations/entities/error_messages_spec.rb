@@ -3,6 +3,14 @@
 require 'patina/operations/entities/error_messages'
 
 RSpec.describe Patina::Operations::Entities::ErrorMessages do
+  describe '::INVALID_RESOURCE' do
+    it 'should define the constant' do
+      expect(described_class).
+        to have_immutable_constant(:INVALID_RESOURCE).
+        with_value('operations.entities.invalid_resource')
+    end # it
+  end # describe
+
   describe '::RECORD_NOT_FOUND' do
     it 'should define the constant' do
       expect(described_class).
