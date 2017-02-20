@@ -28,7 +28,7 @@ RSpec.describe Patina::Operations::Entities::DestroyOneOperation do
     it 'should define the constant' do
       expect(described_class).
         to have_immutable_constant(:RECORD_NOT_FOUND).
-        with_value('operations.entities.record_not_found')
+        with_value('errors.operations.entities.record_not_found')
     end # it
   end # describe
 
@@ -37,7 +37,7 @@ RSpec.describe Patina::Operations::Entities::DestroyOneOperation do
       let(:expected_error) do
         error_definitions = Bronze::Collections::Collection::Errors
 
-        Bronze::Errors::Error.new [:archived_periodicals, resource.id.intern],
+        Bronze::Errors::Error.new [:archived_periodical],
           error_definitions::RECORD_NOT_FOUND,
           :id => resource.id
       end # let

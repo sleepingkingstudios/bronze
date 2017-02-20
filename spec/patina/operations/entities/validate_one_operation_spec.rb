@@ -25,7 +25,7 @@ RSpec.describe Patina::Operations::Entities::ValidateOneOperation do
     it 'should define the constant' do
       expect(described_class).
         to have_immutable_constant(:INVALID_RESOURCE).
-        with_value('operations.entities.invalid_resource')
+        with_value('errors.operations.entities.invalid_resource')
     end # it
   end # describe
 

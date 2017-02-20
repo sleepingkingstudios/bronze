@@ -19,7 +19,8 @@ module Patina::Operations::Entities
 
     def process attributes
       attributes = tools.hash.convert_keys_to_symbols(attributes || {})
-      @resource  = resource_class.new(attributes)
+
+      @resource = resource_class.new(attributes)
     end # method process
   end # class
 end # module

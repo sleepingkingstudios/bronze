@@ -28,7 +28,7 @@ module Patina::Operations::Entities
 
       error_definitions = Bronze::Collections::Collection::Errors
 
-      @errors[plural_resource_name][resource.id].add(
+      @errors[resource_name].add(
         error_definitions::RECORD_NOT_FOUND,
         :id => resource.id
       ) # end add
