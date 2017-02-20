@@ -13,6 +13,7 @@
   - bulk operations
   - #raw - returns clone with identity transform
   - use native data types where possible (BigDecimal, Date, etc)
+  - Errors - use I18n-esque string values, not symbols
 - Constraint
   - AttributeTypesConstraint
     - :except, :only ?
