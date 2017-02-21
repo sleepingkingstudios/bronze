@@ -58,7 +58,13 @@ RSpec.describe Patina::Operations::Entities::FindMatchingOperation do
       include_examples 'should query for matching records'
     end # describe
 
-    describe 'with params that do not match any records' do
+    describe 'with string params that do not match any records' do
+      let(:params) { { 'matching' => { 'title' => 'Your Daily Horoscope' } } }
+
+      include_examples 'should query for matching records'
+    end # describe
+
+    describe 'with symbol params that do not match any records' do
       let(:params) { { :matching => { :title => 'Your Daily Horoscope' } } }
 
       include_examples 'should query for matching records'
@@ -71,13 +77,28 @@ RSpec.describe Patina::Operations::Entities::FindMatchingOperation do
         include_examples 'should query for matching records'
       end # describe
 
-      describe 'with params that do not match any records' do
+      describe 'with string params that do not match any records' do
+        let(:params) { { 'matching' => { 'title' => 'Your Daily Horoscope' } } }
+
+        include_examples 'should query for matching records'
+      end # describe
+
+      describe 'with symbol params that do not match any records' do
         let(:params) { { :matching => { :title => 'Your Daily Horoscope' } } }
 
         include_examples 'should query for matching records'
       end # describe
 
-      describe 'with params that match some records' do
+      describe 'with string params that match some records' do
+        let(:params) { { 'matching' => { 'title' => 'Astrology Today' } } }
+        let(:expected) do
+          resources.select { |resource| resource.title == 'Astrology Today' }
+        end # let
+
+        include_examples 'should query for matching records'
+      end # describe
+
+      describe 'with symbol params that match some records' do
         let(:params) { { :matching => { :title => 'Astrology Today' } } }
         let(:expected) do
           resources.select { |resource| resource.title == 'Astrology Today' }

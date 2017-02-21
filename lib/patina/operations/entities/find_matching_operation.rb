@@ -15,8 +15,14 @@ module Patina::Operations::Entities
 
     private
 
-    def process matching: nil
+    def extract_option options, name
+      options.fetch(name, options[name.to_s])
+    end # method extract_option
+
+    def process options = {}
       query = collection.query
+
+      matching = extract_option(options, :matching)
 
       query = query.matching(matching) if matching.is_a?(Hash)
 
