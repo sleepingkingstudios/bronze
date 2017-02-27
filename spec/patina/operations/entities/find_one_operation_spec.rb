@@ -33,9 +33,33 @@ RSpec.describe Patina::Operations::Entities::FindOneOperation do
 
   describe '#call' do
     describe 'with nil' do
-      it 'should raise an error' do
-        expect { instance.call nil }.
-          to raise_error ArgumentError, "can't be nil"
+      let(:expected_error) do
+        error_definitions = Bronze::Collections::Collection::Errors
+
+        Bronze::Errors::Error.new [:archived_periodical],
+          error_definitions::RECORD_NOT_FOUND,
+          :id => nil
+      end # let
+
+      it { expect(instance.call nil).to be false }
+
+      it 'should not set the resource' do
+        instance.call nil
+
+        expect(instance.resource).to be nil
+      end # it
+
+      it 'should set the failure message' do
+        instance.call nil
+
+        expect(instance.failure_message).
+          to be == described_class::RECORD_NOT_FOUND
+      end # it
+
+      it 'should append the error' do
+        instance.call nil
+
+        expect(instance.errors).to include expected_error
       end # it
     end # describe
 
@@ -73,9 +97,33 @@ RSpec.describe Patina::Operations::Entities::FindOneOperation do
 
     wrap_context 'when the collection contains many resources' do
       describe 'with nil' do
-        it 'should raise an error' do
-          expect { instance.call nil }.
-            to raise_error ArgumentError, "can't be nil"
+        let(:expected_error) do
+          error_definitions = Bronze::Collections::Collection::Errors
+
+          Bronze::Errors::Error.new [:archived_periodical],
+            error_definitions::RECORD_NOT_FOUND,
+            :id => nil
+        end # let
+
+        it { expect(instance.call nil).to be false }
+
+        it 'should not set the resource' do
+          instance.call nil
+
+          expect(instance.resource).to be nil
+        end # it
+
+        it 'should set the failure message' do
+          instance.call nil
+
+          expect(instance.failure_message).
+            to be == described_class::RECORD_NOT_FOUND
+        end # it
+
+        it 'should append the error' do
+          instance.call nil
+
+          expect(instance.errors).to include expected_error
         end # it
       end # describe
 

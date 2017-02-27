@@ -18,9 +18,7 @@ module Patina::Operations::Entities
     private
 
     def process primary_key
-      raise ArgumentError, "can't be nil" if primary_key.nil?
-
-      @resource = collection.find(primary_key)
+      @resource = collection.find(primary_key) unless primary_key.nil?
 
       return if @resource
 
