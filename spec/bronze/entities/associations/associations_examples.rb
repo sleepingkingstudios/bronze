@@ -360,6 +360,15 @@ module Spec::Entities::Associations::AssociationsExamples
         wrap_context 'when the collection has many entities' do
           it { expect(entity.send reader_name).to be == prior_values }
         end # wrap_context
+
+        context 'when the entity is initialized with an association value' do
+          let(:prior_values) do
+            defined?(super()) ? super() : Array.new(3) { association_class.new }
+          end # let
+          let(:attributes) { super().merge association_name => prior_values }
+
+          it { expect(entity.send reader_name).to be == prior_values }
+        end # context
       end # describe
 
       describe "##{writer_name}" do
@@ -863,6 +872,15 @@ module Spec::Entities::Associations::AssociationsExamples
         wrap_context 'with an associated entity' do
           it { expect(entity.send reader_name).to be prior_value }
         end # wrap_context
+
+        context 'when the entity is initialized with an association value' do
+          let(:prior_value) do
+            defined?(super()) ? super() : association_class.new
+          end # let
+          let(:attributes) { super().merge association_name => prior_value }
+
+          it { expect(entity.send reader_name).to be == prior_value }
+        end # context
       end # describe
 
       describe "##{reader_name}?" do
@@ -1053,6 +1071,15 @@ module Spec::Entities::Associations::AssociationsExamples
         wrap_context 'with an associated entity' do
           it { expect(entity.send foreign_key).to be == prior_value.id }
         end # wrap_context
+
+        context 'when the entity is initialized with an association value' do
+          let(:prior_value) do
+            defined?(super()) ? super() : association_class.new
+          end # let
+          let(:attributes) { super().merge association_name => prior_value }
+
+          it { expect(entity.send foreign_key).to be == prior_value.id }
+        end # context
       end # describe
 
       describe "##{reader_name}" do
@@ -1063,6 +1090,15 @@ module Spec::Entities::Associations::AssociationsExamples
         wrap_context 'with an associated entity' do
           it { expect(entity.send reader_name).to be prior_value }
         end # wrap_context
+
+        context 'when the entity is initialized with an association value' do
+          let(:prior_value) do
+            defined?(super()) ? super() : association_class.new
+          end # let
+          let(:attributes) { super().merge association_name => prior_value }
+
+          it { expect(entity.send reader_name).to be == prior_value }
+        end # context
       end # describe
 
       describe "##{reader_name}?" do
@@ -1724,6 +1760,40 @@ module Spec::Entities::Associations::AssociationsExamples
           end # describe
         end # wrap_context
       end # describe
+    end # describe
+
+    describe '#assign' do
+      it 'should not update the attributes' do
+        expect { instance.assign(:malicious => :value) }.
+          not_to change(instance, :attributes)
+      end # it
+
+      wrap_context 'when associations are defined for the class' do
+        let(:author) { Spec::Author.new }
+        let(:values) { { :author => author } }
+
+        describe 'with an association' do
+          it 'should overwrite the associations' do
+            expect { instance.assign values }.
+              to change(instance, :author).
+              to be == author
+          end # it
+        end # describe
+      end # wrap_context
+    end # describe
+
+    describe '#association?' do
+      it { expect(instance).to respond_to(:association?).with(1).argument }
+
+      it { expect(instance.association? :author).to be false }
+
+      wrap_context 'when associations are defined for the class' do
+        it { expect(instance.association? :author).to be true }
+
+        it { expect(instance.association? 'author').to be true }
+
+        it { expect(instance.association? :publisher).to be false }
+      end # it
     end # describe
   end # shared_examples
 end # module

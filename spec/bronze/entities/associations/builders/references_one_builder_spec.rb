@@ -82,10 +82,16 @@ RSpec.describe Bronze::Entities::Associations::Builders::ReferencesOneBuilder do
 
     wrap_context 'when the association has been defined' do
       let(:attributes) { {} }
-      let(:entity)     { entity_class.new }
+      let(:entity)     { entity_class.new attributes }
       let(:association_opts) do
         super().merge :class_name => association_class.name
       end # let
+
+      before(:example) do
+        associations = { association_name => metadata }
+
+        entity_class.instance_variable_set(:@associations, associations)
+      end # before example
 
       include_examples 'should define references_one association', :author
 
@@ -98,10 +104,6 @@ RSpec.describe Bronze::Entities::Associations::Builders::ReferencesOneBuilder do
             :class_name => 'Spec::Book',
             :inverse => :author
           ) # end has_one
-
-          associations = { association_name => metadata }
-
-          entity_class.instance_variable_set(:@associations, associations)
         end # before example
 
         include_examples 'should define references_one association',

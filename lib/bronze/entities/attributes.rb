@@ -110,6 +110,11 @@ module Bronze::Entities
     end # method assign
     alias_method :assign_attributes, :assign
 
+    # (see #assign)
+    def assign_attributes values
+      assign values
+    end # method assign_attributes
+
     # Checks if the entity defines the specified attribute.
     #
     # @param attribute_name [String, Symbol] The name of the attribute.

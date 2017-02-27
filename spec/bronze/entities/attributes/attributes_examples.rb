@@ -316,8 +316,6 @@ module Spec::Entities::Attributes::AttributesExamples
     describe '#assign' do
       it { expect(instance).to respond_to(:assign).with(1).argument }
 
-      it { expect(instance).to alias_method(:assign).as(:assign_attributes) }
-
       it 'should not update the attributes' do
         expect { instance.assign(:malicious => :value) }.
           not_to change(instance, :attributes)
@@ -356,6 +354,25 @@ module Spec::Entities::Attributes::AttributesExamples
       end # wrap_context
     end # describe
 
+    describe '#assign_attributes' do
+      let(:values) do
+        {
+          :title      => 'The Mists of Avalon',
+          :page_count => 450,
+          :foreward   => 'Hic Iacet Arthurus, Rex Quondam, Rexque Futurus'
+        } # end hash
+      end # let
+      let(:result) { double('result') }
+
+      it { expect(instance).to respond_to(:assign_attributes).with(1).argument }
+
+      it 'should delegate to #assign' do
+        expect(instance).to receive(:assign).with(values).and_return(result)
+
+        expect(instance.assign_attributes(values)).to be result
+      end # it
+    end # describe
+
     describe '#attribute?' do
       it { expect(instance).to respond_to(:attribute?).with(1).argument }
 
@@ -383,7 +400,7 @@ module Spec::Entities::Attributes::AttributesExamples
             :title            => nil,
             :page_count       => nil,
             :publication_date => nil
-          } # end hash
+          }.merge(attributes)
 
           defined_attributes.each do |attr_name, attr_type|
             hsh.update attr_name => an_instance_of(attr_type)
@@ -407,6 +424,31 @@ module Spec::Entities::Attributes::AttributesExamples
             expect(attributes.fetch key).to be == value
           end # each
         end # it
+
+        context 'when the entity is initialized with attribute values' do
+          let(:attributes) do
+            {
+              :title            => 'The Once And Future King',
+              :publication_date => Date.new(1958, 1, 1)
+            } # end hash
+          end # let
+
+          it 'should return the attributes' do
+            attributes = instance.attributes
+
+            expect(attributes).to be_a Hash
+            expect(attributes.keys).to contain_exactly(*expected.keys)
+
+            defined_attributes.each_key do |attr_name|
+              expect(attributes.fetch attr_name).
+                to match expected.delete(attr_name)
+            end # each
+
+            expected.each do |key, value|
+              expect(attributes.fetch key).to be == value
+            end # each
+          end # it
+        end # context
       end # wrap_context
     end # describe
 
