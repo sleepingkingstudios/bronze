@@ -65,6 +65,9 @@
     - PrimaryKey::Ulid
     - ::foreign_key takes optional type argument
 - Errors#first
+- Operation
+  - #always - always called, even if halted.
+  - #halt!, #halted? - prevent further #then, #else callbacks.
 - Query
   - #all returns with JSON envelope for advanced features?
   - #matching with non-equality predicates
