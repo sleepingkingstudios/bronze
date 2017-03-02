@@ -25,7 +25,8 @@ Gem::Specification.new do |gem|
   gem.files        = Dir["lib/**/*.rb", "LICENSE", "*.md"]
 
   gem.add_runtime_dependency 'sysrandom', '~> 1.0.0', '>= 1.0.2'
-  gem.add_runtime_dependency 'sleeping_king_studios-tools', '~> 0.5.0'
+  gem.add_runtime_dependency 'sleeping_king_studios-tools',
+    '>= 0.6.0.rc.0', '< 0.7.0'
 
   gem.add_development_dependency 'rake',      '~> 12.0'
   gem.add_development_dependency 'thor',      '~> 0.19',  '>= 0.19.1'
