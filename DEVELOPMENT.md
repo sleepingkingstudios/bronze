@@ -2,6 +2,18 @@
 
 ## Bug Fixes
 
+- FindManyOperation: |
+
+  When a user calls a FindManyOperation with an array with duplicate primary
+  keys, it should call #uniq! on the array before comparing expected and actual
+  resource counts. Otherwise, we get a false negative when all expected
+  resources are found.
+
+- Repository.collection:
+  - use full name of entity to generate name: |
+
+    Namespace::ModelName => 'namespace-model_name'
+
 ## MVP
 
 ## Features
@@ -13,6 +25,7 @@
   - bulk operations
   - #raw - returns clone with identity transform
   - use native data types where possible (BigDecimal, Date, etc)
+  - Errors - use I18n-esque string values, not symbols
 - Constraint
   - AttributeTypesConstraint
     - :except, :only ?
@@ -90,6 +103,8 @@
 - Ulid
   - automatically freeze after generation?
 - bronze/rails
+- bronze/forge
+  - FactoryGirl syntax?
 
 ## Chores
 

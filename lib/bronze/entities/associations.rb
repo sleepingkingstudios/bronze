@@ -11,7 +11,7 @@ module Bronze::Entities
   module Associations
     extend  SleepingKingStudios::Tools::Toolbox::Mixin
     include Bronze::Entities::Associations::Helpers
-    prepend Bronze::Entities::Attributes
+    include Bronze::Entities::Attributes
 
     autoload :Builders, 'bronze/entities/associations/builders'
     autoload :Metadata, 'bronze/entities/associations/metadata'
@@ -167,14 +167,41 @@ module Bronze::Entities
     def initialize attributes = {}
       @associations = {}
 
+      super
+
       attributes.each do |key, value|
-        next unless self.class.associations.key?(key)
+        next unless association?(key)
 
         send("#{key}=", value)
       end # each
-
-      super
     end # constructor
+
+    # Merges the values of the associations. Values that are not valid
+    # associations are passed to the superclass.
+    #
+    # @param values [Hash{String, Symbol => Object}] The association values to
+    #   set.
+    #
+    # @see Attributes#assign.
+    def assign values
+      super
+
+      values.each do |key, value|
+        next unless association?(key)
+
+        send("#{key}=", value)
+      end # each
+    end # method assign
+
+    # Checks if the entity defines the specified association.
+    #
+    # @param association_name [String, Symbol] The name of the association.
+    #
+    # @return [Boolean] True if the entity defines the association, otherwise
+    #   false.
+    def association? association_name
+      self.class.associations.key?(association_name.intern)
+    end # method association?
 
     private
 

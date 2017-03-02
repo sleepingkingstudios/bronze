@@ -9,5 +9,8 @@ module Patina::Collections
   # or as a dependency in unit tests.
   #
   # @see Simple::Collection
-  module Simple; end
+  module Simple
+    autoload :Collection, 'patina/collections/simple/collection'
+    autoload :Repository, 'patina/collections/simple/repository'
+  end # module
 end # module

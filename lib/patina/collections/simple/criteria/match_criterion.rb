@@ -13,7 +13,9 @@ module Patina::Collections::Simple
     class MatchCriterion < Bronze::Collections::Criteria::MatchCriterion
       # (see Bronze::Collections::Criteria::Criterion#call)
       def call data
-        filter = Bronze::Utilities::HashFilter.new(selector)
+        hash_tools = SleepingKingStudios::Tools::HashTools
+        selector   = hash_tools.convert_keys_to_symbols(self.selector)
+        filter     = Bronze::Utilities::HashFilter.new(selector)
 
         data.select { |hsh| filter.matches?(hsh) }
       end # method call

@@ -84,17 +84,17 @@ module Bronze::Operations
     # @return [Boolean] True if the operation was run but encountered an error,
     #   otherwise false.
     def failure?
-      return false unless @called
+      return false unless called?
 
-      !@errors.empty? || !(@failure_message.nil? || @failure_message.empty?)
+      !errors.empty? || !(failure_message.nil? || failure_message.empty?)
     end # method failure?
 
     # @return [Boolean] True if the operation was run successfully, otherwise
     #   false.
     def success?
-      return false unless @called
+      return false unless called?
 
-      @errors.empty? && (@failure_message.nil? || @failure_message.empty?)
+      errors.empty? && (failure_message.nil? || failure_message.empty?)
     end # method success?
 
     # If the operation was run successfully, yields the operation to the block

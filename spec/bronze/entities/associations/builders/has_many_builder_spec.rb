@@ -98,7 +98,7 @@ RSpec.describe Bronze::Entities::Associations::Builders::HasManyBuilder do
 
     wrap_context 'when the association has been defined' do
       let(:attributes) { {} }
-      let(:entity)     { entity_class.new }
+      let(:entity)     { entity_class.new attributes }
       let(:association_opts) do
         super().merge :class_name => association_class.name
       end # let
