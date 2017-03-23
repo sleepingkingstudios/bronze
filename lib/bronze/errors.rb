@@ -46,11 +46,9 @@ module Bronze
     # @param type [String, Symbol] The error type.
     # @param params [Hash] Additional params for the error, if any.
     def add type, params = {}
-      hsh = { :type => type, :params => params }
+      @data[:__errors] << { :type => type, :params => params }
 
-      @data[:__errors] << hsh
-
-      hsh
+      self
     end # method add
 
     # @return [Integer] The number of errors in the data structure.

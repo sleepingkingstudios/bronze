@@ -259,6 +259,10 @@ RSpec.describe Bronze::Errors do
         to include(expected)
     end # it
 
+    it 'should return the proxy' do
+      expect(instance.add type).to be instance
+    end # it
+
     describe 'with custom params' do
       let(:params) { { :key => 'value' } }
 
