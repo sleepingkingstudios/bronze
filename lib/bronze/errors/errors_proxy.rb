@@ -1,5 +1,7 @@
 # lib/bronze/errors/errors_proxy.rb
 
+require 'sleeping_king_studios/tools/toolbelt'
+
 require 'bronze/errors'
 
 module Bronze::Errors
@@ -27,6 +29,18 @@ module Bronze::Errors
       ErrorsProxy.new(:data => hsh, :path => path + [key])
     end # method []
 
+    # Copies the hash and sets it as the inner errors data structure at the
+    # given key.
+    #
+    # @param key [Integer, Symbol] The inner data key.
+    # @param value [Hash, ErrorsProxy] The hash or errors proxy to copy.
+    def []= key, value
+      key  = key.intern if key.is_a?(String)
+      data = value.is_a?(ErrorsProxy) ? value.data : value
+
+      @data[key] = tools.hash.deep_dup(data)
+    end # method []=
+
     # Adds an error with the specified type and params.
     #
     # @param type [String, Symbol] The error type.
@@ -45,6 +59,16 @@ module Bronze::Errors
     end # method count
     alias_method :length, :count
     alias_method :size,   :count
+
+    # Removes the inner data at the given key and returns it wrapped with proxy
+    # object.
+    #
+    # @param key [Integer, Symbol] The inner data key.
+    #
+    # @return [ErrorsProxy] The errors proxy for the referenced data.
+    def delete key
+      ErrorsProxy.new :data => @data.delete(key)
+    end # method delete
 
     # Returns a reference to the nested inner errors data structure referenced
     # by the given keys.
@@ -93,9 +117,11 @@ module Bronze::Errors
       each.with_object([]) { |error, ary| ary << error }
     end # method to_a
 
-    private
+    protected
 
-    attr_reader :path
+    attr_reader :data, :path
+
+    private
 
     def count_errors_in_hash hsh
       count = 0
@@ -128,5 +154,9 @@ module Bronze::Errors
 
       false
     end # method hash_has_errors?
+
+    def tools
+      SleepingKingStudios::Tools::Toolbelt.instance
+    end # method tools
   end # class
 end # module

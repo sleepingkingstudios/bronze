@@ -141,6 +141,105 @@ RSpec.describe Bronze::Errors::ErrorsProxy do
     end # wrap_context
   end # describe
 
+  describe '#[]=' do
+    shared_examples 'should copy the hash into the data' do
+      it 'should add the errors to the data' do
+        expect { instance[key] = value }.
+          to change(instance, :count).
+          to be expected_count
+      end # it
+
+      it 'should set the relative path' do
+        instance[key] = value
+
+        expect(instance).to include expected_error
+      end # it
+
+      it 'should copy the data' do
+        instance[key] = value
+
+        expect { other_proxy.add :custom_error }.not_to change(instance, :count)
+      end # it
+    end # shared_examples
+
+    let(:key) { :connection }
+    let(:nested_errors) do
+      {
+        [] => {
+          :unable_to_connect_to_server => {}
+        }, # end root errors
+        [:articles] => {
+          :unauthorized => {}
+        }, # end articles count errors
+        [:articles, 0, :id] => {
+          :must_be_present      => {},
+          :must_be_numeric      => {},
+          :must_be_greater_than => { :value => 0 }
+        }, # end articles 0 id errors
+        [:articles, 0, :tags] => {
+          :must_be_present => {}
+        }, # end articles 0 tags errors
+        [:articles, 1, :tags, 0, :name] => {
+          :already_exists => { :value => 'Favorite Color' }
+        }, # end articles 1 tags 0 errors
+        [:articles, 1, :tags, 1, :name] => {
+          :profanity => { :language => 'Quenya' }
+        } # end articles 1 tags 1 errors
+      } # end errors
+    end # let
+    let(:other_proxy) do
+      other = described_class.new
+
+      nested_errors.each do |path, errors|
+        proxy = other.dig(*path)
+
+        errors.each do |error_type, error_params|
+          proxy.add error_type, **error_params
+        end # each
+      end # each
+
+      other
+    end # let
+    let(:expected_count) do
+      nested_errors.reduce(0) { |memo, (_, hsh)| memo + hsh.size }
+    end # let
+    let(:expected_error) do
+      {
+        :type   => :profanity,
+        :params => { :language => 'Quenya' },
+        :path   => [*path, key, :articles, 1, :tags, 1, :name]
+      } # end error
+    end # let
+
+    it { expect(instance).to respond_to(:[]=).with(2).arguments }
+
+    describe 'with an errors object' do
+      let(:value) { other_proxy }
+
+      include_examples 'should copy the hash into the data'
+    end # describe
+
+    describe 'with a hash' do
+      let(:value) { other_proxy.send :data }
+
+      include_examples 'should copy the hash into the data'
+    end # describe
+
+    wrap_context 'when the path has many ancestors' do
+      describe 'with an errors object' do
+        let(:value) { other_proxy }
+
+        include_examples 'should copy the hash into the data'
+      end # describe
+
+      describe 'with a hash' do
+        let(:value) { other_proxy.send :data }
+
+        include_examples 'should copy the hash into the data'
+      end # describe
+    end # wrap_context
+  end # describe
+
   describe '#add' do
     let(:type)   { :custom_error }
     let(:params) { {} }
@@ -208,6 +307,47 @@ RSpec.describe Bronze::Errors::ErrorsProxy do
       end # let
 
       it { expect(instance.count).to be == expected }
+    end # wrap_context
+  end # describe
+
+  describe '#delete' do
+    let(:key)  { :title }
+    let(:type) { :custom_error }
+
+    it { expect(instance).to respond_to(:delete).with(1).arguments }
+
+    it 'should return an errors proxy' do
+      proxy = instance.delete(key)
+
+      expect(proxy).to be_a described_class
+      expect(proxy.send :path).to be == []
+    end # it
+
+    it 'should not reference the inner data structure' do
+      proxy = instance.delete(key)
+
+      expect { proxy.add type }.not_to change(instance, :to_a)
+    end # it
+
+    wrap_context 'when there are many nested errors' do
+      let(:key) { :articles }
+
+      it 'should return an errors proxy' do
+        proxy = instance.delete(key)
+
+        expect(proxy).to be_a described_class
+        expect(proxy.send :path).to be == []
+      end # it
+
+      it 'should not reference the inner data structure' do
+        proxy = instance.delete(key)
+
+        expect { proxy.add type }.not_to change(instance, :to_a)
+      end # it
+
+      it 'should remove the referenced data' do
+        expect { instance.delete(key) }.to change(instance, :count).to be 1
+      end # it
     end # wrap_context
   end # describe
 
