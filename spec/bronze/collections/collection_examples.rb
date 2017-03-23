@@ -5,7 +5,7 @@ require 'sleeping_king_studios/tools/toolbox/mixin'
 require 'bronze/collections/null_query'
 require 'bronze/collections/querying_examples'
 require 'bronze/entities/entity'
-require 'bronze/errors/error'
+require 'bronze/errors'
 require 'bronze/transforms/attributes_transform'
 require 'bronze/transforms/copy_transform'
 
@@ -197,10 +197,13 @@ module Spec::Collections
 
         expect(result).to be false
 
-        expected = Bronze::Errors::Error.new(
-          error_nesting, error_type, error_params
-        ) # end expected
-        expect(errors.to_a).to include(expected)
+        expected_error = {
+          :type   => error_type,
+          :params => error_params,
+          :path   => error_nesting
+        } # end expected_error
+
+        expect(errors.to_a).to include(expected_error)
       end # it
     end # shared_examples
 

@@ -4,7 +4,7 @@ require 'sleeping_king_studios/tools/toolbox/constant_map'
 require 'sleeping_king_studios/tools/toolbox/delegator'
 
 require 'bronze/collections'
-require 'bronze/errors/errors'
+require 'bronze/errors'
 require 'bronze/transforms/copy_transform'
 
 module Bronze::Collections
@@ -169,7 +169,7 @@ module Bronze::Collections
     private
 
     def build_errors
-      ::Bronze::Errors::Errors.new
+      ::Bronze::Errors.new
     end # method build_errors
 
     def default_transform

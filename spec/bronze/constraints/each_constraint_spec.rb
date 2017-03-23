@@ -284,14 +284,18 @@ RSpec.describe Bronze::Constraints::EachConstraint do
           [0, 1, 2].each do |index|
             nesting = errors[index]
 
-            expect(nesting).to be_a Bronze::Errors::Errors
+            expect(nesting).to be_a Bronze::Errors
             expect(nesting.count).to be 1
 
+            expected_error =
+              {
+                :type   => error_type,
+                :params => error_params,
+                :path   => [index]
+              } # end expected error
+
             error = nesting.to_a.first
-            expect(error).to be_a Bronze::Errors::Error
-            expect(error.type).to be == error_type
-            expect(error.params).to be == error_params
-            expect(error.nesting).to be == [index]
+            expect(error).to be == expected_error
           end # each
         } # end lambda
 
@@ -320,14 +324,18 @@ RSpec.describe Bronze::Constraints::EachConstraint do
           [4, 5, 6, 7].each do |index|
             nesting = errors[index]
 
-            expect(nesting).to be_a Bronze::Errors::Errors
+            expect(nesting).to be_a Bronze::Errors
             expect(nesting.count).to be 1
 
+            expected_error =
+              {
+                :type   => error_type,
+                :params => error_params,
+                :path   => [index]
+              } # end expected error
+
             error = nesting.to_a.first
-            expect(error).to be_a Bronze::Errors::Error
-            expect(error.type).to be == error_type
-            expect(error.params).to be == error_params
-            expect(error.nesting).to be == [index]
+            expect(error).to be == expected_error
           end # each
         } # end lambda
     end # describe
@@ -353,14 +361,18 @@ RSpec.describe Bronze::Constraints::EachConstraint do
           [:ichi, :ni, :san, :yon].each do |key|
             nesting = errors[key]
 
-            expect(nesting).to be_a Bronze::Errors::Errors
+            expect(nesting).to be_a Bronze::Errors
             expect(nesting.count).to be 1
 
+            expected_error =
+              {
+                :type   => error_type,
+                :params => error_params,
+                :path   => [key]
+              } # end expected error
+
             error = nesting.to_a.first
-            expect(error).to be_a Bronze::Errors::Error
-            expect(error.type).to be == error_type
-            expect(error.params).to be == error_params
-            expect(error.nesting).to be == [key]
+            expect(error).to be == expected_error
           end # each
         } # end lambda
 
@@ -400,14 +412,18 @@ RSpec.describe Bronze::Constraints::EachConstraint do
           [:go, :roku, :hachi, :nana].each do |key|
             nesting = errors[key]
 
-            expect(nesting).to be_a Bronze::Errors::Errors
+            expect(nesting).to be_a Bronze::Errors
             expect(nesting.count).to be 1
 
+            expected_error =
+              {
+                :type   => error_type,
+                :params => error_params,
+                :path   => [key]
+              } # end expected error
+
             error = nesting.to_a.first
-            expect(error).to be_a Bronze::Errors::Error
-            expect(error.type).to be == error_type
-            expect(error.params).to be == error_params
-            expect(error.nesting).to be == [key]
+            expect(error).to be == expected_error
           end # each
         } # end lambda
     end # describe
@@ -458,14 +474,18 @@ RSpec.describe Bronze::Constraints::EachConstraint do
           [0, 1, 2, 3].each do |index|
             nesting = errors[index]
 
-            expect(nesting).to be_a Bronze::Errors::Errors
+            expect(nesting).to be_a Bronze::Errors
             expect(nesting.count).to be 1
 
+            expected_error =
+              {
+                :type   => error_type,
+                :params => error_params,
+                :path   => [index]
+              } # end expected error
+
             error = nesting.to_a.first
-            expect(error).to be_a Bronze::Errors::Error
-            expect(error.type).to be == error_type
-            expect(error.params).to be == error_params
-            expect(error.nesting).to be == [index]
+            expect(error).to be == expected_error
           end # each
         } # end lambda
 
@@ -487,14 +507,18 @@ RSpec.describe Bronze::Constraints::EachConstraint do
           [0, 1, 2, 3].each do |index|
             nesting = errors[index]
 
-            expect(nesting).to be_a Bronze::Errors::Errors
+            expect(nesting).to be_a Bronze::Errors
             expect(nesting.count).to be 1
 
+            expected_error =
+              {
+                :type   => error_type,
+                :params => error_params,
+                :path   => [index]
+              } # end expected error
+
             error = nesting.to_a.first
-            expect(error).to be_a Bronze::Errors::Error
-            expect(error.type).to be == error_type
-            expect(error.params).to be == error_params
-            expect(error.nesting).to be == [index]
+            expect(error).to be == expected_error
           end # each
         } # end lambda
     end # describe
@@ -529,14 +553,18 @@ RSpec.describe Bronze::Constraints::EachConstraint do
           [:ichi, :ni, :san].each do |key|
             nesting = errors[key]
 
-            expect(nesting).to be_a Bronze::Errors::Errors
+            expect(nesting).to be_a Bronze::Errors
             expect(nesting.count).to be 1
 
+            expected_error =
+              {
+                :type   => error_type,
+                :params => error_params,
+                :path   => [key]
+              } # end expected error
+
             error = nesting.to_a.first
-            expect(error).to be_a Bronze::Errors::Error
-            expect(error.type).to be == error_type
-            expect(error.params).to be == error_params
-            expect(error.nesting).to be == [key]
+            expect(error).to be == expected_error
           end # each
         } # end lambda
 
@@ -569,14 +597,18 @@ RSpec.describe Bronze::Constraints::EachConstraint do
           [:ichi, :ni, :san].each do |key|
             nesting = errors[key]
 
-            expect(nesting).to be_a Bronze::Errors::Errors
+            expect(nesting).to be_a Bronze::Errors
             expect(nesting.count).to be 1
 
+            expected_error =
+              {
+                :type   => error_type,
+                :params => error_params,
+                :path   => [key]
+              } # end expected error
+
             error = nesting.to_a.first
-            expect(error).to be_a Bronze::Errors::Error
-            expect(error.type).to be == error_type
-            expect(error.params).to be == error_params
-            expect(error.nesting).to be == [key]
+            expect(error).to be == expected_error
           end # each
         } # end lambda
     end # describe

@@ -1,7 +1,6 @@
 # spec/bronze/operations/operation_spec.rb
 
-require 'bronze/errors/error'
-require 'bronze/errors/errors'
+require 'bronze/errors'
 require 'bronze/operations/operation'
 
 RSpec.describe Bronze::Operations::Operation do
@@ -14,11 +13,13 @@ RSpec.describe Bronze::Operations::Operation do
   shared_context 'when the operation runs and generates errors' do
     let(:expected_errors) do
       [
-        Bronze::Errors::Error.new([], :library_closed, {}),
-        Bronze::Errors::Error.new([:book], :already_checked_out, {}),
-        Bronze::Errors::Error.new(
-          [:user], :borrowing_privileges_revoked, :duration => [7, :days]
-        ) # end error
+        { :type => :library_closed },
+        { :type => :already_checked_out, :path => [:book] },
+        {
+          :type   => :borrowing_privileges_revoked,
+          :params => { :duration => [7, :days] },
+          :path   => [:user]
+        } # end error
       ] # end array
     end # let
 
@@ -27,11 +28,11 @@ RSpec.describe Bronze::Operations::Operation do
 
       allow(instance).to receive(:process) do
         errors.each do |error|
-          nesting = instance.instance_variable_get(:@errors)
+          proxy = instance.instance_variable_get(:@errors)
+          path  = error[:path] || []
+          proxy = proxy.dig(*path) unless path.empty?
 
-          error.nesting.each { |fragment| nesting = nesting[fragment] }
-
-          nesting.add(error.type, **error.params)
+          proxy.add error[:type], error[:params]
         end # each
       end # allow
     end # before example
@@ -69,10 +70,13 @@ RSpec.describe Bronze::Operations::Operation do
       it 'should return false' do
         expect(instance.call).to be false
 
-        expect(instance.errors).to be_a Bronze::Errors::Errors
+        expect(instance.errors).to be_a Bronze::Errors
         expect(instance.errors.empty?).to be false
 
-        expect(instance.errors.to_a).to contain_exactly(*expected_errors)
+        expect(instance.errors.count).to be == expected_errors.count
+        expected_errors.each do |expected_error|
+          expect(instance.errors).to include expected_error
+        end # each
       end # it
     end # wrap_context
 
@@ -88,7 +92,7 @@ RSpec.describe Bronze::Operations::Operation do
       it 'should return true' do
         expect(instance.call).to be true
 
-        expect(instance.errors).to be_a Bronze::Errors::Errors
+        expect(instance.errors).to be_a Bronze::Errors
         expect(instance.errors.empty?).to be true
       end # it
     end # wrap_context
@@ -295,10 +299,13 @@ RSpec.describe Bronze::Operations::Operation do
       it 'should return the errors' do
         instance.call
 
-        expect(instance.errors).to be_a Bronze::Errors::Errors
+        expect(instance.errors).to be_a Bronze::Errors
         expect(instance.errors.empty?).to be false
 
-        expect(instance.errors.to_a).to contain_exactly(*expected_errors)
+        expect(instance.errors.count).to be == expected_errors.count
+        expected_errors.each do |expected_error|
+          expect(instance.errors).to include expected_error
+        end # each
       end # it
     end # wrap_context
 
@@ -306,7 +313,7 @@ RSpec.describe Bronze::Operations::Operation do
       it 'should return an empty array' do
         instance.call
 
-        expect(instance.errors).to be_a Bronze::Errors::Errors
+        expect(instance.errors).to be_a Bronze::Errors
         expect(instance.errors.empty?).to be true
       end # it
     end # wrap_context
@@ -325,10 +332,13 @@ RSpec.describe Bronze::Operations::Operation do
       it 'should return false' do
         expect(instance.execute).to be instance
 
-        expect(instance.errors).to be_a Bronze::Errors::Errors
+        expect(instance.errors).to be_a Bronze::Errors
         expect(instance.errors.empty?).to be false
 
-        expect(instance.errors.to_a).to contain_exactly(*expected_errors)
+        expect(instance.errors.count).to be == expected_errors.count
+        expected_errors.each do |expected_error|
+          expect(instance.errors).to include expected_error
+        end # each
       end # it
     end # wrap_context
 
@@ -336,7 +346,7 @@ RSpec.describe Bronze::Operations::Operation do
       it 'should return true' do
         expect(instance.execute).to be instance
 
-        expect(instance.errors).to be_a Bronze::Errors::Errors
+        expect(instance.errors).to be_a Bronze::Errors
         expect(instance.errors.empty?).to be true
       end # it
     end # wrap_context

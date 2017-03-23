@@ -35,9 +35,10 @@ RSpec.describe Patina::Operations::Entities::ValidateOneOperation do
 
     shared_examples 'should validate the resource and set the errors' do
       let(:expected_error) do
-        Bronze::Errors::Error.new [:archived_periodical],
-          Spec::Constraints::FailureConstraint::INVALID_ERROR,
-          {}
+        {
+          :type => Spec::Constraints::FailureConstraint::INVALID_ERROR,
+          :path => [:archived_periodical]
+        } # end expected_error
       end # let
 
       it { expect(instance.call resource, contract).to be false }

@@ -1,6 +1,6 @@
 # lib/bronze/operations/operation.rb
 
-require 'bronze/errors/errors'
+require 'bronze/errors'
 require 'bronze/operations'
 
 module Bronze::Operations
@@ -71,7 +71,7 @@ module Bronze::Operations
     # @return [Operation] The operation.
     def execute *args
       @called = false
-      @errors = Bronze::Errors::Errors.new
+      @errors = Bronze::Errors.new
       @failure_message = nil
 
       process(*args)

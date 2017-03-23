@@ -16,6 +16,25 @@
 
 ## MVP
 
+- AttributeTypesConstraint should have same behavior as PresenceConstraint when
+  given a nil value on a non-NilClass, non-allow_nil attribute.
+- RepositoryConstraint: encapsulates an expectation against a repository.
+  Defines #with_repository(&block) to support contract use.
+  - ExistsConstraint
+  - DoesNotExistConstraint
+- RepositoryContract: contract that allows RepositoryConstraints.
+- ErrorsProxy: |
+  - wraps hash-of-hashes errors object
+    - string keys
+  - special hash key '_' is array of error hashes
+    - errors have :type (String), :params (Hash => String, Object)
+    - :path is generated dynamically, not stored
+  - #[](key) returns ErrorProxy pointing to hsh[key]
+  - #[]=(key, Hash|ErrorProxy) copies to hash
+  - #<<(error) adds error to errors array
+  - #each: yields each error in current and child hashes, merges :path property
+  - #includes?: #calls any? and does hash subset comparison
+
 ## Features
 
 - Association::Collection

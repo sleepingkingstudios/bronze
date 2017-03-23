@@ -2,7 +2,7 @@
 
 require 'bronze/constraints/constraint'
 require 'bronze/constraints/constraint_examples'
-require 'bronze/errors/errors'
+require 'bronze/errors'
 
 RSpec.describe Bronze::Constraints::Constraint do
   include Spec::Constraints::ConstraintExamples
