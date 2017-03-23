@@ -36,9 +36,10 @@ RSpec.describe Patina::Operations::Entities::FindOneOperation do
       let(:expected_error) do
         error_definitions = Bronze::Collections::Collection::Errors
 
-        Bronze::Errors::Error.new [:archived_periodical],
-          error_definitions::RECORD_NOT_FOUND,
-          :id => nil
+        {
+          :type   => error_definitions::RECORD_NOT_FOUND,
+          :params => { :id => nil }
+        } # end expected_error
       end # let
 
       it { expect(instance.call nil).to be false }
@@ -67,9 +68,10 @@ RSpec.describe Patina::Operations::Entities::FindOneOperation do
       let(:expected_error) do
         error_definitions = Bronze::Collections::Collection::Errors
 
-        Bronze::Errors::Error.new [:archived_periodical],
-          error_definitions::RECORD_NOT_FOUND,
-          :id => primary_key
+        {
+          :type   => error_definitions::RECORD_NOT_FOUND,
+          :params => { :id => primary_key }
+        } # end expected_error
       end # let
       let(:primary_key) { Bronze::Entities::Ulid.generate }
 
@@ -100,9 +102,10 @@ RSpec.describe Patina::Operations::Entities::FindOneOperation do
         let(:expected_error) do
           error_definitions = Bronze::Collections::Collection::Errors
 
-          Bronze::Errors::Error.new [:archived_periodical],
-            error_definitions::RECORD_NOT_FOUND,
-            :id => nil
+          {
+            :type   => error_definitions::RECORD_NOT_FOUND,
+            :params => { :id => nil }
+          } # end expected_error
         end # let
 
         it { expect(instance.call nil).to be false }
@@ -131,9 +134,10 @@ RSpec.describe Patina::Operations::Entities::FindOneOperation do
         let(:expected_error) do
           error_definitions = Bronze::Collections::Collection::Errors
 
-          Bronze::Errors::Error.new [:archived_periodical],
-            error_definitions::RECORD_NOT_FOUND,
-            :id => primary_key
+          {
+            :type   => error_definitions::RECORD_NOT_FOUND,
+            :params => { :id => primary_key }
+          } # end expected_error
         end # let
         let(:primary_key) { Bronze::Entities::Ulid.generate }
 

@@ -42,9 +42,11 @@ RSpec.describe Patina::Operations::Entities::UpdateOneOperation do
       let(:expected_error) do
         error_definitions = Bronze::Collections::Collection::Errors
 
-        Bronze::Errors::Error.new [:archived_periodical],
-          error_definitions::RECORD_NOT_FOUND,
-          :id => resource.id
+        {
+          :type   => error_definitions::RECORD_NOT_FOUND,
+          :params => { :id => resource.id },
+          :path   => [:archived_periodical]
+        } # end expected_error
       end # let
 
       it { expect(instance.call resource).to be false }

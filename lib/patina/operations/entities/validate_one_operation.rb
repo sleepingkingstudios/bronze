@@ -33,16 +33,6 @@ module Patina::Operations::Entities
     end # method has_contract_method?
     # rubocop:enable Style/PredicateName
 
-    def merge_resource_errors errors
-      @errors = Bronze::Errors::Errors.new
-
-      errors.each do |error|
-        @errors.
-          dig(resource_name, *error.nesting).
-          add(error.type, error.params)
-      end # each
-    end # method merge_resource_errors
-
     def process resource, contract = nil
       @resource = resource
 
@@ -55,8 +45,9 @@ module Patina::Operations::Entities
       return if result
 
       @failure_message = INVALID_RESOURCE
+      @errors          = Bronze::Errors.new
 
-      merge_resource_errors errors
+      @errors[resource_name] = errors
     end # method process
 
     def resource_class

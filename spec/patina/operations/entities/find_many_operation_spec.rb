@@ -92,12 +92,11 @@ RSpec.describe Patina::Operations::Entities::FindManyOperation do
         instance.call primary_keys
 
         missing_primary_keys.each do |primary_key|
-          expected_error =
-            Bronze::Errors::Error.new(
-              [:archived_periodicals, primary_key.intern],
-              error_definitions::RECORD_NOT_FOUND,
-              :id => primary_key
-            ) # end error
+          expected_error = {
+            :type   => error_definitions::RECORD_NOT_FOUND,
+            :params => { :id => primary_key },
+            :path   => [:archived_periodicals, primary_key.intern]
+          } # end expected_error
 
           expect(instance.errors).to include(expected_error)
         end # each

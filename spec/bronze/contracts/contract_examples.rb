@@ -146,7 +146,7 @@ module Spec::Contracts
             lambda { |errors|
               expect(errors.count).to be 3
 
-              errors.each { |error| expect(error.type).to be == error_type }
+              errors.each { |error| expect(error[:type]).to be == error_type }
             } # end lambda
         end # context
 
@@ -169,7 +169,7 @@ module Spec::Contracts
             lambda { |errors|
               expect(errors.count).to be 3
 
-              errors.each { |error| expect(error.type).to be == error_type }
+              errors.each { |error| expect(error[:type]).to be == error_type }
             } # end lambda
         end # context
 
@@ -193,7 +193,7 @@ module Spec::Contracts
             lambda { |errors|
               expect(errors.count).to be 3
 
-              errors.each { |error| expect(error.type).to be == error_type }
+              errors.each { |error| expect(error[:type]).to be == error_type }
             } # end lambda
         end # context
       end # describe
@@ -238,7 +238,7 @@ module Spec::Contracts
             lambda { |errors|
               expect(errors.count).to be 3
 
-              errors.each { |error| expect(error.type).to be == error_type }
+              errors.each { |error| expect(error[:type]).to be == error_type }
             } # end lambda
         end # context
 
@@ -267,7 +267,7 @@ module Spec::Contracts
             lambda { |errors|
               expect(errors.count).to be 3
 
-              errors.each { |error| expect(error.type).to be == error_type }
+              errors.each { |error| expect(error[:type]).to be == error_type }
             } # end lambda
         end # context
 
@@ -291,7 +291,7 @@ module Spec::Contracts
             lambda { |errors|
               expect(errors.count).to be 3
 
-              errors.each { |error| expect(error.type).to be == error_type }
+              errors.each { |error| expect(error[:type]).to be == error_type }
             } # end lambda
         end # context
       end # describe

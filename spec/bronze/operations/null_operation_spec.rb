@@ -25,7 +25,7 @@ RSpec.describe Bronze::Operations::NullOperation do
     it 'should return an empty errors object' do
       errors = instance.execute.errors
 
-      expect(errors).to be_a Bronze::Errors::Errors
+      expect(errors).to be_a Bronze::Errors
       expect(errors.empty?).to be true
     end # it
   end # describe

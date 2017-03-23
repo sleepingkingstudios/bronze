@@ -69,12 +69,12 @@ RSpec.describe Bronze::Entities::Constraints::AttributeTypesConstraint do
             expect(errors[:id]).to satisfy(&:empty?)
 
             attribute_definitions.each do |attr_name, attr_config|
-              attr_type = attr_config[:type]
+              expected_error = {
+                :type   => error_type,
+                :params => { :type => attr_config[:type] }
+              } # end expected_error
 
-              expect(errors[attr_name]).to include { |error|
-                error.type == error_type &&
-                  error.params == { :type => attr_type }
-              } # end include
+              expect(errors[attr_name]).to include expected_error
             end # each
           } # end lambda
 
@@ -104,12 +104,12 @@ RSpec.describe Bronze::Entities::Constraints::AttributeTypesConstraint do
             expect(errors[:id]).to satisfy(&:empty?)
 
             attribute_definitions.each do |attr_name, attr_config|
-              attr_type = attr_config[:type]
+              expected_error = {
+                :type   => error_type,
+                :params => { :type => attr_config[:type] }
+              } # end expected_error
 
-              expect(errors[attr_name]).to include { |error|
-                error.type == error_type &&
-                  error.params == { :type => attr_type }
-              } # end include
+              expect(errors[attr_name]).to include expected_error
             end # each
           } # end lambda
       end # describe
@@ -158,10 +158,12 @@ RSpec.describe Bronze::Entities::Constraints::AttributeTypesConstraint do
 
                 expect(nested.count).to be 1
 
-                expect(error).to be_a Bronze::Errors::Error
-                expect(error.type).to be error_type
-                expect(error.params).to be == error_params
-                expect(error.nesting).to be == [error_nesting, index]
+                expected_error = {
+                  :type   => error_type,
+                  :params => error_params,
+                  :path   => [error_nesting, index]
+                } # end expected_error
+                expect(error).to be == expected_error
               end # upto
             } # end lambda
         end # describe
@@ -186,10 +188,12 @@ RSpec.describe Bronze::Entities::Constraints::AttributeTypesConstraint do
 
                 expect(nested.count).to be 1
 
-                expect(error).to be_a Bronze::Errors::Error
-                expect(error.type).to be error_type
-                expect(error.params).to be == error_params
-                expect(error.nesting).to be == [error_nesting, index]
+                expected_error = {
+                  :type   => error_type,
+                  :params => error_params,
+                  :path   => [error_nesting, index]
+                } # end expected_error
+                expect(error).to be == expected_error
               end # each
             } # end lambda
         end # describe
@@ -233,10 +237,12 @@ RSpec.describe Bronze::Entities::Constraints::AttributeTypesConstraint do
 
                 expect(nested.count).to be 1
 
-                expect(error).to be_a Bronze::Errors::Error
-                expect(error.type).to be error_type
-                expect(error.params).to be == error_params
-                expect(error.nesting).to be == [error_nesting, key]
+                expected_error = {
+                  :type   => error_type,
+                  :params => error_params,
+                  :path   => [error_nesting, key]
+                } # end expected_error
+                expect(error).to be == expected_error
               end # upto
             } # end lambda
         end # describe
@@ -257,10 +263,12 @@ RSpec.describe Bronze::Entities::Constraints::AttributeTypesConstraint do
 
                 expect(nested.count).to be 1
 
-                expect(error).to be_a Bronze::Errors::Error
-                expect(error.type).to be error_type
-                expect(error.params).to be == error_params
-                expect(error.nesting).to be == [error_nesting, key]
+                expected_error = {
+                  :type   => error_type,
+                  :params => error_params,
+                  :path   => [error_nesting, key]
+                } # end expected_error
+                expect(error).to be == expected_error
               end # upto
             } # end lambda
         end # describe
@@ -268,7 +276,6 @@ RSpec.describe Bronze::Entities::Constraints::AttributeTypesConstraint do
         describe 'with a hash with mixed valid and invalid keys and values' do
           let(:citations)     { { :ichi => 1, :ni => 'ni', 3 => 'san' } }
           let(:attributes)    { super().merge :citations => citations }
-          let(:error_params)  { { :type => String } }
           let(:error_nesting) { :citations }
 
           include_examples 'should return false and the errors object',
@@ -281,10 +288,13 @@ RSpec.describe Bronze::Entities::Constraints::AttributeTypesConstraint do
 
                 expect(nested.count).to be 1
 
-                expect(error).to be_a Bronze::Errors::Error
-                expect(error.type).to be error_type
-                expect(error.params).to be == { :type => type }
-                expect(error.nesting).to be == [error_nesting, key]
+                expected_error = {
+                  :type   => error_type,
+                  :params => { :type => type },
+                  :path   => [error_nesting, key]
+                } # end expected_error
+
+                expect(error).to be == expected_error
               end # each
             } # end lambda
         end # describe

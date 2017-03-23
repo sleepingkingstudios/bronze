@@ -1,7 +1,7 @@
 # lib/bronze/constraints/constraint.rb
 
 require 'bronze/constraints'
-require 'bronze/errors/errors'
+require 'bronze/errors'
 
 module Bronze::Constraints
   # Constraints encapsulate a single expectation that an object may or may not
@@ -22,6 +22,7 @@ module Bronze::Constraints
       [false, build_errors(object)]
     end # method match
 
+    # TODO: remove passed_errors pattern!
     def negated_match object, passed_errors = nil
       @errors = passed_errors
 
@@ -42,7 +43,7 @@ module Bronze::Constraints
     end # method build_errors
 
     def errors
-      @errors ||= Bronze::Errors::Errors.new
+      @errors ||= Bronze::Errors.new
     end # method errors
 
     def matches_object? _object

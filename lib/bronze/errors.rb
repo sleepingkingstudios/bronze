@@ -1,4 +1,4 @@
-# lib/bronze/errors/errors_proxy.rb
+# lib/bronze/errors.rb
 
 require 'sleeping_king_studios/tools/toolbelt'
 
