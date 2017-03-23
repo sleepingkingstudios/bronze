@@ -2,7 +2,7 @@
 
 require 'bronze/errors'
 
-module Bronze::Errors
+class Bronze::Errors
   # Encapsulates a single error state with standardized type and optional
   # parameters.
   class Error

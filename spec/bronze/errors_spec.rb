@@ -1,8 +1,8 @@
-# spec/bronze/errors/errors_proxy_spec.rb
+# spec/bronze/errors_spec.rb
 
-require 'bronze/errors/errors_proxy'
+require 'bronze/errors'
 
-RSpec.describe Bronze::Errors::ErrorsProxy do
+RSpec.describe Bronze::Errors do
   shared_context 'when there are many errors' do
     let(:errors) do
       {

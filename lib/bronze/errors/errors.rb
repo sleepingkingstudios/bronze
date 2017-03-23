@@ -3,7 +3,7 @@
 require 'bronze/errors/error'
 require 'sleeping_king_studios/tools/toolbox/delegator'
 
-module Bronze::Errors
+class Bronze::Errors
   # Class for encapsulating errors encountered during an operation or process.
   class Errors
     include Enumerable
