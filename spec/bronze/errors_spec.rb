@@ -569,26 +569,26 @@ RSpec.describe Bronze::Errors do
     end # wrap_context
   end # describe
 
-  describe '#includes?' do
+  describe '#include?' do
     let(:type) { :must_be_greater_than }
 
-    it { expect(instance).to respond_to(:includes?).with(1).argument }
+    it { expect(instance).to respond_to(:include?).with(1).argument }
 
     describe 'with an error type' do
-      it { expect(instance.includes? type).to be false }
+      it { expect(instance.include? type).to be false }
     end # describe
 
     describe 'with an error hash' do
-      it { expect(instance.includes? :type => type).to be false }
+      it { expect(instance.include? :type => type).to be false }
     end # describe
 
     wrap_context 'when there are many errors' do
       describe 'with a non-matching error type' do
-        it { expect(instance.includes? :divide_by_zero).to be false }
+        it { expect(instance.include? :divide_by_zero).to be false }
       end # describe
 
       describe 'with a matching error type' do
-        it { expect(instance.includes? type).to be true }
+        it { expect(instance.include? type).to be true }
       end # describe
 
       describe 'with a non-matching error hash' do
@@ -596,7 +596,7 @@ RSpec.describe Bronze::Errors do
           { :type => type, :params => { :value => Float::INFINITY } }
         end # let
 
-        it { expect(instance.includes? expected).to be false }
+        it { expect(instance.include? expected).to be false }
       end # describe
 
       describe 'with a matching error hash' do
@@ -604,17 +604,17 @@ RSpec.describe Bronze::Errors do
           { :type => type, :params => { :value => 0 } }
         end # let
 
-        it { expect(instance.includes? expected).to be true }
+        it { expect(instance.include? expected).to be true }
       end # describe
     end # wrap_context
 
     wrap_context 'when there are many nested errors' do
       describe 'with a non-matching error type' do
-        it { expect(instance.includes? :divide_by_zero).to be false }
+        it { expect(instance.include? :divide_by_zero).to be false }
       end # describe
 
       describe 'with a matching error type' do
-        it { expect(instance.includes? type).to be true }
+        it { expect(instance.include? type).to be true }
       end # describe
 
       describe 'with a non-matching error hash' do
@@ -622,7 +622,7 @@ RSpec.describe Bronze::Errors do
           { :type => type, :params => { :value => Float::INFINITY } }
         end # let
 
-        it { expect(instance.includes? expected).to be false }
+        it { expect(instance.include? expected).to be false }
       end # describe
 
       describe 'with a matching error hash' do
@@ -630,7 +630,7 @@ RSpec.describe Bronze::Errors do
           { :type => type, :params => { :value => 0 } }
         end # let
 
-        it { expect(instance.includes? expected).to be true }
+        it { expect(instance.include? expected).to be true }
       end # describe
 
       describe 'with a matching error hash with non-matching path' do
@@ -638,7 +638,7 @@ RSpec.describe Bronze::Errors do
           { :type => type, :params => { :value => 0 }, :path => [] }
         end # let
 
-        it { expect(instance.includes? expected).to be false }
+        it { expect(instance.include? expected).to be false }
       end # describe
 
       describe 'with a matching error hash with non-matching path' do
@@ -650,7 +650,7 @@ RSpec.describe Bronze::Errors do
           } # end expected
         end # let
 
-        it { expect(instance.includes? expected).to be true }
+        it { expect(instance.include? expected).to be true }
       end # describe
     end # wrap_context
   end # describe

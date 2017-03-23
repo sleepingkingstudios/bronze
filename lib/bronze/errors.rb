@@ -104,11 +104,11 @@ module Bronze
     #
     # @return [Boolean] True if an error in the data structure matches the
     #   expectation, otherwise false.
-    def includes? expected
+    def include? expected
       expected = { :type => expected } unless expected.is_a?(Hash)
 
       any? { |error| error >= expected }
-    end # method includes?
+    end # method include?
 
     # Returns a flat array of each error from the data structure.
     #
