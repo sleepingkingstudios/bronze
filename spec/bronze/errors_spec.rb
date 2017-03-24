@@ -659,6 +659,52 @@ RSpec.describe Bronze::Errors do
     end # wrap_context
   end # describe
 
+  describe '#key?' do
+    it { expect(instance).to respond_to(:key?).with(1).argument }
+
+    it { expect(instance).to alias_method(:key?).as(:has_key?) }
+
+    it { expect(instance.key? :articles).to be false }
+
+    wrap_context 'when there are many errors' do
+      it { expect(instance.key? :articles).to be false }
+    end # wrap_context
+
+    wrap_context 'when there are many nested errors' do
+      it { expect(instance.key? :articles).to be true }
+
+      it { expect(instance.key? :books).to be false }
+
+      describe 'with an integer' do
+        it { expect(instance[:articles].key? 1).to be true }
+
+        it { expect(instance[:articles].key? 2).to be false }
+      end # describe
+
+      describe 'with a string' do
+        it { expect(instance.key? 'articles').to be true }
+
+        it { expect(instance.key? 'books').to be false }
+      end # describe
+    end # wrap_context
+  end # describe
+
+  describe '#keys' do
+    it { expect(instance).to respond_to(:keys).with(0).arguments }
+
+    it { expect(instance.keys).to be == [] }
+
+    wrap_context 'when there are many errors' do
+      it { expect(instance.keys).to be == [] }
+    end # wrap_context
+
+    wrap_context 'when there are many nested errors' do
+      it { expect(instance.keys).to be == [:articles] }
+
+      it { expect(instance[:articles].keys).to be == [0, 1] }
+    end # wrap_context
+  end # describe
+
   describe '#path' do
     it 'should define the private reader' do
       expect(instance).not_to respond_to(:path)
