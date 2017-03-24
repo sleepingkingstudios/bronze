@@ -108,6 +108,22 @@ module Bronze
       any? { |error| error >= expected }
     end # method include?
 
+    # @param key [Integer, Symbol] The inner data key.
+    #
+    # @return [Boolean] True if the data structure has the given key, otherwise
+    #   false.
+    def key? key
+      key = key.intern if key.is_a?(String)
+
+      @data.key?(key)
+    end # method key?
+    alias_method :has_key?, :key?
+
+    # @return [Array<Integer, Symbol>] The keys of the nested errors hashes.
+    def keys
+      @data.keys.keep_if { |key| key != :__errors }
+    end # method keys
+
     # Returns a flat array of each error from the data structure.
     #
     # @return [Array<Hash>] The errors.
