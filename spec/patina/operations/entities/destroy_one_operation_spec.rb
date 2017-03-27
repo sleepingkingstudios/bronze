@@ -13,10 +13,7 @@ RSpec.describe Patina::Operations::Entities::DestroyOneOperation do
   let(:resource_class) { Spec::ArchivedPeriodical }
   let(:instance)       { described_class.new repository, resource_class }
   let(:collection) do
-    repository.collection(
-      instance.send(:resource_name),
-      instance.send(:transform)
-    ) # end collection
+    repository.collection(resource_class, instance.send(:transform))
   end # let
 
   options = { :base_class => Spec::ExampleEntity }

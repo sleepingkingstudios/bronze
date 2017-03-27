@@ -29,7 +29,7 @@ module Patina::Operations::Entities
     private
 
     def collection
-      @collection ||= repository.collection(plural_resource_name, transform)
+      @collection ||= repository.collection(resource_class, transform)
     end # method collection
 
     def transform
