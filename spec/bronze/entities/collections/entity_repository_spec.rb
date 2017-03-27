@@ -64,12 +64,13 @@ RSpec.describe Bronze::Entities::Collections::EntityRepository do
     end # describe
 
     describe 'with an entity class' do
-      mock_class Spec, :Book, :base_class => Bronze::Entities::Entity do |klass|
+      mock_class Spec, :RareBook, :base_class => Bronze::Entities::Entity \
+      do |klass|
         klass.send :attribute, :title, String
       end # mock_class
 
-      let(:collection_type) { Spec::Book }
-      let(:collection_name) { 'books' }
+      let(:collection_type) { Spec::RareBook }
+      let(:collection_name) { 'spec-rare_books' }
       let(:transform_class) { Bronze::Entities::Transforms::EntityTransform }
 
       include_examples 'should return a collection'
@@ -77,7 +78,7 @@ RSpec.describe Bronze::Entities::Collections::EntityRepository do
       context 'when a collection exists with the given name' do
         let!(:collection) { instance.collection(collection_type) }
         let(:attributes)  { { :id => '0', :title => 'Der Lied der Erlking' } }
-        let(:entity)      { Spec::Book.new(attributes) }
+        let(:entity)      { Spec::RareBook.new(attributes) }
 
         it 'should return a collection with the same data' do
           books = instance.collection(collection_type)

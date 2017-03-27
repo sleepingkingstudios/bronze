@@ -38,11 +38,11 @@ module Bronze::Collections
     def collection_name
       @collection_name ||=
         if collection_type.is_a?(Class)
-          name = collection_type.name.split('::').last
-
-          normalize_collection_name(name)
+          normalize_collection_name(collection_type.name)
         else
-          normalize_collection_name(collection_type)
+          name = string_tools.underscore(collection_type.to_s)
+
+          string_tools.pluralize(name)
         end # if-else
     end # method collection_name
 
@@ -55,10 +55,14 @@ module Bronze::Collections
     end # method build_collection
 
     def normalize_collection_name name
-      name = string_tools.underscore(name.to_s)
-      name = string_tools.pluralize(name)
+      name =
+        name.
+        to_s.
+        split('::').
+        map { |str| string_tools.underscore(str) }.
+        join('-')
 
-      name
+      string_tools.pluralize(name)
     end # method normalize_collection_name
 
     def string_tools

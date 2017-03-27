@@ -37,7 +37,7 @@ RSpec.describe Patina::Operations::Entities::PersistenceOperation do
 
       expect(collection).
         to be_a Patina::Collections::Simple::Collection
-      expect(collection.name).to be == 'archived_periodicals'
+      expect(collection.name).to be == 'spec-archived_periodicals'
       expect(collection.transform).to be == instance.send(:transform)
     end # it
   end # describe

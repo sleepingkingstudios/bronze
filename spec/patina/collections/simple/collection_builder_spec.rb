@@ -46,11 +46,17 @@ RSpec.describe Patina::Collections::Simple::CollectionBuilder do
     end # context
 
     context 'when the collection type is a named resource' do
-      mock_class Spec, :Resource
+      let(:collection_type) { String }
 
-      let(:collection_type) { Spec::Resource }
+      it { expect(instance.collection_name).to be == 'strings' }
+    end # context
 
-      it { expect(instance.collection_name).to be == 'resources' }
+    context 'when the collection type is a named resource with a namespace' do
+      mock_class Spec, :ComplexResource
+
+      let(:collection_type) { Spec::ComplexResource }
+
+      it { expect(instance.collection_name).to be == 'spec-complex_resources' }
     end # context
   end # describe
 
