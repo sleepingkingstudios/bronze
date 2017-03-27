@@ -144,8 +144,15 @@ RSpec.describe Patina::Operations::Entities::FindManyOperation do
         include_examples 'should find the matching records and return false'
       end # describe
 
-      describe 'with a matchinig list of primary keys' do
+      describe 'with a matching list of primary keys' do
         let(:primary_keys) { expected.map(&:id) }
+        let(:expected)     { resources[0...3] }
+
+        include_examples 'should find the matching records and return true'
+      end # describe
+
+      describe 'with a matching list of primary keys with duplicate keys' do
+        let(:primary_keys) { [*expected.map(&:id), expected.first.id] }
         let(:expected)     { resources[0...3] }
 
         include_examples 'should find the matching records and return true'

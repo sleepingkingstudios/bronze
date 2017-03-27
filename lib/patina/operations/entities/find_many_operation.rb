@@ -29,7 +29,7 @@ module Patina::Operations::Entities
     end # method append_errors
 
     def process primary_keys
-      primary_keys = Array(primary_keys)
+      primary_keys = Array(primary_keys).uniq
 
       query = collection.matching(:id => { :__in => primary_keys })
 
