@@ -30,9 +30,6 @@ RSpec.describe Patina::Operations::Entities::ValidateOneOperation do
   end # describe
 
   describe '#call' do
-    let(:resource) { resource_class.new }
-    let(:contract) { nil }
-
     shared_examples 'should validate the resource and set the errors' do
       let(:expected_error) do
         {
@@ -41,48 +38,51 @@ RSpec.describe Patina::Operations::Entities::ValidateOneOperation do
         } # end expected_error
       end # let
 
-      it { expect(instance.call resource, contract).to be false }
+      it { expect(instance.call resource, :contract => contract).to be false }
 
       it 'should set the resource' do
-        instance.call resource, contract
+        instance.call resource, :contract => contract
 
         expect(instance.resource).to be resource
       end # it
 
       it 'should set the failure message' do
-        instance.call resource, contract
+        instance.call resource, :contract => contract
 
         expect(instance.failure_message).to be described_class::INVALID_RESOURCE
       end # it
 
       it 'should set the errors' do
-        instance.call resource, contract
+        instance.call resource, :contract => contract
 
         expect(instance.errors).to include expected_error
       end # it
     end # shared_examples
 
     shared_examples 'should validate the resource and return true' do
-      it { expect(instance.call resource, contract).to be true }
+      it { expect(instance.call resource, :contract => contract).to be true }
 
       it 'should set the resource' do
-        instance.call resource, contract
+        instance.call resource, :contract => contract
 
         expect(instance.resource).to be resource
       end # it
 
       it 'should clear the failure message' do
-        instance.call resource, contract
+        instance.call resource, :contract => contract
 
         expect(instance.failure_message).to be nil
       end # it
 
       it 'should clear the errors' do
-        instance.call resource, contract
+        instance.call resource, :contract => contract
 
         expect(instance.errors.empty?).to be true
       end # it
     end # shared_examples
+
+    let(:resource)  { resource_class.new }
+    let(:contract)  { nil }
 
     describe 'with a resource' do
       include_examples 'should validate the resource and return true'
@@ -92,6 +92,29 @@ RSpec.describe Patina::Operations::Entities::ValidateOneOperation do
       let(:contract) { Spec::Constraints::FailureConstraint.new }
 
       include_examples 'should validate the resource and set the errors'
+
+      describe 'with :as => resource_name' do
+        let(:error_key) { :retrieved_periodical }
+        let(:expected_error) do
+          {
+            :type => Spec::Constraints::FailureConstraint::INVALID_ERROR,
+            :path => [error_key]
+          } # end expected_error
+        end # let
+
+        it 'should return false' do
+          result =
+            instance.call resource, :contract => contract, :as => error_key
+
+          expect(result).to be false
+        end # it
+
+        it 'should set the errors' do
+          instance.call resource, :contract => contract, :as => error_key
+
+          expect(instance.errors).to include expected_error
+        end # it
+      end # describe
     end # describe
 
     describe 'with a resource and a valid contract' do

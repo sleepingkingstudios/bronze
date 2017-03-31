@@ -33,7 +33,7 @@ module Patina::Operations::Entities
     end # method has_contract_method?
     # rubocop:enable Style/PredicateName
 
-    def process resource, contract = nil
+    def process resource, contract: nil, as: nil
       @resource = resource
 
       contract ||= resource_contract
@@ -47,7 +47,9 @@ module Patina::Operations::Entities
       @failure_message = INVALID_RESOURCE
       @errors          = Bronze::Errors.new
 
-      @errors[resource_name] = errors
+      error_key = as || resource_name
+
+      @errors[error_key] = errors
     end # method process
 
     def resource_class
