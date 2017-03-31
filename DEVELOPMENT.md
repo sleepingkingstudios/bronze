@@ -2,18 +2,6 @@
 
 ## Bug Fixes
 
-- FindManyOperation: |
-
-  When a user calls a FindManyOperation with an array with duplicate primary
-  keys, it should call #uniq! on the array before comparing expected and actual
-  resource counts. Otherwise, we get a false negative when all expected
-  resources are found.
-
-- Repository.collection:
-  - use full name of entity to generate name: |
-
-    Namespace::ModelName => 'namespace-model_name'
-
 ## MVP
 
 - AttributeTypesConstraint should have same behavior as PresenceConstraint when
@@ -23,23 +11,12 @@
   - ExistsConstraint
   - DoesNotExistConstraint
 - RepositoryContract: contract that allows RepositoryConstraints.
-- ErrorsProxy: |
-  - wraps hash-of-hashes errors object
-    - string keys
-  - special hash key '_' is array of error hashes
-    - errors have :type (String), :params (Hash => String, Object)
-    - :path is generated dynamically, not stored
-  - #[](key) returns ErrorProxy pointing to hsh[key]
-  - #[]=(key, Hash|ErrorProxy) copies to hash
-  - #<<(error) adds error to errors array
-  - #each: yields each error in current and child hashes, merges :path property
-  - #includes?: #calls any? and does hash subset comparison
 
 ## Features
 
 - Association::Collection
   - dirty tracking
-    - as above, plus #added, #removed ?
+    - as attribute dirty tracking, plus #added, #removed ?
 - Collection
   - bulk operations
   - #raw - returns clone with identity transform
@@ -71,11 +48,6 @@
   - dependent_attribute
     - creates read-only method on entity
     - collection writes the attribute but does not read it
-  - dirty_tracking
-    - #changes
-    - #previous_changes
-    - restore_{attribute}
-    - restore_attributes
   - primary key types
     - AttributeMetadata#primary_key?
     - PrimaryKey::primary_key macro
@@ -83,6 +55,11 @@
     - PrimaryKey::ObjectId # MongoDB
     - PrimaryKey::Ulid
     - ::foreign_key takes optional type argument
+  - human keys?
+    - hash(primary_key) -> take first X*2^N bits
+      - 7 4-bit hex chars (git rev?)
+      - 5 32-bit chars (SHA-1?)
+    - can be slug (see dependent_attribute)
 - Errors#first
 - Operation
   - #always - always called, even if halted.
@@ -124,7 +101,6 @@
   - #types attribute?
 - Ulid
   - automatically freeze after generation?
-- bronze/rails
 - bronze/forge
   - FactoryGirl syntax?
 

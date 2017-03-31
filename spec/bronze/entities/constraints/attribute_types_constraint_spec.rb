@@ -1,6 +1,7 @@
 # spec/bronze/entities/constraints/attribute_types_constraint_spec.rb
 
 require 'bronze/constraints/constraint_examples'
+require 'bronze/constraints/presence_constraint'
 require 'bronze/constraints/type_constraint'
 require 'bronze/entities/constraints/attribute_types_constraint'
 require 'bronze/entities/entity'
@@ -64,15 +65,16 @@ RSpec.describe Bronze::Entities::Constraints::AttributeTypesConstraint do
       end # mock_class
 
       describe 'with nil attributes' do
+        let(:error_type) do
+          Bronze::Constraints::PresenceConstraint::EMPTY_ERROR
+        end # let
+
         include_examples 'should return false and the errors object',
           lambda { |errors|
             expect(errors[:id]).to satisfy(&:empty?)
 
-            attribute_definitions.each do |attr_name, attr_config|
-              expected_error = {
-                :type   => error_type,
-                :params => { :type => attr_config[:type] }
-              } # end expected_error
+            attribute_definitions.each do |attr_name, _|
+              expected_error = { :type => error_type }
 
               expect(errors[attr_name]).to include expected_error
             end # each

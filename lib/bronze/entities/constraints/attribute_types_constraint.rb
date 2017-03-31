@@ -56,7 +56,7 @@ module Bronze::Entities::Constraints
       object_type = attribute_type.object_type
 
       unless value.is_a?(object_type)
-        nested_errors(nesting).add(error_type, :type => object_type) && return
+        errors.dig(*nesting).add(error_type, :type => object_type) && return
       end # unless
 
       if Array == object_type
@@ -83,13 +83,20 @@ module Bronze::Entities::Constraints
       attribute_definitions(object).each do |attr_name, metadata|
         value = object.send(attr_name)
 
-        next if value.nil? && metadata.allow_nil?
+        next matches_nil?(attr_name, metadata) if value.nil?
 
         match_attribute_type(value, metadata.attribute_type, [attr_name])
       end # all?
 
       errors.empty?
     end # method matches_attribute_types?
+
+    def matches_nil? attr_name, metadata
+      return if metadata.allow_nil?
+
+      errors[attr_name].
+        add(Bronze::Constraints::PresenceConstraint::EMPTY_ERROR)
+    end # method matches_nil?
 
     def matches_object? object
       defines_attributes?(object) && matches_attribute_types?(object)
@@ -98,9 +105,5 @@ module Bronze::Entities::Constraints
     def negated_matches_object? _object
       raise_invalid_negation caller[1..-1]
     end # method negated_matches_object?
-
-    def nested_errors nesting
-      nesting.reduce(errors) { |errors, fragment| errors[fragment] }
-    end # method nested_errors
   end # class
 end # module
