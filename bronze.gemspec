@@ -26,14 +26,14 @@ Gem::Specification.new do |gem|
 
   gem.add_runtime_dependency 'sysrandom', '~> 1.0.0', '>= 1.0.2'
   gem.add_runtime_dependency 'sleeping_king_studios-tools',
-    '>= 0.6.0.rc.0', '< 0.7.0'
+    '>= 0.7.0'
 
   gem.add_development_dependency 'rake',      '~> 12.0'
+  gem.add_development_dependency 'rspec',     '~> 3.6'
   gem.add_development_dependency 'thor',      '~> 0.19',  '>= 0.19.1'
-  gem.add_development_dependency 'rspec',     '~> 3.5'
   # See https://github.com/bbatsov/rubocop
   gem.add_development_dependency 'rubocop',   '~> 0.47.0'
-  gem.add_development_dependency 'simplecov', '~> 0.12'
+  gem.add_development_dependency 'simplecov', '~> 0.14', '>= 0.14.1'
   gem.add_development_dependency 'rspec-sleeping_king_studios',
-    '~> 2.2', '>= 2.2.1'
+    '~> 2.2', '>= 2.2.2'
 end # gemspec
