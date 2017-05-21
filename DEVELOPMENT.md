@@ -115,7 +115,6 @@
     - contracts
   - operations
 - Documentation Pass
-- Extract Bronze::Ci to standalone gem.
 - Extract Patina::Collections::Mongo to standalone gem.
   - Test against MongoDB 2.x, 3.x
 - remove `result, errors =` pattern?
