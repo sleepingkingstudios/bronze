@@ -1,6 +1,6 @@
 # spec/spec_helper.rb
 
-unless ENV['CI']
+unless ENV['COVERAGE'] == 'false'
   require 'simplecov'
 
   SimpleCov.start
