@@ -1,7 +1,20 @@
 # bronze.thor
 
-$: << 'lib'
+require 'sleeping_king_studios/tasks'
 
-thor_tasks = Dir[File.join __dir__, *%w(lib bronze thor ** *.thor)]
+SleepingKingStudios::Tasks.configure do |config|
+  config.ci do |ci|
+    ci.steps = %i(rspec rspec_each rubocop simplecov)
+  end # ci
 
-thor_tasks.each { |file_path| Thor::Util.load_thorfile file_path }
+  config.file do |file|
+    file.template_paths =
+      [
+        '../sleeping_king_studios-templates/lib',
+        file.class.default_template_path
+      ] # end template paths
+  end # file
+end # configure
+
+load 'sleeping_king_studios/tasks/ci/tasks.thor'
+load 'sleeping_king_studios/tasks/file/tasks.thor'
