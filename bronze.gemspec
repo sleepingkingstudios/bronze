@@ -26,7 +26,7 @@ Gem::Specification.new do |gem|
 
   gem.add_runtime_dependency 'sysrandom', '~> 1.0.0', '>= 1.0.2'
   gem.add_runtime_dependency 'sleeping_king_studios-tools',
-    '>= 0.7.0'
+    '>= 0.7.1'
 
   gem.add_development_dependency 'rake',      '~> 12.0'
   gem.add_development_dependency 'rspec',     '~> 3.6'

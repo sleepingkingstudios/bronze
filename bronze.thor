@@ -4,7 +4,12 @@ require 'sleeping_king_studios/tasks'
 
 SleepingKingStudios::Tasks.configure do |config|
   config.ci do |ci|
-    ci.steps = %i(rspec rspec_each rubocop simplecov)
+    ci.steps =
+      if ENV['CI']
+        %i(rspec rspec_each rubocop simplecov)
+      else
+        %i(rspec rubocop simplecov)
+      end # if-else
   end # ci
 
   config.file do |file|
