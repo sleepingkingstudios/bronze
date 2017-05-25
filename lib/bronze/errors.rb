@@ -5,6 +5,8 @@ require 'sleeping_king_studios/tools/toolbelt'
 require 'bronze/errors'
 
 module Bronze
+  # rubocop:disable Metrics/ClassLength
+
   # Utility object that wraps a hash-of-hashes nested errors data structure.
   class Errors
     include Enumerable
@@ -78,6 +80,11 @@ module Bronze
       keys.reduce(self) { |proxy, key| proxy[key] }
     end # method dig
 
+    # @return [Bronze::Errors] A deep copy of the errors object.
+    def dup
+      self.class.new(:data => tools.hash.deep_dup(data), :path => path)
+    end # method dup
+
     # Iterates through the errors in errors object and all child errors objects,
     # yielding each to the given block.
     #
@@ -124,12 +131,34 @@ module Bronze
       @data.keys.keep_if { |key| key != :__errors }
     end # method keys
 
+    # Returns a new errors object with the combined structure and errors of the
+    # current and the given errors objects.
+    #
+    # @param other [Bronze:Errors] The other errors object to merge.
+    #
+    # @return [Bronze::Errors] The new errors object.
+    def merge other
+      dup.update(other)
+    end # method merge
+
     # Returns a flat array of each error from the data structure.
     #
     # @return [Array<Hash>] The errors.
     def to_a
       each.with_object([]) { |error, ary| ary << error }
     end # method to_a
+
+    # Combines the current errors object with the given errors object, adding
+    # the structure and errors of the given object to the current object.
+    #
+    # @param other [Bronze:Errors] The other errors object to merge.
+    #
+    # @return [Bronze::Errors] The current errors object with the updates.
+    def update other
+      update_errors_hash(data, other.data)
+
+      self
+    end # method update
 
     protected
 
@@ -169,8 +198,20 @@ module Bronze
       false
     end # method hash_has_errors?
 
+    def update_errors_hash tgt, src
+      src.each do |key, value|
+        if key == :__errors
+          (tgt[:__errors] ||= []).concat(value)
+        else
+          update_errors_hash((tgt[key] ||= {}), value)
+        end # if-else
+      end # each
+    end # method update_errors_hash
+
     def tools
       SleepingKingStudios::Tools::Toolbelt.instance
     end # method tools
   end # class
+
+  # rubocop:enable Metrics/ClassLength
 end # module
