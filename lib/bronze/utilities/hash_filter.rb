@@ -55,6 +55,10 @@ module Bronze::Utilities
       expected.include?(value)
     end # method filter_in
 
+    def filter_ne value, expected
+      value != expected
+    end # method filter_ne
+
     # rubocop:disable Metrics/MethodLength
     def indifferent_dig hsh, keys
       keys.reduce(hsh) do |nested, key|
