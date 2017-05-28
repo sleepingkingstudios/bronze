@@ -1,6 +1,7 @@
 # lib/bronze/entities/primary_key.rb
 
 require 'bronze/entities'
+require 'bronze/entities/ulid'
 
 module Bronze::Entities
   # Module for defining a primary key attribute on an entity.

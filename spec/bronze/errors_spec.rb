@@ -432,6 +432,73 @@ RSpec.describe Bronze::Errors do
     end # wrap_context
   end # describe
 
+  describe '#dup' do
+    shared_examples 'should return a copy' do
+      it 'should return a copy' do
+        copy = instance.dup
+
+        expect(copy.count).to be expected_count
+        expect(copy.to_a).to be == expected_items
+        expect(copy.send :path).to be == path
+
+        expect { copy.add :unable_to_run_command_com }.
+          not_to change(instance, :count)
+
+        expect do
+          copy[:articles][0][:slug].add :must_include_mayan_calendar_date
+        end. # end expect
+          not_to change(instance, :count)
+      end # it
+    end # shared_examples
+
+    let(:expected_count) { 0 }
+    let(:expected_items) { [] }
+
+    it { expect(instance).to respond_to(:dup).with(0).arguments }
+
+    it { expect(instance.dup).to be_a described_class }
+
+    include_examples 'should return a copy'
+
+    wrap_context 'when there are many errors' do
+      let(:expected_count) { errors.count }
+      let(:expected_items) do
+        errors.map do |type, params|
+          {
+            :type   => type,
+            :params => params,
+            :path   => path
+          } # end error
+        end # map
+      end # let
+
+      include_examples 'should return a copy'
+    end # wrap_context
+
+    wrap_context 'when there are many nested errors' do
+      let(:expected_count) do
+        nested_errors.reduce(0) { |memo, (_, hsh)| memo + hsh.size }
+      end # let
+      let(:expected_items) do
+        nested_errors.each.with_object([]) do |(relative_path, errors), ary|
+          errors.each do |type, params|
+            ary << {
+              :type   => type,
+              :params => params,
+              :path   => path + relative_path
+            } # end error
+          end # each
+        end # each
+      end # let
+
+      include_examples 'should return a copy'
+    end # wrap_context
+
+    wrap_context 'when the path has many ancestors' do
+      include_examples 'should return a copy'
+    end # wrap_context
+  end # describe
+
   describe '#each' do
     it { expect(instance).to respond_to(:each).with(0).arguments }
 
@@ -705,6 +772,222 @@ RSpec.describe Bronze::Errors do
     end # wrap_context
   end # describe
 
+  describe '#merge' do
+    let(:expected_count) { 0 }
+    let(:other)          { described_class.new }
+
+    it { expect(instance).to respond_to(:merge).with(1).argument }
+
+    it { expect(instance.merge other).to be_a described_class }
+
+    it { expect(instance.merge other).not_to be instance }
+
+    describe 'with an empty errors object' do
+      it { expect { instance.merge other }.not_to change(instance, :count) }
+
+      it 'should return an unchanged copy' do
+        copy = instance.merge other
+
+        expect(copy.count).to be == expected_count
+      end # it
+    end # describe
+
+    describe 'with an errors object with errors' do
+      let(:other) do
+        super().tap do |errors|
+          errors.add :must_be_unique
+        end # tap
+      end # let
+
+      it { expect { instance.merge other }.not_to change(instance, :count) }
+
+      it 'should add the errors to the copy' do
+        copy = instance.merge other
+
+        expect(copy.count).to be == expected_count + 1
+
+        expect(copy).to include(:type => :must_be_unique)
+      end # it
+    end # describe
+
+    describe 'with an errors object with nested errors' do
+      let(:other) do
+        super().tap do |errors|
+          errors.add :must_sacrifice_ungulate_to_server_daemon
+          errors[:authorization][:api_key].add :must_be_prime_in_base_13
+          errors[:articles][0][:title].
+            add :twilight_fanfic_strictly_prohibited
+        end # tap
+      end # let
+
+      it { expect { instance.merge other }.not_to change(instance, :count) }
+
+      it 'should add the errors to the copy' do
+        copy = instance.merge other
+
+        expect(copy.count).to be == expected_count + 3
+
+        expect(copy).
+          to include(
+            :path => [],
+            :type => :must_sacrifice_ungulate_to_server_daemon
+          ) # end include
+
+        expect(copy).
+          to include(
+            :path => [:authorization, :api_key],
+            :type => :must_be_prime_in_base_13
+          ) # end include
+
+        expect(copy).
+          to include(
+            :path => [:articles, 0, :title],
+            :type => :twilight_fanfic_strictly_prohibited
+          ) # end include
+      end # it
+    end # describe
+
+    wrap_context 'when there are many errors' do
+      let(:expected_count) { errors.count }
+
+      describe 'with an empty errors object' do
+        it { expect { instance.merge other }.not_to change(instance, :count) }
+
+        it 'should return an unchanged copy' do
+          copy = instance.merge other
+
+          expect(copy.count).to be == expected_count
+        end # it
+      end # describe
+
+      describe 'with an errors object with errors' do
+        let(:other) do
+          super().tap do |errors|
+            errors.add :must_be_unique
+          end # tap
+        end # let
+
+        it { expect { instance.merge other }.not_to change(instance, :count) }
+
+        it 'should add the errors to the copy' do
+          copy = instance.merge other
+
+          expect(copy.count).to be == expected_count + 1
+
+          expect(copy).to include(:type => :must_be_unique)
+        end # it
+      end # describe
+
+      describe 'with an errors object with nested errors' do
+        let(:other) do
+          super().tap do |errors|
+            errors.add :must_sacrifice_ungulate_to_server_daemon
+            errors[:authorization][:api_key].add :must_be_prime_in_base_13
+            errors[:articles][0][:title].
+              add :twilight_fanfic_strictly_prohibited
+          end # tap
+        end # let
+
+        it { expect { instance.merge other }.not_to change(instance, :count) }
+
+        it 'should add the errors to the copy' do
+          copy = instance.merge other
+
+          expect(copy.count).to be == expected_count + 3
+
+          expect(copy).
+            to include(
+              :path => [],
+              :type => :must_sacrifice_ungulate_to_server_daemon
+            ) # end include
+
+          expect(copy).
+            to include(
+              :path => [:authorization, :api_key],
+              :type => :must_be_prime_in_base_13
+            ) # end include
+
+          expect(copy).
+            to include(
+              :path => [:articles, 0, :title],
+              :type => :twilight_fanfic_strictly_prohibited
+            ) # end include
+        end # it
+      end # describe
+    end # wrap_context
+
+    wrap_context 'when there are many nested errors' do
+      let(:expected_count) do
+        nested_errors.reduce(0) { |memo, (_, hsh)| memo + hsh.size }
+      end # let
+
+      describe 'with an empty errors object' do
+        it { expect { instance.merge other }.not_to change(instance, :count) }
+
+        it 'should return an unchanged copy' do
+          copy = instance.merge other
+
+          expect(copy.count).to be == expected_count
+        end # it
+      end # describe
+
+      describe 'with an errors object with errors' do
+        let(:other) do
+          super().tap do |errors|
+            errors.add :must_be_unique
+          end # tap
+        end # let
+
+        it { expect { instance.merge other }.not_to change(instance, :count) }
+
+        it 'should add the errors to the copy' do
+          copy = instance.merge other
+
+          expect(copy.count).to be == expected_count + 1
+
+          expect(copy).to include(:type => :must_be_unique)
+        end # it
+      end # describe
+
+      describe 'with an errors object with nested errors' do
+        let(:other) do
+          super().tap do |errors|
+            errors.add :must_sacrifice_ungulate_to_server_daemon
+            errors[:authorization][:api_key].add :must_be_prime_in_base_13
+            errors[:articles][0][:title].
+              add :twilight_fanfic_strictly_prohibited
+          end # tap
+        end # let
+
+        it { expect { instance.merge other }.not_to change(instance, :count) }
+
+        it 'should add the errors to the copy' do
+          copy = instance.merge other
+
+          expect(copy.count).to be == expected_count + 3
+
+          expect(copy).
+            to include(
+              :path => [],
+              :type => :must_sacrifice_ungulate_to_server_daemon
+            ) # end include
+
+          expect(copy).
+            to include(
+              :path => [:authorization, :api_key],
+              :type => :must_be_prime_in_base_13
+            ) # end include
+
+          expect(copy).
+            to include(
+              :path => [:articles, 0, :title],
+              :type => :twilight_fanfic_strictly_prohibited
+            ) # end include
+        end # it
+      end # describe
+    end # wrap_context
+  end # describe
+
   describe '#path' do
     it 'should define the private reader' do
       expect(instance).not_to respond_to(:path)
@@ -729,5 +1012,186 @@ RSpec.describe Bronze::Errors do
 
       expect(instance.to_a).to be == errors
     end # it
+  end # describe
+
+  describe '#update' do
+    let(:other) { described_class.new }
+
+    it { expect(instance).to respond_to(:update).with(1).argument }
+
+    it { expect(instance.update other).to be instance }
+
+    describe 'with an empty errors object' do
+      it 'should not change the errors' do
+        expect { instance.update other }.not_to change(instance, :count)
+
+        expect(instance).to be_empty
+      end # it
+    end # describe
+
+    describe 'with an errors object with errors' do
+      let(:other) do
+        super().tap do |errors|
+          errors.add :must_be_unique
+        end # tap
+      end # let
+
+      it 'should add the errors to the object' do
+        expect { instance.update other }.to change(instance, :count).by(1)
+
+        expect(instance).to include(:type => :must_be_unique)
+      end # it
+    end # describe
+
+    describe 'with an errors object with nested errors' do
+      let(:other) do
+        super().tap do |errors|
+          errors.add :must_sacrifice_ungulate_to_server_daemon
+          errors[:authorization][:api_key].add :must_be_prime_in_base_13
+          errors[:articles][0][:title].
+            add :twilight_fanfic_strictly_prohibited
+        end # tap
+      end # let
+
+      it 'should add the errors to the object' do
+        expect { instance.update other }.to change(instance, :count).by(3)
+
+        expect(instance).
+          to include(
+            :path => [],
+            :type => :must_sacrifice_ungulate_to_server_daemon
+          ) # end include
+
+        expect(instance).
+          to include(
+            :path => [:authorization, :api_key],
+            :type => :must_be_prime_in_base_13
+          ) # end include
+
+        expect(instance).
+          to include(
+            :path => [:articles, 0, :title],
+            :type => :twilight_fanfic_strictly_prohibited
+          ) # end include
+      end # it
+    end # describe
+
+    wrap_context 'when there are many errors' do
+      describe 'with an empty errors object' do
+        it 'should not change the errors' do
+          expect { instance.update other }.not_to change(instance, :count)
+
+          expect(instance.count).to be == errors.count
+        end # it
+      end # describe
+
+      describe 'with an errors object with errors' do
+        let(:other) do
+          super().tap do |errors|
+            errors.add :must_be_unique
+          end # tap
+        end # let
+
+        it 'should add the errors to the object' do
+          expect { instance.update other }.to change(instance, :count).by(1)
+
+          expect(instance).to include(:type => :must_be_unique)
+        end # it
+      end # describe
+
+      describe 'with an errors object with nested errors' do
+        let(:other) do
+          super().tap do |errors|
+            errors.add :must_sacrifice_ungulate_to_server_daemon
+            errors[:authorization][:api_key].add :must_be_prime_in_base_13
+            errors[:articles][0][:title].
+              add :twilight_fanfic_strictly_prohibited
+          end # tap
+        end # let
+
+        it 'should add the errors to the object' do
+          expect { instance.update other }.to change(instance, :count).by(3)
+
+          expect(instance).
+            to include(
+              :path => [],
+              :type => :must_sacrifice_ungulate_to_server_daemon
+            ) # end include
+
+          expect(instance).
+            to include(
+              :path => [:authorization, :api_key],
+              :type => :must_be_prime_in_base_13
+            ) # end include
+
+          expect(instance).
+            to include(
+              :path => [:articles, 0, :title],
+              :type => :twilight_fanfic_strictly_prohibited
+            ) # end include
+        end # it
+      end # describe
+    end # wrap_context
+
+    wrap_context 'when there are many nested errors' do
+      describe 'with an empty errors object' do
+        let(:expected_count) do
+          nested_errors.reduce(0) { |memo, (_, hsh)| memo + hsh.size }
+        end # let
+
+        it 'should not change the errors' do
+          expect { instance.update other }.not_to change(instance, :count)
+
+          expect(instance.count).to be == expected_count
+        end # it
+      end # describe
+
+      describe 'with an errors object with errors' do
+        let(:other) do
+          super().tap do |errors|
+            errors.add :must_be_unique
+          end # tap
+        end # let
+
+        it 'should add the errors to the object' do
+          expect { instance.update other }.to change(instance, :count).by(1)
+
+          expect(instance).to include(:type => :must_be_unique)
+        end # it
+      end # describe
+
+      describe 'with an errors object with nested errors' do
+        let(:other) do
+          super().tap do |errors|
+            errors.add :must_sacrifice_ungulate_to_server_daemon
+            errors[:authorization][:api_key].add :must_be_prime_in_base_13
+            errors[:articles][0][:title].
+              add :twilight_fanfic_strictly_prohibited
+          end # tap
+        end # let
+
+        it 'should add the errors to the object' do
+          expect { instance.update other }.to change(instance, :count).by(3)
+
+          expect(instance).
+            to include(
+              :path => [],
+              :type => :must_sacrifice_ungulate_to_server_daemon
+            ) # end include
+
+          expect(instance).
+            to include(
+              :path => [:authorization, :api_key],
+              :type => :must_be_prime_in_base_13
+            ) # end include
+
+          expect(instance).
+            to include(
+              :path => [:articles, 0, :title],
+              :type => :twilight_fanfic_strictly_prohibited
+            ) # end include
+        end # it
+      end # describe
+    end # wrap_context
   end # describe
 end # describe

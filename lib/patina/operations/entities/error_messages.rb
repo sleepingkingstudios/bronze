@@ -14,5 +14,8 @@ module Patina::Operations::Entities
 
     # Failure message when the expected record is not found.
     RECORD_NOT_FOUND = 'errors.operations.entities.record_not_found'.freeze
+
+    # Failure message when the record fails a uniqueness check.
+    RECORD_NOT_UNIQUE = 'errors.operations.entities.record_not_unique'.freeze
   end # module
 end # module

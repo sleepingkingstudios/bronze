@@ -2,15 +2,21 @@
 
 ## Bug Fixes
 
+- Loading an entity from a collection generates a new ULID in the
+  @attribute_changes field.
+
 ## MVP
 
-- AttributeTypesConstraint should have same behavior as PresenceConstraint when
-  given a nil value on a non-NilClass, non-allow_nil attribute.
 - RepositoryConstraint: encapsulates an expectation against a repository.
   Defines #with_repository(&block) to support contract use.
   - ExistsConstraint
   - DoesNotExistConstraint
 - RepositoryContract: contract that allows RepositoryConstraints.
+
+## Code Cleanup
+
+- Remove Constraint passed_errors pattern.
+- Remove Operation#failure_message.
 
 ## Features
 
@@ -26,6 +32,26 @@
   - AttributeTypesConstraint
     - :except, :only ?
     - support attribute collections (use EachConstraint?)
+  - Error messages have configurable prefix: |
+
+    def error_prefix
+      'bronze.constraints.errors'
+    end # method error_prefix
+
+    Each constraint defines final segment:
+
+    NOT_UNIQUE_ERROR = 'not_unique'
+
+    Delegated to by standard private reader:
+
+    def error_key
+      NOT_UNIQUE_ERROR
+    end # method error_key
+
+    def error_message
+      "#{error_prefix}.#{error_key}"
+    end # method error_message
+
 - Contract
   - update syntax constrain :attribute, ClassName => true
     - if ClassName::Contract or ClassName::contract, uses contract

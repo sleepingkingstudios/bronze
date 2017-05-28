@@ -11,10 +11,14 @@ module Spec::Operations
         ary = []
 
         title = 'Astrology Today'
-        1.upto(3) { |i| ary << { :title => title, :volume => i } }
+        1.upto(3) do |i|
+          ary << { :id => (i - 1).to_s, :title => title, :volume => i }
+        end # upto
 
         title = 'Journal of Applied Phrenology'
-        4.upto(6) { |i| ary << { :title => title, :volume => i } }
+        4.upto(6) do |i|
+          ary << { :id => (i - 1).to_s, :title => title, :volume => i }
+        end # upto
 
         ary
       end # let

@@ -28,7 +28,7 @@ module Bronze::Entities::Constraints
       hsh = { :type => metadata.object_type }
 
       if Array == metadata.object_type
-        # hsh[:member_type] = metadata.attribute_type.member_type.object_type
+        hsh[:member_type] = metadata.attribute_type.member_type.object_type
       end # if
 
       hsh

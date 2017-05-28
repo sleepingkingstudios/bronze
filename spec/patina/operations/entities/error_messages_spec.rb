@@ -26,4 +26,12 @@ RSpec.describe Patina::Operations::Entities::ErrorMessages do
         with_value('errors.operations.entities.record_not_found')
     end # it
   end # describe
+
+  describe '::RECORD_NOT_UNIQUE' do
+    it 'should define the constant' do
+      expect(described_class).
+        to have_immutable_constant(:RECORD_NOT_UNIQUE).
+        with_value('errors.operations.entities.record_not_unique')
+    end # it
+  end # describe
 end # describe

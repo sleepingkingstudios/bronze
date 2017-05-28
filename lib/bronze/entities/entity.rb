@@ -7,6 +7,7 @@ require 'bronze/entities/base_entity'
 require 'bronze/entities/normalization'
 require 'bronze/entities/persistence'
 require 'bronze/entities/primary_key'
+require 'bronze/entities/uniqueness'
 
 require 'bronze/entities/ulid'
 
@@ -21,5 +22,6 @@ module Bronze::Entities
     include Bronze::Entities::PrimaryKey
     include Bronze::Entities::Normalization
     include Bronze::Entities::Persistence
+    include Bronze::Entities::Uniqueness
   end # class
 end # module

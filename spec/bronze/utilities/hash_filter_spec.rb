@@ -17,7 +17,49 @@ RSpec.describe Bronze::Utilities::HashFilter do
     let(:filters) { {} }
   end # shared_context
 
-  shared_context 'when the selector has filter values' do
+  shared_context 'when the selector has an :equals filter' do
+    let(:selector) { { :author => { :__eq => 'C. S. Lewis' } } }
+    let(:subhash)  { {} }
+    let(:filters) do
+      {
+        [:author] => [
+          [:__eq, 'C. S. Lewis']
+        ] # end array
+      } # end filters
+    end # let
+  end # shared_context
+
+  shared_context 'when the selector has a :not_equals filter' do
+    let(:selector) { { :title => { :__ne => 'The Last Battle' } } }
+    let(:subhash)  { {} }
+    let(:filters) do
+      {
+        [:title] => [
+          [:__ne, 'The Last Battle']
+        ] # end array
+      } # end filters
+    end # let
+  end # shared_context
+
+  shared_context 'when the selector has an :in filter' do
+    let(:selector) do
+      {
+        :title  => {
+          :__in => ['Prince Caspian', 'Voyage of the Dawn Treader']
+        } # end title
+      } # end selector
+    end # let
+    let(:subhash) { {} }
+    let(:filters) do
+      {
+        [:title] => [
+          [:__in, ['Prince Caspian', 'Voyage of the Dawn Treader']]
+        ] # end array
+      } # end filters
+    end # let
+  end # shared_context
+
+  shared_context 'when the selector has multiple filter values' do
     let(:selector) do
       {
         :author => { :__eq => 'C. S. Lewis' },
@@ -76,7 +118,19 @@ RSpec.describe Bronze::Utilities::HashFilter do
       it { expect(instance.filters).to be == filters }
     end # wrap_context
 
-    wrap_context 'when the selector has filter values' do
+    wrap_context 'when the selector has an :equals filter' do
+      it { expect(instance.filters).to be == filters }
+    end # wrap_context
+
+    wrap_context 'when the selector has a :not_equals filter' do
+      it { expect(instance.filters).to be == filters }
+    end # wrap_context
+
+    wrap_context 'when the selector has an :in filter' do
+      it { expect(instance.filters).to be == filters }
+    end # wrap_context
+
+    wrap_context 'when the selector has multiple filter values' do
       it { expect(instance.filters).to be == filters }
     end # wrap_context
 
@@ -129,9 +183,93 @@ RSpec.describe Bronze::Utilities::HashFilter do
 
         it { expect(instance.matches? data).to be true }
       end # describe
-    end # wrap-context
+    end # wrap_context
 
-    wrap_context 'when the selector has filter values' do
+    wrap_context 'when the selector has an :equals filter' do
+      describe 'with an empty hash' do
+        it { expect(instance.matches?({})).to be false }
+      end # describe
+
+      describe 'with a non-matching hash' do
+        let(:data) do
+          {
+            :title  => 'The Silver Chair',
+            :author => 'Clive Staples Lewis'
+          } # end data
+        end # let
+
+        it { expect(instance.matches? data).to be false }
+      end # describe
+
+      describe 'with a matching hash' do
+        let(:data) do
+          {
+            :title  => 'Prince Caspian',
+            :author => 'C. S. Lewis'
+          } # end data
+        end # let
+
+        it { expect(instance.matches? data).to be true }
+      end # describe
+    end # wrap_context
+
+    wrap_context 'when the selector has a :not_equals filter' do
+      describe 'with an empty hash' do
+        it { expect(instance.matches?({})).to be true }
+      end # describe
+
+      describe 'with a non-matching hash' do
+        let(:data) do
+          {
+            :title  => 'The Last Battle',
+            :author => 'C. S. Lewis'
+          } # end data
+        end # let
+
+        it { expect(instance.matches? data).to be false }
+      end # describe
+
+      describe 'with a matching hash' do
+        let(:data) do
+          {
+            :title  => 'The Magician\'s Nephew',
+            :author => 'C. S. Lewis'
+          } # end data
+        end # let
+
+        it { expect(instance.matches? data).to be true }
+      end # describe
+    end # wrap_context
+
+    wrap_context 'when the selector has an :in filter' do
+      describe 'with an empty hash' do
+        it { expect(instance.matches?({})).to be false }
+      end # describe
+
+      describe 'with a non-matching hash' do
+        let(:data) do
+          {
+            :title  => 'The Silver Chair',
+            :author => 'C. S. Lewis'
+          } # end data
+        end # let
+
+        it { expect(instance.matches? data).to be false }
+      end # describe
+
+      describe 'with a matching hash' do
+        let(:data) do
+          {
+            :title  => 'Prince Caspian',
+            :author => 'C. S. Lewis'
+          } # end data
+        end # let
+
+        it { expect(instance.matches? data).to be true }
+      end # describe
+    end # wrap_context
+
+    wrap_context 'when the selector has multiple filter values' do
       describe 'with an empty hash' do
         it { expect(instance.matches?({})).to be false }
       end # describe
@@ -232,7 +370,19 @@ RSpec.describe Bronze::Utilities::HashFilter do
       it { expect(instance.selector).to be == selector }
     end # wrap_context
 
-    wrap_context 'when the selector has filter values' do
+    wrap_context 'when the selector has an :equals filter' do
+      it { expect(instance.selector).to be == selector }
+    end # wrap_context
+
+    wrap_context 'when the selector has a :not_equals filter' do
+      it { expect(instance.selector).to be == selector }
+    end # wrap_context
+
+    wrap_context 'when the selector has an :in filter' do
+      it { expect(instance.selector).to be == selector }
+    end # wrap_context
+
+    wrap_context 'when the selector has multiple filter values' do
       it { expect(instance.selector).to be == selector }
     end # wrap_context
 
@@ -252,7 +402,19 @@ RSpec.describe Bronze::Utilities::HashFilter do
       it { expect(instance.subhash).to be == subhash }
     end # wrap_context
 
-    wrap_context 'when the selector has filter values' do
+    wrap_context 'when the selector has an :equals filter' do
+      it { expect(instance.subhash).to be == subhash }
+    end # wrap_context
+
+    wrap_context 'when the selector has a :not_equals filter' do
+      it { expect(instance.subhash).to be == subhash }
+    end # wrap_context
+
+    wrap_context 'when the selector has an :in filter' do
+      it { expect(instance.subhash).to be == subhash }
+    end # wrap_context
+
+    wrap_context 'when the selector has multiple filter values' do
       it { expect(instance.subhash).to be == subhash }
     end # wrap_context
 

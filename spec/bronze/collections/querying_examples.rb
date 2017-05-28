@@ -451,6 +451,63 @@ module Spec::Collections
         end # wrap_context
       end # describe
 
+      describe '#matching $ne' do
+        let(:expected_attribute) { :title }
+        let(:expected_value)     { 'The Gods of Mars' }
+        let(:selector) do
+          { expected_attribute => { :__ne => expected_value } }
+        end # let
+        let(:expected) do
+          raw_data.reject { |hsh| expected_value == hsh[expected_attribute] }
+        end # let
+
+        include_examples 'should return a query' do
+          let(:query) { instance.matching(selector) }
+        end # include_examples
+
+        include_examples 'should return the items matching the selector'
+
+        wrap_context 'when the data contains many items' do
+          describe 'with a selector that matches many of the items' do
+            let(:expected_value) { 'The Two Towers' }
+
+            include_examples 'should return the items matching the selector'
+          end # describe
+
+          describe 'with a selector that matches all of the items' do
+            let(:expected_value) { 'Savage Pellucidar' }
+
+            include_examples 'should return the items matching the selector'
+          end # describe
+
+          describe 'with a chained selector' do
+            let(:first_selector) do
+              { expected_attribute => { :__ne => expected_value } }
+            end # let
+            let(:second_selector) do
+              { :author => 'Edgar Rice Burroughs' }
+            end # let
+            let(:expected) do
+              raw_data.
+                reject { |hsh| expected_value == hsh[expected_attribute] }.
+                select { |hsh| hsh >= second_selector }
+            end # let
+
+            it 'should return the items matching the selector' do
+              query      = instance.matching(first_selector)
+              query      = query.matching(second_selector)
+              hash_tools = SleepingKingStudios::Tools::HashTools
+
+              results =
+                query.to_a.map { |hsh| hash_tools.convert_keys_to_symbols(hsh) }
+
+              expect(query.count).to be expected.count
+              expect(results).to be == expected
+            end # it
+          end # describe
+        end # wrap_context
+      end # describe
+
       describe '#one' do
         it { expect(instance.one).to be nil }
 
