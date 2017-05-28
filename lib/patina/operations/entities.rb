@@ -23,5 +23,7 @@ module Patina::Operations
       'patina/operations/entities/update_one_operation'
     autoload :ValidateOneOperation,
       'patina/operations/entities/validate_one_operation'
+    autoload :ValidateOneUniquenessOperation,
+      'patina/operations/entities/validate_one_uniqueness_operation'
   end # module
 end # module
