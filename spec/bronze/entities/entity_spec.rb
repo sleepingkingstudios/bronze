@@ -8,6 +8,7 @@ require 'bronze/entities/attributes/dirty_tracking_examples'
 require 'bronze/entities/normalization_examples'
 require 'bronze/entities/persistence_examples'
 require 'bronze/entities/primary_key_examples'
+require 'bronze/entities/uniqueness_examples'
 
 RSpec.describe Bronze::Entities::Entity do
   include Spec::Entities::Associations::AssociationsExamples
@@ -16,6 +17,7 @@ RSpec.describe Bronze::Entities::Entity do
   include Spec::Entities::NormalizationExamples
   include Spec::Entities::PersistenceExamples
   include Spec::Entities::PrimaryKeyExamples
+  include Spec::Entities::UniquenessExamples
 
   mock_class Spec, :Book, :base_class => Bronze::Entities::Entity
 
@@ -45,4 +47,6 @@ RSpec.describe Bronze::Entities::Entity do
   include_examples 'should implement the Persistence methods'
 
   include_examples 'should implement the PrimaryKey methods'
+
+  include_examples 'should implement the Uniqueness methods'
 end # describe
