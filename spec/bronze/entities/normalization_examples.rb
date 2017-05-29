@@ -2,6 +2,8 @@
 
 require 'bigdecimal'
 
+require 'bronze/entities/attributes/dirty_tracking'
+
 module Spec::Entities
   module NormalizationExamples
     extend RSpec::SleepingKingStudios::Concerns::SharedExampleGroup
@@ -83,6 +85,18 @@ module Spec::Entities
               end # each
             end # it
           end # wrap_context
+
+          context 'when the entity supports dirty tracking' do
+            before(:example) do
+              mod = Bronze::Entities::Attributes::DirtyTracking
+
+              described_class.send(:include, mod) unless described_class < mod
+            end # before example
+
+            it 'should mark the entity as clean' do
+              expect(entity.attributes_changed?).to be false
+            end # it
+          end # context
         end # wrap_context
       end # describe
 
