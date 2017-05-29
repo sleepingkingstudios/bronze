@@ -17,16 +17,17 @@ module Bronze::Entities
       #
       # @return [Bronze::Entities::Entity] The entity.
       def denormalize hsh, permit: nil
-        entity = new
+        attrs = {}
 
-        attributes.each do |attr_name, metadata|
-          value = hsh[attr_name]
-          value = metadata.attribute_type.denormalize(value)
+        hsh.each do |key, value|
+          metadata = attributes[key]
 
-          entity.send(metadata.writer_name, value)
+          next unless metadata
+
+          attrs[key] = metadata.attribute_type.denormalize(value)
         end # each
 
-        entity
+        new(attrs)
       end # method denormalize
 
       # rubocop:enable Lint/UnusedMethodArgument
