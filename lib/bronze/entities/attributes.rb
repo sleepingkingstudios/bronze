@@ -108,7 +108,6 @@ module Bronze::Entities
         send("#{key}=", value)
       end # each
     end # method assign
-    alias_method :assign_attributes, :assign
 
     # (see #assign)
     def assign_attributes values
@@ -152,7 +151,7 @@ module Bronze::Entities
 
     # rubocop:disable Metrics/AbcSize
     def assign_with_defaults values, force: false
-      missing = self.class.attributes.keys - values.keys
+      missing = self.class.attributes.keys - values.keys.map(&:intern)
       missing.each do |key|
         next if !force && self.class.attributes[key].read_only?
 

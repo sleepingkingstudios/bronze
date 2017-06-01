@@ -77,13 +77,33 @@ module Spec::Entities
           end # it
 
           wrap_context 'when the entity has attribute values' do
-            it 'should return an entity' do
-              expect(entity).to be_a described_class
+            let(:tools) do
+              SleepingKingStudios::Tools::Toolbelt.instance
+            end # let
 
-              expected.each do |key, match_expected|
-                expect(entity.send key).to match_expected
-              end # each
-            end # it
+            describe 'with a hash with string keys' do
+              let(:normalized) { tools.hash.convert_keys_to_strings(super()) }
+
+              it 'should return an entity' do
+                expect(entity).to be_a described_class
+
+                expected.each do |key, match_expected|
+                  expect(entity.send key).to match_expected
+                end # each
+              end # it
+            end # describe
+
+            describe 'with a hash with symbol keys' do
+              let(:normalized) { tools.hash.convert_keys_to_symbols(super()) }
+
+              it 'should return an entity' do
+                expect(entity).to be_a described_class
+
+                expected.each do |key, match_expected|
+                  expect(entity.send key).to match_expected
+                end # each
+              end # it
+            end # describe
           end # wrap_context
 
           context 'when the entity supports dirty tracking' do

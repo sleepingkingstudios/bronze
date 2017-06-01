@@ -261,6 +261,83 @@ module Spec::Entities::Attributes::AttributesExamples
       end # wrap_context
     end # describe
 
+    describe '::new' do
+      let(:values)     { {} }
+      let(:instance)   { described_class.new values }
+      let(:attributes) { instance.attributes.tap { |hsh| hsh.delete :id } }
+
+      it { expect(described_class.new values).to be_a described_class }
+
+      describe 'with an empty hash' do
+        it { expect(attributes).to be == {} }
+      end # describe
+
+      wrap_context 'when attributes are defined for the class' do
+        let(:values) do
+          {
+            :title      => 'The Mists of Avalon',
+            :page_count => 450
+          } # end hash
+        end # let
+        let(:expected) do
+          hsh = {}
+
+          described_class.attributes.each do |key, _|
+            hsh[key] = nil unless key == :id
+          end # each
+
+          hsh.merge tools.hash.convert_keys_to_symbols(values)
+        end # let
+        let(:tools) do
+          SleepingKingStudios::Tools::Toolbelt.instance
+        end # let
+
+        describe 'with an empty hash with string keys' do
+          let(:values) { {} }
+
+          it { expect(attributes).to be == expected }
+        end # describe
+
+        describe 'with a hash with string keys' do
+          let(:values) { tools.hash.convert_keys_to_strings(super()) }
+
+          it { expect(attributes).to be == expected }
+        end # describe
+
+        describe 'with a hash with symbol keys' do
+          let(:values) { tools.hash.convert_keys_to_symbols(super()) }
+
+          it { expect(attributes).to be == expected }
+        end # describe
+
+        context 'when the attribute has a default value' do
+          let(:author)   { nil }
+          let(:expected) { super().merge :author => (author || 'Anonymous') }
+
+          before(:example) do
+            described_class.attribute :author, String, :default => 'Anonymous'
+          end # before example
+
+          describe 'with an empty hash with string keys' do
+            let(:values) { {} }
+
+            it { expect(attributes).to be == expected }
+          end # describe
+
+          describe 'with a hash not including the attribute with default' do
+            it { expect(attributes).to be == expected }
+          end # describe
+
+          describe 'with a hash including the attribute with default' do
+            let(:author) { 'Marion Zimmer Bradley' }
+            let(:values) { super().merge :author => author }
+
+            it { expect(attributes).to be == expected }
+          end # describe
+        end # context
+      end # wrap_context
+    end # describe
+
     describe '#==' do
       let(:attributes)       { { :title => 'The Illiad' } }
       let(:other_class)      { Class.new(described_class) }
@@ -336,7 +413,7 @@ module Spec::Entities::Attributes::AttributesExamples
           } # end hash
         end # let
         let(:expected) do
-          hsh = values.dup
+          hsh = tools.hash.convert_keys_to_symbols(values)
 
           defined_attributes.each_key do |attr_name|
             hsh.update attr_name => instance.send(attr_name)
@@ -345,12 +422,27 @@ module Spec::Entities::Attributes::AttributesExamples
           hsh.delete :foreward
           attributes.merge hsh
         end # let
+        let(:tools) { SleepingKingStudios::Tools::Toolbelt.instance }
 
-        it 'should overwrite the attributes' do
-          expect { instance.assign values }.
-            to change(instance, :attributes).
-            to be == expected
-        end # it
+        describe 'with a hash with string keys' do
+          let(:values) { tools.hash.convert_keys_to_strings(super()) }
+
+          it 'should overwrite the attributes' do
+            expect { instance.assign values }.
+              to change(instance, :attributes).
+              to be == expected
+          end # it
+        end # describe
+
+        describe 'with a hash with symbol keys' do
+          let(:values) { tools.hash.convert_keys_to_symbols(super()) }
+
+          it 'should overwrite the attributes' do
+            expect { instance.assign values }.
+              to change(instance, :attributes).
+              to be == expected
+          end # it
+        end # describe
       end # wrap_context
     end # describe
 

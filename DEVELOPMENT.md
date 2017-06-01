@@ -7,12 +7,6 @@
 
 ## MVP
 
-- RepositoryConstraint: encapsulates an expectation against a repository.
-  Defines #with_repository(&block) to support contract use.
-  - ExistsConstraint
-  - DoesNotExistConstraint
-- RepositoryContract: contract that allows RepositoryConstraints.
-
 ## Code Cleanup
 
 - Remove Constraint passed_errors pattern.

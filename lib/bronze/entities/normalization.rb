@@ -20,7 +20,7 @@ module Bronze::Entities
         attrs = {}
 
         hsh.each do |key, value|
-          metadata = attributes[key]
+          metadata = attributes[key.intern]
 
           next unless metadata
 
