@@ -1041,6 +1041,57 @@ module Spec::Entities::Associations::AssociationsExamples
               include_examples 'should clear the prior value inverse value'
             end # wrap_context
           end # describe
+
+          describe 'with the existing entity' do
+            let(:new_value) { prior_value }
+
+            include_examples 'should return the new value'
+
+            include_examples 'should not change the association value'
+          end # describe
+
+          describe 'with another instance of the existing entity' do
+            let(:new_value) do
+              prior_attributes = prior_value.attributes
+              prior_attributes.delete metadata.inverse_metadata.foreign_key
+
+              association_class.new(prior_attributes)
+            end # let
+
+            it 'should replace the association value' do
+              set_value new_value
+
+              expect(entity.send reader_name).not_to equal prior_value
+              expect(entity.send reader_name).to equal new_value
+            end
+
+            include_examples 'should return the new value'
+
+            include_examples 'should change the association value'
+
+            include_examples 'should change the new value inverse foreign key'
+
+            include_examples 'should change the new value inverse value'
+
+            include_examples 'should clear the prior value inverse foreign key'
+
+            include_examples 'should clear the prior value inverse value'
+
+            wrap_context 'when the association already has an inverse object' do
+              include_examples 'should change the association value'
+
+              include_examples 'should change the new value inverse foreign key'
+
+              include_examples 'should change the new value inverse value'
+
+              include_examples \
+                'should clear the prior value inverse foreign key'
+
+              include_examples 'should clear the prior value inverse value'
+
+              include_examples 'should clear the prior value inverse value'
+            end # wrap_context
+          end # describe
         end # wrap_context
       end # describe
     end # describe
@@ -1212,6 +1263,33 @@ module Spec::Entities::Associations::AssociationsExamples
 
             include_examples 'should change the foreign key'
           end # describe
+
+          describe 'with the existing entity' do
+            let(:new_value) { prior_value }
+
+            include_examples 'should return the new value'
+
+            include_examples 'should not change the association value'
+
+            include_examples 'should not change the foreign key'
+          end # describe
+
+          describe 'with another instance of the existing entity' do
+            let(:new_value) { association_class.new(prior_value.attributes) }
+
+            it 'should replace the association value' do
+              set_value new_value
+
+              expect(entity.send reader_name).not_to equal prior_value
+              expect(entity.send reader_name).to equal new_value
+            end
+
+            include_examples 'should return the new value'
+
+            include_examples 'should not change the association value'
+
+            include_examples 'should not change the foreign key'
+          end # describe
         end # wrap_context
 
         if inverse_name && tools.string.singular?(inverse_name.to_s)
@@ -1239,6 +1317,26 @@ module Spec::Entities::Associations::AssociationsExamples
 
             describe 'with an instance of the association class' do
               let(:new_value) { association_class.new }
+
+              include_examples 'should clear the prior value inverse value'
+
+              include_examples 'should change the new value inverse value'
+
+              desc = 'when the association already has an inverse object'
+              wrap_context desc do
+                include_examples 'should clear the prior value inverse value'
+
+                include_examples 'should change the new value inverse value'
+
+                include_examples \
+                  'should clear the prior inverse association value'
+
+                include_examples 'should clear the prior inverse foreign key'
+              end # wrap_context
+            end # describe
+
+            describe 'with another instance of the existing entity' do
+              let(:new_value) { association_class.new(prior_value.attributes) }
 
               include_examples 'should clear the prior value inverse value'
 
@@ -1331,7 +1429,48 @@ module Spec::Entities::Associations::AssociationsExamples
                   'should not change the prior inverse association value'
 
                 include_examples 'should not change the prior inverse ' \
-                'foreign key'
+                  'foreign key'
+              end # wrap_context
+            end # describe
+
+            describe 'with another instance of the existing entity' do
+              let(:new_value) { association_class.new(prior_value.attributes) }
+
+              include_examples \
+                'should decrement the prior value inverse collection count'
+
+              include_examples \
+                'should remove the entity from the prior value inverse ' \
+                'collection items'
+
+              include_examples \
+                'should increment the new value inverse collection count'
+
+              include_examples \
+                'should add the entity to the new value inverse ' \
+                'collection items'
+
+              desc = 'when the association already has an inverse object'
+              wrap_context desc do
+                include_examples \
+                  'should decrement the prior value inverse collection count'
+
+                include_examples \
+                  'should remove the entity from the prior value inverse ' \
+                  'collection items'
+
+                include_examples \
+                  'should increment the new value inverse collection count'
+
+                include_examples \
+                  'should add the entity to the new value inverse collection ' \
+                  'items'
+
+                include_examples \
+                  'should not change the prior inverse association value'
+
+                include_examples 'should not change the prior inverse ' \
+                  'foreign key'
               end # wrap_context
             end # describe
           end # wrap_context
@@ -1631,7 +1770,7 @@ module Spec::Entities::Associations::AssociationsExamples
             before(:example) do
               described_class.send :define_method,
                 "#{association_name}=",
-                ->(value) { super(value.dup.freeze) }
+                ->(value) { super(value ? value.dup.freeze : value) }
             end # before example
 
             it 'should inherit from the base definition' do
@@ -1640,7 +1779,7 @@ module Spec::Entities::Associations::AssociationsExamples
                 and satisfy { |obj| obj.object_id != cover.object_id }.
                 and satisfy(&:frozen?)
 
-              expect { instance.send "#{association_name}=", cover }.
+              expect { instance.send("#{association_name}=", cover) }.
                 to change(instance, association_name).
                 to be_a_frozen_copy
             end # it

@@ -242,8 +242,8 @@ module Bronze::Entities
       inverse_metadata = metadata.inverse_metadata
       prior_value      = get_association(metadata)
 
-      # 2. Break if old value == new value
-      return if prior_value == new_value
+      # 2. Return if old value is the same object as new value
+      return new_value if prior_value.equal? new_value
 
       # 3. Clear local values
       set_association(metadata, nil)
@@ -260,7 +260,7 @@ module Bronze::Entities
 
       # 6. Set new inverse
       if inverse_metadata
-        new_value.send(inverse_metadata.writer_name, self)
+        new_value.send :write_references_one_association, inverse_metadata, self
       end # if
 
       new_value
@@ -278,8 +278,8 @@ module Bronze::Entities
       inverse_metadata = metadata.inverse_metadata
       prior_value      = get_association(metadata)
 
-      # 2. Break if old value == new value
-      return if prior_value == new_value
+      # 2. Return if old value is the same object as new value
+      return new_value if prior_value.equal? new_value
 
       # 3. Clear local values
       set_association(metadata, nil)
@@ -298,7 +298,7 @@ module Bronze::Entities
 
       # 6. Set new inverse
       if inverse_metadata && inverse_metadata.one?
-        new_value.send(inverse_metadata.writer_name, self)
+        new_value.send :write_has_one_association, inverse_metadata, self
       elsif inverse_metadata
         new_value.send(inverse_metadata.reader_name) << self
       end # if

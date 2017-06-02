@@ -14,7 +14,10 @@
 
 ## Features
 
+- Association
+  - has_many should define #association_ids method
 - Association::Collection
+  - should define #ids method
   - dirty tracking
     - as attribute dirty tracking, plus #added, #removed ?
 - Collection
@@ -51,6 +54,10 @@
     - if ClassName::Contract or ClassName::contract, uses contract
     - otherwise adds TypeConstraint => Class
   - add_constraint Publisher.contract, :each => :publisher # Like :on, but wraps in an EachConstraint
+- Entitlement:
+
+  super-charged permissions model? Superset of permissions?
+
 - Entity
   - associations
     - implicit inverse associations
@@ -82,6 +89,12 @@
     - can be slug (see dependent_attribute)
 - Errors#first
 - Operation
+  - lazy operations:
+
+    Operation.
+      then.
+      then.
+      call()
   - #always - always called, even if halted.
   - #halt!, #halted? - prevent further #then, #else callbacks.
 - Query

@@ -70,6 +70,8 @@ module Bronze::Entities::Associations
       false
     end # method ==
 
+    # rubocop:disable Metrics/MethodLength
+
     # Adds the specified entity to the collection, if it is not already part of
     # the collection.
     #
@@ -93,11 +95,16 @@ module Bronze::Entities::Associations
 
       # 4. Set new inverse
       if inverse_metadata
-        new_value.send(inverse_metadata.writer_name, entity)
+        new_value.send(
+          :write_references_one_association,
+          inverse_metadata,
+          entity
+        ) # end send
       end # if
 
       new_value
     end # method add
+    # rubocop:enable Metrics/MethodLength
 
     # Removes all entities from the collection.
     #
