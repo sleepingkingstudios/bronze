@@ -11,7 +11,6 @@ require 'byebug'
 
 # Require vendor-ed files.
 $LOAD_PATH << File.expand_path('./vendor')
-require 'rspec/sleeping_king_studios/concerns/mock_constants'
 require 'rspec/sleeping_king_studios/concerns/shared_example'
 
 # Isolated namespace for defining spec-only or transient objects.
@@ -21,8 +20,8 @@ require 'support/mongo'
 
 # See http://rubydoc.info/gems/rspec-core/RSpec/Core/Configuration
 RSpec.configure do |config|
+  config.extend  RSpec::SleepingKingStudios::Concerns::ExampleConstants
   config.extend  RSpec::SleepingKingStudios::Concerns::FocusExamples
-  config.extend  RSpec::SleepingKingStudios::Concerns::MockConstants
   config.extend  RSpec::SleepingKingStudios::Concerns::SharedExample
   config.extend  RSpec::SleepingKingStudios::Concerns::WrapExamples
   config.include RSpec::SleepingKingStudios::Examples::PropertyExamples

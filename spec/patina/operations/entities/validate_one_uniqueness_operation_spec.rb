@@ -17,10 +17,10 @@ RSpec.describe Patina::Operations::Entities::ValidateOneUniquenessOperation do
   let(:collection)     { instance.send :collection }
 
   options = { :base_class => Spec::ExampleEntity }
-  mock_class Spec, :ArchivedPeriodical, options do |klass|
+  example_class 'Spec::ArchivedPeriodical', options do |klass|
     klass.attribute :title,  String
     klass.attribute :volume, Integer
-  end # mock_class
+  end # example_class
 
   describe '::new' do
     it { expect(described_class).to be_constructible.with(2..3).arguments }
@@ -100,12 +100,12 @@ RSpec.describe Patina::Operations::Entities::ValidateOneUniquenessOperation do
       let(:resource_class) { Spec::SimplePeriodical }
 
       options = { :base_class => Bronze::Entities::BaseEntity }
-      mock_class Spec, :SimplePeriodical, options do |klass|
+      example_class 'Spec::SimplePeriodical', options do |klass|
         klass.send :include, Bronze::Entities::Attributes
 
         klass.attribute :title,  String
         klass.attribute :volume, Integer
-      end # mock_class
+      end # example_class
 
       include_examples 'should set the resource and return true'
     end # context

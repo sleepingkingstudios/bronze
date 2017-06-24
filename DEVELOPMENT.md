@@ -1,9 +1,134 @@
 # Development
 
-## Bug Fixes
+- Revisit Operations:
+  - #result method: |
 
-- Loading an entity from a collection generates a new ULID in the
-  @attribute_changes field.
+    Convention for the "return value" of an operation.
+
+    Defaults to the return of the #process method.
+
+  - #halt!, #halted? methods: |
+
+    Do not run any further chained operations/blocks.
+
+  - Implicit vs explicit chains:
+
+    Explicit chain: |
+
+      FirstOperation.
+        new.
+        call(param).
+        then do |first|
+          SecondOperation.new.call(first.result)
+        end.
+        then do |second|
+          ThirdOperation.new.call(second.result)
+        end
+      # Returns ThirdOperation instance called with second.result.
+
+    Implicit chain: |
+
+      FirstOperation.
+        new.
+        call(param).
+        then(SecondOperation.new).
+        then(ThirdOperation.new)
+      # Returns ThirdOperation instance called with second.result.
+
+  - OperationChain class?
+
+  - Operation pre-chaining: |
+
+    MyOperation.
+      then {}.
+      then {}.
+      else {}.
+      call(an_object)
+
+- Revisit Entity<->Operation interactions:
+
+  Two "types" of EntityOperation:
+  - abstract: |
+
+    Takes an entity class as a constructor argument.
+
+    E.g. ValidateOneOperation.new(Book).call(book)
+
+  - concrete: |
+
+    Defined with an entity class. Extends abstract class ?
+
+    E.g. ValidateOneBookOperation.new.call(book)
+
+    Or Book::Operations::ValidateOne ?
+
+  Pre-defined chained operations for resourceful actions?
+  - create => build, validate, validate_uniqueness, insert
+  - update => assign, validate, validate_uniqueness, update
+
+  Dual inheritance issue:
+  - from the operation class
+  - from common entity configuration
+
+  Procedural Generation/Metaprogramming
+  - shouldn't have to define each operation for each entity
+  - should always have human readable name
+  - should be easily open for extension, esp. chaining
+
+  Coordinator object - Book::Operations?
+  - use module builder pattern?
+  - access as class:  Book::Operations::ValidateOne.new(book)
+  - access as method: Book::Operations.validate_one(book)
+  - defines DSL for adding, redefining operations:
+
+    operation :validate_one, ValidateOneBookOperation
+
+    operation :custom_operation do; end
+
+  - ResourcefulOperationsCoordinator (rename pls) defines standard resourceful
+    operations with single DSL (resource Book ?)
+
+  Steps:
+
+  1.  Create abstract base class - EntityOperation ?
+
+      ::subclass(entity_class) method: |
+
+      Defines subclass with curried constructor.
+
+  2.  Update all entity operations to extend EntityOperation.
+
+      (this will cause breaking changes to some constructor signatures!)
+
+      Move from Patina to Bronze::Entities::Operations
+
+  3.  Create coordinator class/module - EntityOperationGroup ?
+
+      class Book
+        Operations = EntityOperationGroup.new(self)
+      end # class
+
+      ::operation method: |
+
+          operation :validate_one, ValidateOneBookOperation
+          operation :custom_operation do; end
+
+          Defines Book::Operations::ValidateOne, #validate_one.
+
+  4.  Create resourceful operations class/module - ResourceOperationGroup ?
+
+      ::resource_operations method: |
+
+          for each undefined entity operation:
+          - defines class in namespace
+
+            class Book::Operations::ValidateOne < ValidateOneOperation
+              def initialize(*rest)
+                super(Book, *rest)
+              end # constructor
+            end # class
+
+## Bug Fixes
 
 ## MVP
 
@@ -25,6 +150,7 @@
   - #raw - returns clone with identity transform
   - use native data types where possible (BigDecimal, Date, etc)
   - Errors - use I18n-esque string values, not symbols
+  - Query-like access to in-memory items?
 - Constraint
   - AttributeTypesConstraint
     - :except, :only ?

@@ -56,11 +56,11 @@ RSpec.describe Bronze::Entities::Associations::Metadata::ReferencesOneMetadata d
     end # wrap_context
   end # shared_examples
 
-  mock_class Spec, :Author, :base_class => Spec::ExampleEntity
+  example_class 'Spec::Author', :base_class => Spec::ExampleEntity
 
-  mock_class Spec, :Book, :base_class => Spec::ExampleEntity do |klass|
+  example_class 'Spec::Book', :base_class => Spec::ExampleEntity do |klass|
     klass.foreign_key :author_id
-  end # mock_class
+  end # example_class
 
   let(:association_name)  { :author }
   let(:association_class) { Spec::Author }

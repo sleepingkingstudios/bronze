@@ -17,10 +17,10 @@ RSpec.describe Patina::Operations::Entities::UpdateOneOperation do
   end # let
 
   options = { :base_class => Spec::ExampleEntity }
-  mock_class Spec, :ArchivedPeriodical, options do |klass|
+  example_class 'Spec::ArchivedPeriodical', options do |klass|
     klass.attribute :title,  String
     klass.attribute :volume, Integer
-  end # mock_class
+  end # example_class
 
   describe '::new' do
     it { expect(described_class).to be_constructible.with(2..3).arguments }

@@ -19,7 +19,7 @@ RSpec.describe Bronze::Entities::Entity do
   include Spec::Entities::PrimaryKeyExamples
   include Spec::Entities::UniquenessExamples
 
-  mock_class Spec, :Book, :base_class => Bronze::Entities::Entity
+  example_class 'Spec::Book', :base_class => Bronze::Entities::Entity
 
   shared_context 'when an entity class is defined' do
     let(:described_class) { Class.new(super()) }

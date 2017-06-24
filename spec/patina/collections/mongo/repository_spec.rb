@@ -73,9 +73,10 @@ RSpec.describe Patina::Collections::Mongo::Repository do
     end # describe
 
     describe 'with an entity class' do
-      mock_class Spec, :Book, :base_class => Bronze::Entities::Entity do |klass|
+      options = { :base_class => Bronze::Entities::Entity }
+      example_class 'Spec::Book', options do |klass|
         klass.send :attribute, :title, String
-      end # mock_class
+      end # example_class
 
       let(:collection_type) { Spec::Book }
       let(:collection_name) { 'spec.books' }

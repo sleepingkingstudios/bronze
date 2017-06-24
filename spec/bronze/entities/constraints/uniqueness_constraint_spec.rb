@@ -38,11 +38,11 @@ RSpec.describe Bronze::Entities::Constraints::UniquenessConstraint do
   let(:attributes) { %w(title) }
   let(:instance)   { described_class.new(*attributes) }
 
-  mock_class Spec, :Book, :base_class => Bronze::Entities::Entity do |klass|
+  example_class 'Spec::Book', :base_class => Bronze::Entities::Entity do |klass|
     klass.attribute :title,  String
     klass.attribute :author, String
     klass.attribute :series, String
-  end # mock class
+  end # example_class
 
   describe '::new' do
     it 'should define the constructor' do

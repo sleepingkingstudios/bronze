@@ -33,8 +33,8 @@ RSpec.describe Bronze::Entities::Associations::Metadata::AssociationMetadata do
     end # before example
   end # shared_context
 
-  mock_class Spec, :Author, :base_class => Bronze::Entities::Entity
-  mock_class Spec, :Book,   :base_class => Bronze::Entities::Entity
+  example_class 'Spec::Author', :base_class => Bronze::Entities::Entity
+  example_class 'Spec::Book',   :base_class => Bronze::Entities::Entity
 
   let(:entity_class)        { Spec::Book }
   let(:association_type)    { :example_association }

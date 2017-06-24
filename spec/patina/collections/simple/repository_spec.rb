@@ -66,10 +66,10 @@ RSpec.describe Patina::Collections::Simple::Repository do
     end # describe
 
     describe 'with an entity class' do
-      mock_class Spec, :RareBook, :base_class => Bronze::Entities::Entity \
+      example_class 'Spec::RareBook', :base_class => Bronze::Entities::Entity \
       do |klass|
         klass.send :attribute, :title, String
-      end # mock_class
+      end # example_class
 
       let(:collection_type) { Spec::RareBook }
       let(:collection_name) { 'spec-rare_books' }
