@@ -259,10 +259,10 @@ RSpec.describe Bronze::Entities::Associations::Collection do
     end # wrap_context
   end # shared_examples
 
-  mock_class Spec, :Author, :base_class => Spec::ExampleEntity
-  mock_class Spec, :Book,   :base_class => Spec::ExampleEntity do |klass|
+  example_class 'Spec::Author', :base_class => Spec::ExampleEntity
+  example_class 'Spec::Book',   :base_class => Spec::ExampleEntity do |klass|
     klass.references_one :author, :class_name => 'Spec::Author'
-  end # mock_class
+  end # example_class
 
   let(:metadata) do
     klass = Bronze::Entities::Associations::Metadata::HasManyMetadata

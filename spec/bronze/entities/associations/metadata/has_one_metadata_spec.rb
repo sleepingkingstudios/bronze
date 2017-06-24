@@ -26,8 +26,8 @@ RSpec.describe Bronze::Entities::Associations::Metadata::HasOneMetadata do
     end # wrap_context
   end # shared_examples
 
-  mock_class Spec, :Lair,   :base_class => Spec::ExampleEntity
-  mock_class Spec, :Dragon, :base_class => Spec::ExampleEntity
+  example_class 'Spec::Lair',   :base_class => Spec::ExampleEntity
+  example_class 'Spec::Dragon', :base_class => Spec::ExampleEntity
 
   let(:association_name)  { :dragon }
   let(:association_class) { Spec::Dragon }

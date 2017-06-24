@@ -7,11 +7,11 @@ require 'support/example_entity'
 RSpec.describe Bronze::Entities::Associations::Builders::HasOneBuilder do
   include Spec::Entities::Associations::AssociationsExamples
 
-  mock_class Spec, :Dragon, :base_class => Spec::ExampleEntity do |klass|
+  example_class 'Spec::Dragon', :base_class => Spec::ExampleEntity do |klass|
     klass.references_one :lair, :class_name => 'Spec::Lair', :inverse => :dragon
-  end # mock_class
+  end # example_class
 
-  mock_class Spec, :Lair, :base_class => Spec::ExampleEntity
+  example_class 'Spec::Lair', :base_class => Spec::ExampleEntity
 
   let(:entity_class) { Spec::Lair }
   let(:instance)     { described_class.new(entity_class) }

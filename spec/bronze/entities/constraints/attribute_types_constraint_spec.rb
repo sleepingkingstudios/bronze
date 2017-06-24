@@ -55,14 +55,14 @@ RSpec.describe Bronze::Entities::Constraints::AttributeTypesConstraint do
       let(:object)       { entity_class.new attributes }
 
       options = { :base_class => Bronze::Entities::Entity }
-      mock_class Spec, :ArchivedPeriodical, options do |klass|
+      example_class 'Spec::ArchivedPeriodical', options do |klass|
         attribute_definitions.each do |attribute_name, attribute_config|
           attribute_type = attribute_config[:type]
           attribute_opts = attribute_config[:opts] || {}
 
           klass.attribute attribute_name, attribute_type, **attribute_opts
         end # each
-      end # mock_class
+      end # example_class
 
       describe 'with nil attributes' do
         let(:error_type) do

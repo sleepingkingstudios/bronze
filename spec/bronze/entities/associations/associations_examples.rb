@@ -15,7 +15,7 @@ module Spec::Entities::Associations::AssociationsExamples
   include Spec::Entities::Attributes::AttributesExamples
 
   shared_context 'when associations are defined for the class' do
-    mock_class Spec, :Author, :base_class => Bronze::Entities::Entity
+    example_class 'Spec::Author', :base_class => Bronze::Entities::Entity
 
     let(:described_class) do
       Class.new(super()) do
@@ -524,9 +524,9 @@ module Spec::Entities::Associations::AssociationsExamples
 
         describe 'with a collection of entities' do
           options = { :base_class => Spec::ExampleEntity }
-          mock_class Spec, :MagazineArticle, options do |klass|
+          example_class 'Spec::MagazineArticle', options do |klass|
             klass.references_one :author, :class_name => entity_class.name
-          end # mock_class
+          end # example_class
 
           let(:other_class) { Spec::MagazineArticle }
           let(:other_metadata) do
@@ -763,9 +763,9 @@ module Spec::Entities::Associations::AssociationsExamples
 
           describe 'with a collection of entities' do
             options = { :base_class => Spec::ExampleEntity }
-            mock_class Spec, :MagazineArticle, options do |klass|
+            example_class 'Spec::MagazineArticle', options do |klass|
               klass.references_one :author, :class_name => entity_class.name
-            end # mock_class
+            end # example_class
 
             let(:other_class) { Spec::MagazineArticle }
             let(:other_metadata) do
@@ -1514,7 +1514,8 @@ module Spec::Entities::Associations::AssociationsExamples
         end # it
 
         context 'when an entity subclass is defined' do
-          mock_class Spec, :Publisher, :base_class => Bronze::Entities::Entity
+          options = { :base_class => Bronze::Entities::Entity }
+          example_class 'Spec::Publisher', options
 
           let(:subclass) do
             Class.new(described_class) do
@@ -1604,13 +1605,13 @@ module Spec::Entities::Associations::AssociationsExamples
         end # let
 
         options = { :base_class => Spec::ExampleEntity }
-        mock_class Spec, :Chapter, options do |klass|
+        example_class 'Spec::Chapter', options do |klass|
           klass.references_one(
             :book,
             :class_name => 'Spec::Book',
             :inverse    => :chapters
           ) # end references_one
-        end # mock_class
+        end # example_class
 
         it 'should set and return the metadata' do
           metadata = described_class.has_many(
@@ -1718,13 +1719,13 @@ module Spec::Entities::Associations::AssociationsExamples
         end # let
 
         options = { :base_class => Spec::ExampleEntity }
-        mock_class Spec, :Cover, options do |klass|
+        example_class 'Spec::Cover', options do |klass|
           klass.references_one(
             :book,
             :class_name => 'Spec::Book',
             :inverse    => :cover
           ) # end references_one
-        end # mock_class
+        end # example_class
 
         it 'should set and return the metadata' do
           metadata = described_class.has_one(
@@ -1813,7 +1814,7 @@ module Spec::Entities::Associations::AssociationsExamples
         let(:association_opts)  { { :class_name => 'Spec::Author' } }
         let(:association_class) { Spec::Author }
 
-        mock_class Spec, :Author, :base_class => Bronze::Entities::Entity
+        example_class 'Spec::Author', :base_class => Bronze::Entities::Entity
 
         it 'should set and return the metadata' do
           metadata = described_class.references_one(

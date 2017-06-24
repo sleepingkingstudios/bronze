@@ -40,7 +40,7 @@ RSpec.describe Patina::Collections::Mongo::CollectionBuilder do
     end # context
 
     context 'when the collection type is a named resource' do
-      mock_class Spec, :Resource
+      example_class 'Spec::Resource'
 
       let(:collection_type) { Spec::Resource }
 
@@ -70,7 +70,7 @@ RSpec.describe Patina::Collections::Mongo::CollectionBuilder do
     end # context
 
     context 'when the collection type is a named resource' do
-      mock_class Spec, :Resource
+      example_class 'Spec::Resource'
 
       let(:collection_type) { Spec::Resource }
 

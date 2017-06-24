@@ -26,8 +26,8 @@ RSpec.describe Bronze::Entities::Associations::Metadata::HasManyMetadata do
     end # wrap_context
   end # shared_examples
 
-  mock_class Spec, :Author, :base_class => Spec::ExampleEntity
-  mock_class Spec, :Book,   :base_class => Spec::ExampleEntity
+  example_class 'Spec::Author', :base_class => Spec::ExampleEntity
+  example_class 'Spec::Book',   :base_class => Spec::ExampleEntity
 
   let(:association_name)  { :books }
   let(:association_class) { Spec::Book }

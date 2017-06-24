@@ -7,7 +7,7 @@ require 'bronze/entities/entity'
 RSpec.describe Bronze::Entities::Associations::Builders::AssociationBuilder do
   include Spec::Entities::Associations::AssociationsExamples
 
-  mock_class Spec, :Author, :base_class => Bronze::Entities::Entity
+  example_class 'Spec::Author', :base_class => Bronze::Entities::Entity
 
   let(:entity_class) do
     Class.new(Bronze::Entities::Entity) do
