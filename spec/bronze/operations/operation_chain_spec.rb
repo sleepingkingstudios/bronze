@@ -36,6 +36,12 @@ RSpec.describe Bronze::Operations::OperationChain do
     end # let
   end # shared_context
 
+  shared_context 'when the first operation is halted' do
+    let(:first_operation) do
+      super().chain(&:halt!)
+    end # let
+  end # shared_context
+
   shared_context 'when there is one chained operation' do
     let(:instance) do
       super().then(Spec::Operations::PushOperation.new('second operation'))
@@ -81,8 +87,726 @@ RSpec.describe Bronze::Operations::OperationChain do
     end # let
   end # shared_context
 
+  shared_context 'when there is a halted operation chain' do
+    let(:instance) do
+      super().
+        then(Spec::Operations::PushOperation.new('before halt')).
+        then(&:halt!).
+        then(Spec::Operations::PushOperation.new('then after halt')).
+        else(Spec::Operations::PushOperation.new('else after halt'))
+    end # let
+  end # shared_context
+
   describe '::new' do
     it { expect(described_class).to be_constructible.with(1).argument }
+  end # describe
+
+  describe '#always' do
+    let(:expected)       { ['first operation'] }
+    let(:expected_error) { 'errors.operations.something_went_wrong' }
+
+    it 'should define the method' do
+      expect(instance).to respond_to(:always).with(0..1).arguments.and_a_block
+    end # it
+
+    describe 'with a passing operation instance' do
+      let(:operation) do
+        Spec::Operations::PushOperation.new('chained operation')
+      end # let
+      let(:expected) { super() << 'chained operation' }
+
+      it { expect(instance.always(operation)).to be instance }
+
+      it 'should chain the operation' do
+        chained = instance.always(operation)
+
+        expect(chained.call).to be true
+        expect(chained.result).to be == expected
+        expect(chained.errors).to be_empty
+      end # it
+    end # describe
+
+    describe 'with a failing operation instance' do
+      let(:operation) do
+        Spec::Operations::PushWithErrorOperation.new('failing operation')
+      end # let
+      let(:expected) { super() << 'failing operation' }
+
+      it { expect(instance.always(operation)).to be instance }
+
+      it 'should chain the operation' do
+        chained = instance.always(operation)
+
+        expect(chained.call).to be false
+        expect(chained.result).to be == expected
+        expect(chained.errors).to include expected_error
+      end # it
+    end # describe
+
+    describe 'with a block' do
+      let(:expected) { super() << 'chained block' }
+
+      it 'should return the chain' do
+        chained = instance.always { |op| op.result << 'chained block' }
+
+        expect(chained).to be instance
+      end # it
+
+      it 'should chain the block' do
+        chained = instance.always { |op| op.result << 'chained block' }
+
+        expect(chained.call).to be true
+        expect(chained.result).to be == expected
+        expect(chained.errors).to be_empty
+      end # it
+    end # describe
+
+    describe 'with a block that returns a passing operation' do
+      let(:operation) do
+        Spec::Operations::PushOperation.new('operation in block')
+      end # let
+      let(:expected) { super() << 'operation in block' }
+
+      it 'should return the chain' do
+        chained = instance.always { |op| operation.execute(op.result) }
+
+        expect(chained).to be instance
+      end # it
+
+      it 'should chain the block' do
+        chained = instance.always { |op| operation.execute(op.result) }
+
+        expect(chained.call).to be true
+        expect(chained.result).to be == expected
+        expect(chained.errors).to be_empty
+      end # it
+    end # describe
+
+    describe 'with a block that returns a failing operation' do
+      let(:operation) do
+        Spec::Operations::PushWithErrorOperation.new('failure in block')
+      end # let
+      let(:expected) { super() << 'failure in block' }
+
+      it 'should return the chain' do
+        chained = instance.always { |op| operation.execute(op.result) }
+
+        expect(chained).to be instance
+      end # it
+
+      it 'should chain the block' do
+        chained = instance.always { |op| operation.execute(op.result) }
+
+        expect(chained.call).to be false
+        expect(chained.result).to be == expected
+        expect(chained.errors).to include expected_error
+      end # it
+    end # describe
+
+    wrap_context 'when the first operation is halted' do
+      describe 'with a passing operation instance' do
+        let(:operation) do
+          Spec::Operations::PushOperation.new('chained operation')
+        end # let
+        let(:expected) { super() << 'chained operation' }
+
+        it { expect(instance.always(operation)).to be instance }
+
+        it 'should chain the operation' do
+          chained = instance.always(operation)
+
+          expect(chained.call).to be true
+          expect(chained.result).to be == expected
+          expect(chained.errors).to be_empty
+          expect(chained.halted?).to be false
+        end # it
+      end # describe
+
+      describe 'with a failing operation instance' do
+        let(:operation) do
+          Spec::Operations::PushWithErrorOperation.new('failing operation')
+        end # let
+        let(:expected) { super() << 'failing operation' }
+
+        it { expect(instance.always(operation)).to be instance }
+
+        it 'should chain the operation' do
+          chained = instance.always(operation)
+
+          expect(chained.call).to be false
+          expect(chained.result).to be == expected
+          expect(chained.errors).to include expected_error
+          expect(chained.halted?).to be false
+        end # it
+      end # describe
+
+      describe 'with a block' do
+        let(:expected) { super() << 'chained block' }
+
+        it 'should return the chain' do
+          chained = instance.always { |op| op.result << 'chained block' }
+
+          expect(chained).to be instance
+        end # it
+
+        it 'should chain the block' do
+          chained = instance.always { |op| op.result << 'chained block' }
+
+          expect(chained.call).to be true
+          expect(chained.result).to be == expected
+          expect(chained.errors).to be_empty
+          expect(chained.halted?).to be true
+        end # it
+      end # describe
+
+      describe 'with a block that returns a passing operation' do
+        let(:operation) do
+          Spec::Operations::PushOperation.new('operation in block')
+        end # let
+        let(:expected) { super() << 'operation in block' }
+
+        it 'should return the chain' do
+          chained = instance.always { |op| operation.execute(op.result) }
+
+          expect(chained).to be instance
+        end # it
+
+        it 'should chain the block' do
+          chained = instance.always { |op| operation.execute(op.result) }
+
+          expect(chained.call).to be true
+          expect(chained.result).to be == expected
+          expect(chained.errors).to be_empty
+          expect(chained.halted?).to be false
+        end # it
+      end # describe
+
+      describe 'with a block that returns a failing operation' do
+        let(:operation) do
+          Spec::Operations::PushWithErrorOperation.new('failure in block')
+        end # let
+        let(:expected) { super() << 'failure in block' }
+
+        it 'should return the chain' do
+          chained = instance.always { |op| operation.execute(op.result) }
+
+          expect(chained).to be instance
+        end # it
+
+        it 'should chain the block' do
+          chained = instance.always { |op| operation.execute(op.result) }
+
+          expect(chained.call).to be false
+          expect(chained.result).to be == expected
+          expect(chained.errors).to include expected_error
+          expect(chained.halted?).to be false
+        end # it
+      end # describe
+    end # wrap_context
+
+    wrap_context 'when the first operation is failing' do
+      let(:expected) { ['operation with error'] }
+
+      describe 'with a passing operation instance' do
+        let(:operation) do
+          Spec::Operations::PushOperation.new('chained operation')
+        end # let
+        let(:expected) { super() << 'chained operation' }
+
+        it { expect(instance.always(operation)).to be instance }
+
+        it 'should chain the operation' do
+          chained = instance.always(operation)
+
+          expect(chained.call).to be true
+          expect(chained.result).to be == expected
+          expect(chained.errors).to be_empty
+        end # it
+      end # describe
+
+      describe 'with a failing operation instance' do
+        let(:operation) do
+          Spec::Operations::PushWithErrorOperation.new('failing operation')
+        end # let
+        let(:expected) { super() << 'failing operation' }
+
+        it { expect(instance.always(operation)).to be instance }
+
+        it 'should chain the operation' do
+          chained = instance.always(operation)
+
+          expect(chained.call).to be false
+          expect(chained.result).to be == expected
+          expect(chained.errors).to include expected_error
+        end # it
+      end # describe
+
+      describe 'with a block' do
+        let(:expected) { super() << 'chained block' }
+
+        it 'should return the chain' do
+          chained = instance.always { |op| op.result << 'chained block' }
+
+          expect(chained).to be instance
+        end # it
+
+        it 'should chain the block' do
+          chained = instance.always { |op| op.result << 'chained block' }
+
+          expect(chained.call).to be false
+          expect(chained.result).to be == expected
+          expect(chained.errors).to include expected_error
+        end # it
+      end # describe
+
+      describe 'with a block that returns a passing operation' do
+        let(:operation) do
+          Spec::Operations::PushOperation.new('operation in block')
+        end # let
+        let(:expected) { super() << 'operation in block' }
+
+        it 'should return the chain' do
+          chained = instance.always { |op| operation.execute(op.result) }
+
+          expect(chained).to be instance
+        end # it
+
+        it 'should chain the block' do
+          chained = instance.always { |op| operation.execute(op.result) }
+
+          expect(chained.call).to be true
+          expect(chained.result).to be == expected
+          expect(chained.errors).to be_empty
+        end # it
+      end # describe
+
+      describe 'with a block that returns a failing operation' do
+        let(:operation) do
+          Spec::Operations::PushWithErrorOperation.new('failure in block')
+        end # let
+        let(:expected) { super() << 'failure in block' }
+
+        it 'should return the chain' do
+          chained = instance.always { |op| operation.execute(op.result) }
+
+          expect(chained).to be instance
+        end # it
+
+        it 'should chain the block' do
+          chained = instance.always { |op| operation.execute(op.result) }
+
+          expect(chained.call).to be false
+          expect(chained.result).to be == expected
+          expect(chained.errors).to include expected_error
+        end # it
+      end # describe
+
+      wrap_context 'when the first operation is halted' do
+        describe 'with a passing operation instance' do
+          let(:operation) do
+            Spec::Operations::PushOperation.new('chained operation')
+          end # let
+          let(:expected) { super() << 'chained operation' }
+
+          it { expect(instance.always(operation)).to be instance }
+
+          it 'should chain the operation' do
+            chained = instance.always(operation)
+
+            expect(chained.call).to be true
+            expect(chained.result).to be == expected
+            expect(chained.errors).to be_empty
+            expect(chained.halted?).to be false
+          end # it
+        end # describe
+
+        describe 'with a failing operation instance' do
+          let(:operation) do
+            Spec::Operations::PushWithErrorOperation.new('failing operation')
+          end # let
+          let(:expected) { super() << 'failing operation' }
+
+          it { expect(instance.always(operation)).to be instance }
+
+          it 'should chain the operation' do
+            chained = instance.always(operation)
+
+            expect(chained.call).to be false
+            expect(chained.result).to be == expected
+            expect(chained.errors).to include expected_error
+            expect(chained.halted?).to be false
+          end # it
+        end # describe
+
+        describe 'with a block' do
+          let(:expected) { super() << 'chained block' }
+
+          it 'should return the chain' do
+            chained = instance.always { |op| op.result << 'chained block' }
+
+            expect(chained).to be instance
+          end # it
+
+          it 'should chain the block' do
+            chained = instance.always { |op| op.result << 'chained block' }
+
+            expect(chained.call).to be false
+            expect(chained.result).to be == expected
+            expect(chained.errors).to include expected_error
+            expect(chained.halted?).to be true
+          end # it
+        end # describe
+
+        describe 'with a block that returns a passing operation' do
+          let(:operation) do
+            Spec::Operations::PushOperation.new('operation in block')
+          end # let
+          let(:expected) { super() << 'operation in block' }
+
+          it 'should return the chain' do
+            chained = instance.always { |op| operation.execute(op.result) }
+
+            expect(chained).to be instance
+          end # it
+
+          it 'should chain the block' do
+            chained = instance.always { |op| operation.execute(op.result) }
+
+            expect(chained.call).to be true
+            expect(chained.result).to be == expected
+            expect(chained.errors).to be_empty
+            expect(chained.halted?).to be false
+          end # it
+        end # describe
+
+        describe 'with a block that returns a failing operation' do
+          let(:operation) do
+            Spec::Operations::PushWithErrorOperation.new('failure in block')
+          end # let
+          let(:expected) { super() << 'failure in block' }
+
+          it 'should return the chain' do
+            chained = instance.always { |op| operation.execute(op.result) }
+
+            expect(chained).to be instance
+          end # it
+
+          it 'should chain the block' do
+            chained = instance.always { |op| operation.execute(op.result) }
+
+            expect(chained.call).to be false
+            expect(chained.result).to be == expected
+            expect(chained.errors).to include expected_error
+            expect(chained.halted?).to be false
+          end # it
+        end # describe
+      end # wrap_context
+    end # describe
+
+    wrap_context 'when there is one chained operation' do
+      let(:expected) { super() << 'second operation' }
+
+      describe 'with a passing operation instance' do
+        let(:operation) do
+          Spec::Operations::PushOperation.new('chained operation')
+        end # let
+        let(:expected) { super() << 'chained operation' }
+
+        it { expect(instance.always(operation)).to be instance }
+
+        it 'should chain the operation' do
+          chained = instance.always(operation)
+
+          expect(chained.call).to be true
+          expect(chained.result).to be == expected
+          expect(chained.errors).to be_empty
+        end # it
+      end # describe
+
+      describe 'with a failing operation instance' do
+        let(:operation) do
+          Spec::Operations::PushWithErrorOperation.new('failing operation')
+        end # let
+        let(:expected) { super() << 'failing operation' }
+
+        it { expect(instance.always(operation)).to be instance }
+
+        it 'should chain the operation' do
+          chained = instance.always(operation)
+
+          expect(chained.call).to be false
+          expect(chained.result).to be == expected
+          expect(chained.errors).to include expected_error
+        end # it
+      end # describe
+    end # wrap_context
+
+    wrap_context 'when there is one chained block' do
+      let(:expected) { super() << 'interstitial block' }
+
+      describe 'with a passing operation instance' do
+        let(:operation) do
+          Spec::Operations::PushOperation.new('chained operation')
+        end # let
+        let(:expected) { super() << 'chained operation' }
+
+        it { expect(instance.always(operation)).to be instance }
+
+        it 'should chain the operation' do
+          chained = instance.always(operation)
+
+          expect(chained.call).to be true
+          expect(chained.result).to be == expected
+          expect(chained.errors).to be_empty
+        end # it
+      end # describe
+
+      describe 'with a failing operation instance' do
+        let(:operation) do
+          Spec::Operations::PushWithErrorOperation.new('failing operation')
+        end # let
+        let(:expected) { super() << 'failing operation' }
+
+        it { expect(instance.always(operation)).to be instance }
+
+        it 'should chain the operation' do
+          chained = instance.always(operation)
+
+          expect(chained.call).to be false
+          expect(chained.result).to be == expected
+          expect(chained.errors).to include expected_error
+        end # it
+      end # describe
+
+      describe 'with a block' do
+        let(:expected) { super() << 'chained block' }
+
+        it 'should return the chain' do
+          chained = instance.always { |op| op.result << 'chained block' }
+
+          expect(chained).to be instance
+        end # it
+
+        it 'should chain the block' do
+          chained = instance.always { |op| op.result << 'chained block' }
+
+          expect(chained.call).to be true
+          expect(chained.result).to be == expected
+          expect(chained.errors).to be_empty
+        end # it
+      end # describe
+
+      describe 'with a block that returns a passing operation' do
+        let(:operation) do
+          Spec::Operations::PushOperation.new('operation in block')
+        end # let
+        let(:expected) { super() << 'operation in block' }
+
+        it 'should return the chain' do
+          chained = instance.always { |op| operation.execute(op.result) }
+
+          expect(chained).to be instance
+        end # it
+
+        it 'should chain the block' do
+          chained = instance.always { |op| operation.execute(op.result) }
+
+          expect(chained.call).to be true
+          expect(chained.result).to be == expected
+          expect(chained.errors).to be_empty
+        end # it
+      end # describe
+
+      describe 'with a block that returns a failing operation' do
+        let(:operation) do
+          Spec::Operations::PushWithErrorOperation.new('failure in block')
+        end # let
+        let(:expected) { super() << 'failure in block' }
+
+        it 'should return the chain' do
+          chained = instance.always { |op| operation.execute(op.result) }
+
+          expect(chained).to be instance
+        end # it
+
+        it 'should chain the block' do
+          chained = instance.always { |op| operation.execute(op.result) }
+
+          expect(chained.call).to be false
+          expect(chained.result).to be == expected
+          expect(chained.errors).to include expected_error
+        end # it
+      end # describe
+    end # wrap_context
+
+    wrap_context 'when there is a chain of passing operations' do
+      let(:expected) do
+        super() << 'second operation' << 'third operation' << 'fourth operation'
+      end # let
+
+      describe 'with a passing operation instance' do
+        let(:operation) do
+          Spec::Operations::PushOperation.new('chained operation')
+        end # let
+        let(:expected) { super() << 'chained operation' }
+
+        it { expect(instance.always(operation)).to be instance }
+
+        it 'should chain the operation' do
+          chained = instance.always(operation)
+
+          expect(chained.call).to be true
+          expect(chained.result).to be == expected
+          expect(chained.errors).to be_empty
+        end # it
+      end # describe
+
+      describe 'with a failing operation instance' do
+        let(:operation) do
+          Spec::Operations::PushWithErrorOperation.new('failing operation')
+        end # let
+        let(:expected) { super() << 'failing operation' }
+
+        it { expect(instance.always(operation)).to be instance }
+
+        it 'should chain the operation' do
+          chained = instance.always(operation)
+
+          expect(chained.call).to be false
+          expect(chained.result).to be == expected
+          expect(chained.errors).to include expected_error
+        end # it
+      end # describe
+    end # wrap_context
+
+    wrap_context 'when there is a chain with a failing operation' do
+      let(:expected) do
+        super() << 'before error' << 'operation with error'
+      end # let
+
+      describe 'with a passing operation instance' do
+        let(:operation) do
+          Spec::Operations::PushOperation.new('chained operation')
+        end # let
+        let(:expected) { super() << 'chained operation' }
+
+        it { expect(instance.always(operation)).to be instance }
+
+        it 'should chain the operation' do
+          chained = instance.always(operation)
+
+          expect(chained.call).to be true
+          expect(chained.result).to be == expected
+          expect(chained.errors).to be_empty
+        end # it
+      end # describe
+
+      describe 'with a failing operation instance' do
+        let(:operation) do
+          Spec::Operations::PushWithErrorOperation.new('failing operation')
+        end # let
+        let(:expected) { super() << 'failing operation' }
+
+        it { expect(instance.always(operation)).to be instance }
+
+        it 'should chain the operation' do
+          chained = instance.always(operation)
+
+          expect(chained.call).to be false
+          expect(chained.result).to be == expected
+          expect(chained.errors).to include expected_error
+        end # it
+      end # describe
+    end # wrap_context
+
+    wrap_context 'when there is a chain with a handled failure' do
+      let(:expected) do
+        super().concat(
+          [
+            'before error',
+            'operation with error',
+            'handle error',
+            'after error handler'
+          ] # end array
+        ) # end concat
+      end # let
+
+      describe 'with a passing operation instance' do
+        let(:operation) do
+          Spec::Operations::PushOperation.new('chained operation')
+        end # let
+        let(:expected) { super() << 'chained operation' }
+
+        it { expect(instance.always(operation)).to be instance }
+
+        it 'should chain the operation' do
+          chained = instance.always(operation)
+
+          expect(chained.call).to be true
+          expect(chained.result).to be == expected
+          expect(chained.errors).to be_empty
+        end # it
+      end # describe
+
+      describe 'with a failing operation instance' do
+        let(:operation) do
+          Spec::Operations::PushWithErrorOperation.new('failing operation')
+        end # let
+        let(:expected) { super() << 'failing operation' }
+
+        it { expect(instance.always(operation)).to be instance }
+
+        it 'should chain the operation' do
+          chained = instance.always(operation)
+
+          expect(chained.call).to be false
+          expect(chained.result).to be == expected
+          expect(chained.errors).to include expected_error
+        end # it
+      end # describe
+    end # wrap_context
+
+    wrap_context 'when there is a halted operation chain' do
+      let(:expected) do
+        super() << 'before halt'
+      end # let
+
+      describe 'with a passing operation instance' do
+        let(:operation) do
+          Spec::Operations::PushOperation.new('chained operation')
+        end # let
+        let(:expected) { super() << 'chained operation' }
+
+        it { expect(instance.always(operation)).to be instance }
+
+        it 'should chain the operation' do
+          chained = instance.always(operation)
+
+          expect(chained.call).to be true
+          expect(chained.result).to be == expected
+          expect(chained.errors).to be_empty
+          expect(chained.halted?).to be false
+        end # it
+      end # describe
+
+      describe 'with a failing operation instance' do
+        let(:operation) do
+          Spec::Operations::PushWithErrorOperation.new('failing operation')
+        end # let
+        let(:expected) { super() << 'failing operation' }
+
+        it { expect(instance.always(operation)).to be instance }
+
+        it 'should chain the operation' do
+          chained = instance.always(operation)
+
+          expect(chained.call).to be false
+          expect(chained.result).to be == expected
+          expect(chained.errors).to include expected_error
+          expect(chained.halted?).to be false
+        end # it
+      end # describe
+    end # wrap_context
   end # describe
 
   describe '#call' do
@@ -90,6 +814,10 @@ RSpec.describe Bronze::Operations::OperationChain do
 
     wrap_context 'when the first operation is failing' do
       it { expect(instance.call).to be false }
+    end # wrap_context
+
+    wrap_context 'when the first operation is halted' do
+      it { expect(instance.call).to be true }
     end # wrap_context
 
     wrap_context 'when there is one chained operation' do
@@ -109,6 +837,10 @@ RSpec.describe Bronze::Operations::OperationChain do
     end # wrap_context
 
     wrap_context 'when there is a chain with a handled failure' do
+      it { expect(instance.call).to be true }
+    end # wrap_context
+
+    wrap_context 'when there is a halted operation chain' do
       it { expect(instance.call).to be true }
     end # wrap_context
   end # describe
@@ -124,6 +856,12 @@ RSpec.describe Bronze::Operations::OperationChain do
       it { expect(instance.execute.called?).to be true }
     end # wrap_context
 
+    wrap_context 'when the first operation is halted' do
+      it { expect(instance.called?).to be false }
+
+      it { expect(instance.execute.called?).to be true }
+    end # wrap_context
+
     wrap_context 'when there is one chained operation' do
       it { expect(instance.called?).to be false }
 
@@ -152,6 +890,704 @@ RSpec.describe Bronze::Operations::OperationChain do
       it { expect(instance.called?).to be false }
 
       it { expect(instance.execute.called?).to be true }
+    end # wrap_context
+
+    wrap_context 'when there is a halted operation chain' do
+      it { expect(instance.called?).to be false }
+
+      it { expect(instance.execute.called?).to be true }
+    end # wrap_context
+  end # describe
+
+  describe '#chain' do
+    let(:expected)       { ['first operation'] }
+    let(:expected_error) { 'errors.operations.something_went_wrong' }
+
+    it 'should define the method' do
+      expect(instance).to respond_to(:chain).with(0..1).arguments.and_a_block
+    end # it
+
+    describe 'with a passing operation instance' do
+      let(:operation) do
+        Spec::Operations::PushOperation.new('chained operation')
+      end # let
+      let(:expected) { super() << 'chained operation' }
+
+      it { expect(instance.chain(operation)).to be instance }
+
+      it 'should chain the operation' do
+        chained = instance.chain(operation)
+
+        expect(chained.call).to be true
+        expect(chained.result).to be == expected
+        expect(chained.errors).to be_empty
+      end # it
+    end # describe
+
+    describe 'with a failing operation instance' do
+      let(:operation) do
+        Spec::Operations::PushWithErrorOperation.new('failing operation')
+      end # let
+      let(:expected) { super() << 'failing operation' }
+
+      it { expect(instance.chain(operation)).to be instance }
+
+      it 'should chain the operation' do
+        chained = instance.chain(operation)
+
+        expect(chained.call).to be false
+        expect(chained.result).to be == expected
+        expect(chained.errors).to include expected_error
+      end # it
+    end # describe
+
+    describe 'with a block' do
+      let(:expected) { super() << 'chained block' }
+
+      it 'should return the chain' do
+        chained = instance.chain { |op| op.result << 'chained block' }
+
+        expect(chained).to be instance
+      end # it
+
+      it 'should chain the block' do
+        chained = instance.chain { |op| op.result << 'chained block' }
+
+        expect(chained.call).to be true
+        expect(chained.result).to be == expected
+        expect(chained.errors).to be_empty
+      end # it
+    end # describe
+
+    describe 'with a block that returns a passing operation' do
+      let(:operation) do
+        Spec::Operations::PushOperation.new('operation in block')
+      end # let
+      let(:expected) { super() << 'operation in block' }
+
+      it 'should return the chain' do
+        chained = instance.chain { |op| operation.execute(op.result) }
+
+        expect(chained).to be instance
+      end # it
+
+      it 'should chain the block' do
+        chained = instance.chain { |op| operation.execute(op.result) }
+
+        expect(chained.call).to be true
+        expect(chained.result).to be == expected
+        expect(chained.errors).to be_empty
+      end # it
+    end # describe
+
+    describe 'with a block that returns a failing operation' do
+      let(:operation) do
+        Spec::Operations::PushWithErrorOperation.new('failure in block')
+      end # let
+      let(:expected) { super() << 'failure in block' }
+
+      it 'should return the chain' do
+        chained = instance.chain { |op| operation.execute(op.result) }
+
+        expect(chained).to be instance
+      end # it
+
+      it 'should chain the block' do
+        chained = instance.chain { |op| operation.execute(op.result) }
+
+        expect(chained.call).to be false
+        expect(chained.result).to be == expected
+        expect(chained.errors).to include expected_error
+      end # it
+    end # describe
+
+    wrap_context 'when the first operation is halted' do
+      describe 'with a passing operation instance' do
+        let(:operation) do
+          Spec::Operations::PushOperation.new('chained operation')
+        end # let
+
+        it { expect(instance.chain(operation)).to be instance }
+
+        it 'should chain the operation' do
+          chained = instance.chain(operation)
+
+          expect(chained.call).to be true
+          expect(chained.result).to be == expected
+          expect(chained.errors).to be_empty
+          expect(chained.halted?).to be true
+        end # it
+      end # describe
+
+      describe 'with a failing operation instance' do
+        let(:operation) do
+          Spec::Operations::PushWithErrorOperation.new('failing operation')
+        end # let
+
+        it { expect(instance.chain(operation)).to be instance }
+
+        it 'should chain the operation' do
+          chained = instance.chain(operation)
+
+          expect(chained.call).to be true
+          expect(chained.result).to be == expected
+          expect(chained.errors).to be_empty
+          expect(chained.halted?).to be true
+        end # it
+      end # describe
+
+      describe 'with a block' do
+        it 'should return the chain' do
+          chained = instance.chain { |op| op.result << 'chained block' }
+
+          expect(chained).to be instance
+        end # it
+
+        it 'should chain the block' do
+          chained = instance.chain { |op| op.result << 'chained block' }
+
+          expect(chained.call).to be true
+          expect(chained.result).to be == expected
+          expect(chained.errors).to be_empty
+          expect(chained.halted?).to be true
+        end # it
+      end # describe
+
+      describe 'with a block that returns a passing operation' do
+        let(:operation) do
+          Spec::Operations::PushOperation.new('operation in block')
+        end # let
+
+        it 'should return the chain' do
+          chained = instance.chain { |op| operation.execute(op.result) }
+
+          expect(chained).to be instance
+        end # it
+
+        it 'should chain the block' do
+          chained = instance.chain { |op| operation.execute(op.result) }
+
+          expect(chained.call).to be true
+          expect(chained.result).to be == expected
+          expect(chained.errors).to be_empty
+          expect(chained.halted?).to be true
+        end # it
+      end # describe
+
+      describe 'with a block that returns a failing operation' do
+        let(:operation) do
+          Spec::Operations::PushWithErrorOperation.new('failure in block')
+        end # let
+
+        it 'should return the chain' do
+          chained = instance.chain { |op| operation.execute(op.result) }
+
+          expect(chained).to be instance
+        end # it
+
+        it 'should chain the block' do
+          chained = instance.chain { |op| operation.execute(op.result) }
+
+          expect(chained.call).to be true
+          expect(chained.result).to be == expected
+          expect(chained.errors).to be_empty
+          expect(chained.halted?).to be true
+        end # it
+      end # describe
+    end # wrap_context
+
+    wrap_context 'when the first operation is failing' do
+      let(:expected) { ['operation with error'] }
+
+      describe 'with a passing operation instance' do
+        let(:operation) do
+          Spec::Operations::PushOperation.new('chained operation')
+        end # let
+        let(:expected) { super() << 'chained operation' }
+
+        it { expect(instance.chain(operation)).to be instance }
+
+        it 'should chain the operation' do
+          chained = instance.chain(operation)
+
+          expect(chained.call).to be true
+          expect(chained.result).to be == expected
+          expect(chained.errors).to be_empty
+        end # it
+      end # describe
+
+      describe 'with a failing operation instance' do
+        let(:operation) do
+          Spec::Operations::PushWithErrorOperation.new('failing operation')
+        end # let
+        let(:expected) { super() << 'failing operation' }
+
+        it { expect(instance.chain(operation)).to be instance }
+
+        it 'should chain the operation' do
+          chained = instance.chain(operation)
+
+          expect(chained.call).to be false
+          expect(chained.result).to be == expected
+          expect(chained.errors).to include expected_error
+        end # it
+      end # describe
+
+      describe 'with a block' do
+        let(:expected) { super() << 'chained block' }
+
+        it 'should return the chain' do
+          chained = instance.chain { |op| op.result << 'chained block' }
+
+          expect(chained).to be instance
+        end # it
+
+        it 'should chain the block' do
+          chained = instance.chain { |op| op.result << 'chained block' }
+
+          expect(chained.call).to be false
+          expect(chained.result).to be == expected
+          expect(chained.errors).to include expected_error
+        end # it
+      end # describe
+
+      describe 'with a block that returns a passing operation' do
+        let(:operation) do
+          Spec::Operations::PushOperation.new('operation in block')
+        end # let
+        let(:expected) { super() << 'operation in block' }
+
+        it 'should return the chain' do
+          chained = instance.chain { |op| operation.execute(op.result) }
+
+          expect(chained).to be instance
+        end # it
+
+        it 'should chain the block' do
+          chained = instance.chain { |op| operation.execute(op.result) }
+
+          expect(chained.call).to be true
+          expect(chained.result).to be == expected
+          expect(chained.errors).to be_empty
+        end # it
+      end # describe
+
+      describe 'with a block that returns a failing operation' do
+        let(:operation) do
+          Spec::Operations::PushWithErrorOperation.new('failure in block')
+        end # let
+        let(:expected) { super() << 'failure in block' }
+
+        it 'should return the chain' do
+          chained = instance.chain { |op| operation.execute(op.result) }
+
+          expect(chained).to be instance
+        end # it
+
+        it 'should chain the block' do
+          chained = instance.chain { |op| operation.execute(op.result) }
+
+          expect(chained.call).to be false
+          expect(chained.result).to be == expected
+          expect(chained.errors).to include expected_error
+        end # it
+      end # describe
+
+      wrap_context 'when the first operation is halted' do
+        describe 'with a passing operation instance' do
+          let(:operation) do
+            Spec::Operations::PushOperation.new('chained operation')
+          end # let
+
+          it { expect(instance.chain(operation)).to be instance }
+
+          it 'should chain the operation' do
+            chained = instance.chain(operation)
+
+            expect(chained.call).to be false
+            expect(chained.result).to be == expected
+            expect(chained.errors).to include expected_error
+            expect(chained.halted?).to be true
+          end # it
+        end # describe
+
+        describe 'with a failing operation instance' do
+          let(:operation) do
+            Spec::Operations::PushWithErrorOperation.new('failing operation')
+          end # let
+
+          it { expect(instance.chain(operation)).to be instance }
+
+          it 'should chain the operation' do
+            chained = instance.chain(operation)
+
+            expect(chained.call).to be false
+            expect(chained.result).to be == expected
+            expect(chained.errors).to include expected_error
+            expect(chained.halted?).to be true
+          end # it
+        end # describe
+
+        describe 'with a block' do
+          it 'should return the chain' do
+            chained = instance.chain { |op| op.result << 'chained block' }
+
+            expect(chained).to be instance
+          end # it
+
+          it 'should chain the block' do
+            chained = instance.chain { |op| op.result << 'chained block' }
+
+            expect(chained.call).to be false
+            expect(chained.result).to be == expected
+            expect(chained.errors).to include expected_error
+            expect(chained.halted?).to be true
+          end # it
+        end # describe
+
+        describe 'with a block that returns a passing operation' do
+          let(:operation) do
+            Spec::Operations::PushOperation.new('operation in block')
+          end # let
+
+          it 'should return the chain' do
+            chained = instance.chain { |op| operation.execute(op.result) }
+
+            expect(chained).to be instance
+          end # it
+
+          it 'should chain the block' do
+            chained = instance.chain { |op| operation.execute(op.result) }
+
+            expect(chained.call).to be false
+            expect(chained.result).to be == expected
+            expect(chained.errors).to include expected_error
+            expect(chained.halted?).to be true
+          end # it
+        end # describe
+
+        describe 'with a block that returns a failing operation' do
+          let(:operation) do
+            Spec::Operations::PushWithErrorOperation.new('failure in block')
+          end # let
+
+          it 'should return the chain' do
+            chained = instance.chain { |op| operation.execute(op.result) }
+
+            expect(chained).to be instance
+          end # it
+
+          it 'should chain the block' do
+            chained = instance.chain { |op| operation.execute(op.result) }
+
+            expect(chained.call).to be false
+            expect(chained.result).to be == expected
+            expect(chained.errors).to include expected_error
+            expect(chained.halted?).to be true
+          end # it
+        end # describe
+      end # wrap_context
+    end # wrap_context
+
+    wrap_context 'when there is one chained operation' do
+      let(:expected) { super() << 'second operation' }
+
+      describe 'with a passing operation instance' do
+        let(:operation) do
+          Spec::Operations::PushOperation.new('chained operation')
+        end # let
+        let(:expected) { super() << 'chained operation' }
+
+        it { expect(instance.chain(operation)).to be instance }
+
+        it 'should chain the operation' do
+          chained = instance.chain(operation)
+
+          expect(chained.call).to be true
+          expect(chained.result).to be == expected
+          expect(chained.errors).to be_empty
+        end # it
+      end # describe
+
+      describe 'with a failing operation instance' do
+        let(:operation) do
+          Spec::Operations::PushWithErrorOperation.new('failing operation')
+        end # let
+        let(:expected) { super() << 'failing operation' }
+
+        it { expect(instance.chain(operation)).to be instance }
+
+        it 'should chain the operation' do
+          chained = instance.chain(operation)
+
+          expect(chained.call).to be false
+          expect(chained.result).to be == expected
+          expect(chained.errors).to include expected_error
+        end # it
+      end # describe
+    end # wrap_context
+
+    wrap_context 'when there is one chained block' do
+      let(:expected) { super() << 'interstitial block' }
+
+      describe 'with a passing operation instance' do
+        let(:operation) do
+          Spec::Operations::PushOperation.new('chained operation')
+        end # let
+        let(:expected) { super() << 'chained operation' }
+
+        it { expect(instance.chain(operation)).to be instance }
+
+        it 'should chain the operation' do
+          chained = instance.chain(operation)
+
+          expect(chained.call).to be true
+          expect(chained.result).to be == expected
+          expect(chained.errors).to be_empty
+        end # it
+      end # describe
+
+      describe 'with a failing operation instance' do
+        let(:operation) do
+          Spec::Operations::PushWithErrorOperation.new('failing operation')
+        end # let
+        let(:expected) { super() << 'failing operation' }
+
+        it { expect(instance.chain(operation)).to be instance }
+
+        it 'should chain the operation' do
+          chained = instance.chain(operation)
+
+          expect(chained.call).to be false
+          expect(chained.result).to be == expected
+          expect(chained.errors).to include expected_error
+        end # it
+      end # describe
+
+      describe 'with a block' do
+        let(:expected) { super() << 'chained block' }
+
+        it 'should return the chain' do
+          chained = instance.chain { |op| op.result << 'chained block' }
+
+          expect(chained).to be instance
+        end # it
+
+        it 'should chain the block' do
+          chained = instance.chain { |op| op.result << 'chained block' }
+
+          expect(chained.call).to be true
+          expect(chained.result).to be == expected
+          expect(chained.errors).to be_empty
+        end # it
+      end # describe
+
+      describe 'with a block that returns a passing operation' do
+        let(:operation) do
+          Spec::Operations::PushOperation.new('operation in block')
+        end # let
+        let(:expected) { super() << 'operation in block' }
+
+        it 'should return the chain' do
+          chained = instance.chain { |op| operation.execute(op.result) }
+
+          expect(chained).to be instance
+        end # it
+
+        it 'should chain the block' do
+          chained = instance.chain { |op| operation.execute(op.result) }
+
+          expect(chained.call).to be true
+          expect(chained.result).to be == expected
+          expect(chained.errors).to be_empty
+        end # it
+      end # describe
+
+      describe 'with a block that returns a failing operation' do
+        let(:operation) do
+          Spec::Operations::PushWithErrorOperation.new('failure in block')
+        end # let
+        let(:expected) { super() << 'failure in block' }
+
+        it 'should return the chain' do
+          chained = instance.chain { |op| operation.execute(op.result) }
+
+          expect(chained).to be instance
+        end # it
+
+        it 'should chain the block' do
+          chained = instance.chain { |op| operation.execute(op.result) }
+
+          expect(chained.call).to be false
+          expect(chained.result).to be == expected
+          expect(chained.errors).to include expected_error
+        end # it
+      end # describe
+    end # wrap_context
+
+    wrap_context 'when there is a chain of passing operations' do
+      let(:expected) do
+        super() << 'second operation' << 'third operation' << 'fourth operation'
+      end # let
+
+      describe 'with a passing operation instance' do
+        let(:operation) do
+          Spec::Operations::PushOperation.new('chained operation')
+        end # let
+        let(:expected) { super() << 'chained operation' }
+
+        it { expect(instance.chain(operation)).to be instance }
+
+        it 'should chain the operation' do
+          chained = instance.chain(operation)
+
+          expect(chained.call).to be true
+          expect(chained.result).to be == expected
+          expect(chained.errors).to be_empty
+        end # it
+      end # describe
+
+      describe 'with a failing operation instance' do
+        let(:operation) do
+          Spec::Operations::PushWithErrorOperation.new('failing operation')
+        end # let
+        let(:expected) { super() << 'failing operation' }
+
+        it { expect(instance.chain(operation)).to be instance }
+
+        it 'should chain the operation' do
+          chained = instance.chain(operation)
+
+          expect(chained.call).to be false
+          expect(chained.result).to be == expected
+          expect(chained.errors).to include expected_error
+        end # it
+      end # describe
+    end # wrap_context
+
+    wrap_context 'when there is a chain with a failing operation' do
+      let(:expected) do
+        super() << 'before error' << 'operation with error'
+      end # let
+
+      describe 'with a passing operation instance' do
+        let(:operation) do
+          Spec::Operations::PushOperation.new('chained operation')
+        end # let
+        let(:expected) { super() << 'chained operation' }
+
+        it { expect(instance.chain(operation)).to be instance }
+
+        it 'should chain the operation' do
+          chained = instance.chain(operation)
+
+          expect(chained.call).to be true
+          expect(chained.result).to be == expected
+          expect(chained.errors).to be_empty
+        end # it
+      end # describe
+
+      describe 'with a failing operation instance' do
+        let(:operation) do
+          Spec::Operations::PushWithErrorOperation.new('failing operation')
+        end # let
+        let(:expected) { super() << 'failing operation' }
+
+        it { expect(instance.chain(operation)).to be instance }
+
+        it 'should chain the operation' do
+          chained = instance.chain(operation)
+
+          expect(chained.call).to be false
+          expect(chained.result).to be == expected
+          expect(chained.errors).to include expected_error
+        end # it
+      end # describe
+    end # wrap_context
+
+    wrap_context 'when there is a chain with a handled failure' do
+      let(:expected) do
+        super().concat(
+          [
+            'before error',
+            'operation with error',
+            'handle error',
+            'after error handler'
+          ] # end array
+        ) # end concat
+      end # let
+
+      describe 'with a passing operation instance' do
+        let(:operation) do
+          Spec::Operations::PushOperation.new('chained operation')
+        end # let
+        let(:expected) { super() << 'chained operation' }
+
+        it { expect(instance.chain(operation)).to be instance }
+
+        it 'should chain the operation' do
+          chained = instance.chain(operation)
+
+          expect(chained.call).to be true
+          expect(chained.result).to be == expected
+          expect(chained.errors).to be_empty
+        end # it
+      end # describe
+
+      describe 'with a failing operation instance' do
+        let(:operation) do
+          Spec::Operations::PushWithErrorOperation.new('failing operation')
+        end # let
+        let(:expected) { super() << 'failing operation' }
+
+        it { expect(instance.chain(operation)).to be instance }
+
+        it 'should chain the operation' do
+          chained = instance.chain(operation)
+
+          expect(chained.call).to be false
+          expect(chained.result).to be == expected
+          expect(chained.errors).to include expected_error
+        end # it
+      end # describe
+    end # wrap_context
+
+    wrap_context 'when there is a halted operation chain' do
+      let(:expected) { super() << 'before halt' }
+
+      describe 'with a passing operation instance' do
+        let(:operation) do
+          Spec::Operations::PushOperation.new('chained operation')
+        end # let
+
+        it { expect(instance.chain(operation)).to be instance }
+
+        it 'should not chain the operation' do
+          chained = instance.chain(operation)
+
+          expect(chained.call).to be true
+          expect(chained.result).to be == expected
+          expect(chained.errors).to be_empty
+          expect(chained.halted?).to be true
+        end # it
+      end # describe
+
+      describe 'with a failing operation instance' do
+        let(:operation) do
+          Spec::Operations::PushWithErrorOperation.new('failing operation')
+        end # let
+
+        it { expect(instance.chain(operation)).to be instance }
+
+        it 'should not chain the operation' do
+          chained = instance.chain(operation)
+
+          expect(chained.call).to be true
+          expect(chained.result).to be == expected
+          expect(chained.errors).to be_empty
+          expect(chained.halted?).to be true
+        end # it
+      end # describe
     end # wrap_context
   end # describe
 
@@ -251,6 +1687,101 @@ RSpec.describe Bronze::Operations::OperationChain do
       end # it
     end # describe
 
+    wrap_context 'when the first operation is halted' do
+      describe 'with a passing operation instance' do
+        let(:operation) do
+          Spec::Operations::PushOperation.new('else operation')
+        end # let
+
+        it { expect(instance.else(operation)).to be instance }
+
+        it 'should chain the operation' do
+          chained = instance.else(operation)
+
+          expect(chained.call).to be true
+          expect(chained.result).to be == expected
+          expect(chained.errors).to be_empty
+          expect(chained.halted?).to be true
+        end # it
+      end # describe
+
+      describe 'with a failing operation instance' do
+        let(:operation) do
+          Spec::Operations::PushWithErrorOperation.new('failing else operation')
+        end # let
+
+        it { expect(instance.else(operation)).to be instance }
+
+        it 'should chain the operation' do
+          chained = instance.else(operation)
+
+          expect(chained.call).to be true
+          expect(chained.result).to be == expected
+          expect(chained.errors).to be_empty
+          expect(chained.halted?).to be true
+        end # it
+      end # describe
+
+      describe 'with a block' do
+        it 'should return the chain' do
+          chained = instance.else { |op| op.result << 'chained block' }
+
+          expect(chained).to be instance
+        end # it
+
+        it 'should chain the block' do
+          chained = instance.else { |op| op.result << 'chained block' }
+
+          expect(chained.call).to be true
+          expect(chained.result).to be == expected
+          expect(chained.errors).to be_empty
+          expect(chained.halted?).to be true
+        end # it
+      end # describe
+
+      describe 'with a block that returns a passing operation' do
+        let(:operation) do
+          Spec::Operations::PushOperation.new('operation in block')
+        end # let
+
+        it 'should return the chain' do
+          chained = instance.else { |op| operation.execute(op.result) }
+
+          expect(chained).to be instance
+        end # it
+
+        it 'should chain the block' do
+          chained = instance.else { |op| operation.execute(op.result) }
+
+          expect(chained.call).to be true
+          expect(chained.result).to be == expected
+          expect(chained.errors).to be_empty
+          expect(chained.halted?).to be true
+        end # it
+      end # describe
+
+      describe 'with a block that returns a failing operation' do
+        let(:operation) do
+          Spec::Operations::PushWithErrorOperation.new('failure in block')
+        end # let
+
+        it 'should return the chain' do
+          chained = instance.else { |op| operation.execute(op.result) }
+
+          expect(chained).to be instance
+        end # it
+
+        it 'should chain the block' do
+          chained = instance.else { |op| operation.execute(op.result) }
+
+          expect(chained.call).to be true
+          expect(chained.result).to be == expected
+          expect(chained.errors).to be_empty
+          expect(chained.halted?).to be true
+        end # it
+      end # describe
+    end # wrap_context
+
     wrap_context 'when the first operation is failing' do
       let(:expected) { ['operation with error'] }
 
@@ -347,6 +1878,102 @@ RSpec.describe Bronze::Operations::OperationChain do
           expect(chained.errors).to include expected_error
         end # it
       end # describe
+
+      wrap_context 'when the first operation is halted' do
+        describe 'with a passing operation instance' do
+          let(:operation) do
+            Spec::Operations::PushOperation.new('else operation')
+          end # let
+
+          it { expect(instance.else(operation)).to be instance }
+
+          it 'should chain the operation' do
+            chained = instance.else(operation)
+
+            expect(chained.call).to be false
+            expect(chained.result).to be == expected
+            expect(chained.errors).to include expected_error
+            expect(chained.halted?).to be true
+          end # it
+        end # describe
+
+        describe 'with a failing operation instance' do
+          let(:operation) do
+            Spec::Operations::PushWithErrorOperation.
+              new('failing else operation')
+          end # let
+
+          it { expect(instance.else(operation)).to be instance }
+
+          it 'should chain the operation' do
+            chained = instance.else(operation)
+
+            expect(chained.call).to be false
+            expect(chained.result).to be == expected
+            expect(chained.errors).to include expected_error
+            expect(chained.halted?).to be true
+          end # it
+        end # describe
+
+        describe 'with a block' do
+          it 'should return the chain' do
+            chained = instance.else { |op| op.result << 'chained block' }
+
+            expect(chained).to be instance
+          end # it
+
+          it 'should chain the block' do
+            chained = instance.else { |op| op.result << 'chained block' }
+
+            expect(chained.call).to be false
+            expect(chained.result).to be == expected
+            expect(chained.errors).to include expected_error
+            expect(chained.halted?).to be true
+          end # it
+        end # describe
+
+        describe 'with a block that returns a passing operation' do
+          let(:operation) do
+            Spec::Operations::PushOperation.new('operation in block')
+          end # let
+
+          it 'should return the chain' do
+            chained = instance.else { |op| operation.execute(op.result) }
+
+            expect(chained).to be instance
+          end # it
+
+          it 'should chain the block' do
+            chained = instance.else { |op| operation.execute(op.result) }
+
+            expect(chained.call).to be false
+            expect(chained.result).to be == expected
+            expect(chained.errors).to include expected_error
+            expect(chained.halted?).to be true
+          end # it
+        end # describe
+
+        describe 'with a block that returns a failing operation' do
+          let(:operation) do
+            Spec::Operations::PushWithErrorOperation.new('failure in block')
+          end # let
+
+          it 'should return the chain' do
+            chained = instance.else { |op| operation.execute(op.result) }
+
+            expect(chained).to be instance
+          end # it
+
+          it 'should chain the block' do
+            chained = instance.else { |op| operation.execute(op.result) }
+
+            expect(chained.call).to be false
+            expect(chained.result).to be == expected
+            expect(chained.errors).to include expected_error
+            expect(chained.halted?).to be true
+          end # it
+        end # describe
+      end # wrap_context
     end # wrap_context
 
     wrap_context 'when there is one chained operation' do
@@ -599,6 +2226,44 @@ RSpec.describe Bronze::Operations::OperationChain do
         end # it
       end # describe
     end # wrap_context
+
+    wrap_context 'when there is a halted operation chain' do
+      let(:expected) { super() << 'before halt' }
+
+      describe 'with a passing operation instance' do
+        let(:operation) do
+          Spec::Operations::PushOperation.new('chained operation')
+        end # let
+
+        it { expect(instance.else(operation)).to be instance }
+
+        it 'should not chain the operation' do
+          chained = instance.else(operation)
+
+          expect(chained.call).to be true
+          expect(chained.result).to be == expected
+          expect(chained.errors).to be_empty
+          expect(chained.halted?).to be true
+        end # it
+      end # describe
+
+      describe 'with a failing operation instance' do
+        let(:operation) do
+          Spec::Operations::PushWithErrorOperation.new('failing operation')
+        end # let
+
+        it { expect(instance.else(operation)).to be instance }
+
+        it 'should not chain the operation' do
+          chained = instance.else(operation)
+
+          expect(chained.call).to be true
+          expect(chained.result).to be == expected
+          expect(chained.errors).to be_empty
+          expect(chained.halted?).to be true
+        end # it
+      end # describe
+    end # wrap_context
   end # describe
 
   describe '#errors' do
@@ -641,6 +2306,12 @@ RSpec.describe Bronze::Operations::OperationChain do
     end # wrap_context
 
     wrap_context 'when there is a chain with a handled failure' do
+      it { expect(instance.errors).to be_empty }
+
+      it { expect(instance.execute.errors).to be_empty }
+    end # wrap_context
+
+    wrap_context 'when there is a halted operation chain' do
       it { expect(instance.errors).to be_empty }
 
       it { expect(instance.execute.errors).to be_empty }
@@ -701,6 +2372,66 @@ RSpec.describe Bronze::Operations::OperationChain do
       it { expect(instance.failure?).to be false }
 
       it { expect(instance.execute.failure?).to be false }
+    end # wrap_context
+
+    wrap_context 'when there is a halted operation chain' do
+      it { expect(instance.failure?).to be false }
+
+      it { expect(instance.execute.failure?).to be false }
+    end # wrap_context
+  end # describe
+
+  describe '#halted?' do
+    it { expect(instance.halted?).to be false }
+
+    it { expect(instance.execute.halted?).to be false }
+
+    wrap_context 'when the first operation is failing' do
+      it { expect(instance.halted?).to be false }
+
+      it { expect(instance.execute.halted?).to be false }
+    end # wrap_context
+
+    wrap_context 'when the first operation is halted' do
+      it { expect(instance.halted?).to be false }
+
+      it { expect(instance.execute.halted?).to be true }
+    end # wrap_context
+
+    wrap_context 'when there is one chained operation' do
+      it { expect(instance.halted?).to be false }
+
+      it { expect(instance.execute.halted?).to be false }
+    end # wrap_context
+
+    wrap_context 'when there is one chained block' do
+      it { expect(instance.halted?).to be false }
+
+      it { expect(instance.execute.halted?).to be false }
+    end # wrap_context
+
+    wrap_context 'when there is a chain of passing operations' do
+      it { expect(instance.halted?).to be false }
+
+      it { expect(instance.execute.halted?).to be false }
+    end # wrap_context
+
+    wrap_context 'when there is a chain with a failing operation' do
+      it { expect(instance.halted?).to be false }
+
+      it { expect(instance.execute.halted?).to be false }
+    end # wrap_context
+
+    wrap_context 'when there is a chain with a handled failure' do
+      it { expect(instance.halted?).to be false }
+
+      it { expect(instance.execute.halted?).to be false }
+    end # wrap_context
+
+    wrap_context 'when there is a halted operation chain' do
+      it { expect(instance.halted?).to be false }
+
+      it { expect(instance.execute.halted?).to be true }
     end # wrap_context
   end # describe
 
@@ -769,6 +2500,14 @@ RSpec.describe Bronze::Operations::OperationChain do
 
       it { expect(instance.execute.result).to be == expected }
     end # wrap_context
+
+    wrap_context 'when there is a halted operation chain' do
+      let(:expected) { super() << 'before halt' }
+
+      it { expect(instance.result).to be nil }
+
+      it { expect(instance.execute.result).to be == expected }
+    end # wrap_context
   end # describe
 
   describe '#success?' do
@@ -807,6 +2546,12 @@ RSpec.describe Bronze::Operations::OperationChain do
     end # wrap_context
 
     wrap_context 'when there is a chain with a handled failure' do
+      it { expect(instance.success?).to be false }
+
+      it { expect(instance.execute.success?).to be true }
+    end # wrap_context
+
+    wrap_context 'when there is a halted operation chain' do
       it { expect(instance.success?).to be false }
 
       it { expect(instance.execute.success?).to be true }
@@ -915,6 +2660,101 @@ RSpec.describe Bronze::Operations::OperationChain do
       end # it
     end # describe
 
+    wrap_context 'when the first operation is halted' do
+      describe 'with a passing operation instance' do
+        let(:operation) do
+          Spec::Operations::PushOperation.new('chained operation')
+        end # let
+
+        it { expect(instance.then(operation)).to be instance }
+
+        it 'should chain the operation' do
+          chained = instance.then(operation)
+
+          expect(chained.call).to be true
+          expect(chained.result).to be == expected
+          expect(chained.errors).to be_empty
+          expect(chained.halted?).to be true
+        end # it
+      end # describe
+
+      describe 'with a failing operation instance' do
+        let(:operation) do
+          Spec::Operations::PushWithErrorOperation.new('failing operation')
+        end # let
+
+        it { expect(instance.then(operation)).to be instance }
+
+        it 'should chain the operation' do
+          chained = instance.then(operation)
+
+          expect(chained.call).to be true
+          expect(chained.result).to be == expected
+          expect(chained.errors).to be_empty
+          expect(chained.halted?).to be true
+        end # it
+      end # describe
+
+      describe 'with a block' do
+        it 'should return the chain' do
+          chained = instance.then { |op| op.result << 'chained block' }
+
+          expect(chained).to be instance
+        end # it
+
+        it 'should chain the block' do
+          chained = instance.then { |op| op.result << 'chained block' }
+
+          expect(chained.call).to be true
+          expect(chained.result).to be == expected
+          expect(chained.errors).to be_empty
+          expect(chained.halted?).to be true
+        end # it
+      end # describe
+
+      describe 'with a block that returns a passing operation' do
+        let(:operation) do
+          Spec::Operations::PushOperation.new('operation in block')
+        end # let
+
+        it 'should return the chain' do
+          chained = instance.then { |op| operation.execute(op.result) }
+
+          expect(chained).to be instance
+        end # it
+
+        it 'should chain the block' do
+          chained = instance.then { |op| operation.execute(op.result) }
+
+          expect(chained.call).to be true
+          expect(chained.result).to be == expected
+          expect(chained.errors).to be_empty
+          expect(chained.halted?).to be true
+        end # it
+      end # describe
+
+      describe 'with a block that returns a failing operation' do
+        let(:operation) do
+          Spec::Operations::PushWithErrorOperation.new('failure in block')
+        end # let
+
+        it 'should return the chain' do
+          chained = instance.then { |op| operation.execute(op.result) }
+
+          expect(chained).to be instance
+        end # it
+
+        it 'should chain the block' do
+          chained = instance.then { |op| operation.execute(op.result) }
+
+          expect(chained.call).to be true
+          expect(chained.result).to be == expected
+          expect(chained.errors).to be_empty
+          expect(chained.halted?).to be true
+        end # it
+      end # describe
+    end # wrap_context
+
     wrap_context 'when the first operation is failing' do
       let(:expected) { ['operation with error'] }
 
@@ -1005,6 +2845,101 @@ RSpec.describe Bronze::Operations::OperationChain do
           expect(chained.errors).to include expected_error
         end # it
       end # describe
+
+      wrap_context 'when the first operation is halted' do
+        describe 'with a passing operation instance' do
+          let(:operation) do
+            Spec::Operations::PushOperation.new('chained operation')
+          end # let
+
+          it { expect(instance.then(operation)).to be instance }
+
+          it 'should not chain the operation' do
+            chained = instance.then(operation)
+
+            expect(chained.call).to be false
+            expect(chained.result).to be == expected
+            expect(chained.errors).to include expected_error
+            expect(chained.halted?).to be true
+          end # it
+        end # describe
+
+        describe 'with a failing operation instance' do
+          let(:operation) do
+            Spec::Operations::PushWithErrorOperation.new('failing operation')
+          end # let
+
+          it { expect(instance.then(operation)).to be instance }
+
+          it 'should not chain the operation' do
+            chained = instance.then(operation)
+
+            expect(chained.call).to be false
+            expect(chained.result).to be == expected
+            expect(chained.errors).to include expected_error
+            expect(chained.halted?).to be true
+          end # it
+        end # describe
+
+        describe 'with a block' do
+          it 'should return the chain' do
+            chained = instance.then { |op| op.result << 'chained block' }
+
+            expect(chained).to be instance
+          end # it
+
+          it 'should chain the block' do
+            chained = instance.then { |op| op.result << 'chained block' }
+
+            expect(chained.call).to be false
+            expect(chained.result).to be == expected
+            expect(chained.errors).to include expected_error
+            expect(chained.halted?).to be true
+          end # it
+        end # describe
+
+        describe 'with a block that returns a passing operation' do
+          let(:operation) do
+            Spec::Operations::PushOperation.new('operation in block')
+          end # let
+
+          it 'should return the chain' do
+            chained = instance.then { |op| operation.execute(op.result) }
+
+            expect(chained).to be instance
+          end # it
+
+          it 'should chain the block' do
+            chained = instance.then { |op| operation.execute(op.result) }
+
+            expect(chained.call).to be false
+            expect(chained.result).to be == expected
+            expect(chained.errors).to include expected_error
+            expect(chained.halted?).to be true
+          end # it
+        end # describe
+
+        describe 'with a block that returns a failing operation' do
+          let(:operation) do
+            Spec::Operations::PushWithErrorOperation.new('failure in block')
+          end # let
+
+          it 'should return the chain' do
+            chained = instance.then { |op| operation.execute(op.result) }
+
+            expect(chained).to be instance
+          end # it
+
+          it 'should chain the block' do
+            chained = instance.then { |op| operation.execute(op.result) }
+
+            expect(chained.call).to be false
+            expect(chained.result).to be == expected
+            expect(chained.errors).to include expected_error
+            expect(chained.halted?).to be true
+          end # it
+        end # describe
+      end # wrap_context
     end # wrap_context
 
     wrap_context 'when there is one chained operation' do
@@ -1204,7 +3139,7 @@ RSpec.describe Bronze::Operations::OperationChain do
         end # it
       end # describe
 
-      describe 'with a passing operation instance' do
+      describe 'with a failing operation instance' do
         let(:operation) do
           Spec::Operations::PushWithErrorOperation.new('failing operation')
         end # let
@@ -1264,6 +3199,44 @@ RSpec.describe Bronze::Operations::OperationChain do
           expect(chained.call).to be false
           expect(chained.result).to be == expected
           expect(chained.errors).to include expected_error
+        end # it
+      end # describe
+    end # wrap_context
+
+    wrap_context 'when there is a halted operation chain' do
+      let(:expected) { super() << 'before halt' }
+
+      describe 'with a passing operation instance' do
+        let(:operation) do
+          Spec::Operations::PushOperation.new('chained operation')
+        end # let
+
+        it { expect(instance.then(operation)).to be instance }
+
+        it 'should not chain the operation' do
+          chained = instance.then(operation)
+
+          expect(chained.call).to be true
+          expect(chained.result).to be == expected
+          expect(chained.errors).to be_empty
+          expect(chained.halted?).to be true
+        end # it
+      end # describe
+
+      describe 'with a failing operation instance' do
+        let(:operation) do
+          Spec::Operations::PushWithErrorOperation.new('failing operation')
+        end # let
+
+        it { expect(instance.then(operation)).to be instance }
+
+        it 'should not chain the operation' do
+          chained = instance.then(operation)
+
+          expect(chained.call).to be true
+          expect(chained.result).to be == expected
+          expect(chained.errors).to be_empty
+          expect(chained.halted?).to be true
         end # it
       end # describe
     end # wrap_context

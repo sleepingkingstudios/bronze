@@ -17,6 +17,26 @@ module Bronze::Operations
     #   of the #process method. If the operation was not run, returns nil.
     attr_reader :result
 
+    # Chains the given block or operation to the current operation, so that when
+    # the current operation is called (whether the operation succeeds or fails,
+    # even if the operation is halted), it will call the block or operation
+    # with the results of the current operation.
+    #
+    # @param operation [Operation] An operation instance to chain after the
+    #   current operation. The operation will be called with the value of
+    #   #result for the current operation.
+    #
+    # @yieldparam current_operation [Operation] The current operation is passed
+    #   to the block, allowing the block to grab the result (or any other
+    #   property) of the operation. If the block returns an operation instance,
+    #   that operation is passed on to the subsequent item in the chain (if
+    #   any); otherwise the current operation is passed on.
+    #
+    # @return [OperationChain] The chained operations.
+    def always operation = nil, &block
+      chain_operation.always(operation, &block)
+    end # method always
+
     # Executes the operation and returns true or false to indicate the success
     # of the operation call.
     #
@@ -36,6 +56,26 @@ module Bronze::Operations
     def called?
       !!@called
     end # method failure?
+
+    # Chains the given block or operation to the current operation, so that when
+    # the current operation is called (whether the operation succeeds or fails,
+    # but not if the operation is halted), it will call the block or operation
+    # with the results of the current operation.
+    #
+    # @param operation [Operation] An operation instance to chain after the
+    #   current operation. The operation will be called with the value of
+    #   #result for the current operation.
+    #
+    # @yieldparam current_operation [Operation] The current operation is passed
+    #   to the block, allowing the block to grab the result (or any other
+    #   property) of the operation. If the block returns an operation instance,
+    #   that operation is passed on to the subsequent item in the chain (if
+    #   any); otherwise the current operation is passed on.
+    #
+    # @return [OperationChain] The chained operations.
+    def chain operation = nil, &block
+      chain_operation.chain(operation, &block)
+    end # method chain
 
     # Chains the given block or operation to the current operation, so that when
     # the current operation is unsuccessfully called (i.e. #failure? responds
@@ -73,6 +113,7 @@ module Bronze::Operations
     #
     # @return [Operation] The operation.
     def execute *args
+      @halted = false
       @called = false
       @errors = Bronze::Errors.new
       @failure_message = nil
@@ -91,6 +132,21 @@ module Bronze::Operations
 
       !errors.empty? || !(failure_message.nil? || failure_message.empty?)
     end # method failure?
+
+    # Halts the operation, preventing any subsequent operations from running.
+    #
+    # @return [Operation] The operation.
+    def halt!
+      @halted = true
+
+      self
+    end # method halt!
+
+    # @return [Boolean] True if the operation has been halted, preventing any
+    #   chained operations from running.
+    def halted?
+      !!@halted
+    end # method halted?
 
     # @return [Boolean] True if the operation was run successfully, otherwise
     #   false.

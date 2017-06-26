@@ -67,6 +67,212 @@ RSpec.describe Bronze::Operations::Operation do
     it { expect(described_class).to be_constructible.with(0).arguments }
   end # describe
 
+  describe '#always' do
+    it 'should define the method' do
+      expect(instance).to respond_to(:always).with(0..1).arguments.and_a_block
+    end # it
+
+    it 'should return an operation chain' do
+      expect(instance.always {}).to be_a Bronze::Operations::OperationChain
+    end # it
+
+    wrap_context 'when the operation runs and generates errors' do
+      describe 'with a passing operation instance' do
+        let(:operation)      { build_operation }
+        let(:chained)        { instance.always(operation) }
+        let(:chained_result) { double('chained result') }
+
+        it 'should call the operation' do
+          expect(operation).
+            to receive(:process).with(result).and_return(chained_result)
+
+          expect(chained.call).to be true
+          expect(chained.result).to be chained_result
+          expect(chained.errors).to be_a Bronze::Errors
+          expect(chained.errors.empty?).to be true
+          expect(operation.called?).to be true
+        end # it
+      end # describe
+
+      describe 'with a failing operation instance' do
+        let(:operation)      { build_operation }
+        let(:chained)        { instance.always(operation) }
+        let(:chained_result) { double('chained result') }
+        let(:chained_error)  { 'errors.operations.chained_failure' }
+
+        it 'should call the operation' do
+          expect(operation).to receive(:process).with(result) do |param|
+            expect(param).to be result
+
+            operation.errors.add(chained_error)
+
+            chained_result
+          end # let
+
+          expect(chained.call).to be false
+          expect(chained.result).to be chained_result
+          expect(chained.errors).to be_a Bronze::Errors
+          expect(chained.errors).to include chained_error
+          expect(operation.called?).to be true
+        end # it
+      end # describe
+
+      describe 'with a block' do
+        it 'should call the block' do
+          yielded = false
+
+          chained = instance.always { |_| yielded = true }
+
+          expect(chained.call).to be false
+          expect(chained.result).to be result
+          expect(chained.errors).to be_a Bronze::Errors
+          expect(chained.errors.empty?).to be false
+          expect(yielded).to be true
+        end # it
+      end # describe
+
+      describe 'with a block returning a passing operation instance' do
+        let(:operation)      { build_operation }
+        let(:chained_result) { double('chained result') }
+
+        it 'should call the operation' do
+          expect(operation).
+            to receive(:process).with(result).and_return(chained_result)
+
+          chained = instance.always { |op| operation.execute(op.result) }
+
+          expect(chained.call).to be true
+          expect(chained.result).to be chained_result
+          expect(chained.errors).to be_a Bronze::Errors
+          expect(chained.errors.empty?).to be true
+          expect(operation.called?).to be true
+        end # it
+      end # describe
+
+      describe 'with a block returning a failing operation instance' do
+        let(:operation)      { build_operation }
+        let(:chained_result) { double('chained result') }
+        let(:chained_error)  { 'errors.operations.chained_failure' }
+
+        it 'should call the operation' do
+          expect(operation).to receive(:process).with(result) do |param|
+            expect(param).to be result
+
+            operation.errors.add(chained_error)
+
+            chained_result
+          end # let
+
+          chained = instance.always { |op| operation.execute(op.result) }
+
+          expect(chained.call).to be false
+          expect(chained.result).to be chained_result
+          expect(chained.errors).to be_a Bronze::Errors
+          expect(chained.errors).to include chained_error
+          expect(operation.called?).to be true
+        end # it
+      end # describe
+    end # wrap_context
+
+    wrap_context 'when the operation runs successfully' do
+      describe 'with a passing operation instance' do
+        let(:operation)      { build_operation }
+        let(:chained)        { instance.always(operation) }
+        let(:chained_result) { double('chained result') }
+
+        it 'should call the operation' do
+          expect(operation).
+            to receive(:process).with(result).and_return(chained_result)
+
+          expect(chained.call).to be true
+          expect(chained.result).to be chained_result
+          expect(chained.errors).to be_a Bronze::Errors
+          expect(chained.errors.empty?).to be true
+          expect(operation.called?).to be true
+        end # it
+      end # describe
+
+      describe 'with a failing operation instance' do
+        let(:operation)      { build_operation }
+        let(:chained)        { instance.always(operation) }
+        let(:chained_result) { double('chained result') }
+        let(:chained_error)  { 'errors.operations.chained_failure' }
+
+        it 'should call the operation' do
+          expect(operation).to receive(:process).with(result) do |param|
+            expect(param).to be result
+
+            operation.errors.add(chained_error)
+
+            chained_result
+          end # let
+
+          expect(chained.call).to be false
+          expect(chained.result).to be chained_result
+          expect(chained.errors).to be_a Bronze::Errors
+          expect(chained.errors).to include chained_error
+          expect(operation.called?).to be true
+        end # it
+      end # describe
+
+      describe 'with a block' do
+        it 'should call the block' do
+          yielded = false
+
+          chained = instance.always { |_| yielded = true }
+
+          expect(chained.call).to be true
+          expect(chained.result).to be result
+          expect(chained.errors).to be_a Bronze::Errors
+          expect(chained.errors.empty?).to be true
+          expect(yielded).to be true
+        end # it
+      end # describe
+
+      describe 'with a block returning a passing operation instance' do
+        let(:operation)      { build_operation }
+        let(:chained_result) { double('chained result') }
+
+        it 'should call the operation' do
+          expect(operation).
+            to receive(:process).with(result).and_return(chained_result)
+
+          chained = instance.always { |op| operation.execute(op.result) }
+
+          expect(chained.call).to be true
+          expect(chained.result).to be chained_result
+          expect(chained.errors).to be_a Bronze::Errors
+          expect(chained.errors.empty?).to be true
+          expect(operation.called?).to be true
+        end # it
+      end # describe
+
+      describe 'with a block returning a failing operation instance' do
+        let(:operation)      { build_operation }
+        let(:chained_result) { double('chained result') }
+        let(:chained_error)  { 'errors.operations.chained_failure' }
+
+        it 'should call the operation' do
+          expect(operation).to receive(:process).with(result) do |param|
+            expect(param).to be result
+
+            operation.errors.add(chained_error)
+
+            chained_result
+          end # let
+
+          chained = instance.always { |op| operation.execute(op.result) }
+
+          expect(chained.call).to be false
+          expect(chained.result).to be chained_result
+          expect(chained.errors).to be_a Bronze::Errors
+          expect(chained.errors).to include chained_error
+          expect(operation.called?).to be true
+        end # it
+      end # describe
+    end # wrap_context
+  end # describe
+
   describe '#call' do
     it { expect(instance).to respond_to(:call).with_unlimited_arguments }
 
@@ -126,6 +332,212 @@ RSpec.describe Bronze::Operations::Operation do
     end # wrap_context
   end # describe
 
+  describe '#chain' do
+    it 'should define the method' do
+      expect(instance).to respond_to(:chain).with(0..1).arguments.and_a_block
+    end # it
+
+    it 'should return an operation chain' do
+      expect(instance.chain {}).to be_a Bronze::Operations::OperationChain
+    end # it
+
+    wrap_context 'when the operation runs and generates errors' do
+      describe 'with a passing operation instance' do
+        let(:operation)      { build_operation }
+        let(:chained)        { instance.chain(operation) }
+        let(:chained_result) { double('chained result') }
+
+        it 'should call the operation' do
+          expect(operation).
+            to receive(:process).with(result).and_return(chained_result)
+
+          expect(chained.call).to be true
+          expect(chained.result).to be chained_result
+          expect(chained.errors).to be_a Bronze::Errors
+          expect(chained.errors.empty?).to be true
+          expect(operation.called?).to be true
+        end # it
+      end # describe
+
+      describe 'with a failing operation instance' do
+        let(:operation)      { build_operation }
+        let(:chained)        { instance.chain(operation) }
+        let(:chained_result) { double('chained result') }
+        let(:chained_error)  { 'errors.operations.chained_failure' }
+
+        it 'should call the operation' do
+          expect(operation).to receive(:process).with(result) do |param|
+            expect(param).to be result
+
+            operation.errors.add(chained_error)
+
+            chained_result
+          end # let
+
+          expect(chained.call).to be false
+          expect(chained.result).to be chained_result
+          expect(chained.errors).to be_a Bronze::Errors
+          expect(chained.errors).to include chained_error
+          expect(operation.called?).to be true
+        end # it
+      end # describe
+
+      describe 'with a block' do
+        it 'should call the block' do
+          yielded = false
+
+          chained = instance.chain { |_| yielded = true }
+
+          expect(chained.call).to be false
+          expect(chained.result).to be result
+          expect(chained.errors).to be_a Bronze::Errors
+          expect(chained.errors.empty?).to be false
+          expect(yielded).to be true
+        end # it
+      end # describe
+
+      describe 'with a block returning a passing operation instance' do
+        let(:operation)      { build_operation }
+        let(:chained_result) { double('chained result') }
+
+        it 'should call the operation' do
+          expect(operation).
+            to receive(:process).with(result).and_return(chained_result)
+
+          chained = instance.chain { |op| operation.execute(op.result) }
+
+          expect(chained.call).to be true
+          expect(chained.result).to be chained_result
+          expect(chained.errors).to be_a Bronze::Errors
+          expect(chained.errors.empty?).to be true
+          expect(operation.called?).to be true
+        end # it
+      end # describe
+
+      describe 'with a block returning a failing operation instance' do
+        let(:operation)      { build_operation }
+        let(:chained_result) { double('chained result') }
+        let(:chained_error)  { 'errors.operations.chained_failure' }
+
+        it 'should call the operation' do
+          expect(operation).to receive(:process).with(result) do |param|
+            expect(param).to be result
+
+            operation.errors.add(chained_error)
+
+            chained_result
+          end # let
+
+          chained = instance.chain { |op| operation.execute(op.result) }
+
+          expect(chained.call).to be false
+          expect(chained.result).to be chained_result
+          expect(chained.errors).to be_a Bronze::Errors
+          expect(chained.errors).to include chained_error
+          expect(operation.called?).to be true
+        end # it
+      end # describe
+    end # wrap_context
+
+    wrap_context 'when the operation runs successfully' do
+      describe 'with a passing operation instance' do
+        let(:operation)      { build_operation }
+        let(:chained)        { instance.chain(operation) }
+        let(:chained_result) { double('chained result') }
+
+        it 'should call the operation' do
+          expect(operation).
+            to receive(:process).with(result).and_return(chained_result)
+
+          expect(chained.call).to be true
+          expect(chained.result).to be chained_result
+          expect(chained.errors).to be_a Bronze::Errors
+          expect(chained.errors.empty?).to be true
+          expect(operation.called?).to be true
+        end # it
+      end # describe
+
+      describe 'with a failing operation instance' do
+        let(:operation)      { build_operation }
+        let(:chained)        { instance.chain(operation) }
+        let(:chained_result) { double('chained result') }
+        let(:chained_error)  { 'errors.operations.chained_failure' }
+
+        it 'should call the operation' do
+          expect(operation).to receive(:process).with(result) do |param|
+            expect(param).to be result
+
+            operation.errors.add(chained_error)
+
+            chained_result
+          end # let
+
+          expect(chained.call).to be false
+          expect(chained.result).to be chained_result
+          expect(chained.errors).to be_a Bronze::Errors
+          expect(chained.errors).to include chained_error
+          expect(operation.called?).to be true
+        end # it
+      end # describe
+
+      describe 'with a block' do
+        it 'should call the block' do
+          yielded = false
+
+          chained = instance.chain { |_| yielded = true }
+
+          expect(chained.call).to be true
+          expect(chained.result).to be result
+          expect(chained.errors).to be_a Bronze::Errors
+          expect(chained.errors.empty?).to be true
+          expect(yielded).to be true
+        end # it
+      end # describe
+
+      describe 'with a block returning a passing operation instance' do
+        let(:operation)      { build_operation }
+        let(:chained_result) { double('chained result') }
+
+        it 'should call the operation' do
+          expect(operation).
+            to receive(:process).with(result).and_return(chained_result)
+
+          chained = instance.chain { |op| operation.execute(op.result) }
+
+          expect(chained.call).to be true
+          expect(chained.result).to be chained_result
+          expect(chained.errors).to be_a Bronze::Errors
+          expect(chained.errors.empty?).to be true
+          expect(operation.called?).to be true
+        end # it
+      end # describe
+
+      describe 'with a block returning a failing operation instance' do
+        let(:operation)      { build_operation }
+        let(:chained_result) { double('chained result') }
+        let(:chained_error)  { 'errors.operations.chained_failure' }
+
+        it 'should call the operation' do
+          expect(operation).to receive(:process).with(result) do |param|
+            expect(param).to be result
+
+            operation.errors.add(chained_error)
+
+            chained_result
+          end # let
+
+          chained = instance.chain { |op| operation.execute(op.result) }
+
+          expect(chained.call).to be false
+          expect(chained.result).to be chained_result
+          expect(chained.errors).to be_a Bronze::Errors
+          expect(chained.errors).to include chained_error
+          expect(operation.called?).to be true
+        end # it
+      end # describe
+    end # wrap_context
+  end # describe
+
   describe '#else' do
     it 'should define the method' do
       expect(instance).to respond_to(:else).with(0..1).arguments.and_a_block
@@ -137,7 +549,7 @@ RSpec.describe Bronze::Operations::Operation do
         let(:chained)        { instance.else(operation) }
         let(:chained_result) { double('chained result') }
 
-        it 'should not call the operation' do
+        it 'should call the operation' do
           expect(operation).
             to receive(:process).with(result).and_return(chained_result)
 
@@ -246,7 +658,7 @@ RSpec.describe Bronze::Operations::Operation do
       end # describe
 
       describe 'with a block' do
-        it 'should call the block' do
+        it 'should not call the block' do
           yielded = false
 
           chained = instance.else { |_| yielded = true }
@@ -349,6 +761,20 @@ RSpec.describe Bronze::Operations::Operation do
     end # wrap_context
   end # describe
 
+  describe '#halt!' do
+    it { expect(instance).to respond_to(:halt!).with(0).arguments }
+
+    it { expect(instance.halt!).to be instance }
+
+    it 'should flag the operation as halted' do
+      expect { instance.halt! }.to change(instance, :halted?).to be true
+    end # it
+  end # describe
+
+  describe '#halted?' do
+    include_examples 'should have predicate', :halted?, false
+  end # describe
+
   describe '#result' do
     include_examples 'should have reader', :result, nil
 
@@ -407,7 +833,7 @@ RSpec.describe Bronze::Operations::Operation do
       end # describe
 
       describe 'with a block' do
-        it 'should call the block' do
+        it 'should not call the block' do
           yielded = false
 
           chained = instance.then { |_| yielded = true }
@@ -427,7 +853,7 @@ RSpec.describe Bronze::Operations::Operation do
         let(:chained)        { instance.then(operation) }
         let(:chained_result) { double('chained result') }
 
-        it 'should not call the operation' do
+        it 'should call the operation' do
           expect(operation).
             to receive(:process).with(result).and_return(chained_result)
 
