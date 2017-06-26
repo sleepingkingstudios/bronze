@@ -6,7 +6,7 @@ require 'bronze/operations/operation'
 RSpec.describe Bronze::Operations::Operation do
   shared_context 'when the operation runs successfully' do
     before(:example) do
-      allow(instance).to receive(:process)
+      allow(instance).to receive(:process).and_return(result)
     end # before example
   end # shared_context
 
@@ -34,22 +34,28 @@ RSpec.describe Bronze::Operations::Operation do
 
           proxy.add error[:type], error[:params]
         end # each
+
+        result
       end # allow
     end # before example
   end # shared_context
 
   shared_context 'when the operation runs and sets a failure message' do
     let(:expected_message) { 'We require more vespene gas.' }
+
     before(:example) do
       message = expected_message
 
       allow(instance).to receive(:process) do
         instance.send :failure_message=, message
+
+        result
       end # allow
     end # before example
   end # shared_context
 
   let(:instance) { described_class.new }
+  let(:result)   { double('result') }
 
   describe '::new' do
     it { expect(described_class).to be_constructible.with(0).arguments }
@@ -377,6 +383,22 @@ RSpec.describe Bronze::Operations::Operation do
 
         expect(instance.failure_message).to be == expected_message
       end # it
+    end # wrap_context
+  end # describe
+
+  describe '#result' do
+    include_examples 'should have reader', :result, nil
+
+    wrap_context 'when the operation runs and generates errors' do
+      it { expect(instance.execute.result).to be result }
+    end # wrap_context
+
+    wrap_context 'when the operation runs and sets a failure message' do
+      it { expect(instance.execute.result).to be result }
+    end # wrap_context
+
+    wrap_context 'when the operation runs successfully' do
+      it { expect(instance.execute.result).to be result }
     end # wrap_context
   end # describe
 

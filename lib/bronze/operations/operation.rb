@@ -13,6 +13,10 @@ module Bronze::Operations
 
     attr_reader :failure_message
 
+    # @return [Object] The result of the operation, typically the return value
+    #   of the #process method. If the operation was not run, returns nil.
+    attr_reader :result
+
     # Executes the operation and returns true or false to indicate the success
     # of the operation call.
     #
@@ -74,7 +78,7 @@ module Bronze::Operations
       @errors = Bronze::Errors.new
       @failure_message = nil
 
-      process(*args)
+      @result = process(*args)
 
       @called = true
 

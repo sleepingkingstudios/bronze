@@ -46,6 +46,12 @@ RSpec.describe Bronze::Operations::NullOperation do
     it { expect(instance.execute.failure_message).to be nil }
   end # describe
 
+  describe '#result' do
+    it { expect(instance.result).to be nil }
+
+    it { expect(instance.execute.result).to be nil }
+  end # describe
+
   describe '#success' do
     it { expect(instance.success?).to be false }
 
