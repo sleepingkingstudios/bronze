@@ -37,25 +37,24 @@ module Bronze::Operations
       !!@called
     end # method failure?
 
-    # If the operation was run but encountered an error, yields the operation to
-    # the block and returns either the result (if the result is an operation) or
-    # the operation. Otherwise, returns the operation.
+    # Chains the given block or operation to the current operation, so that when
+    # the current operation is unsuccessfully called (i.e. #failure? responds
+    # true, typically meaning that there are one or more errors), it will call
+    # the block or operation with the results of the current operation.
     #
-    # @param expected_message [String] The expected failure message. If a
-    #   message is given, only failures wth the specified message will call the
-    #   block.
+    # @param operation [Operation] An operation instance to chain after the
+    #   current operation. The operation will be called with the value of
+    #   #result for the current operation.
     #
-    # @yieldparam operation [Operation] The current operation.
+    # @yieldparam current_operation [Operation] The current operation is passed
+    #   to the block, allowing the block to grab the result (or any other
+    #   property) of the operation. If the block returns an operation instance,
+    #   that operation is passed on to the subsequent item in the chain (if
+    #   any); otherwise the current operation is passed on.
     #
-    # @return [Operation] The result of the block, or the current operation.
-    def else expected_message = nil, &block
-      return self unless failure?
-
-      return self if expected_message && expected_message != failure_message
-
-      op = block.call(self)
-
-      op.is_a?(Operation) ? op : self
+    # @return [OperationChain] The chained operations.
+    def else operation = nil, &block
+      chain_operation.else(operation, &block)
     end # method else
 
     # Returns the errors from the operation.
@@ -101,24 +100,33 @@ module Bronze::Operations
       errors.empty? && (failure_message.nil? || failure_message.empty?)
     end # method success?
 
-    # If the operation was run successfully, yields the operation to the block
-    # and returns either the result (if the result is an operation) or the
-    # operation. Otherwise, returns the operation.
+    # Chains the given block or operation to the current operation, so that when
+    # the current operation is successfully called (i.e. #success? responds
+    # true, typically meaning that there are no errors), it will call the block
+    # or operation with the results of the current operation.
     #
-    # @yieldparam operation [Operation] The current operation.
+    # @param operation [Operation] An operation instance to chain after the
+    #   current operation. The operation will be called with the value of
+    #   #result for the current operation.
     #
-    # @return [Operation] The result of the block, or the current operation.
-    def then &block
-      return self unless success?
-
-      op = block.call(self)
-
-      op.is_a?(Operation) ? op : self
+    # @yieldparam current_operation [Operation] The current operation is passed
+    #   to the block, allowing the block to grab the result (or any other
+    #   property) of the operation. If the block returns an operation instance,
+    #   that operation is passed on to the subsequent item in the chain (if
+    #   any); otherwise the current operation is passed on.
+    #
+    # @return [OperationChain] The chained operations.
+    def then operation = nil, &block
+      chain_operation.then(operation, &block)
     end # method then
 
     protected
 
     attr_writer :failure_message
+
+    def chain_operation
+      OperationChain.new(self)
+    end # method chain_operation
 
     def process *_args
       raise NotImplementedError,
