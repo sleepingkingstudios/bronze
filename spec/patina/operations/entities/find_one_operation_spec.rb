@@ -50,13 +50,6 @@ RSpec.describe Patina::Operations::Entities::FindOneOperation do
         expect(instance.resource).to be nil
       end # it
 
-      it 'should set the failure message' do
-        instance.call nil
-
-        expect(instance.failure_message).
-          to be == described_class::RECORD_NOT_FOUND
-      end # it
-
       it 'should append the error' do
         instance.call nil
 
@@ -81,13 +74,6 @@ RSpec.describe Patina::Operations::Entities::FindOneOperation do
         instance.call primary_key
 
         expect(instance.resource).to be nil
-      end # it
-
-      it 'should set the failure message' do
-        instance.call primary_key
-
-        expect(instance.failure_message).
-          to be == described_class::RECORD_NOT_FOUND
       end # it
 
       it 'should append the error' do
@@ -116,13 +102,6 @@ RSpec.describe Patina::Operations::Entities::FindOneOperation do
           expect(instance.resource).to be nil
         end # it
 
-        it 'should set the failure message' do
-          instance.call nil
-
-          expect(instance.failure_message).
-            to be == described_class::RECORD_NOT_FOUND
-        end # it
-
         it 'should append the error' do
           instance.call nil
 
@@ -149,13 +128,6 @@ RSpec.describe Patina::Operations::Entities::FindOneOperation do
           expect(instance.resource).to be nil
         end # it
 
-        it 'should set the failure message' do
-          instance.call primary_key
-
-          expect(instance.failure_message).
-            to be == described_class::RECORD_NOT_FOUND
-        end # it
-
         it 'should append the error' do
           instance.call primary_key
 
@@ -175,12 +147,6 @@ RSpec.describe Patina::Operations::Entities::FindOneOperation do
           expect(instance.resource).to be == resource
           expect(instance.resource.attributes_changed?).to be false
           expect(instance.resource.persisted?).to be true
-        end # it
-
-        it 'should clear the failure message' do
-          instance.call primary_key
-
-          expect(instance.failure_message).to be nil
         end # it
 
         it 'should append the error' do

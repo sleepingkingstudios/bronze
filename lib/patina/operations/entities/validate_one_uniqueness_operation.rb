@@ -27,8 +27,6 @@ module Patina::Operations::Entities
       return if result
 
       @errors[resource_name].update(errors)
-
-      @failure_message = RECORD_NOT_UNIQUE
     end # method process
   end # module
 end # module

@@ -11,8 +11,6 @@ module Bronze::Operations
     # Operation must implement these methods.
     class NotImplementedError < StandardError; end
 
-    attr_reader :failure_message
-
     # @return [Object] The result of the operation, typically the return value
     #   of the #process method. If the operation was not run, returns nil.
     attr_reader :result
@@ -116,7 +114,6 @@ module Bronze::Operations
       @halted = false
       @called = false
       @errors = Bronze::Errors.new
-      @failure_message = nil
 
       @result = process(*args)
 
@@ -130,7 +127,7 @@ module Bronze::Operations
     def failure?
       return false unless called?
 
-      !errors.empty? || !(failure_message.nil? || failure_message.empty?)
+      !errors.empty?
     end # method failure?
 
     # Halts the operation, preventing any subsequent operations from running.
@@ -153,7 +150,7 @@ module Bronze::Operations
     def success?
       return false unless called?
 
-      errors.empty? && (failure_message.nil? || failure_message.empty?)
+      errors.empty?
     end # method success?
 
     # Chains the given block or operation to the current operation, so that when
@@ -177,8 +174,6 @@ module Bronze::Operations
     end # method then
 
     protected
-
-    attr_writer :failure_message
 
     def chain_operation
       OperationChain.new(self)

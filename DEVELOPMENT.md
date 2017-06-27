@@ -1,49 +1,8 @@
 # Development
 
 - Revisit Operations:
-  - #result method: |
-
-    Convention for the "return value" of an operation.
-
-    Defaults to the return of the #process method.
-
-  - #halt!, #halted? methods: |
-
-    Do not run any further chained operations/blocks.
-
-  - Implicit vs explicit chains:
-
-    Explicit chain: |
-
-      FirstOperation.
-        new.
-        call(param).
-        then do |first|
-          SecondOperation.new.call(first.result)
-        end.
-        then do |second|
-          ThirdOperation.new.call(second.result)
-        end
-      # Returns ThirdOperation instance called with second.result.
-
-    Implicit chain: |
-
-      FirstOperation.
-        new.
-        call(param).
-        then(SecondOperation.new).
-        then(ThirdOperation.new)
-      # Returns ThirdOperation instance called with second.result.
-
-  - OperationChain class?
-
-  - Operation pre-chaining: |
-
-    MyOperation.
-      then {}.
-      then {}.
-      else {}.
-      call(an_object)
+  - Remove #failure_message.
+  - Documentation pass (README, OperationChain)
 
 - Revisit Entity<->Operation interactions:
 

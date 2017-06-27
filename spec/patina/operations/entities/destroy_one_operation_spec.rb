@@ -57,12 +57,6 @@ RSpec.describe Patina::Operations::Entities::DestroyOneOperation do
         expect(instance.resource).to be resource
       end # it
 
-      it 'should set the failure message' do
-        instance.call resource
-
-        expect(instance.failure_message).to be described_class::RECORD_NOT_FOUND
-      end # it
-
       it 'should set the errors' do
         instance.call resource
 
@@ -83,12 +77,6 @@ RSpec.describe Patina::Operations::Entities::DestroyOneOperation do
         instance.call resource
 
         expect(instance.resource).to be resource
-      end # it
-
-      it 'should clear the failure message' do
-        instance.call resource
-
-        expect(instance.failure_message).to be nil
       end # it
 
       it 'should clear the errors' do

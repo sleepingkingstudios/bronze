@@ -40,20 +40,6 @@ RSpec.describe Bronze::Operations::Operation do
     end # before example
   end # shared_context
 
-  shared_context 'when the operation runs and sets a failure message' do
-    let(:expected_message) { 'We require more vespene gas.' }
-
-    before(:example) do
-      message = expected_message
-
-      allow(instance).to receive(:process) do
-        instance.send :failure_message=, message
-
-        result
-      end # allow
-    end # before example
-  end # shared_context
-
   let(:instance) { described_class.new }
   let(:result)   { double('result') }
 
@@ -298,14 +284,6 @@ RSpec.describe Bronze::Operations::Operation do
       end # it
     end # wrap_context
 
-    wrap_context 'when the operation runs and sets a failure message' do
-      it 'should return false' do
-        expect(instance.call).to be false
-
-        expect(instance.failure_message).to be == expected_message
-      end # it
-    end # wrap_context
-
     wrap_context 'when the operation runs successfully' do
       it 'should return true' do
         expect(instance.call).to be true
@@ -320,10 +298,6 @@ RSpec.describe Bronze::Operations::Operation do
     include_examples 'should have predicate', :called, false
 
     wrap_context 'when the operation runs and generates errors' do
-      it { expect(instance.execute.called?).to be true }
-    end # wrap_context
-
-    wrap_context 'when the operation runs and sets a failure message' do
       it { expect(instance.execute.called?).to be true }
     end # wrap_context
 
@@ -740,24 +714,8 @@ RSpec.describe Bronze::Operations::Operation do
       it { expect(instance.execute.failure?).to be true }
     end # wrap_context
 
-    wrap_context 'when the operation runs and sets a failure message' do
-      it { expect(instance.execute.failure?).to be true }
-    end # wrap_context
-
     wrap_context 'when the operation runs successfully' do
       it { expect(instance.execute.failure?).to be false }
-    end # wrap_context
-  end # describe
-
-  describe '#failure_message' do
-    include_examples 'should have reader', :failure_message, nil
-
-    wrap_context 'when the operation runs and sets a failure message' do
-      it 'should return the failure message' do
-        instance.call
-
-        expect(instance.failure_message).to be == expected_message
-      end # it
     end # wrap_context
   end # describe
 
@@ -782,10 +740,6 @@ RSpec.describe Bronze::Operations::Operation do
       it { expect(instance.execute.result).to be result }
     end # wrap_context
 
-    wrap_context 'when the operation runs and sets a failure message' do
-      it { expect(instance.execute.result).to be result }
-    end # wrap_context
-
     wrap_context 'when the operation runs successfully' do
       it { expect(instance.execute.result).to be result }
     end # wrap_context
@@ -795,10 +749,6 @@ RSpec.describe Bronze::Operations::Operation do
     include_examples 'should have predicate', :success, false
 
     wrap_context 'when the operation runs and generates errors' do
-      it { expect(instance.execute.success?).to be false }
-    end # wrap_context
-
-    wrap_context 'when the operation runs and sets a failure message' do
       it { expect(instance.execute.success?).to be false }
     end # wrap_context
 

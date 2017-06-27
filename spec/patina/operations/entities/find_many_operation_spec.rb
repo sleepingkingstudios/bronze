@@ -48,12 +48,6 @@ RSpec.describe Patina::Operations::Entities::FindManyOperation do
         end # each
       end # it
 
-      it 'should clear the failure message' do
-        instance.call primary_keys
-
-        expect(instance.failure_message).to be nil
-      end # it
-
       it 'should clear the errors' do
         instance.call primary_keys
 
@@ -77,13 +71,6 @@ RSpec.describe Patina::Operations::Entities::FindManyOperation do
           expect(resource.attributes_changed?).to be false
           expect(resource.persisted?).to be true
         end # each
-      end # it
-
-      it 'should set the failure message' do
-        instance.call primary_keys
-
-        expect(instance.failure_message).
-          to be described_class::RECORD_NOT_FOUND
       end # it
 
       it 'should append the errors' do

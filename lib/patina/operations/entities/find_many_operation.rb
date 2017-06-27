@@ -37,8 +37,6 @@ module Patina::Operations::Entities
 
       return if primary_keys.count == @resources.count
 
-      @failure_message = RECORD_NOT_FOUND
-
       missing_primary_keys = primary_keys - @resources.map(&:id)
 
       append_errors(missing_primary_keys)
