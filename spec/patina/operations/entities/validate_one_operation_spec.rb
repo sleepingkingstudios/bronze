@@ -46,12 +46,6 @@ RSpec.describe Patina::Operations::Entities::ValidateOneOperation do
         expect(instance.resource).to be resource
       end # it
 
-      it 'should set the failure message' do
-        instance.call resource, :contract => contract
-
-        expect(instance.failure_message).to be described_class::INVALID_RESOURCE
-      end # it
-
       it 'should set the errors' do
         instance.call resource, :contract => contract
 
@@ -66,12 +60,6 @@ RSpec.describe Patina::Operations::Entities::ValidateOneOperation do
         instance.call resource, :contract => contract
 
         expect(instance.resource).to be resource
-      end # it
-
-      it 'should clear the failure message' do
-        instance.call resource, :contract => contract
-
-        expect(instance.failure_message).to be nil
       end # it
 
       it 'should clear the errors' do

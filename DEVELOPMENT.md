@@ -1,50 +1,5 @@
 # Development
 
-- Revisit Operations:
-  - #result method: |
-
-    Convention for the "return value" of an operation.
-
-    Defaults to the return of the #process method.
-
-  - #halt!, #halted? methods: |
-
-    Do not run any further chained operations/blocks.
-
-  - Implicit vs explicit chains:
-
-    Explicit chain: |
-
-      FirstOperation.
-        new.
-        call(param).
-        then do |first|
-          SecondOperation.new.call(first.result)
-        end.
-        then do |second|
-          ThirdOperation.new.call(second.result)
-        end
-      # Returns ThirdOperation instance called with second.result.
-
-    Implicit chain: |
-
-      FirstOperation.
-        new.
-        call(param).
-        then(SecondOperation.new).
-        then(ThirdOperation.new)
-      # Returns ThirdOperation instance called with second.result.
-
-  - OperationChain class?
-
-  - Operation pre-chaining: |
-
-    MyOperation.
-      then {}.
-      then {}.
-      else {}.
-      call(an_object)
-
 - Revisit Entity<->Operation interactions:
 
   Two "types" of EntityOperation:
@@ -214,15 +169,6 @@
       - 5 32-bit chars (SHA-1?)
     - can be slug (see dependent_attribute)
 - Errors#first
-- Operation
-  - lazy operations:
-
-    Operation.
-      then.
-      then.
-      call()
-  - #always - always called, even if halted.
-  - #halt!, #halted? - prevent further #then, #else callbacks.
 - Query
   - #all returns with JSON envelope for advanced features?
   - #matching with non-equality predicates
@@ -283,6 +229,8 @@
 ## Optimization
 
 - benchmarks!!!
+  - performance
+  - memory usage
 - reduce object allocation
   - stateless constraints? e.g. instead of TypeConstaint.new(klass).match(obj), TypeConstaint.match(obj, klass)
   - or ::instance

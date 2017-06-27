@@ -32,12 +32,6 @@ RSpec.describe Patina::Operations::Entities::BuildOneOperation do
         expect(received).to be == expected
       end # it
 
-      it 'should clear the failure message' do
-        instance.call attributes
-
-        expect(instance.failure_message).to be nil
-      end # it
-
       it 'should clear the errors' do
         instance.call attributes
 

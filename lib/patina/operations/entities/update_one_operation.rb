@@ -24,8 +24,6 @@ module Patina::Operations::Entities
 
       return if result
 
-      @failure_message = RECORD_NOT_FOUND
-
       error_definitions = Bronze::Collections::Collection::Errors
 
       @errors[resource_name].add(

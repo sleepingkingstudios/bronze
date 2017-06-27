@@ -44,9 +44,7 @@ module Patina::Operations::Entities
 
       return if result
 
-      @failure_message = INVALID_RESOURCE
-      @errors          = Bronze::Errors.new
-
+      @errors   = Bronze::Errors.new
       error_key = as || resource_name
 
       @errors[error_key] = errors

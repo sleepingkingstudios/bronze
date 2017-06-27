@@ -40,10 +40,20 @@ RSpec.describe Bronze::Operations::NullOperation do
     it { expect(instance.execute.failure?).to be false }
   end # describe
 
-  describe '#failure_message' do
-    it { expect(instance.failure_message).to be nil }
+  describe '#halt!' do
+    it { expect(instance.halt!).to be instance }
 
-    it { expect(instance.execute.failure_message).to be nil }
+    it { expect { instance.halt! }.to change(instance, :halted?).to be true }
+  end # describe
+
+  describe '#halted?' do
+    it { expect(instance.halted?).to be false }
+  end # describe
+
+  describe '#result' do
+    it { expect(instance.result).to be nil }
+
+    it { expect(instance.execute.result).to be nil }
   end # describe
 
   describe '#success' do

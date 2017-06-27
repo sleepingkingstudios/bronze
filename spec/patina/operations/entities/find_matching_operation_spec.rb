@@ -38,12 +38,6 @@ RSpec.describe Patina::Operations::Entities::FindMatchingOperation do
         end # each
       end # it
 
-      it 'should clear the failure message' do
-        instance.call params
-
-        expect(instance.failure_message).to be nil
-      end # it
-
       it 'should append the error' do
         instance.call params
 
