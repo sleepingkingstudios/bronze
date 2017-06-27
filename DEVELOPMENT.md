@@ -1,9 +1,5 @@
 # Development
 
-- Revisit Operations:
-  - Remove #failure_message.
-  - Documentation pass (README, OperationChain)
-
 - Revisit Entity<->Operation interactions:
 
   Two "types" of EntityOperation:
@@ -173,15 +169,6 @@
       - 5 32-bit chars (SHA-1?)
     - can be slug (see dependent_attribute)
 - Errors#first
-- Operation
-  - lazy operations:
-
-    Operation.
-      then.
-      then.
-      call()
-  - #always - always called, even if halted.
-  - #halt!, #halted? - prevent further #then, #else callbacks.
 - Query
   - #all returns with JSON envelope for advanced features?
   - #matching with non-equality predicates
@@ -242,6 +229,8 @@
 ## Optimization
 
 - benchmarks!!!
+  - performance
+  - memory usage
 - reduce object allocation
   - stateless constraints? e.g. instead of TypeConstaint.new(klass).match(obj), TypeConstaint.match(obj, klass)
   - or ::instance

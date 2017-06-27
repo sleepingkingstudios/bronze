@@ -6,6 +6,84 @@ require 'bronze/operations'
 module Bronze::Operations
   # Operations encapsulate a process or procedure of business logic with a
   # consistent architecture and interface.
+  #
+  # @example Defining a basic operation.
+  #   class IncrementOperation < Operation
+  #     def process int
+  #       int + 1
+  #     end # method process
+  #   end # class
+  #
+  #   operation = IncrementOperation.new
+  #   operation.call(1)
+  #   #=> true
+  #   operation.result
+  #   #=> 2
+  #
+  # @example Defining an operation with parameters.
+  #   class AddOperation < Operation
+  #     def initialize addend
+  #       @addend = addend
+  #     end # constructor
+  #
+  #     def process int
+  #       int + @addend
+  #     end # method process
+  #   end # class
+  #
+  #   operation = AddOperation.new(2)
+  #   operation.execute(2)
+  #   #=> operation
+  #   operation.success?
+  #   #=> true
+  #   operation.result
+  #   #=> 4
+  #
+  #   operation.execute(4).result
+  #   #=> 6
+  #
+  # @example Operation success and failure.
+  #   class IsEvenOperation < Operation
+  #     def process int
+  #       return true if int.even?
+  #
+  #       @errors.add 'errors.operations.is_not_even'
+  #
+  #       false
+  #     end # method process
+  #   end # class
+  #
+  #   operation = IsEvenOperation.new
+  #   operation.called?
+  #   #=> false
+  #   operation.success?
+  #   #=> false
+  #   operation.failure?
+  #   #=> false
+  #   operation.errors.empty?
+  #   #=> true
+  #
+  #   operation.call(2)
+  #   #=> true
+  #   operation.called?
+  #   #=> true
+  #   operation.success?
+  #   #=> true
+  #   operation.failure?
+  #   #=> false
+  #   operation.errors.empty?
+  #   #=> true
+  #
+  #   operation.call(3)
+  #   #=> false
+  #   operation.called?
+  #   #=> true
+  #   operation.success?
+  #   #=> false
+  #   operation.failure?
+  #   #=> true
+  #   operation.errors.empty?
+  #   #=> false
   class Operation
     # Error class for handling unimplemented operation methods. Subclasses of
     # Operation must implement these methods.
@@ -15,31 +93,31 @@ module Bronze::Operations
     #   of the #process method. If the operation was not run, returns nil.
     attr_reader :result
 
-    # Chains the given block or operation to the current operation, so that when
-    # the current operation is called (whether the operation succeeds or fails,
-    # even if the operation is halted), it will call the block or operation
-    # with the results of the current operation.
+    # Chains the given block or operation to the current operation. A block or
+    # operation added with #always will always be called after the current
+    # operation, even if it failed or is halted.
     #
-    # @param operation [Operation] An operation instance to chain after the
-    #   current operation. The operation will be called with the value of
-    #   #result for the current operation.
+    # @overload always(operation)
+    #   @param operation [Operation] An operation instance to chain after the
+    #     current operation. The operation will be called with the value of
+    #     #result for the current operation.
     #
-    # @yieldparam current_operation [Operation] The current operation is passed
-    #   to the block, allowing the block to grab the result (or any other
-    #   property) of the operation. If the block returns an operation instance,
-    #   that operation is passed on to the subsequent item in the chain (if
-    #   any); otherwise the current operation is passed on.
+    # @overload always(&block)
+    #   @yieldparam current_operation [Operation] The current operation. If the
+    #     block returns an operation instance, that operation will be passed on
+    #     to subsequent operations in the chain; otherwise, the previous
+    #     operation will be passed instead.
     #
     # @return [OperationChain] The chained operations.
     def always operation = nil, &block
       chain_operation.always(operation, &block)
     end # method always
 
-    # Executes the operation and returns true or false to indicate the success
-    # of the operation call.
+    # Wraps the #execute method of the operation and returns true or false to
+    # indicate the success of the operation call.
     #
     # @param args [Array] The arguments to the operation. These will be passed
-    #   on to #process.
+    #   on to #execute.
     #
     # @return [Boolean] True if the operation was called successfully, otherwise
     #   false.
@@ -55,40 +133,41 @@ module Bronze::Operations
       !!@called
     end # method failure?
 
-    # Chains the given block or operation to the current operation, so that when
-    # the current operation is called (whether the operation succeeds or fails,
-    # but not if the operation is halted), it will call the block or operation
-    # with the results of the current operation.
+    # Chains the given block or operation to the current operation. A block or
+    # operation added with #chain will be called after the current operation
+    # whether it succeeded or failed, but not if the current operation was
+    # halted.
     #
-    # @param operation [Operation] An operation instance to chain after the
-    #   current operation. The operation will be called with the value of
-    #   #result for the current operation.
+    # @overload chain(operation)
+    #   @param operation [Operation] An operation instance to chain after the
+    #     current operation. The operation will be called with the value of
+    #     #result for the current operation.
     #
-    # @yieldparam current_operation [Operation] The current operation is passed
-    #   to the block, allowing the block to grab the result (or any other
-    #   property) of the operation. If the block returns an operation instance,
-    #   that operation is passed on to the subsequent item in the chain (if
-    #   any); otherwise the current operation is passed on.
+    # @overload chain(&block)
+    #   @yieldparam current_operation [Operation] The current operation. If the
+    #     block returns an operation instance, that operation will be passed on
+    #     to subsequent operations in the chain; otherwise, the previous
+    #     operation will be passed instead.
     #
     # @return [OperationChain] The chained operations.
     def chain operation = nil, &block
       chain_operation.chain(operation, &block)
     end # method chain
 
-    # Chains the given block or operation to the current operation, so that when
-    # the current operation is unsuccessfully called (i.e. #failure? responds
-    # true, typically meaning that there are one or more errors), it will call
-    # the block or operation with the results of the current operation.
+    # Chains the given block or operation to the current operation. A block or
+    # operation added with #else will be only be called if the current operation
+    # failed and was not halted.
     #
-    # @param operation [Operation] An operation instance to chain after the
-    #   current operation. The operation will be called with the value of
-    #   #result for the current operation.
+    # @overload chain(operation)
+    #   @param operation [Operation] An operation instance to chain after the
+    #     current operation. The operation will be called with the value of
+    #     #result for the current operation.
     #
-    # @yieldparam current_operation [Operation] The current operation is passed
-    #   to the block, allowing the block to grab the result (or any other
-    #   property) of the operation. If the block returns an operation instance,
-    #   that operation is passed on to the subsequent item in the chain (if
-    #   any); otherwise the current operation is passed on.
+    # @overload chain(&block)
+    #   @yieldparam current_operation [Operation] The current operation. If the
+    #     block returns an operation instance, that operation will be passed on
+    #     to subsequent operations in the chain; otherwise, the previous
+    #     operation will be passed instead.
     #
     # @return [OperationChain] The chained operations.
     def else operation = nil, &block
@@ -104,10 +183,13 @@ module Bronze::Operations
 
     # Wraps the operation implementation with boilerplate for tracking the
     # status of the operation. The business logic of the operation is handled
-    # by #process, which each subclass must implement.
+    # by #process, which each subclass must implement. In addition to setting
+    # the operation result to the return value of #process, calling #execute
+    # will clear the operation #errors and reset #called? and #halted? to false,
+    # and then update #called? to true unless #process raises an error.
     #
     # @param args [Array] The arguments to the operation. These will be passed
-    #   on to #process.
+    #   on to the #process method.
     #
     # @return [Operation] The operation.
     def execute *args
@@ -153,20 +235,20 @@ module Bronze::Operations
       errors.empty?
     end # method success?
 
-    # Chains the given block or operation to the current operation, so that when
-    # the current operation is successfully called (i.e. #success? responds
-    # true, typically meaning that there are no errors), it will call the block
-    # or operation with the results of the current operation.
+    # Chains the given block or operation to the current operation.  A block or
+    # operation added with #then will be only be called if the current
+    # operation succeeded and was not halted.
     #
-    # @param operation [Operation] An operation instance to chain after the
-    #   current operation. The operation will be called with the value of
-    #   #result for the current operation.
+    # @overload then(operation)
+    #   @param operation [Operation] An operation instance to add. The operation
+    #     will be called with the #result of the previous operation in the
+    #     chain.
     #
-    # @yieldparam current_operation [Operation] The current operation is passed
-    #   to the block, allowing the block to grab the result (or any other
-    #   property) of the operation. If the block returns an operation instance,
-    #   that operation is passed on to the subsequent item in the chain (if
-    #   any); otherwise the current operation is passed on.
+    # @overload then(&block)
+    #   @yieldparam prev_operation [Operation] The previous operation. If the
+    #     block returns an operation instance, that operation will be passed on
+    #     to subsequent operations in the chain; otherwise, the previous
+    #     operation will be passed instead.
     #
     # @return [OperationChain] The chained operations.
     def then operation = nil, &block
@@ -179,6 +261,20 @@ module Bronze::Operations
       OperationChain.new(self)
     end # method chain_operation
 
+    # @!visibility public
+    #
+    # @overload process(*args)
+    #   Private method that handles the actual implementation of running the
+    #   operation. Subclasses of Operation should override this method to
+    #   implement their functionality.
+    #
+    #   @param args [Array] The arguments passed in to #call or #execute.
+    #
+    #   @return [Object] The return value. Operation#result will return this
+    #     value.
+    #
+    #   @raise NotImplementedError If the subclass has not reimplemented the
+    #     #process method.
     def process *_args
       raise NotImplementedError,
         "#{self.class.name} does not implement :process",
