@@ -1,5 +1,8 @@
 # spec/bronze/entities/operations/entity_operation_examples.rb
 
+require 'bronze/collections/reference/repository'
+require 'bronze/entities/entity'
+
 module Spec::Entities
   module Operations; end
 end # module
@@ -28,6 +31,10 @@ module Spec::Entities::Operations::EntityOperationExamples
     let(:invalid_attributes) { { :title => nil, :publisher => 'Tor' } }
   end # shared_context
 
+  shared_context 'when the repository is defined' do
+    let(:repository) { Bronze::Collections::Reference::Repository.new }
+  end # shared_context
+
   shared_context 'when a subclass is defined with the entity class' do
     let(:described_class) { super().subclass(entity_class) }
     let(:instance)        { described_class.new(*arguments) }
@@ -53,7 +60,7 @@ module Spec::Entities::Operations::EntityOperationExamples
         expect(subclass).to be_a Class
         expect(subclass.superclass).to be described_class
         expect(subclass).to be_constructible.with(arguments.count).arguments
-        expect(subclass.new.entity_class).to be entity_class
+        expect(subclass.new(*arguments).entity_class).to be entity_class
       end # it
     end # describe
 
@@ -61,6 +68,26 @@ module Spec::Entities::Operations::EntityOperationExamples
       include_examples 'should have reader',
         :entity_class,
         ->() { entity_class }
+    end # describe
+  end # shared_examples
+
+  shared_examples 'should implement the PersistenceOperation methods' do
+    describe '#collection' do
+      include_examples 'should have reader', :collection
+
+      it 'should return the collection for the entity class' do
+        collection = instance.collection
+
+        expect(collection).to be_a Bronze::Collections::Collection
+        expect(collection.repository).to be repository
+        expect(collection.transform).
+          to be_a Bronze::Entities::Transforms::EntityTransform
+        expect(collection.transform.entity_class).to be entity_class
+      end # it
+    end # describe
+
+    describe '#repository' do
+      include_examples 'should have reader', :repository, ->() { repository }
     end # describe
   end # shared_examples
 

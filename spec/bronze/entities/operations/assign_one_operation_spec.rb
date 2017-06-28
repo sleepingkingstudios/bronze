@@ -1,6 +1,5 @@
 # spec/bronze/entities/operations/assign_one_operation_spec.rb
 
-require 'bronze/entities/entity'
 require 'bronze/entities/operations/assign_one_operation'
 require 'bronze/entities/operations/entity_operation_examples'
 
