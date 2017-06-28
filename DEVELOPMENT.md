@@ -169,6 +169,9 @@
       - 5 32-bit chars (SHA-1?)
     - can be slug (see dependent_attribute)
 - Errors#first
+- Operations
+  - #always,  #chain,  #else,  #then  return copies of chain w/ added operation/block
+  - #always!, #chain!, #else!, #then! modify the current chain
 - Query
   - #all returns with JSON envelope for advanced features?
   - #matching with non-equality predicates
