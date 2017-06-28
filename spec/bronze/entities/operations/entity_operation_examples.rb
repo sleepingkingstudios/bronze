@@ -28,6 +28,11 @@ module Spec::Entities::Operations::EntityOperationExamples
     let(:invalid_attributes) { { :title => nil, :publisher => 'Tor' } }
   end # shared_context
 
+  shared_context 'when a subclass is defined with the entity class' do
+    let(:described_class) { super().subclass(entity_class) }
+    let(:instance)        { described_class.new(*arguments) }
+  end # shared_context
+
   shared_examples 'should succeed and clear the errors' do
     it 'should succeed and clear the errors' do
       execute_operation
@@ -117,6 +122,62 @@ module Spec::Entities::Operations::EntityOperationExamples
           execute_operation
 
           expected_attributes.each do |key, value|
+            expect(entity.send key).to be == value
+          end # each
+        end # it
+      end # describe
+    end # describe
+  end # shared_examples
+
+  shared_examples 'should build the entity' do
+    describe '#execute' do
+      it { expect(instance).to respond_to(:execute).with(1).argument }
+
+      describe 'with a valid attributes hash with string keys' do
+        def execute_operation
+          tools      = SleepingKingStudios::Tools::Toolbelt.instance
+          attributes = tools.hash.convert_keys_to_strings(initial_attributes)
+
+          instance.execute(attributes)
+        end # method execute_operation
+
+        include_examples 'should succeed and clear the errors'
+
+        it 'should set the result' do
+          execute_operation
+
+          expect(instance.result).to be_a entity_class
+        end # it
+
+        it 'should set the attributes', :aggregate_failures do
+          entity = execute_operation.result
+
+          initial_attributes.each do |key, value|
+            expect(entity.send key).to be == value
+          end # each
+        end # it
+      end # describe
+
+      describe 'with a valid attributes hash with symbol keys' do
+        def execute_operation
+          tools      = SleepingKingStudios::Tools::Toolbelt.instance
+          attributes = tools.hash.convert_keys_to_symbols(initial_attributes)
+
+          instance.execute(attributes)
+        end # method execute_operation
+
+        include_examples 'should succeed and clear the errors'
+
+        it 'should set the result' do
+          execute_operation
+
+          expect(instance.result).to be_a entity_class
+        end # it
+
+        it 'should set the attributes', :aggregate_failures do
+          entity = execute_operation.result
+
+          initial_attributes.each do |key, value|
             expect(entity.send key).to be == value
           end # each
         end # it

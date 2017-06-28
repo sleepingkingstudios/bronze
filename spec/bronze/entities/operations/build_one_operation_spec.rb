@@ -1,10 +1,10 @@
-# spec/bronze/entities/operations/assign_one_operation_spec.rb
+# spec/bronze/entities/operations/build_one_operation_spec.rb
 
 require 'bronze/entities/entity'
-require 'bronze/entities/operations/assign_one_operation'
+require 'bronze/entities/operations/build_one_operation'
 require 'bronze/entities/operations/entity_operation_examples'
 
-RSpec.describe Bronze::Entities::Operations::AssignOneOperation do
+RSpec.describe Bronze::Entities::Operations::BuildOneOperation do
   include Spec::Entities::Operations::EntityOperationExamples
 
   include_context 'when the entity class is defined'
@@ -22,9 +22,9 @@ RSpec.describe Bronze::Entities::Operations::AssignOneOperation do
 
   include_examples 'should implement the EntityOperation methods'
 
-  include_examples 'should assign the attributes to the entity'
+  include_examples 'should build the entity'
 
   wrap_context 'when a subclass is defined with the entity class' do
-    include_examples 'should assign the attributes to the entity'
+    include_examples 'should build the entity'
   end # wrap_context
 end # describe
