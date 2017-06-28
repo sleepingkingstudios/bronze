@@ -26,5 +26,21 @@ module Bronze::Entities::Operations
 
     # @return [Class] The class of entity this operation acts upon.
     attr_reader :entity_class
+
+    private
+
+    def entity_name
+      @entity_name ||=
+        begin
+          name = entity_class.name.split('::').last
+          name = tools.string.underscore(name)
+
+          tools.string.singularize(name)
+        end # entity_name
+    end # method entity_name
+
+    def tools
+      SleepingKingStudios::Tools::Toolbelt.instance
+    end # method tools
   end # class
 end # module

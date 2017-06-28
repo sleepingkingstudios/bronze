@@ -1,7 +1,8 @@
 # spec/bronze/entities/operations/entity_operation_examples.rb
 
-require 'bronze/collections/reference/repository'
 require 'bronze/entities/entity'
+
+require 'patina/collections/simple/repository'
 
 module Spec::Entities
   module Operations; end
@@ -12,27 +13,46 @@ module Spec::Entities::Operations::EntityOperationExamples
 
   shared_context 'when the entity class is defined' do
     options = { :base_class => Bronze::Entities::Entity }
-    example_class 'Spec::Book', options do |klass|
-      klass.attribute :title,      String
-      klass.attribute :author,     String
-      klass.attribute :page_count, Integer
+    example_class 'Spec::Periodical', options do |klass|
+      klass.attribute :title,  String
+      klass.attribute :volume, Integer
     end # example_class
 
-    let(:entity_class) { Spec::Book }
+    let(:entity_class) { Spec::Periodical }
+    let(:entity_name)  { 'periodical' }
 
     let(:initial_attributes) do
       {
-        :title      => 'At The Earth\'s Core',
-        :author     => 'Edgar Rice Burroughs',
-        :page_count => 256
+        :title  => 'Crystal Healing Digest',
+        :volume => 7
       } # end hash
     end # let
-    let(:valid_attributes)   { { :title => 'Pellucidar', :page_count => 320 } }
-    let(:invalid_attributes) { { :title => nil, :publisher => 'Tor' } }
+    let(:valid_attributes)   { { :title => 'Cryptozoology Monthly' } }
+    let(:invalid_attributes) { { :title => nil, :publisher => 'Bigfoot' } }
   end # shared_context
 
   shared_context 'when the repository is defined' do
-    let(:repository) { Bronze::Collections::Reference::Repository.new }
+    let(:repository) { Patina::Collections::Simple::Repository.new }
+    let(:collection) { repository.collection(entity_class) }
+  end # shared_context
+
+  shared_context 'when the repository has many entities' do
+    before(:example) do
+      [
+        'Astrology Today',
+        'Journal of Applied Phrenology',
+        'The Atlantean Diaspora'
+      ]. # end array
+        each do |title|
+          1.upto(3) do |volume|
+            attributes =
+              initial_attributes.merge(:title => title, :volume => volume)
+            entity     = entity_class.new(attributes)
+
+            collection.insert(entity)
+          end # upto
+        end # each
+    end # before example
   end # shared_context
 
   shared_context 'when a subclass is defined with the entity class' do
@@ -47,6 +67,26 @@ module Spec::Entities::Operations::EntityOperationExamples
       expect(instance.success?).to be true
       expect(instance.halted?).to be false
       expect(instance.errors.empty?).to be true
+    end # it
+  end # shared_examples
+
+  shared_examples 'should fail and set the errors' do
+    it 'should fail and set the errors' do
+      execute_operation
+
+      expect(instance.failure?).to be true
+      expect(instance.halted?).to be false
+
+      error_expectation = defined?(expected_error) ? expected_error : nil
+
+      if error_expectation.nil?
+        expect(instance.errors).not_to be_empty
+      elsif error_expectation.is_a?(Hash)
+        expect(instance.errors.each.any? { |err| error_expectation <= err }).
+          to be true
+      else
+        expect(instance.errors).to include error_expectation
+      end # if
     end # it
   end # shared_examples
 
@@ -207,6 +247,103 @@ module Spec::Entities::Operations::EntityOperationExamples
           initial_attributes.each do |key, value|
             expect(entity.send key).to be == value
           end # each
+        end # it
+      end # describe
+    end # describe
+  end # shared_examples
+
+  shared_examples 'should delete the entity from the collection' do
+    describe '#execute' do
+      include_context 'when the repository has many entities'
+
+      it { expect(instance).to respond_to(:execute).with(1).argument }
+
+      describe 'with nil' do
+        let(:expected_error) do
+          {
+            :path   => [entity_name.intern],
+            :type   =>
+              Bronze::Collections::Collection::Errors.primary_key_missing,
+            :params => { :key => :id }
+          } # end expected error
+        end # let
+
+        def execute_operation
+          instance.execute(nil)
+        end # method execute operation
+
+        include_examples 'should fail and set the errors'
+
+        it { expect { execute_operation }.not_to change(collection, :count) }
+      end # describe
+
+      describe 'with an invalid entity id' do
+        let(:entity) { entity_class.new }
+        let(:expected_error) do
+          {
+            :path   => [entity_name.intern],
+            :type   => Bronze::Collections::Collection::Errors.record_not_found,
+            :params => { :id => entity.id }
+          } # end expected error
+        end # let
+
+        def execute_operation
+          instance.execute(entity.id)
+        end # method execute operation
+
+        include_examples 'should fail and set the errors'
+
+        it { expect { execute_operation }.not_to change(collection, :count) }
+      end # describe
+
+      describe 'with an invalid entity' do
+        let(:entity) { entity_class.new }
+        let(:expected_error) do
+          {
+            :path   => [entity_name.intern],
+            :type   => Bronze::Collections::Collection::Errors.record_not_found,
+            :params => { :id => entity.id }
+          } # end expected error
+        end # let
+
+        def execute_operation
+          instance.execute(entity)
+        end # method execute operation
+
+        include_examples 'should fail and set the errors'
+
+        it { expect { execute_operation }.not_to change(collection, :count) }
+      end # describe
+
+      describe 'with a valid entity id' do
+        let(:entity) { collection.limit(1).one }
+
+        def execute_operation
+          instance.execute(entity.id)
+        end # method execute operation
+
+        include_examples 'should succeed and clear the errors'
+
+        it 'should delete the entity from the collection' do
+          expect { execute_operation }.to change(collection, :count).by(-1)
+
+          expect(collection.matching(entity.attributes).exists?).to be false
+        end # it
+      end # describe
+
+      describe 'with a valid entity' do
+        let(:entity) { collection.limit(1).one }
+
+        def execute_operation
+          instance.execute(entity)
+        end # method execute operation
+
+        include_examples 'should succeed and clear the errors'
+
+        it 'should delete the entity from the collection' do
+          expect { execute_operation }.to change(collection, :count).by(-1)
+
+          expect(collection.matching(entity.attributes).exists?).to be false
         end # it
       end # describe
     end # describe
