@@ -7,6 +7,37 @@ end # module
 module Spec::Entities::Operations::EntityOperationExamples
   extend RSpec::SleepingKingStudios::Concerns::SharedExampleGroup
 
+  shared_context 'when the entity class is defined' do
+    options = { :base_class => Bronze::Entities::Entity }
+    example_class 'Spec::Book', options do |klass|
+      klass.attribute :title,      String
+      klass.attribute :author,     String
+      klass.attribute :page_count, Integer
+    end # example_class
+
+    let(:entity_class) { Spec::Book }
+
+    let(:initial_attributes) do
+      {
+        :title      => 'At The Earth\'s Core',
+        :author     => 'Edgar Rice Burroughs',
+        :page_count => 256
+      } # end hash
+    end # let
+    let(:valid_attributes)   { { :title => 'Pellucidar', :page_count => 320 } }
+    let(:invalid_attributes) { { :title => nil, :publisher => 'Tor' } }
+  end # shared_context
+
+  shared_examples 'should succeed and clear the errors' do
+    it 'should succeed and clear the errors' do
+      execute_operation
+
+      expect(instance.success?).to be true
+      expect(instance.halted?).to be false
+      expect(instance.errors.empty?).to be true
+    end # it
+  end # shared_examples
+
   shared_examples 'should implement the EntityOperation methods' do
     describe '::subclass' do
       it { expect(described_class).to respond_to(:subclass).with(1).argument }
@@ -25,6 +56,71 @@ module Spec::Entities::Operations::EntityOperationExamples
       include_examples 'should have reader',
         :entity_class,
         ->() { entity_class }
+    end # describe
+  end # shared_examples
+
+  shared_examples 'should assign the attributes to the entity' do
+    describe '#execute' do
+      let(:expected_attributes) do
+        initial_attributes.dup.tap do |hsh|
+          valid_attributes.each do |key, value|
+            hsh[key] = value
+          end # each
+        end # initial_attributes
+      end # let
+      let(:entity) { entity_class.new(initial_attributes) }
+
+      it { expect(instance).to respond_to(:execute).with(2).arguments }
+
+      describe 'with a valid attributes hash with string keys' do
+        def execute_operation
+          tools      = SleepingKingStudios::Tools::Toolbelt.instance
+          attributes = tools.hash.convert_keys_to_strings(valid_attributes)
+
+          instance.execute(entity, attributes)
+        end # method execute_operation
+
+        include_examples 'should succeed and clear the errors'
+
+        it 'should set the result' do
+          execute_operation
+
+          expect(instance.result).to be entity
+        end # it
+
+        it 'should update the attributes', :aggregate_failures do
+          execute_operation
+
+          expected_attributes.each do |key, value|
+            expect(entity.send key).to be == value
+          end # each
+        end # it
+      end # describe
+
+      describe 'with a valid attributes hash with symbol keys' do
+        def execute_operation
+          tools      = SleepingKingStudios::Tools::Toolbelt.instance
+          attributes = tools.hash.convert_keys_to_symbols(valid_attributes)
+
+          instance.execute(entity, attributes)
+        end # method execute_operation
+
+        include_examples 'should succeed and clear the errors'
+
+        it 'should set the result' do
+          execute_operation
+
+          expect(instance.result).to be entity
+        end # it
+
+        it 'should update the attributes', :aggregate_failures do
+          execute_operation
+
+          expected_attributes.each do |key, value|
+            expect(entity.send key).to be == value
+          end # each
+        end # it
+      end # describe
     end # describe
   end # shared_examples
 end # module
