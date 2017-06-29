@@ -11,8 +11,8 @@ module Bronze::Entities::Operations
     # @param attributes [Hash] The attributes and values to assign.
     #
     # @return [Bronze::Entities::Entity] The new entity.
-    def process attributes
-      entity_class.new(attributes)
+    def process attributes = {}
+      entity_class.new(attributes || {})
     end # method process
   end # class
 end # module

@@ -198,7 +198,73 @@ module Spec::Entities::Operations::EntityOperationExamples
 
   shared_examples 'should build the entity' do
     describe '#execute' do
-      it { expect(instance).to respond_to(:execute).with(1).argument }
+      it { expect(instance).to respond_to(:execute).with(0..1).arguments }
+
+      describe 'with no arguments' do
+        def execute_operation
+          instance.execute
+        end # method execute_operation
+
+        include_examples 'should succeed and clear the errors'
+
+        it 'should set the result' do
+          execute_operation
+
+          expect(instance.result).to be_a entity_class
+        end # it
+
+        it 'should set the attributes', :aggregate_failures do
+          entity = execute_operation.result
+
+          initial_attributes.each_key do |key|
+            expect(entity.send key).to be nil
+          end # each
+        end # it
+      end # describe
+
+      describe 'with nil' do
+        def execute_operation
+          instance.execute(nil)
+        end # method execute_operation
+
+        include_examples 'should succeed and clear the errors'
+
+        it 'should set the result' do
+          execute_operation
+
+          expect(instance.result).to be_a entity_class
+        end # it
+
+        it 'should set the attributes', :aggregate_failures do
+          entity = execute_operation.result
+
+          initial_attributes.each_key do |key|
+            expect(entity.send key).to be nil
+          end # each
+        end # it
+      end # describe
+
+      describe 'with an empty attributes hash' do
+        def execute_operation
+          instance.execute({})
+        end # method execute_operation
+
+        include_examples 'should succeed and clear the errors'
+
+        it 'should set the result' do
+          execute_operation
+
+          expect(instance.result).to be_a entity_class
+        end # it
+
+        it 'should set the attributes', :aggregate_failures do
+          entity = execute_operation.result
+
+          initial_attributes.each_key do |key|
+            expect(entity.send key).to be nil
+          end # each
+        end # it
+      end # describe
 
       describe 'with a valid attributes hash with string keys' do
         def execute_operation
