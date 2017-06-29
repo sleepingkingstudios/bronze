@@ -582,4 +582,81 @@ module Spec::Entities::Operations::EntityOperationExamples
       end # describe
     end # describe
   end # shared_examples
+
+  shared_examples 'should find the entities matching the selector' do
+    describe '#execute' do
+      let(:selector) { {} }
+      let(:expected) { collection.matching(selector).to_a }
+
+      include_context 'when the repository has many entities'
+
+      it { expect(instance).to respond_to(:execute).with(1).argument }
+
+      describe 'with no arguments' do
+        def execute_operation
+          instance.execute
+        end # method execute_operation
+
+        include_examples 'should succeed and clear the errors'
+
+        it 'should set the result to the matching entities' do
+          expect(execute_operation.result).to contain_exactly(*expected)
+        end # it
+      end # describe
+
+      describe 'with :matching => empty selector' do
+        def execute_operation
+          instance.execute :matching => selector
+        end # method execute_operation
+
+        include_examples 'should succeed and clear the errors'
+
+        it 'should set the result to the matching entities' do
+          expect(execute_operation.result).to contain_exactly(*expected)
+        end # it
+      end # describe
+
+      describe 'with :matching => selector matching no entities' do
+        let(:selector) { { :title => 'Cryptozoology Monthly' } }
+
+        def execute_operation
+          instance.execute :matching => selector
+        end # method execute_operation
+
+        include_examples 'should succeed and clear the errors'
+
+        it 'should set the result to an empty array' do
+          expect(execute_operation.result).to be == []
+        end # it
+      end # describe
+
+      describe 'with :matching => selector matching some entities' do
+        let(:selector) { { :title => 'The Atlantean Diaspora' } }
+
+        def execute_operation
+          instance.execute :matching => selector
+        end # method execute_operation
+
+        include_examples 'should succeed and clear the errors'
+
+        it 'should set the result to the matching entities' do
+          expect(execute_operation.result).to contain_exactly(*expected)
+        end # it
+      end # describe
+
+      describe 'with :matching => selector matching all entities' do
+        let(:selector) { { :volume => { :__in => [1, 2, 3] } } }
+
+        def execute_operation
+          instance.execute :matching => selector
+        end # method execute_operation
+
+        include_examples 'should succeed and clear the errors'
+
+        it 'should set the result to the matching entities' do
+          expect(execute_operation.result).to contain_exactly(*expected)
+        end # it
+      end # describe
+    end # describe
+  end # shared_examples
 end # module

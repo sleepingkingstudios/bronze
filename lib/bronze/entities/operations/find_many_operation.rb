@@ -6,6 +6,17 @@ module Bronze::Entities::Operations
   # Operation for retrieving entities from a repository from a list of entity
   # primary keys.
   class FindManyOperation < Bronze::Entities::Operations::PersistenceOperation
+    # Queries the repository for the entities with the given primary keys. The
+    # operation succeeds if an entity is found for each primary key, or fails
+    # if an entity is not found for one or more primary keys.
+    #
+    # @param primary_keys [Array<Object>] The primary keys to search for in the
+    #   repository.
+    #
+    # @return [Array<Bronze::Entities::Entity>] The entities returned by the
+    #   query.
+    #
+    # @see Bronze::Collections::Query#find.
     def process *primary_keys
       expected_keys = Array(primary_keys)
 
