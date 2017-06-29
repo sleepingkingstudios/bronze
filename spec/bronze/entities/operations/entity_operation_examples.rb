@@ -726,4 +726,50 @@ module Spec::Entities::Operations::EntityOperationExamples
       end # describe
     end # describe
   end # shared_examples
+
+  shared_examples 'should insert the entity into the collection' do
+    describe '#execute' do
+      it { expect(instance).to respond_to(:execute).with(1).argument }
+
+      describe 'with nil' do
+        let(:expected_error) do
+          {
+            :path   => [entity_name.intern],
+            :type   =>
+              Bronze::Collections::Collection::Errors.primary_key_missing,
+            :params => { :key => :id }
+          } # end expected error
+        end # let
+
+        def execute_operation
+          instance.execute(nil)
+        end # method execute operation
+
+        include_examples 'should fail and set the errors'
+
+        it 'should set the result to nil' do
+          expect(execute_operation.result).to be nil
+        end # it
+
+        it { expect { execute_operation }.not_to change(collection, :count) }
+      end # describe
+
+      describe 'with an entity' do
+        let(:entity) { entity_class.new(initial_attributes) }
+
+        def execute_operation
+          instance.execute(entity)
+        end # method execute operation
+
+        include_examples 'should succeed and clear the errors'
+
+        it 'should set the result to the entity' do
+          expect(execute_operation.result).to be == entity
+          expect(execute_operation.result.persisted?).to be true
+        end # it
+
+        it { expect { execute_operation }.to change(collection, :count).by(1) }
+      end # describe
+    end # describe
+  end # shared_examples
 end # module
