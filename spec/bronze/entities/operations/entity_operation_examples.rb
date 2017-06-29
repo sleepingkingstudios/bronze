@@ -18,8 +18,9 @@ module Spec::Entities::Operations::EntityOperationExamples
       klass.attribute :volume, Integer
     end # example_class
 
-    let(:entity_class) { Spec::Periodical }
-    let(:entity_name)  { 'periodical' }
+    let(:entity_class)       { Spec::Periodical }
+    let(:entity_name)        { 'periodical' }
+    let(:plural_entity_name) { 'periodicals' }
 
     let(:initial_attributes) do
       {
@@ -70,7 +71,7 @@ module Spec::Entities::Operations::EntityOperationExamples
     end # it
   end # shared_examples
 
-  shared_examples 'should fail and set the errors' do
+  shared_examples 'should fail and set the errors' do |proc = nil|
     it 'should fail and set the errors' do
       execute_operation
 
@@ -87,6 +88,8 @@ module Spec::Entities::Operations::EntityOperationExamples
       else
         expect(instance.errors).to include error_expectation
       end # if
+
+      instance_exec(&proc) unless proc.nil?
     end # it
   end # shared_examples
 
@@ -410,6 +413,171 @@ module Spec::Entities::Operations::EntityOperationExamples
           expect { execute_operation }.to change(collection, :count).by(-1)
 
           expect(collection.matching(entity.attributes).exists?).to be false
+        end # it
+      end # describe
+    end # describe
+  end # shared_examples
+
+  shared_examples 'should find the entities with given primary keys' do
+    describe '#execute' do
+      include_context 'when the repository has many entities'
+
+      it { expect(instance).to respond_to(:execute).with(1).argument }
+
+      describe 'with no arguments' do
+        def execute_operation
+          instance.execute
+        end # method execute_operation
+
+        include_examples 'should succeed and clear the errors'
+
+        it 'should set the result to an empty array' do
+          expect(execute_operation.result).to be == []
+        end # it
+      end # describe
+
+      describe 'with nil' do
+        def execute_operation
+          instance.execute(nil)
+        end # method execute_operation
+
+        include_examples 'should fail and set the errors', lambda {
+          error_context = Bronze::Collections::Collection::Errors
+
+          expect(instance.errors.size).to be 1
+          expect(instance.errors).to include(
+            :type   => error_context.record_not_found,
+            :path   => [plural_entity_name.intern],
+            :params => { :id => nil }
+          ) # end include
+        } # end lambda
+
+        it 'should set the result to an empty array' do
+          expect(execute_operation.result).to be == []
+        end # it
+      end # describe
+
+      describe 'with an invalid entity id' do
+        let(:entity_id) { entity_class.new.id }
+
+        def execute_operation
+          instance.execute(entity_id)
+        end # method execute_operation
+
+        include_examples 'should fail and set the errors', lambda {
+          error_context = Bronze::Collections::Collection::Errors
+
+          expect(instance.errors.size).to be 1
+          expect(instance.errors).to include(
+            :type   => error_context.record_not_found,
+            :path   => [plural_entity_name.intern],
+            :params => { :id => entity_id }
+          ) # end include
+        } # end lambda
+
+        it 'should set the result to an empty array' do
+          expect(execute_operation.result).to be == []
+        end # it
+      end # describe
+
+      describe 'with a valid entity id' do
+        let(:entity)    { collection.limit(1).one }
+        let(:entity_id) { entity.id }
+
+        def execute_operation
+          instance.execute(entity_id)
+        end # method execute_operation
+
+        include_examples 'should succeed and clear the errors'
+
+        it 'should set the result to the found entities' do
+          expect(execute_operation.result).to be == [entity]
+        end # it
+      end # describe
+
+      describe 'with an empty array' do
+        def execute_operation
+          instance.execute([])
+        end # method execute_operation
+
+        include_examples 'should succeed and clear the errors'
+
+        it 'should set the result to an empty array' do
+          expect(execute_operation.result).to be == []
+        end # it
+      end # describe
+
+      describe 'with an array of invalid entity ids' do
+        let(:entity_ids) do
+          Array.new(3) { entity_class.new.id }
+        end # let
+
+        def execute_operation
+          instance.execute(entity_ids)
+        end # method execute_operation
+
+        include_examples 'should fail and set the errors', lambda {
+          error_context = Bronze::Collections::Collection::Errors
+
+          expect(instance.errors.size).to be 3
+
+          entity_ids.each do |entity_id|
+            expect(instance.errors).to include(
+              :type   => error_context.record_not_found,
+              :path   => [plural_entity_name.intern],
+              :params => { :id => entity_id }
+            ) # end include
+          end # each
+        } # end lambda
+
+        it 'should set the result to an empty array' do
+          expect(execute_operation.result).to be == []
+        end # it
+      end # describe
+
+      describe 'with an array of mixed valid and invalid entity ids' do
+        let(:invalid_entity_ids) do
+          Array.new(3) { entity_class.new.id }
+        end # let
+        let(:entities)         { collection.limit(3).to_a }
+        let(:valid_entity_ids) { entities.map(&:id) }
+        let(:entity_ids)       { [*invalid_entity_ids, *valid_entity_ids] }
+
+        def execute_operation
+          instance.execute(entity_ids)
+        end # method execute_operation
+
+        include_examples 'should fail and set the errors', lambda {
+          error_context = Bronze::Collections::Collection::Errors
+
+          expect(instance.errors.size).to be 3
+
+          invalid_entity_ids.each do |entity_id|
+            expect(instance.errors).to include(
+              :type   => error_context.record_not_found,
+              :path   => [plural_entity_name.intern],
+              :params => { :id => entity_id }
+            ) # end include
+          end # each
+        } # end lambda
+
+        it 'should set the result to the found entities' do
+          expect(execute_operation.result).to contain_exactly(*entities)
+        end # it
+      end # describe
+
+      describe 'with an array of valid entity ids' do
+        let(:entities)   { collection.limit(3).to_a }
+        let(:entity_ids) { entities.map(&:id) }
+
+        def execute_operation
+          instance.execute(entity_ids)
+        end # method execute_operation
+
+        include_examples 'should succeed and clear the errors'
+
+        it 'should set the result to the found entities' do
+          expect(execute_operation.result).to contain_exactly(*entities)
         end # it
       end # describe
     end # describe

@@ -39,6 +39,10 @@ module Bronze::Entities::Operations
         end # entity_name
     end # method entity_name
 
+    def plural_entity_name
+      @plural_entity_name ||= tools.string.pluralize(entity_name)
+    end # method entity_name
+
     def tools
       SleepingKingStudios::Tools::Toolbelt.instance
     end # method tools
