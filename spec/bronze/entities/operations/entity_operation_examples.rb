@@ -772,4 +772,82 @@ module Spec::Entities::Operations::EntityOperationExamples
       end # describe
     end # describe
   end # shared_examples
+
+  shared_examples 'should update the entity in the collection' do
+    describe '#execute' do
+      include_context 'when the repository has many entities'
+
+      let(:expected_attributes) do
+        entity.attributes.tap do |hsh|
+          valid_attributes.each do |key, value|
+            hsh[key] = value
+          end # each
+        end # initial_attributes
+      end # let
+
+      it { expect(instance).to respond_to(:execute).with(1).argument }
+
+      describe 'with nil' do
+        let(:expected_error) do
+          {
+            :path   => [entity_name.intern],
+            :type   =>
+              Bronze::Collections::Collection::Errors.primary_key_missing,
+            :params => { :key => :id }
+          } # end expected error
+        end # let
+
+        def execute_operation
+          instance.execute(nil)
+        end # method execute operation
+
+        include_examples 'should fail and set the errors'
+
+        it 'should set the result to nil' do
+          expect(execute_operation.result).to be nil
+        end # it
+      end # describe
+
+      describe 'with an invalid entity' do
+        let(:entity) { entity_class.new }
+        let(:expected_error) do
+          {
+            :path   => [entity_name.intern],
+            :type   => Bronze::Collections::Collection::Errors.record_not_found,
+            :params => { :id => entity.id }
+          } # end expected error
+        end # let
+
+        def execute_operation
+          instance.execute(entity)
+        end # method execute operation
+
+        include_examples 'should fail and set the errors'
+      end # describe
+
+      describe 'with a valid entity' do
+        let(:entity) { collection.limit(1).one }
+
+        before(:example) { entity.assign(valid_attributes) }
+
+        def execute_operation
+          instance.execute(entity)
+        end # method execute operation
+
+        include_examples 'should succeed and clear the errors'
+
+        it 'should update the attributes in the collection' do
+          execute_operation
+
+          expect(entity.attributes_changed?).to be false
+
+          persisted = collection.find(entity.id)
+
+          expected_attributes.each do |key, value|
+            expect(persisted.send key).to be == value
+          end # each
+        end # it
+      end # describe
+    end # describe
+  end # shared_examples
 end # module

@@ -14,15 +14,19 @@ module Bronze::Entities::Operations
     #
     # @see Bronze::Collections::Collection#insert.
     def process entity
-      _, errors = collection.insert(entity)
+      result, errors = collection.insert(entity)
 
-      if errors.empty?
-        entity.persist if entity.respond_to?(:persist)
-      else
-        @errors[entity_name] = errors
-      end # if-else
+      persist_entity(entity) if result
+
+      @errors[entity_name] = errors unless result
 
       entity
     end # method process
+
+    private
+
+    def persist_entity entity
+      entity.persist if entity.respond_to?(:persist)
+    end # method persist_entity
   end # class
 end # module

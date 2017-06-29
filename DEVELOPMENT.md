@@ -51,11 +51,46 @@
 
       Defines subclass with curried constructor.
 
-  2.  Update all entity operations to extend EntityOperation.
+  2.  Implement entity operations in Bronze::Entities::Operations.
 
-      (this will cause breaking changes to some constructor signatures!)
+      Operations to create:
 
-      Move from Patina to Bronze::Entities::Operations
+      - assign_one
+      - build_one
+      - destroy_one
+      - find_many
+      - find_matching
+      - find_one
+      - insert_one
+      - update_one
+      - validate_one
+      - validate_one_uniqueness
+
+  2A. Implement chained operation helpers.
+
+      Refactor insert, update to insert_one_without_validation,
+      update_one_without_validation.
+
+      Operations to create:
+
+      - assign_and_update_one
+        - assign_one
+        - validate_one
+        - validate_one_uniqueness
+        - update_one_without_validation
+      - build_and_insert_one
+        - build_one
+        - validate_one
+        - validate_one_uniqueness
+        - insert_one_without_validation
+      - insert_one
+        - validate_one
+        - validate_one_uniqueness
+        - insert_one_without_validation
+      - update_one
+        - validate_one
+        - validate_one_uniqueness
+        - update_one_without_validation
 
   3.  Create coordinator class/module - EntityOperationGroup ?
 
