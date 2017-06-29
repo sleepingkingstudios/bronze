@@ -1,5 +1,6 @@
 # spec/bronze/entities/operations/entity_operation_examples.rb
 
+require 'bronze/contracts/contract'
 require 'bronze/entities/entity'
 
 require 'patina/collections/simple/repository'
@@ -30,6 +31,12 @@ module Spec::Entities::Operations::EntityOperationExamples
     end # let
     let(:valid_attributes)   { { :title => 'Cryptozoology Monthly' } }
     let(:invalid_attributes) { { :title => nil, :publisher => 'Bigfoot' } }
+
+    let(:entity_contract) do
+      Bronze::Contracts::Contract.new.tap do |contract|
+        contract.constrain :title, :present => true
+      end # contract
+    end # let
   end # shared_context
 
   shared_context 'when the repository is defined' do
@@ -847,6 +854,105 @@ module Spec::Entities::Operations::EntityOperationExamples
             expect(persisted.send key).to be == value
           end # each
         end # it
+      end # describe
+    end # describe
+  end # shared_examples
+
+  shared_examples 'should validate the entity with the contract' do
+    describe '#execute' do
+      it { expect(instance).to respond_to(:execute).with(1).argument }
+
+      describe 'when the contract has no constraints' do
+        let(:contract) { Bronze::Contracts::Contract.new }
+
+        describe 'with nil' do
+          def execute_operation
+            instance.execute(nil)
+          end # method execute_operation
+
+          include_examples 'should succeed and clear the errors'
+
+          it 'should set the result to nil' do
+            expect(execute_operation.result).to be nil
+          end # it
+        end # describe
+
+        describe 'with an entity' do
+          let(:entity) { entity_class.new(initial_attributes) }
+
+          def execute_operation
+            instance.execute(entity)
+          end # method execute_operation
+
+          include_examples 'should succeed and clear the errors'
+
+          it 'should set the result to the entity' do
+            expect(execute_operation.result).to be entity
+          end # it
+        end # describe
+      end # describe
+
+      describe 'when the contract validates the entity properties' do
+        let(:contract) { entity_contract }
+
+        describe 'with nil' do
+          let(:expected_error) do
+            {
+              :type   => Bronze::Constraints::PresenceConstraint::EMPTY_ERROR,
+              :path   => [entity_name.intern, :title],
+              :params => {}
+            } # end error
+          end # let
+
+          def execute_operation
+            instance.execute(nil)
+          end # method execute_operation
+
+          include_examples 'should fail and set the errors'
+
+          it 'should set the result to nil' do
+            expect(execute_operation.result).to be nil
+          end # it
+        end # describe
+
+        describe 'with an invalid entity' do
+          let(:entity) { entity_class.new(initial_attributes) }
+          let(:expected_error) do
+            {
+              :type   => Bronze::Constraints::PresenceConstraint::EMPTY_ERROR,
+              :path   => [entity_name.intern, :title],
+              :params => {}
+            } # end error
+          end # let
+
+          before(:example) do
+            entity.assign(invalid_attributes)
+          end # before example
+
+          def execute_operation
+            instance.execute(entity)
+          end # method execute_operation
+
+          include_examples 'should fail and set the errors'
+
+          it 'should set the result to the entity' do
+            expect(execute_operation.result).to be entity
+          end # it
+        end # describe
+
+        describe 'with a valid entity' do
+          let(:entity) { entity_class.new(initial_attributes) }
+
+          def execute_operation
+            instance.execute(entity)
+          end # method execute_operation
+
+          include_examples 'should succeed and clear the errors'
+
+          it 'should set the result to the entity' do
+            expect(execute_operation.result).to be entity
+          end # it
+        end # describe
       end # describe
     end # describe
   end # shared_examples
