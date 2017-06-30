@@ -956,4 +956,101 @@ module Spec::Entities::Operations::EntityOperationExamples
       end # describe
     end # describe
   end # shared_examples
+
+  shared_examples 'should validate the uniqueness of the entity' do
+    describe '#execute' do
+      include_context 'when the repository has many entities'
+
+      it { expect(instance).to respond_to(:execute).with(1).argument }
+
+      describe 'with nil' do
+        def execute_operation
+          instance.execute(nil)
+        end # method execute_operation
+
+        include_examples 'should succeed and clear the errors'
+
+        it 'should set the result to nil' do
+          expect(execute_operation.result).to be nil
+        end # it
+      end # describe
+
+      describe 'with an entity that does not implement uniqueness' do
+        options = { :base_class => Bronze::Entities::BaseEntity }
+        example_class 'Spec::SimplePeriodical', options do |klass|
+          klass.send :include, Bronze::Entities::Attributes
+          klass.send :include, Bronze::Entities::PrimaryKey
+
+          klass.attribute :title,  String
+          klass.attribute :volume, Integer
+        end # example_class
+
+        let(:entity_class) { Spec::SimplePeriodical }
+        let(:entity)       { entity_class.new(initial_attributes) }
+
+        def execute_operation
+          instance.execute(entity)
+        end # method execute_operation
+
+        include_examples 'should succeed and clear the errors'
+
+        it 'should set the result to the entity' do
+          expect(execute_operation.result).to be entity
+        end # it
+      end # describe
+
+      describe 'with an entity' do
+        let(:entity) { entity_class.new(initial_attributes) }
+
+        def execute_operation
+          instance.execute(entity)
+        end # method execute_operation
+
+        include_examples 'should succeed and clear the errors'
+
+        it 'should set the result to the entity' do
+          expect(execute_operation.result).to be entity
+        end # it
+      end # describe
+
+      context 'when the entity class defines uniqueness constraints' do
+        before(:example) do
+          entity_class.unique :title, :volume
+        end # before example
+
+        describe 'with an entity with unique attributes' do
+          let(:entity) { entity_class.new(initial_attributes) }
+
+          def execute_operation
+            instance.execute(entity)
+          end # method execute_operation
+
+          include_examples 'should succeed and clear the errors'
+
+          it 'should set the result to the entity' do
+            expect(execute_operation.result).to be entity
+          end # it
+        end # describe
+
+        describe 'with an entity with non-unique attributes' do
+          let(:attributes) do
+            collection.limit(1).one.
+              attributes.
+              tap { |hsh| hsh.delete(:id) }
+          end # let
+          let(:entity) { entity_class.new(attributes) }
+
+          def execute_operation
+            instance.execute(entity)
+          end # method execute_operation
+
+          include_examples 'should fail and set the errors'
+
+          it 'should set the result to the entity' do
+            expect(execute_operation.result).to be entity
+          end # it
+        end # describe
+      end # context
+    end # describe
+  end # shared_examples
 end # module
