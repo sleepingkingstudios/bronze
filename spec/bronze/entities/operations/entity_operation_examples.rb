@@ -858,11 +858,175 @@ module Spec::Entities::Operations::EntityOperationExamples
     end # describe
   end # shared_examples
 
+  shared_examples 'should validate and insert the entity into the collection' do
+    describe '#execute' do
+      include_context 'when the repository has many entities'
+
+      it { expect(instance).to respond_to(:execute).with(1).argument }
+
+      describe 'with nil' do
+        let(:expected_error) do
+          {
+            :path   => [entity_name.intern],
+            :type   =>
+              Bronze::Collections::Collection::Errors.primary_key_missing,
+            :params => { :key => :id }
+          } # end expected error
+        end # let
+
+        def execute_operation
+          instance.execute(nil)
+        end # method execute operation
+
+        include_examples 'should fail and set the errors'
+
+        it 'should set the result to nil' do
+          expect(execute_operation.result).to be nil
+        end # it
+
+        it { expect { execute_operation }.not_to change(collection, :count) }
+      end # describe
+
+      describe 'with an entity' do
+        let(:entity) { entity_class.new(initial_attributes) }
+
+        def execute_operation
+          instance.execute(entity)
+        end # method execute operation
+
+        include_examples 'should succeed and clear the errors'
+
+        it 'should set the result to the entity' do
+          expect(execute_operation.result).to be == entity
+          expect(execute_operation.result.persisted?).to be true
+        end # it
+
+        it { expect { execute_operation }.to change(collection, :count).by(1) }
+      end # describe
+
+      context 'when the contract validates the entity properties' do
+        let(:contract) { entity_contract }
+
+        before(:example) do
+          entity_class.const_set(:Contract, contract)
+        end # before example
+
+        describe 'with nil' do
+          let(:expected_error) do
+            {
+              :type   => Bronze::Constraints::PresenceConstraint::EMPTY_ERROR,
+              :path   => [entity_name.intern, :title],
+              :params => {}
+            } # end error
+          end # let
+
+          def execute_operation
+            instance.execute(nil)
+          end # method execute_operation
+
+          include_examples 'should fail and set the errors'
+
+          it 'should set the result to nil' do
+            expect(execute_operation.result).to be nil
+          end # it
+        end # describe
+
+        describe 'with an invalid entity' do
+          let(:entity) { entity_class.new(initial_attributes) }
+          let(:expected_error) do
+            {
+              :type   => Bronze::Constraints::PresenceConstraint::EMPTY_ERROR,
+              :path   => [entity_name.intern, :title],
+              :params => {}
+            } # end error
+          end # let
+
+          before(:example) do
+            entity.assign(invalid_attributes)
+          end # before example
+
+          def execute_operation
+            instance.execute(entity)
+          end # method execute_operation
+
+          include_examples 'should fail and set the errors'
+
+          it 'should set the result to the entity' do
+            expect(execute_operation.result).to be entity
+          end # it
+        end # describe
+
+        describe 'with a valid entity' do
+          let(:entity) { entity_class.new(initial_attributes) }
+
+          def execute_operation
+            instance.execute(entity)
+          end # method execute operation
+
+          include_examples 'should succeed and clear the errors'
+
+          it 'should set the result to the entity' do
+            expect(execute_operation.result).to be == entity
+            expect(execute_operation.result.persisted?).to be true
+          end # it
+
+          it 'should add the entity to the collection' do
+            expect { execute_operation }.to change(collection, :count).by(1)
+          end # it
+        end # describe
+      end # context
+
+      context 'when the entity class defines uniqueness constraints' do
+        before(:example) do
+          entity_class.unique :title, :volume
+        end # before example
+
+        describe 'with an entity with non-unique attributes' do
+          let(:attributes) do
+            collection.limit(1).one.
+              attributes.
+              tap { |hsh| hsh.delete(:id) }
+          end # let
+          let(:entity) { entity_class.new(attributes) }
+
+          def execute_operation
+            instance.execute(entity)
+          end # method execute_operation
+
+          include_examples 'should fail and set the errors'
+
+          it 'should set the result to the entity' do
+            expect(execute_operation.result).to be entity
+          end # it
+        end # describe
+
+        describe 'with an entity with unique attributes' do
+          let(:entity) { entity_class.new(initial_attributes) }
+
+          def execute_operation
+            instance.execute(entity)
+          end # method execute operation
+
+          include_examples 'should succeed and clear the errors'
+
+          it 'should set the result to the entity' do
+            expect(execute_operation.result).to be == entity
+            expect(execute_operation.result.persisted?).to be true
+          end # it
+
+          it 'should add the entity to the collection' do
+            expect { execute_operation }.to change(collection, :count).by(1)
+          end # it
+        end # describe
+      end # context
+    end # describe
+  end # shared_examples
+
   shared_examples 'should validate the entity with the contract' do
     describe '#execute' do
       it { expect(instance).to respond_to(:execute).with(1).argument }
 
-      describe 'when the contract has no constraints' do
+      context 'when the contract has no constraints' do
         let(:contract) { Bronze::Contracts::Contract.new }
 
         describe 'with nil' do
@@ -890,9 +1054,9 @@ module Spec::Entities::Operations::EntityOperationExamples
             expect(execute_operation.result).to be entity
           end # it
         end # describe
-      end # describe
+      end # context
 
-      describe 'when the contract validates the entity properties' do
+      context 'when the contract validates the entity properties' do
         let(:contract) { entity_contract }
 
         describe 'with nil' do
@@ -953,7 +1117,7 @@ module Spec::Entities::Operations::EntityOperationExamples
             expect(execute_operation.result).to be entity
           end # it
         end # describe
-      end # describe
+      end # context
     end # describe
   end # shared_examples
 

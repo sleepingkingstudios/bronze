@@ -92,10 +92,10 @@
         - validate_one_uniqueness
         - update_one_without_validation
 
-  3.  Create coordinator class/module - EntityOperationGroup ?
+  3.  Create coordinator class/module - OperationBuilder
 
       class Book
-        Operations = EntityOperationGroup.new(self)
+        Operations = EntityOperationBuilder.new(self)
       end # class
 
       ::operation method: |
