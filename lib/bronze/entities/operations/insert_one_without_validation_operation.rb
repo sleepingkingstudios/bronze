@@ -1,10 +1,15 @@
 # lib/bronze/entities/operations/insert_one_without_validation_operation.rb
 
+require 'bronze/entities/operations/entity_operation'
 require 'bronze/entities/operations/persistence_operation'
+require 'bronze/operations/operation'
 
 module Bronze::Entities::Operations
   # Operation for inserting the given entity into the repository.
-  class InsertOneWithoutValidationOperation < Bronze::Entities::Operations::PersistenceOperation # rubocop:disable Metrics/LineLength
+  class InsertOneWithoutValidationOperation < Bronze::Operations::Operation
+    include Bronze::Entities::Operations::EntityOperation
+    include Bronze::Entities::Operations::PersistenceOperation
+
     # Inserts the given entity into the repository.
     #
     # @param entity [Bronze::Entities::Entity] The entity to insert into the

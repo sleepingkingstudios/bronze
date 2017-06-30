@@ -1,10 +1,15 @@
 # lib/bronze/entities/operations/delete_one_operation.rb
 
+require 'bronze/entities/operations/entity_operation'
 require 'bronze/entities/operations/persistence_operation'
+require 'bronze/operations/operation'
 
 module Bronze::Entities::Operations
   # Operation for deleting an new entity from a repository.
-  class DeleteOneOperation < Bronze::Entities::Operations::PersistenceOperation
+  class DeleteOneOperation < Bronze::Operations::Operation
+    include Bronze::Entities::Operations::EntityOperation
+    include Bronze::Entities::Operations::PersistenceOperation
+
     # Finds and deletes the entity with the given primary key from the
     # repository. The operation succeeds if the delete action does not return
     # any errors, and fails if the delete action returns one or more errors

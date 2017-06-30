@@ -10,12 +10,12 @@ RSpec.describe Bronze::Entities::Operations::DeleteOneOperation do
 
   include_context 'when the repository is defined'
 
+  let(:arguments) { [repository] }
+  let(:instance)  { described_class.new(entity_class, *arguments) }
+
   describe '::new' do
     it { expect(described_class).to be_constructible.with(2).arguments }
   end # describe
-
-  let(:arguments) { [repository] }
-  let(:instance)  { described_class.new(entity_class, *arguments) }
 
   include_examples 'should implement the EntityOperation methods'
 

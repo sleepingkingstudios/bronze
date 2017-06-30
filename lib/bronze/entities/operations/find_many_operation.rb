@@ -1,11 +1,16 @@
 # lib/bronze/entities/operations/find_many_operation.rb
 
+require 'bronze/entities/operations/entity_operation'
 require 'bronze/entities/operations/persistence_operation'
+require 'bronze/operations/operation'
 
 module Bronze::Entities::Operations
   # Operation for retrieving entities from a repository from a list of entity
   # primary keys.
-  class FindManyOperation < Bronze::Entities::Operations::PersistenceOperation
+  class FindManyOperation < Bronze::Operations::Operation
+    include Bronze::Entities::Operations::EntityOperation
+    include Bronze::Entities::Operations::PersistenceOperation
+
     # Queries the repository for the entities with the given primary keys. The
     # operation succeeds if an entity is found for each primary key, or fails
     # if an entity is not found for one or more primary keys.

@@ -1,13 +1,12 @@
 # lib/bronze/entities/operations/persistence_operation.rb
 
-require 'bronze/entities/operations/entity_operation'
 require 'bronze/entities/transforms/entity_transform'
 
 module Bronze::Entities::Operations
   # Abstract operation class for entity operations that act on a repository,
   # such as reading or writing data or checking for the existence of an entity
   # within the repository.
-  class PersistenceOperation < Bronze::Entities::Operations::EntityOperation
+  module PersistenceOperation
     # @param entity_class [Class] The class of entity this operation acts upon.
     # @param repository [Bronze::Collections::Repository] The data repository to
     #   access or reference.

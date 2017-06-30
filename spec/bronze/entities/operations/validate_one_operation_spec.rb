@@ -1,7 +1,7 @@
 # spec/bronze/entities/operations/validate_one_operation_spec.rb
 
-require 'bronze/entities/operations/validate_one_operation'
 require 'bronze/entities/operations/entity_operation_examples'
+require 'bronze/entities/operations/validate_one_operation'
 
 RSpec.describe Bronze::Entities::Operations::ValidateOneOperation do
   include Spec::Entities::Operations::EntityOperationExamples
@@ -26,13 +26,13 @@ RSpec.describe Bronze::Entities::Operations::ValidateOneOperation do
     end # before example
   end # shared_context
 
-  describe '::new' do
-    it { expect(described_class).to be_constructible.with(1..2).arguments }
-  end # describe
-
   let(:contract)  { Bronze::Contracts::Contract.new }
   let(:arguments) { [] }
   let(:instance)  { described_class.new(entity_class, *arguments) }
+
+  describe '::new' do
+    it { expect(described_class).to be_constructible.with(1..2).arguments }
+  end # describe
 
   include_examples 'should implement the EntityOperation methods'
 

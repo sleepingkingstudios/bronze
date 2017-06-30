@@ -1,11 +1,16 @@
 # lib/bronze/entities/operations/find_matching_operation.rb
 
+require 'bronze/entities/operations/entity_operation'
 require 'bronze/entities/operations/persistence_operation'
+require 'bronze/operations/operation'
 
 module Bronze::Entities::Operations
   # Operation for retrieving all entities from a repository matching a given
   # selector.
-  class FindMatchingOperation < Bronze::Entities::Operations::PersistenceOperation # rubocop:disable Metrics/LineLength
+  class FindMatchingOperation < Bronze::Operations::Operation
+    include Bronze::Entities::Operations::EntityOperation
+    include Bronze::Entities::Operations::PersistenceOperation
+
     # Queries the repository for all entities matching the given selector.
     #
     # @param matching [Hash] The selector to match.

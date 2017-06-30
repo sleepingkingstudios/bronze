@@ -1,7 +1,7 @@
 # spec/bronze/entities/operations/validate_one_uniqueness_operation_spec.rb
 
-require 'bronze/entities/operations/validate_one_uniqueness_operation'
 require 'bronze/entities/operations/entity_operation_examples'
+require 'bronze/entities/operations/validate_one_uniqueness_operation'
 
 RSpec.describe Bronze::Entities::Operations::ValidateOneUniquenessOperation do
   include Spec::Entities::Operations::EntityOperationExamples
@@ -10,12 +10,12 @@ RSpec.describe Bronze::Entities::Operations::ValidateOneUniquenessOperation do
 
   include_context 'when the repository is defined'
 
+  let(:arguments) { [repository] }
+  let(:instance)  { described_class.new(entity_class, *arguments) }
+
   describe '::new' do
     it { expect(described_class).to be_constructible.with(2).arguments }
   end # describe
-
-  let(:arguments) { [repository] }
-  let(:instance)  { described_class.new(entity_class, *arguments) }
 
   include_examples 'should implement the EntityOperation methods'
 

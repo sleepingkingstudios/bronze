@@ -8,12 +8,12 @@ RSpec.describe Bronze::Entities::Operations::BuildOneOperation do
 
   include_context 'when the entity class is defined'
 
+  let(:arguments) { [] }
+  let(:instance)  { described_class.new(entity_class, *arguments) }
+
   describe '::new' do
     it { expect(described_class).to be_constructible.with(1).argument }
   end # describe
-
-  let(:arguments) { [] }
-  let(:instance)  { described_class.new(entity_class, *arguments) }
 
   describe '::new' do
     it { expect(described_class).to be_constructible.with(1).argument }

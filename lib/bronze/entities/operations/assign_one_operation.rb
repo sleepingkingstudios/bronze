@@ -1,11 +1,14 @@
 # lib/bronze/entities/operations/assign_one_operation.rb
 
 require 'bronze/entities/operations/entity_operation'
+require 'bronze/operations/operation'
 
 module Bronze::Entities::Operations
   # Operation for updating the attributes of an entity with the contents of an
   # attributes hash.
-  class AssignOneOperation < Bronze::Entities::Operations::EntityOperation
+  class AssignOneOperation < Bronze::Operations::Operation
+    include Bronze::Entities::Operations::EntityOperation
+
     # Updates the attributes of the entity with the contents of the given hash.
     #
     # @param entity [Bronze::Entities::Entity] The entity whose attributes to

@@ -2,12 +2,18 @@
 
 require 'bronze/entities/operations/entity_operation'
 require 'bronze/entities/operations/entity_operation_examples'
+require 'bronze/operations/operation'
 
 require 'support/example_entity'
 
 RSpec.describe Bronze::Entities::Operations::EntityOperation do
   include Spec::Entities::Operations::EntityOperationExamples
 
+  let(:described_class) do
+    Class.new(Bronze::Operations::Operation) do
+      include Bronze::Entities::Operations::EntityOperation
+    end # class
+  end # let
   let(:entity_class) { Spec::ExampleEntity }
   let(:arguments)    { [] }
   let(:instance)     { described_class.new entity_class, *arguments }
@@ -20,7 +26,11 @@ RSpec.describe Bronze::Entities::Operations::EntityOperation do
 
   describe '::subclass' do
     context 'when the base class is a defined operation class' do
-      options = { :base_class => Bronze::Entities::Operations::EntityOperation }
+      base_class =
+        Class.new(Bronze::Operations::Operation) do
+          include Bronze::Entities::Operations::EntityOperation
+        end # class
+      options    = { :base_class => base_class }
       example_class 'Spec::Operations::EntityNameOperation', options do |klass|
         klass.send :define_method, :initialize do |entity_class, format = '%s'|
           super(entity_class)
