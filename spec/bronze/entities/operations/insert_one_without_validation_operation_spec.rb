@@ -1,9 +1,9 @@
-# spec/bronze/entities/operations/insert_one_operation_spec.rb
+# spec/bronze/entities/operations/insert_one_without_validation_opera..._spec.rb
 
-require 'bronze/entities/operations/insert_one_operation'
+require 'bronze/entities/operations/insert_one_without_validation_operation'
 require 'bronze/entities/operations/entity_operation_examples'
 
-RSpec.describe Bronze::Entities::Operations::InsertOneOperation do
+RSpec.describe Bronze::Entities::Operations::InsertOneWithoutValidationOperation do # rubocop:disable Metrics/LineLength
   include Spec::Entities::Operations::EntityOperationExamples
 
   include_context 'when the entity class is defined'

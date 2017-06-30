@@ -1,10 +1,10 @@
-# lib/bronze/entities/operations/update_one_operation.rb
+# lib/bronze/entities/operations/update_one_without_validation_operation.rb
 
 require 'bronze/entities/operations/persistence_operation'
 
 module Bronze::Entities::Operations
   # Operation for updating the given entity in the repository.
-  class UpdateOneOperation < Bronze::Entities::Operations::PersistenceOperation
+  class UpdateOneWithoutValidationOperation < Bronze::Entities::Operations::PersistenceOperation # rubocop:disable Metrics/LineLength
     # Updates the given entity in the repository.
     #
     # @param entity [Bronze::Entities::Entity] The entity to update in the
