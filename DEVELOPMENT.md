@@ -51,16 +51,51 @@
 
       Defines subclass with curried constructor.
 
-  2.  Update all entity operations to extend EntityOperation.
+  2.  Implement entity operations in Bronze::Entities::Operations.
 
-      (this will cause breaking changes to some constructor signatures!)
+      Operations to create:
 
-      Move from Patina to Bronze::Entities::Operations
+      - assign_one
+      - build_one
+      - destroy_one
+      - find_many
+      - find_matching
+      - find_one
+      - insert_one
+      - update_one
+      - validate_one
+      - validate_one_uniqueness
 
-  3.  Create coordinator class/module - EntityOperationGroup ?
+  2A. Implement chained operation helpers.
+
+      Refactor insert, update to insert_one_without_validation,
+      update_one_without_validation.
+
+      Operations to create:
+
+      - assign_and_update_one
+        - assign_one
+        - validate_one
+        - validate_one_uniqueness
+        - update_one_without_validation
+      - build_and_insert_one
+        - build_one
+        - validate_one
+        - validate_one_uniqueness
+        - insert_one_without_validation
+      - insert_one
+        - validate_one
+        - validate_one_uniqueness
+        - insert_one_without_validation
+      - update_one
+        - validate_one
+        - validate_one_uniqueness
+        - update_one_without_validation
+
+  3.  Create coordinator class/module - OperationBuilder
 
       class Book
-        Operations = EntityOperationGroup.new(self)
+        Operations = EntityOperationBuilder.new(self)
       end # class
 
       ::operation method: |
@@ -169,6 +204,9 @@
       - 5 32-bit chars (SHA-1?)
     - can be slug (see dependent_attribute)
 - Errors#first
+- Operations
+  - #always,  #chain,  #else,  #then  return copies of chain w/ added operation/block
+  - #always!, #chain!, #else!, #then! modify the current chain
 - Query
   - #all returns with JSON envelope for advanced features?
   - #matching with non-equality predicates
