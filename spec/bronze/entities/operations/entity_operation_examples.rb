@@ -212,6 +212,287 @@ module Spec::Entities::Operations::EntityOperationExamples
     end # describe
   end # shared_examples
 
+  shared_examples 'should assign, validate, and update the entity' do
+    describe '#execute' do
+      include_context 'when the repository has many entities'
+
+      let(:entity) do
+        collection.matching(:title => 'Astrology Today').limit(1).one
+      end # let
+      let!(:original_attributes) do
+        entity.attributes.tap { |hsh| hsh.delete(:id) }
+      end # let
+      let(:expected_attributes) do
+        original_attributes.dup.tap do |hsh|
+          valid_attributes.each do |key, value|
+            hsh[key] = value
+          end # each
+        end # attributes_changed
+      end # let
+
+      it { expect(instance).to respond_to(:execute).with(2).arguments }
+
+      describe 'with a valid attributes hash with string keys' do
+        def execute_operation
+          tools      = SleepingKingStudios::Tools::Toolbelt.instance
+          attributes = tools.hash.convert_keys_to_strings(valid_attributes)
+
+          instance.execute(entity, attributes)
+        end # method execute_operation
+
+        include_examples 'should succeed and clear the errors'
+
+        it 'should set the result' do
+          execute_operation
+
+          expect(instance.result).to be entity
+        end # it
+
+        it 'should update the attributes', :aggregate_failures do
+          execute_operation
+
+          expected_attributes.each do |key, value|
+            expect(entity.send key).to be == value
+          end # each
+        end # it
+
+        it 'should update the persisted attributes', :aggregate_failures do
+          execute_operation
+
+          persisted = collection.find(entity.id)
+
+          expected_attributes.each do |key, value|
+            expect(persisted.send key).to be == value
+          end # each
+        end # it
+      end # describe
+
+      describe 'with a valid attributes hash with symbol keys' do
+        def execute_operation
+          tools      = SleepingKingStudios::Tools::Toolbelt.instance
+          attributes = tools.hash.convert_keys_to_symbols(valid_attributes)
+
+          instance.execute(entity, attributes)
+        end # method execute_operation
+
+        include_examples 'should succeed and clear the errors'
+
+        it 'should set the result' do
+          execute_operation
+
+          expect(instance.result).to be entity
+        end # it
+
+        it 'should update the attributes', :aggregate_failures do
+          execute_operation
+
+          expected_attributes.each do |key, value|
+            expect(entity.send key).to be == value
+          end # each
+        end # it
+
+        it 'should update the persisted attributes', :aggregate_failures do
+          execute_operation
+
+          persisted = collection.find(entity.id)
+
+          expected_attributes.each do |key, value|
+            expect(persisted.send key).to be == value
+          end # each
+        end # it
+      end # describe
+
+      describe 'with an entity that is not in the collection' do
+        let(:entity) { entity_class.new(initial_attributes) }
+        let(:expected_error) do
+          {
+            :path   => [entity_name.intern],
+            :type   => Bronze::Collections::Collection::Errors.record_not_found,
+            :params => { :id => entity.id }
+          } # end expected error
+        end # let
+
+        def execute_operation
+          instance.execute(entity, valid_attributes)
+        end # method execute operation
+
+        include_examples 'should fail and set the errors'
+
+        it 'should set the result' do
+          expect(execute_operation.result).to be entity
+        end # it
+
+        it 'should update the attributes', :aggregate_failures do
+          execute_operation
+
+          expected_attributes.each do |key, value|
+            expect(entity.send key).to be == value
+          end # each
+        end # it
+      end # describe
+
+      context 'when the contract validates the entity properties' do
+        let(:contract) { entity_contract }
+
+        before(:example) do
+          entity_class.const_set(:Contract, contract)
+        end # before example
+
+        describe 'with an invalid attributes hash' do
+          let(:expected_error) do
+            {
+              :type   => Bronze::Constraints::PresenceConstraint::EMPTY_ERROR,
+              :path   => [entity_name.intern, :title],
+              :params => {}
+            } # end error
+          end # let
+
+          def execute_operation
+            instance.execute(entity, invalid_attributes)
+          end # method execute_operation
+
+          include_examples 'should fail and set the errors'
+
+          it 'should set the result' do
+            expect(execute_operation.result).to be entity
+          end # it
+
+          it 'should update the attributes', :aggregate_failures do
+            entity = execute_operation.result
+
+            invalid_attributes.each do |key, value|
+              next unless entity.respond_to?(key)
+
+              expect(entity.send key).to be == value
+            end # each
+          end # it
+
+          it 'should not update the persisted attributes', :aggregate_failures \
+          do
+            execute_operation
+
+            persisted = collection.find(entity.id)
+
+            original_attributes.each do |key, value|
+              expect(persisted.send key).to be == value
+            end # each
+          end # it
+        end # describe
+
+        describe 'with a valid attributes hash' do
+          def execute_operation
+            instance.execute(entity, valid_attributes)
+          end # method execute_operation
+
+          include_examples 'should succeed and clear the errors'
+
+          it 'should set the result' do
+            execute_operation
+
+            expect(instance.result).to be entity
+          end # it
+
+          it 'should update the attributes', :aggregate_failures do
+            execute_operation
+
+            expected_attributes.each do |key, value|
+              expect(entity.send key).to be == value
+            end # each
+          end # it
+
+          it 'should update the persisted attributes', :aggregate_failures do
+            execute_operation
+
+            persisted = collection.find(entity.id)
+
+            expected_attributes.each do |key, value|
+              expect(persisted.send key).to be == value
+            end # each
+          end # it
+        end # describe
+      end # context
+
+      context 'when the entity class defines uniqueness constraints' do
+        before(:example) do
+          entity_class.unique :title, :volume
+        end # before example
+
+        describe 'with an attributes hash with non-unique attributes' do
+          let(:attributes) do
+            collection.
+              matching(:title => 'The Atlantean Diaspora').
+              limit(1).one.
+              attributes.tap { |hsh| hsh.delete(:id) }
+          end # let
+
+          def execute_operation
+            instance.execute(entity, attributes)
+          end # method execute_operation
+
+          include_examples 'should fail and set the errors'
+
+          it 'should set the result' do
+            expect(execute_operation.result).to be entity
+          end # it
+
+          it 'should update the attributes', :aggregate_failures do
+            entity = execute_operation.result
+
+            attributes.each do |key, value|
+              next unless entity.respond_to?(key)
+
+              expect(entity.send key).to be == value
+            end # each
+          end # it
+
+          it 'should not update the persisted attributes', :aggregate_failures \
+          do
+            execute_operation
+
+            persisted = collection.find(entity.id)
+
+            original_attributes.each do |key, value|
+              expect(persisted.send key).to be == value
+            end # each
+          end # it
+        end # describe
+
+        describe 'with an attributes hash with unique attributes' do
+          def execute_operation
+            instance.execute(entity, valid_attributes)
+          end # method execute_operation
+
+          include_examples 'should succeed and clear the errors'
+
+          it 'should set the result to the entity' do
+            expect(execute_operation.result).to be entity
+          end # it
+
+          it 'should update the attributes', :aggregate_failures do
+            entity = execute_operation.result
+
+            expected_attributes.each do |key, value|
+              next unless entity.respond_to?(key)
+
+              expect(entity.send key).to be == value
+            end # each
+          end # it
+
+          it 'should update the persisted attributes', :aggregate_failures \
+          do
+            execute_operation
+
+            persisted = collection.find(entity.id)
+
+            expected_attributes.each do |key, value|
+              expect(persisted.send key).to be == value
+            end # each
+          end # it
+        end # describe
+      end # describe
+    end # describe
+  end # shared_examples
+
   shared_examples 'should build the entity' do
     describe '#execute' do
       it { expect(instance).to respond_to(:execute).with(0..1).arguments }
@@ -736,42 +1017,42 @@ module Spec::Entities::Operations::EntityOperationExamples
           it 'should not persist the entity' do
             expect(collection.matching(empty_attributes).count).to be 0
           end # it
+        end # describe
 
-          describe 'with an attributes hash with unique attributes' do
-            def execute_operation
-              instance.execute(initial_attributes)
-            end # method execute_operation
+        describe 'with an attributes hash with unique attributes' do
+          def execute_operation
+            instance.execute(initial_attributes)
+          end # method execute_operation
 
-            include_examples 'should succeed and clear the errors'
+          include_examples 'should succeed and clear the errors'
 
-            it 'should set the result' do
-              execute_operation
+          it 'should set the result' do
+            execute_operation
 
-              expect(instance.result).to be_a entity_class
-            end # it
+            expect(instance.result).to be_a entity_class
+          end # it
 
-            it 'should set the attributes', :aggregate_failures do
-              entity = execute_operation.result
+          it 'should set the attributes', :aggregate_failures do
+            entity = execute_operation.result
 
-              initial_attributes.each do |key, value|
-                expect(entity.send key).to be == value
-              end # each
-            end # it
+            initial_attributes.each do |key, value|
+              expect(entity.send key).to be == value
+            end # each
+          end # it
 
-            it 'should persist the entity' do
-              expect { execute_operation }.to change(collection, :count).by(1)
-            end # it
+          it 'should persist the entity' do
+            expect { execute_operation }.to change(collection, :count).by(1)
+          end # it
 
-            it 'should set the persisted attributes', :aggregate_failures do
-              execute_operation
+          it 'should set the persisted attributes', :aggregate_failures do
+            execute_operation
 
-              persisted = collection.matching(initial_attributes).limit(1).one
+            persisted = collection.matching(initial_attributes).limit(1).one
 
-              initial_attributes.each do |key, value|
-                expect(persisted.send key).to be == value
-              end # each
-            end # it
-          end # describe
+            initial_attributes.each do |key, value|
+              expect(persisted.send key).to be == value
+            end # each
+          end # it
         end # describe
       end # context
     end # describe

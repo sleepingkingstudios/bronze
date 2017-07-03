@@ -1,9 +1,9 @@
-# spec/bronze/entities/operations/build_and_insert_one_operation_spec.rb
+# spec/bronze/entities/operations/assign_and_update_one_operation_spec.rb
 
-require 'bronze/entities/operations/build_and_insert_one_operation'
+require 'bronze/entities/operations/assign_and_update_one_operation'
 require 'bronze/entities/operations/entity_operation_examples'
 
-RSpec.describe Bronze::Entities::Operations::BuildAndInsertOneOperation do
+RSpec.describe Bronze::Entities::Operations::AssignAndUpdateOneOperation do
   include Spec::Entities::Operations::EntityOperationExamples
 
   include_context 'when the entity class is defined'
@@ -21,9 +21,9 @@ RSpec.describe Bronze::Entities::Operations::BuildAndInsertOneOperation do
 
   include_examples 'should implement the PersistenceOperation methods'
 
-  include_examples 'should build, validate and insert the entity'
+  include_examples 'should assign, validate, and update the entity'
 
   wrap_context 'when a subclass is defined with the entity class' do
-    include_examples 'should build, validate and insert the entity'
+    include_examples 'should assign, validate, and update the entity'
   end # wrap_context
 end # describe
