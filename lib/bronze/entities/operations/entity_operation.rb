@@ -26,7 +26,9 @@ module Bronze::Entities::Operations
     end # module
 
     # @param entity_class [Class] The class of entity this operation acts upon.
-    def initialize entity_class
+    def initialize entity_class, *rest
+      super(*rest)
+
       @entity_class = entity_class
     end # constructor
 

@@ -1,7 +1,6 @@
 # lib/bronze/entities/operations/build_and_insert_one_operation.rb
 
 require 'bronze/entities/operations/build_one_operation'
-require 'bronze/entities/operations/entity_operation'
 require 'bronze/entities/operations/insert_one_without_validation_operation'
 require 'bronze/entities/operations/persistence_operation'
 require 'bronze/entities/operations/validate_one_operation'
@@ -13,17 +12,15 @@ module Bronze::Entities::Operations
   # validating the entity and, if valid, inserting the entity into the
   # repository.
   class BuildAndInsertOneOperation < Bronze::Operations::OperationChain
-    include Bronze::Entities::Operations::EntityOperation
     include Bronze::Entities::Operations::PersistenceOperation
 
     # @param entity_class [Class] The class of entity this operation acts upon.
     # @param repository [Bronze::Collections::Repository] The data repository to
     #   access or reference.
     def initialize entity_class, repository
-      super
+      first_operation = build_operation(entity_class)
 
-      @operations      = []
-      @first_operation = build_operation(entity_class)
+      super(entity_class, repository, first_operation)
 
       self.
         then(validate_attributes_operation entity_class).
