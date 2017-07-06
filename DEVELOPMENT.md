@@ -127,7 +127,7 @@
     def error_message
       "#{error_prefix}.#{error_key}"
     end # method error_message
-
+  - Aggregate constraints via chaining with #and, #or, #not?
 - Contract
   - update syntax constrain :attribute, ClassName => true
     - if ClassName::Contract or ClassName::contract, uses contract
