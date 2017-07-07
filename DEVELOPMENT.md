@@ -168,6 +168,7 @@
     - can be slug (see dependent_attribute)
 - Errors#first
 - Operations
+  - #curry
   - #always,  #chain,  #else,  #then  return copies of chain w/ added operation/block
   - #always!, #chain!, #else!, #then! modify the current chain
 - Query

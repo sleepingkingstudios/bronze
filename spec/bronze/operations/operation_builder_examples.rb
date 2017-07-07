@@ -19,13 +19,16 @@ module Spec::Operations
     end # shared_examples
 
     shared_examples 'should execute the operation' do |receiver:|
+      let(:expected_class) do
+        defined?(super()) ? super() : operation_class
+      end # let
       let(:operation) do
-        defined?(super()) ? super() : operation_class.new
+        defined?(super()) ? super() : expected_class.new
       end # let
       let(:arguments) { [:foo, :bar => :baz] }
 
       it 'should execute the operation' do
-        expect(operation_class).to receive(:new).and_return(operation)
+        expect(expected_class).to receive(:new).and_return(operation)
 
         expect(operation).
           to receive(:process).
@@ -40,7 +43,7 @@ module Spec::Operations
         expect(result).to be operation
         expect(yielded).to be true
 
-        expect(operation).to be_a operation_class
+        expect(operation).to be_a expected_class
         expect(operation.called?).to be true
       end # it
     end # shared_examples
