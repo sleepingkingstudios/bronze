@@ -123,8 +123,8 @@ module Bronze::Operations
     #   false.
     #
     # @see #execute.
-    def call *args
-      execute(*args).success?
+    def call *args, &block
+      execute(*args, &block).success?
     end # method run
     alias_method :run, :call
 
@@ -192,12 +192,12 @@ module Bronze::Operations
     #   on to the #process method.
     #
     # @return [Operation] The operation.
-    def execute *args
+    def execute *args, &block
       @halted = false
       @called = false
       @errors = Bronze::Errors.new
 
-      @result = process(*args)
+      @result = process(*args, &block)
 
       @called = true
 

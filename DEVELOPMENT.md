@@ -45,52 +45,7 @@
 
   Steps:
 
-  1.  Create abstract base class - EntityOperation ?
-
-      ::subclass(entity_class) method: |
-
-      Defines subclass with curried constructor.
-
-  2.  Implement entity operations in Bronze::Entities::Operations.
-
-      Operations to create:
-
-      - assign_one
-      - build_one
-      - destroy_one
-      - find_many
-      - find_matching
-      - find_one
-      - insert_one
-      - update_one
-      - validate_one
-      - validate_one_uniqueness
-
-  2A. Implement chained operation helpers.
-
-      Refactor insert, update to insert_one_without_validation,
-      update_one_without_validation.
-
-      Operations to create:
-
-      - assign_and_update_one
-        - assign_one
-        - validate_one
-        - validate_one_uniqueness
-        - update_one_without_validation
-      - build_and_insert_one
-        - build_one
-        - validate_one
-        - validate_one_uniqueness
-        - insert_one_without_validation
-      - insert_one
-        - validate_one
-        - validate_one_uniqueness
-        - insert_one_without_validation
-      - update_one
-        - validate_one
-        - validate_one_uniqueness
-        - update_one_without_validation
+  ...
 
   3.  Create coordinator class/module - OperationBuilder
 
@@ -105,7 +60,15 @@
 
           Defines Book::Operations::ValidateOne, #validate_one.
 
+  3A. Create entity operations class/module - EntityOperationBuilder.
+
+      Takes entity class, builds default entity operations.
+
+      ::entity_operations method
+
   4.  Create resourceful operations class/module - ResourceOperationGroup ?
+
+      Belongs to Bronze::Rails !
 
       ::resource_operations method: |
 
@@ -164,7 +127,7 @@
     def error_message
       "#{error_prefix}.#{error_key}"
     end # method error_message
-
+  - Aggregate constraints via chaining with #and, #or, #not?
 - Contract
   - update syntax constrain :attribute, ClassName => true
     - if ClassName::Contract or ClassName::contract, uses contract
@@ -205,6 +168,7 @@
     - can be slug (see dependent_attribute)
 - Errors#first
 - Operations
+  - #curry
   - #always,  #chain,  #else,  #then  return copies of chain w/ added operation/block
   - #always!, #chain!, #else!, #then! modify the current chain
 - Query

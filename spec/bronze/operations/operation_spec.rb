@@ -4,6 +4,16 @@ require 'bronze/errors'
 require 'bronze/operations/operation'
 
 RSpec.describe Bronze::Operations::Operation do
+  shared_context 'when the operation defines #process' do
+    let(:described_class) do
+      Class.new(super()) do
+        def process *_args
+          yield if block_given?
+        end # method process
+      end # class
+    end # let
+  end # shared_context
+
   shared_context 'when the operation runs successfully' do
     before(:example) do
       allow(instance).to receive(:process).and_return(result)
@@ -268,6 +278,19 @@ RSpec.describe Bronze::Operations::Operation do
       expect { instance.call }.
         to raise_error described_class::NotImplementedError,
           "#{described_class.name} does not implement :process"
+    end # it
+
+    wrap_context 'when the operation defines #process' do
+      it 'should delegate to #process' do
+        arguments = [:foo, { :bar => :baz }]
+        yielded   = false
+
+        expect(instance).to receive(:process).with(*arguments).and_call_original
+
+        instance.call(*arguments) { yielded = true }
+
+        expect(yielded).to be true
+      end # it
     end # it
 
     wrap_context 'when the operation runs and generates errors' do
@@ -681,6 +704,19 @@ RSpec.describe Bronze::Operations::Operation do
       expect { instance.execute }.
         to raise_error described_class::NotImplementedError,
           "#{described_class.name} does not implement :process"
+    end # it
+
+    wrap_context 'when the operation defines #process' do
+      it 'should delegate to #process' do
+        arguments = [:foo, { :bar => :baz }]
+        yielded   = false
+
+        expect(instance).to receive(:process).with(*arguments).and_call_original
+
+        instance.execute(*arguments) { yielded = true }
+
+        expect(yielded).to be true
+      end # it
     end # it
 
     wrap_context 'when the operation runs and generates errors' do
