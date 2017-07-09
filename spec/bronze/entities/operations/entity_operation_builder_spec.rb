@@ -8,6 +8,38 @@ require 'bronze/operations/operation_builder_examples'
 RSpec.describe Bronze::Entities::Operations::EntityOperationBuilder do
   include Spec::Operations::OperationBuilderExamples
 
+  shared_examples 'should define the operation subclasses' do |receiver:|
+    it 'should define the operation subclasses', :aggregate_failures do
+      module_instance.define_entity_operations
+
+      tools = SleepingKingStudios::Tools::Toolbelt.instance
+
+      operation_names.each do |operation_name|
+        const_name     = tools.string.camelize(operation_name)
+        qualified_name =
+          "Bronze::Entities::Operations::#{const_name}Operation"
+        base_class     = Object.const_get(qualified_name)
+
+        expect(send(receiver)).to have_constant(const_name)
+
+        subclass = send(receiver).const_get(const_name)
+
+        expect(subclass).to be_a Class
+        expect(subclass).to be < base_class
+      end # each
+    end # it
+  end # shared_examples
+
+  shared_examples 'should define the operation methods' do |receiver:|
+    it 'should define the operation methods', :aggregate_failures do
+      module_instance.define_entity_operations
+
+      operation_names.each do |method_name|
+        expect(send(receiver)).to respond_to(method_name)
+      end # each
+    end # it
+  end # shared_examples
+
   let(:entity_class) { Spec::Book }
   let(:module_instance) do
     Bronze::Entities::Operations::EntityOperationBuilder.new(entity_class).
@@ -22,43 +54,35 @@ RSpec.describe Bronze::Entities::Operations::EntityOperationBuilder do
 
   describe '::new' do
     it { expect(described_class).to be_constructible.with(1).argument }
+
+    describe 'with a block' do
+      let(:operation_names) do
+        module_instance.send :entity_operation_names
+      end # let
+      let(:module_instance) do
+        # rubocop:disable Metrics/LineLength, Style/MultilineBlockChain
+        Bronze::Entities::Operations::EntityOperationBuilder.new(entity_class) do
+          define_entity_operations
+        end. # module
+          tap do |mod|
+            %w(name inspect to_s).each do |method|
+              allow(mod).to receive(method).and_return('Spec::Book::Operations')
+            end # each
+          end # tap
+        # rubocop:enable Metrics/LineLength, Style/MultilineBlockChain
+      end # let
+
+      include_examples 'should define the operation subclasses',
+        :receiver => :module_instance
+
+      include_examples 'should define the operation methods',
+        :receiver => :module_instance
+    end # describe
   end # describe
 
   include_examples 'should implement the OperationBuilder methods'
 
   describe '#define_entity_operations' do
-    shared_examples 'should define the operation subclasses' do |receiver:|
-      it 'should define the operation subclasses', :aggregate_failures do
-        module_instance.define_entity_operations
-
-        tools = SleepingKingStudios::Tools::Toolbelt.instance
-
-        operation_names.each do |operation_name|
-          const_name     = tools.string.camelize(operation_name)
-          qualified_name =
-            "Bronze::Entities::Operations::#{const_name}Operation"
-          base_class     = Object.const_get(qualified_name)
-
-          expect(send(receiver)).to have_constant(const_name)
-
-          subclass = send(receiver).const_get(const_name)
-
-          expect(subclass).to be_a Class
-          expect(subclass).to be < base_class
-        end # each
-      end # it
-    end # shared_examples
-
-    shared_examples 'should define the operation methods' do |receiver:|
-      it 'should define the operation methods', :aggregate_failures do
-        module_instance.define_entity_operations
-
-        operation_names.each do |method_name|
-          expect(send(receiver)).to respond_to(method_name)
-        end # each
-      end # it
-    end # shared_examples
-
     let(:operation_names) do
       module_instance.send :entity_operation_names
     end # let

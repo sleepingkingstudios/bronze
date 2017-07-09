@@ -16,9 +16,9 @@ module Bronze::Entities::Operations
     def initialize entity_class
       const_set(:Definitions, Module.new)
 
-      super()
-
       @entity_class = entity_class
+
+      super()
     end # constructor
 
     # @api private

@@ -52,7 +52,12 @@ module Spec::Operations
       describe '#operation' do
         let(:operation_name) { :custom }
         let(:operation_class) do
-          klass = defined?(super()) ? super() : Bronze::Operations::Operation
+          klass =
+            if defined?(super())
+              super()
+            else
+              Class.new(Bronze::Operations::Operation)
+            end # if-else
 
           allow(klass).to receive(:name).and_return('CustomOperation')
 
