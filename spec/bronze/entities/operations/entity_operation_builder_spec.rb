@@ -6,7 +6,7 @@ require 'bronze/entities/operations/entity_operation_builder'
 require 'bronze/operations/operation_builder_examples'
 
 RSpec.describe Bronze::Entities::Operations::EntityOperationBuilder do
-  include Spec::Operations::OperationBuilderExamples
+  include Bronze::Operations::OperationBuilderExamples
 
   shared_examples 'should define the operation subclasses' do |receiver:|
     it 'should define the operation subclasses', :aggregate_failures do

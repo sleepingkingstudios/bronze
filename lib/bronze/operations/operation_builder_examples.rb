@@ -1,9 +1,14 @@
-# spec/bronze/operations/operation_builder_examples.rb
+# lib/bronze/operations/operation_builder_examples.rb
 
-require 'bronze/operations/operation'
+require 'rspec/sleeping_king_studios/concerns/shared_example_group'
 
-module Spec::Operations
-  module OperationBuilderExamples
+require 'bronze/operations'
+
+# rubocop:disable Metrics/BlockLength
+
+module Bronze::Operations
+  # Shared examples for describing the behavior of an OperationBuilder.
+  module OperationBuilderExamples # rubocop:disable Metrics/ModuleLength
     extend RSpec::SleepingKingStudios::Concerns::SharedExampleGroup
 
     shared_context 'when the builder is extended in a class' do
@@ -126,11 +131,6 @@ module Spec::Operations
             before(:example) do
               module_instance.operation(operation_name, operation_class)
             end # before example
-            let(:operation_name) { :named }
-
-            before(:example) do
-              module_instance.operation(operation_name, operation_class)
-            end # before example
 
             include_examples 'should define the operation method',
               :receiver => :described_class
@@ -157,3 +157,5 @@ module Spec::Operations
     end # shared_examples
   end # module
 end # module
+
+# rubocop:enable Metrics/BlockLength
