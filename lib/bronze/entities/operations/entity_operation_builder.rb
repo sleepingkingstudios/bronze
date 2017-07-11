@@ -32,6 +32,11 @@ module Bronze::Entities::Operations
       end # each
     end # method define_entity_operations
 
+    # @return [String] The name of the builder class.
+    def name
+      super || "EntityOperationBuilder(#{@entity_class.name})"
+    end # method name
+
     private
 
     def build_subclass definition

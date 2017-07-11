@@ -121,6 +121,31 @@ RSpec.describe Bronze::Entities::Operations::EntityOperationBuilder do
     end # context
   end # describe
 
+  describe '#name' do
+    context 'when the module is anonymous' do
+      let(:expected) { "EntityOperationBuilder(#{entity_class.name})" }
+      let(:module_instance) do
+        Bronze::Entities::Operations::EntityOperationBuilder.new(entity_class)
+      end # let
+
+      it { expect(module_instance.name).to be == expected }
+    end # context
+
+    context 'when the module has a name' do
+      before(:example) do
+        class Spec::Book
+          Operations =
+            Bronze::Entities::Operations::EntityOperationBuilder.new(self)
+        end # class
+      end # before example
+
+      let(:expected)        { 'Spec::Book::Operations' }
+      let(:module_instance) { Spec::Book::Operations }
+
+      it { expect(module_instance.name).to be == expected }
+    end # context
+  end # describe
+
   describe '#operation' do
     let(:operation_class) do
       # rubocop:disable Style/MultilineBlockChain
