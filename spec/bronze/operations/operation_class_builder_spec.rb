@@ -1,12 +1,12 @@
-# spec/bronze/operations/operation_builder_spec.rb
+# spec/bronze/operations/operation_class_builder_spec.rb
 
-require 'bronze/operations/operation_builder'
 require 'bronze/operations/operation_builder_examples'
+require 'bronze/operations/operation_class_builder'
 
-RSpec.describe Bronze::Operations::OperationBuilder do
+RSpec.describe Bronze::Operations::OperationClassBuilder do
   include Bronze::Operations::OperationBuilderExamples
 
-  let(:module_instance) { Bronze::Operations::OperationBuilder.new }
+  let(:module_instance) { Bronze::Operations::OperationClassBuilder.new }
   let(:operation_class) do
     Class.new(Bronze::Operations::Operation) do
       def self.name
@@ -35,7 +35,7 @@ RSpec.describe Bronze::Operations::OperationBuilder do
         name       = operation_name
         definition = operation_class
 
-        Bronze::Operations::OperationBuilder.new do
+        Bronze::Operations::OperationClassBuilder.new do
           operation name, definition
         end # module
       end # let
@@ -45,8 +45,13 @@ RSpec.describe Bronze::Operations::OperationBuilder do
 
       include_examples 'should execute the operation',
         :receiver => :module_instance
+
+      include_examples 'should define the operation subclass',
+        :receiver => :module_instance
     end # describe
   end # describe
 
   include_examples 'should implement the OperationBuilder methods'
+
+  include_examples 'should implement the OperationClassBuilder methods'
 end # describe

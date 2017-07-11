@@ -41,12 +41,12 @@ module Bronze::Operations
 
     private
 
-    def define_operation name, definition
-      define_method(name) do |*args, &block|
+    def define_operation method_name, definition
+      define_method(method_name) do |*args, &block|
         operation = definition.is_a?(Proc) ? definition.call : definition.new
 
         operation.execute(*args, &block)
-      end # method name
+      end # method method_name
     end # method define_operation
 
     def operation_name definition

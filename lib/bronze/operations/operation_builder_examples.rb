@@ -1,9 +1,14 @@
-# spec/bronze/operations/operation_builder_examples.rb
+# lib/bronze/operations/operation_builder_examples.rb
 
-require 'bronze/operations/operation'
+require 'rspec/sleeping_king_studios/concerns/shared_example_group'
 
-module Spec::Operations
-  module OperationBuilderExamples
+require 'bronze/operations'
+
+# rubocop:disable Metrics/BlockLength
+
+module Bronze::Operations
+  # Shared examples for describing the behavior of an OperationBuilder.
+  module OperationBuilderExamples # rubocop:disable Metrics/ModuleLength
     extend RSpec::SleepingKingStudios::Concerns::SharedExampleGroup
 
     shared_context 'when the builder is extended in a class' do
@@ -45,6 +50,31 @@ module Spec::Operations
 
         expect(operation).to be_a expected_class
         expect(operation.called?).to be true
+      end # it
+    end # shared_examples
+
+    shared_examples 'should define the operation subclass' \
+    do |proc = nil, receiver:|
+      let(:const_name) do
+        return super() if defined?(super())
+
+        tools = SleepingKingStudios::Tools::Toolbelt.instance
+
+        tools.string.camelize(operation_name)
+      end # let
+      let(:qualified_name) do
+        "#{module_instance.name}::#{const_name}"
+      end # let
+
+      it 'should define the operation subclass' do
+        expect(send(receiver)).to have_constant(const_name)
+
+        subclass = send(receiver).const_get(const_name)
+
+        expect(subclass).to be <= operation_class
+        expect(subclass.name).to be == qualified_name
+
+        instance_exec(subclass, &proc) if proc
       end # it
     end # shared_examples
 
@@ -126,11 +156,6 @@ module Spec::Operations
             before(:example) do
               module_instance.operation(operation_name, operation_class)
             end # before example
-            let(:operation_name) { :named }
-
-            before(:example) do
-              module_instance.operation(operation_name, operation_class)
-            end # before example
 
             include_examples 'should define the operation method',
               :receiver => :described_class
@@ -155,5 +180,61 @@ module Spec::Operations
         end # wrap_context
       end # describe
     end # shared_examples
+
+    shared_examples 'should implement the OperationClassBuilder methods' do
+      let(:operation_name) { :custom }
+      let(:operation_class) do
+        klass =
+          if defined?(super())
+            super()
+          else
+            Class.new(Bronze::Operations::Operation)
+          end # if-else
+
+        allow(klass).to receive(:name).and_return('CustomOperation')
+
+        klass
+      end # let
+
+      describe 'with an operation class' do
+        before(:example) { module_instance.operation(operation_class) }
+
+        include_examples 'should define the operation subclass',
+          :receiver => :module_instance
+      end # describe
+
+      describe 'with an operation name and class' do
+        let(:operation_name) { :named }
+
+        before(:example) do
+          module_instance.operation(operation_name, operation_class)
+        end # before example
+
+        include_examples 'should define the operation subclass',
+          :receiver => :module_instance
+      end # describe
+
+      wrap_context 'when the builder is extended in a class' do
+        describe 'with an operation class' do
+          before(:example) { module_instance.operation(operation_class) }
+
+          include_examples 'should define the operation subclass',
+            :receiver => :module_instance
+        end # describe
+
+        describe 'with an operation name and class' do
+          let(:operation_name) { :named }
+
+          before(:example) do
+            module_instance.operation(operation_name, operation_class)
+          end # before example
+
+          include_examples 'should define the operation subclass',
+            :receiver => :module_instance
+        end # describe
+      end # wrap_context
+    end # shared_examples
   end # module
 end # module
+
+# rubocop:enable Metrics/BlockLength
