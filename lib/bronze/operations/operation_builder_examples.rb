@@ -53,6 +53,31 @@ module Bronze::Operations
       end # it
     end # shared_examples
 
+    shared_examples 'should define the operation subclass' \
+    do |proc = nil, receiver:|
+      let(:const_name) do
+        return super() if defined?(super())
+
+        tools = SleepingKingStudios::Tools::Toolbelt.instance
+
+        tools.string.camelize(operation_name)
+      end # let
+      let(:qualified_name) do
+        "#{module_instance.name}::#{const_name}"
+      end # let
+
+      it 'should define the operation subclass' do
+        expect(send(receiver)).to have_constant(const_name)
+
+        subclass = send(receiver).const_get(const_name)
+
+        expect(subclass).to be <= operation_class
+        expect(subclass.name).to be == qualified_name
+
+        instance_exec(subclass, &proc) if proc
+      end # it
+    end # shared_examples
+
     shared_examples 'should implement the OperationBuilder methods' do
       describe '#operation' do
         let(:operation_name) { :custom }
@@ -154,6 +179,60 @@ module Bronze::Operations
           end # describe
         end # wrap_context
       end # describe
+    end # shared_examples
+
+    shared_examples 'should implement the OperationClassBuilder methods' do
+      let(:operation_name) { :custom }
+      let(:operation_class) do
+        klass =
+          if defined?(super())
+            super()
+          else
+            Class.new(Bronze::Operations::Operation)
+          end # if-else
+
+        allow(klass).to receive(:name).and_return('CustomOperation')
+
+        klass
+      end # let
+
+      describe 'with an operation class' do
+        before(:example) { module_instance.operation(operation_class) }
+
+        include_examples 'should define the operation subclass',
+          :receiver => :module_instance
+      end # describe
+
+      describe 'with an operation name and class' do
+        let(:operation_name) { :named }
+
+        before(:example) do
+          module_instance.operation(operation_name, operation_class)
+        end # before example
+
+        include_examples 'should define the operation subclass',
+          :receiver => :module_instance
+      end # describe
+
+      wrap_context 'when the builder is extended in a class' do
+        describe 'with an operation class' do
+          before(:example) { module_instance.operation(operation_class) }
+
+          include_examples 'should define the operation subclass',
+            :receiver => :module_instance
+        end # describe
+
+        describe 'with an operation name and class' do
+          let(:operation_name) { :named }
+
+          before(:example) do
+            module_instance.operation(operation_name, operation_class)
+          end # before example
+
+          include_examples 'should define the operation subclass',
+            :receiver => :module_instance
+        end # describe
+      end # wrap_context
     end # shared_examples
   end # module
 end # module

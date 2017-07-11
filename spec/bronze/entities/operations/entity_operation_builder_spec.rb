@@ -10,8 +10,6 @@ RSpec.describe Bronze::Entities::Operations::EntityOperationBuilder do
 
   shared_examples 'should define the operation subclasses' do |receiver:|
     it 'should define the operation subclasses', :aggregate_failures do
-      module_instance.define_entity_operations
-
       tools = SleepingKingStudios::Tools::Toolbelt.instance
 
       operation_names.each do |operation_name|
@@ -32,8 +30,6 @@ RSpec.describe Bronze::Entities::Operations::EntityOperationBuilder do
 
   shared_examples 'should define the operation methods' do |receiver:|
     it 'should define the operation methods', :aggregate_failures do
-      module_instance.define_entity_operations
-
       operation_names.each do |method_name|
         expect(send(receiver)).to respond_to(method_name)
       end # each
@@ -49,6 +45,24 @@ RSpec.describe Bronze::Entities::Operations::EntityOperationBuilder do
         end # each
       end # tap
   end # let
+  let(:operation_names) do
+    [
+      :assign_and_update_one,
+      :assign_one,
+      :build_and_insert_one,
+      :build_one,
+      :delete_one,
+      :find_many,
+      :find_matching,
+      :find_one,
+      :insert_one,
+      :insert_one_without_validation,
+      :update_one,
+      :update_one_without_validation,
+      :validate_one,
+      :validate_one_uniqueness
+    ] # end names
+  end # let
 
   example_class 'Spec::Book', :base_class => Bronze::Entities::Entity
 
@@ -56,9 +70,6 @@ RSpec.describe Bronze::Entities::Operations::EntityOperationBuilder do
     it { expect(described_class).to be_constructible.with(1).argument }
 
     describe 'with a block' do
-      let(:operation_names) do
-        module_instance.send :entity_operation_names
-      end # let
       let(:module_instance) do
         # rubocop:disable Metrics/LineLength, Style/MultilineBlockChain
         Bronze::Entities::Operations::EntityOperationBuilder.new(entity_class) do
@@ -82,55 +93,35 @@ RSpec.describe Bronze::Entities::Operations::EntityOperationBuilder do
 
   include_examples 'should implement the OperationBuilder methods'
 
-  describe '#define_entity_operations' do
-    let(:operation_names) do
-      module_instance.send :entity_operation_names
-    end # let
+  include_examples 'should implement the OperationClassBuilder methods'
 
+  describe '#define_entity_operations' do
     it 'should define the method' do
       expect(module_instance).
         to respond_to(:define_entity_operations).
         with(0).arguments
     end # it
 
-    include_examples 'should define the operation subclasses',
-      :receiver => :module_instance
+    context 'when the entity operations are defined' do
+      before(:example) { module_instance.define_entity_operations }
 
-    include_examples 'should define the operation methods',
-      :receiver => :module_instance
-
-    wrap_context 'when the builder is extended in a class' do
       include_examples 'should define the operation subclasses',
-        :receiver => :described_class
+        :receiver => :module_instance
 
       include_examples 'should define the operation methods',
-        :receiver => :described_class
-    end # wrap_context
+        :receiver => :module_instance
+
+      wrap_context 'when the builder is extended in a class' do
+        include_examples 'should define the operation subclasses',
+          :receiver => :described_class
+
+        include_examples 'should define the operation methods',
+          :receiver => :described_class
+      end # wrap_context
+    end # context
   end # describe
 
-  describe '#entity_operation' do
-    shared_examples 'should define the operation subclass' do |receiver:|
-      let(:const_name) do
-        tools = SleepingKingStudios::Tools::Toolbelt.instance
-
-        tools.string.camelize(operation_name)
-      end # let
-      let(:qualified_name) do
-        "#{module_instance.name}::#{const_name}"
-      end # let
-
-      it 'should define the operation subclass' do
-        expect(send(receiver)).
-          to have_constant(const_name).
-          with_value(expected_class)
-
-        subclass = send(receiver).const_get(const_name)
-
-        expect(subclass.name).to be == qualified_name
-        expect(subclass.new.entity_class).to be entity_class
-      end # it
-    end # shared_examples
-
+  describe '#operation' do
     let(:operation_class) do
       # rubocop:disable Style/MultilineBlockChain
       Class.new(Bronze::Operations::Operation) do
@@ -155,16 +146,13 @@ RSpec.describe Bronze::Entities::Operations::EntityOperationBuilder do
     let(:expected_class) { operation_class.subclass(entity_class) }
     let(:operation_name) { 'custom' }
 
-    it 'should define the method' do
-      expect(module_instance).
-        to respond_to(:entity_operation).
-        with(1..2).arguments
-    end # it
-
     describe 'with an entity operation class' do
-      before(:example) { module_instance.entity_operation(operation_class) }
+      before(:example) { module_instance.operation(operation_class) }
 
       include_examples 'should define the operation subclass',
+        lambda { |subclass|
+          expect(subclass.new.entity_class).to be entity_class
+        }, # end lambda
         :receiver => :module_instance
 
       include_examples 'should define the operation method',
@@ -178,10 +166,13 @@ RSpec.describe Bronze::Entities::Operations::EntityOperationBuilder do
       let(:operation_name) { :named }
 
       before(:example) do
-        module_instance.entity_operation(operation_name, operation_class)
+        module_instance.operation(operation_name, operation_class)
       end # before example
 
       include_examples 'should define the operation subclass',
+        lambda { |subclass|
+          expect(subclass.new.entity_class).to be entity_class
+        }, # end lambda
         :receiver => :module_instance
 
       include_examples 'should define the operation method',
@@ -193,9 +184,12 @@ RSpec.describe Bronze::Entities::Operations::EntityOperationBuilder do
 
     wrap_context 'when the builder is extended in a class' do
       describe 'with an entity operation class' do
-        before(:example) { module_instance.entity_operation(operation_class) }
+        before(:example) { module_instance.operation(operation_class) }
 
         include_examples 'should define the operation subclass',
+          lambda { |subclass|
+            expect(subclass.new.entity_class).to be entity_class
+          }, # end lambda
           :receiver => :described_class
 
         include_examples 'should define the operation method',
@@ -209,10 +203,13 @@ RSpec.describe Bronze::Entities::Operations::EntityOperationBuilder do
         let(:operation_name) { :named }
 
         before(:example) do
-          module_instance.entity_operation(operation_name, operation_class)
+          module_instance.operation(operation_name, operation_class)
         end # before example
 
         include_examples 'should define the operation subclass',
+          lambda { |subclass|
+            expect(subclass.new.entity_class).to be entity_class
+          }, # end lambda
           :receiver => :described_class
 
         include_examples 'should define the operation method',
