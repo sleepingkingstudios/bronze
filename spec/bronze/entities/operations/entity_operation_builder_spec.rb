@@ -121,9 +121,17 @@ RSpec.describe Bronze::Entities::Operations::EntityOperationBuilder do
     end # context
   end # describe
 
+  describe '#entity_class' do
+    let(:instance) { module_instance }
+
+    include_examples 'should have reader', :entity_class, ->() { entity_class }
+  end # describe
+
   describe '#name' do
     context 'when the module is anonymous' do
-      let(:expected) { "EntityOperationBuilder(#{entity_class.name})" }
+      let(:expected) do
+        "#{entity_class.name.gsub('::', '_')}_OperationBuilder"
+      end # let
       let(:module_instance) do
         Bronze::Entities::Operations::EntityOperationBuilder.new(entity_class)
       end # let

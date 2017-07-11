@@ -19,6 +19,10 @@ module Bronze::Entities::Operations
       super()
     end # constructor
 
+    # @return [Class] The entity class to operate on. Defined entity operations
+    #   will use this class to process the operations.
+    attr_reader :entity_class
+
     # Subclasses and defines helper methods for each entity operation.
     #
     # @see #entity_operation.
@@ -34,7 +38,7 @@ module Bronze::Entities::Operations
 
     # @return [String] The name of the builder class.
     def name
-      super || "EntityOperationBuilder(#{@entity_class.name})"
+      super || "#{@entity_class.name.gsub('::', '_')}_OperationBuilder"
     end # method name
 
     private
