@@ -29,7 +29,15 @@ module Bronze::Entities::Operations
         ) # end error
       end # unless
 
-      entity
+      persist_entity(entity)
     end # method process
+
+    private
+
+    def persist_entity entity
+      return entity unless entity.respond_to?(:persist)
+
+      entity.tap(&:persist)
+    end # method persist_entity
   end # class
 end # module

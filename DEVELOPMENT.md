@@ -172,6 +172,7 @@
   - #always,  #chain,  #else,  #then  return copies of chain w/ added operation/block
   - #always!, #chain!, #else!, #then! modify the current chain
 - Query
+  - #each with no block returns an enumerator
   - #all returns with JSON envelope for advanced features?
   - #matching with non-equality predicates
     - use block syntax+DSL: |

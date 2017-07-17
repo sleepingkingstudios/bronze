@@ -32,7 +32,7 @@ module Bronze::Entities::Operations
 
       add_errors(expected_keys, found_entities.map(&:id))
 
-      found_entities
+      found_entities.map { |entity| persist_entity(entity) }
     end # method process
 
     private
@@ -47,5 +47,11 @@ module Bronze::Entities::Operations
         ) # end error
       end # each
     end # method add_errors
+
+    def persist_entity entity
+      return entity unless entity.respond_to?(:persist)
+
+      entity.tap(&:persist)
+    end # method persist_entity
   end # class
 end # module
