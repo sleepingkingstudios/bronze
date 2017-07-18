@@ -54,9 +54,13 @@ module Bronze::Entities::Operations
 
       contract = entity_class.const_get(:Contract)
 
-      return nil unless contract.is_a?(Bronze::Constraints::Constraint)
+      return contract if contract.is_a?(Bronze::Constraints::Constraint)
 
-      contract
+      if contract.is_a?(Class) && contract < Bronze::Constraints::Constraint
+        return contract.new
+      end # if
+
+      nil
     end # method class_contract_constant
 
     def class_contract_method
@@ -64,9 +68,13 @@ module Bronze::Entities::Operations
 
       contract = entity_class.send(:contract)
 
-      return nil unless contract.is_a?(Bronze::Constraints::Constraint)
+      return contract if contract.is_a?(Bronze::Constraints::Constraint)
 
-      contract
+      if contract.is_a?(Class) && contract < Bronze::Constraints::Constraint
+        return contract.new
+      end # if
+
+      nil
     end # method class_contract_method
 
     def contract?
