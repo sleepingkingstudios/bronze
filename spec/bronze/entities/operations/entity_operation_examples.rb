@@ -1299,7 +1299,13 @@ module Spec::Entities::Operations::EntityOperationExamples
         } # end lambda
 
         it 'should set the result to the found entities' do
-          expect(execute_operation.result).to contain_exactly(*entities)
+          operation = execute_operation
+
+          expect(operation.result).to contain_exactly(*entities)
+
+          operation.result.each do |entity|
+            expect(entity.persisted?).to be true
+          end # each
         end # it
       end # describe
 
@@ -1314,7 +1320,13 @@ module Spec::Entities::Operations::EntityOperationExamples
         include_examples 'should succeed and clear the errors'
 
         it 'should set the result to the found entities' do
-          expect(execute_operation.result).to contain_exactly(*entities)
+          operation = execute_operation
+
+          expect(operation.result).to contain_exactly(*entities)
+
+          operation.result.each do |entity|
+            expect(entity.persisted?).to be true
+          end # each
         end # it
       end # describe
     end # describe
@@ -1337,7 +1349,13 @@ module Spec::Entities::Operations::EntityOperationExamples
         include_examples 'should succeed and clear the errors'
 
         it 'should set the result to the matching entities' do
-          expect(execute_operation.result).to contain_exactly(*expected)
+          operation = execute_operation
+
+          expect(operation.result).to contain_exactly(*expected)
+
+          operation.result.each do |entity|
+            expect(entity.persisted?).to be true
+          end # each
         end # it
       end # describe
 
@@ -1349,7 +1367,13 @@ module Spec::Entities::Operations::EntityOperationExamples
         include_examples 'should succeed and clear the errors'
 
         it 'should set the result to the matching entities' do
-          expect(execute_operation.result).to contain_exactly(*expected)
+          operation = execute_operation
+
+          expect(operation.result).to contain_exactly(*expected)
+
+          operation.result.each do |entity|
+            expect(entity.persisted?).to be true
+          end # each
         end # it
       end # describe
 
@@ -1377,7 +1401,13 @@ module Spec::Entities::Operations::EntityOperationExamples
         include_examples 'should succeed and clear the errors'
 
         it 'should set the result to the matching entities' do
-          expect(execute_operation.result).to contain_exactly(*expected)
+          operation = execute_operation
+
+          expect(operation.result).to contain_exactly(*expected)
+
+          operation.result.each do |entity|
+            expect(entity.persisted?).to be true
+          end # each
         end # it
       end # describe
 
@@ -1391,7 +1421,13 @@ module Spec::Entities::Operations::EntityOperationExamples
         include_examples 'should succeed and clear the errors'
 
         it 'should set the result to the matching entities' do
-          expect(execute_operation.result).to contain_exactly(*expected)
+          operation = execute_operation
+
+          expect(operation.result).to contain_exactly(*expected)
+
+          operation.result.each do |entity|
+            expect(entity.persisted?).to be true
+          end # each
         end # it
       end # describe
     end # describe
@@ -1459,6 +1495,7 @@ module Spec::Entities::Operations::EntityOperationExamples
 
         it 'should set the result to the found entity' do
           expect(execute_operation.result).to be == entity
+          expect(execute_operation.result.persisted?).to be true
         end # it
       end # describe
     end # describe
@@ -2139,6 +2176,14 @@ module Spec::Entities::Operations::EntityOperationExamples
               tap { |hsh| hsh.delete(:id) }
           end # let
           let(:entity) { entity_class.new(attributes) }
+          let(:expected_error) do
+            error_types = Bronze::Entities::Constraints::UniquenessConstraint
+
+            {
+              :type => error_types::NOT_UNIQUE_ERROR,
+              :path => [:periodical]
+            } # end error
+          end # let
 
           def execute_operation
             instance.execute(entity)

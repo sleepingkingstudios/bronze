@@ -22,7 +22,15 @@ module Bronze::Entities::Operations
 
       query = query.matching(matching) if matching.is_a?(Hash)
 
-      query.to_a
+      query.to_a.map { |entity| persist_entity(entity) }
     end # method process
+
+    private
+
+    def persist_entity entity
+      return entity unless entity.respond_to?(:persist)
+
+      entity.tap(&:persist)
+    end # method persist_entity
   end # class
 end # module

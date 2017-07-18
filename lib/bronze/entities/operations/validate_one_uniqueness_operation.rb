@@ -20,7 +20,9 @@ module Bronze::Entities::Operations
     def process entity
       return entity unless entity.respond_to?(:match_uniqueness)
 
-      _, @errors = entity.match_uniqueness(collection)
+      result, errors = entity.match_uniqueness(collection)
+
+      @errors[entity_name] = errors unless result
 
       entity
     end # method process
