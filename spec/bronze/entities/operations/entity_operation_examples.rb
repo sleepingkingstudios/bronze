@@ -2176,6 +2176,14 @@ module Spec::Entities::Operations::EntityOperationExamples
               tap { |hsh| hsh.delete(:id) }
           end # let
           let(:entity) { entity_class.new(attributes) }
+          let(:expected_error) do
+            error_types = Bronze::Entities::Constraints::UniquenessConstraint
+
+            {
+              :type => error_types::NOT_UNIQUE_ERROR,
+              :path => [:periodical]
+            } # end error
+          end # let
 
           def execute_operation
             instance.execute(entity)
