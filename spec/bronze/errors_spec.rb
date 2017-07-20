@@ -12,10 +12,14 @@ RSpec.describe Bronze::Errors do
       } # end hash
     end # let
 
-    before(:example) do
+    def define_errors_for err
       errors.each do |error_type, error_params|
-        instance.add error_type, **error_params
+        err.add error_type, **error_params
       end # each
+    end # method define_errors_for
+
+    before(:example) do
+      define_errors_for(instance)
     end # before example
   end # shared_context
 
@@ -45,14 +49,18 @@ RSpec.describe Bronze::Errors do
       } # end errors
     end # let
 
-    before(:example) do
+    def define_nested_errors_for err
       nested_errors.each do |path, errors|
-        proxy = instance.dig(*path)
+        proxy = err.dig(*path)
 
         errors.each do |error_type, error_params|
           proxy.add error_type, **error_params
         end # each
       end # each
+    end # method define_nested_errors_for
+
+    before(:example) do
+      define_nested_errors_for(instance)
     end # before example
   end # shared_context
 
@@ -74,6 +82,93 @@ RSpec.describe Bronze::Errors do
         with(0).arguments.
         and_keywords(:data, :path)
     end # it
+  end # describe
+
+  describe '#==' do
+    shared_context 'with an errors object with many errors' do
+      include_context 'when there are many errors'
+
+      before(:example) do
+        define_errors_for(other)
+      end # before example
+    end # shared_context
+
+    shared_context 'with an errors object with many nested errors' do
+      include_context 'when there are many nested errors'
+
+      before(:example) do
+        define_nested_errors_for(other)
+      end # before example
+    end # shared_context
+
+    let(:err)   { described_class.new :path => path }
+    let(:other) { described_class.new :path => path }
+
+    describe 'with nil' do
+      # rubocop:disable Style/NilComparison
+      it { expect(err == nil).to be false }
+      # rubocop:enable Style/NilComparison
+    end # describe
+
+    describe 'with an empty errors object' do
+      it { expect(err == other).to be true }
+    end # describe
+
+    wrap_context 'with an errors object with many errors' do
+      it { expect(err == other).to be false }
+    end # wrap_context
+
+    wrap_context 'with an errors object with many nested errors' do
+      it { expect(err == other).to be false }
+    end # describe
+
+    wrap_context 'when there are many errors' do
+      before(:example) do
+        define_errors_for(err)
+      end # before example
+
+      describe 'with an empty errors object' do
+        it { expect(err == other).to be false }
+      end # describe
+
+      describe 'with an errors object with unordered errors' do
+        include_context 'when there are many errors'
+
+        before(:example) do
+          errors.reverse_each do |error_type, error_params|
+            other.add error_type, **error_params
+          end # each
+        end # before example
+
+        it { expect(err == other).to be true }
+      end # describe
+
+      wrap_context 'with an errors object with many errors' do
+        it { expect(err == other).to be true }
+      end # wrap_context
+
+      wrap_context 'with an errors object with many nested errors' do
+        it { expect(err == other).to be false }
+      end # describe
+    end # wrap_context
+
+    wrap_context 'when there are many nested errors' do
+      before(:example) do
+        define_nested_errors_for(err)
+      end # before example
+
+      describe 'with an empty errors object' do
+        it { expect(err == other).to be false }
+      end # describe
+
+      wrap_context 'with an errors object with many errors' do
+        it { expect(err == other).to be false }
+      end # wrap_context
+
+      wrap_context 'with an errors object with many nested errors' do
+        it { expect(err == other).to be true }
+      end # describe
+    end # wrap_context
   end # describe
 
   describe '#[]' do
