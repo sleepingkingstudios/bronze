@@ -18,6 +18,18 @@ module Bronze
       @data[:__errors] ||= []
     end # method errors
 
+    # Compares the given object to the errors. Returns false if the other object
+    # is not an errors object or does not have the same errors.
+    #
+    # @param other [Bronze::Errors] The object to compare.
+    #
+    # @return [Boolean]
+    def == other
+      return false unless other.is_a?(Bronze::Errors)
+
+      compare_errors(other)
+    end # method ==
+
     # Returns a reference to the inner errors data structure at the given key.
     #
     # @param key [Integer, Symbol] The inner data key.
@@ -166,6 +178,18 @@ module Bronze
 
     private
 
+    def compare_errors other
+      enum = other.each
+
+      each do |error|
+        return false unless error == enum.next || other.include?(error)
+      end # each
+
+      empty_enumerable?(enum)
+    rescue StopIteration
+      false
+    end # method compare_errors
+
     def count_errors_in_hash hsh
       count = 0
 
@@ -187,6 +211,14 @@ module Bronze
         end # if-else
       end # each
     end # method each_error_in_hash
+
+    def empty_enumerable? enum
+      enum.peek
+
+      false
+    rescue StopIteration
+      true
+    end # method empty_enumerable?
 
     def hash_has_errors? hsh
       hsh.each do |key, value|

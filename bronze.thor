@@ -4,6 +4,9 @@ require 'sleeping_king_studios/tasks'
 
 SleepingKingStudios::Tasks.configure do |config|
   config.ci do |ci|
+    # Handle Travis-CI log length limit.
+    ci.rspec.update :format => 'progress' if ENV['TRAVIS']
+
     ci.steps =
       if ENV['CI']
         %i(rspec rspec_each rubocop simplecov)
