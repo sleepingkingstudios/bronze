@@ -43,7 +43,7 @@ RSpec.describe Bronze::Operations::OperationClassBuilder do
       include_examples 'should define the operation method',
         :receiver => :module_instance
 
-      include_examples 'should execute the operation',
+      include_examples 'should build the operation',
         :receiver => :module_instance
 
       include_examples 'should define the operation subclass',
