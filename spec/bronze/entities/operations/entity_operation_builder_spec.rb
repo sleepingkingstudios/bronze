@@ -191,7 +191,7 @@ RSpec.describe Bronze::Entities::Operations::EntityOperationBuilder do
       include_examples 'should define the operation method',
         :receiver => :module_instance
 
-      include_examples 'should execute the operation',
+      include_examples 'should build the operation',
         :receiver => :module_instance
     end # describe
 
@@ -211,7 +211,7 @@ RSpec.describe Bronze::Entities::Operations::EntityOperationBuilder do
       include_examples 'should define the operation method',
         :receiver => :module_instance
 
-      include_examples 'should execute the operation',
+      include_examples 'should build the operation',
         :receiver => :module_instance
     end # describe
 
@@ -228,7 +228,7 @@ RSpec.describe Bronze::Entities::Operations::EntityOperationBuilder do
         include_examples 'should define the operation method',
           :receiver => :described_class
 
-        include_examples 'should execute the operation',
+        include_examples 'should build the operation',
           :receiver => :described_class
       end # describe
 
@@ -248,7 +248,7 @@ RSpec.describe Bronze::Entities::Operations::EntityOperationBuilder do
         include_examples 'should define the operation method',
           :receiver => :described_class
 
-        include_examples 'should execute the operation',
+        include_examples 'should build the operation',
           :receiver => :described_class
       end # describe
     end # wrap_context

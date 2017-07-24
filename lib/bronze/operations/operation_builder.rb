@@ -12,8 +12,8 @@ module Bronze::Operations
     end # constructor
 
     # Defines a helper method that wraps the given operation. The method will
-    # instantiate the operation class, pass any parameters to and execute the
-    # operation instance, and return the called operation.
+    # instantiate the operation class with any given parameters and return the
+    # operation instance.
     #
     # @overload operation(name, definition)
     #   @param name [String, Symbol] The name of the helper method.
@@ -43,9 +43,11 @@ module Bronze::Operations
 
     def define_operation method_name, definition
       define_method(method_name) do |*args, &block|
-        operation = definition.is_a?(Proc) ? definition.call : definition.new
-
-        operation.execute(*args, &block)
+        if definition.is_a?(Proc)
+          definition.call(*args, &block)
+        else
+          definition.new(*args, &block)
+        end # if-else
       end # method method_name
     end # method define_operation
 

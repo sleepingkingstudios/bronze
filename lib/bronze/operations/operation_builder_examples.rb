@@ -23,33 +23,16 @@ module Bronze::Operations
       end # it
     end # shared_examples
 
-    shared_examples 'should execute the operation' do |receiver:|
+    shared_examples 'should build the operation' do |receiver:|
       let(:expected_class) do
         defined?(super()) ? super() : operation_class
       end # let
-      let(:operation) do
-        defined?(super()) ? super() : expected_class.new
-      end # let
-      let(:arguments) { [:foo, :bar => :baz] }
 
-      it 'should execute the operation' do
-        expect(expected_class).to receive(:new).and_return(operation)
-
-        expect(operation).
-          to receive(:process).
-          with(*arguments) do |*_args, &block|
-            block.call if block
-          end # receive
-
-        yielded = false
-        result  =
-          send(receiver).send(operation_name, *arguments) { yielded = true }
-
-        expect(result).to be operation
-        expect(yielded).to be true
+      it 'should build the operation' do
+        operation = send(receiver).send(operation_name)
 
         expect(operation).to be_a expected_class
-        expect(operation.called?).to be true
+        expect(operation.called?).to be false
       end # it
     end # shared_examples
 
@@ -107,7 +90,7 @@ module Bronze::Operations
           include_examples 'should define the operation method',
             :receiver => :module_instance
 
-          include_examples 'should execute the operation',
+          include_examples 'should build the operation',
             :receiver => :module_instance
         end # describe
 
@@ -121,7 +104,7 @@ module Bronze::Operations
           include_examples 'should define the operation method',
             :receiver => :module_instance
 
-          include_examples 'should execute the operation',
+          include_examples 'should build the operation',
             :receiver => :module_instance
         end # describe
 
@@ -135,7 +118,7 @@ module Bronze::Operations
           include_examples 'should define the operation method',
             :receiver => :module_instance
 
-          include_examples 'should execute the operation',
+          include_examples 'should build the operation',
             :receiver => :module_instance
         end # describe
 
@@ -146,7 +129,7 @@ module Bronze::Operations
             include_examples 'should define the operation method',
               :receiver => :described_class
 
-            include_examples 'should execute the operation',
+            include_examples 'should build the operation',
               :receiver => :described_class
           end # describe
 
@@ -160,7 +143,7 @@ module Bronze::Operations
             include_examples 'should define the operation method',
               :receiver => :described_class
 
-            include_examples 'should execute the operation',
+            include_examples 'should build the operation',
               :receiver => :described_class
           end # describe
 
@@ -174,7 +157,7 @@ module Bronze::Operations
             include_examples 'should define the operation method',
               :receiver => :described_class
 
-            include_examples 'should execute the operation',
+            include_examples 'should build the operation',
               :receiver => :described_class
           end # describe
         end # wrap_context
