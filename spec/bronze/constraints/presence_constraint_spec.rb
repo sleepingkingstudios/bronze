@@ -52,8 +52,8 @@ RSpec.describe Bronze::Constraints::PresenceConstraint do
       include_examples 'should return false and the errors object'
     end # describe
 
-    describe 'with a non-empty string' do
-      let(:object) { %w(an array) }
+    describe 'with a non-empty array' do
+      let(:object) { %w[an array] }
 
       include_examples 'should return true and an empty errors object'
     end # describe
@@ -108,8 +108,8 @@ RSpec.describe Bronze::Constraints::PresenceConstraint do
       include_examples 'should return true and an empty errors object'
     end # describe
 
-    describe 'with a non-empty string' do
-      let(:object) { %w(an array) }
+    describe 'with a non-empty array' do
+      let(:object) { %w[an array] }
 
       include_examples 'should return false and the errors object'
     end # describe

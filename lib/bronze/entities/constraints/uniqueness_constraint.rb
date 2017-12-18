@@ -42,7 +42,7 @@ module Bronze::Entities::Constraints
     end # method matches_object?
 
     def negated_matches_object? _object
-      raise_invalid_negation caller[1..-1]
+      raise_invalid_negation caller(1..-1)
     end # method negated_matches_object?
   end # module
 end # module

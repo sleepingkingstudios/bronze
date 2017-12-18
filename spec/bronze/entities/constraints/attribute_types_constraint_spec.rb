@@ -171,7 +171,7 @@ RSpec.describe Bronze::Entities::Constraints::AttributeTypesConstraint do
         end # describe
 
         describe 'with an array with valid items' do
-          let(:attributes) { super().merge :tags => %w(ichi ni san) }
+          let(:attributes) { super().merge :tags => %w[ichi ni san] }
 
           include_examples 'should return true and an empty errors object'
         end # describe

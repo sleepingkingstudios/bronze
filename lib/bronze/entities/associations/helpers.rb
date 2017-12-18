@@ -40,7 +40,7 @@ module Bronze::Entities
 
         raise ArgumentError,
           "#{name} must be a #{metadata.association_class}",
-          caller[1..-1]
+          caller(1..-1)
       end # method validate_association!
 
       # rubocop:disable Metrics/MethodLength
@@ -62,7 +62,7 @@ module Bronze::Entities
         raise ArgumentError,
           "#{metadata.name} must be a collection of "\
           "#{metadata.association_class.name} entities",
-          caller[1..-1]
+          caller(1..-1)
       end # method validate_collection!
       # rubocop:enable Metrics/MethodLength
     end # module

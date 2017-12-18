@@ -40,7 +40,7 @@ RSpec.describe Bronze::Entities::Operations::EntityOperationBuilder do
   let(:module_instance) do
     Bronze::Entities::Operations::EntityOperationBuilder.new(entity_class).
       tap do |mod|
-        %w(name inspect to_s).each do |method|
+        %w[name inspect to_s].each do |method|
           allow(mod).to receive(method).and_return('Spec::Book::Operations')
         end # each
       end # tap
@@ -76,7 +76,7 @@ RSpec.describe Bronze::Entities::Operations::EntityOperationBuilder do
           define_entity_operations
         end. # module
           tap do |mod|
-            %w(name inspect to_s).each do |method|
+            %w[name inspect to_s].each do |method|
               allow(mod).to receive(method).and_return('Spec::Book::Operations')
             end # each
           end # tap

@@ -9,9 +9,9 @@ SleepingKingStudios::Tasks.configure do |config|
 
     ci.steps =
       if ENV['CI']
-        %i(rspec rspec_each rubocop simplecov)
+        %i[rspec rspec_each rubocop simplecov]
       else
-        %i(rspec rubocop simplecov)
+        %i[rspec rubocop simplecov]
       end # if-else
   end # ci
 

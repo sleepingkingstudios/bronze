@@ -101,7 +101,7 @@ RSpec.describe Bronze::Entities::Associations::Metadata::HasManyMetadata do
 
           allow(described_class).
             to receive(:required_keys).
-            and_return(keys + %i(required_option))
+            and_return(keys + %i[required_option])
         end # before example
 
         it 'should raise an error' do

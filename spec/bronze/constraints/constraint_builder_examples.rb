@@ -13,7 +13,7 @@ module Spec::Constraints
       constraint_name.downcase!
 
       constraint_name[0...0] =
-        %w(a e i o u y).include?(constraint_name[0]) ? 'an ' : 'a '
+        %w[a e i o u y].include?(constraint_name[0]) ? 'an ' : 'a '
 
       it "should build #{constraint_name}" do
         constraint = instance.send(method_name, method_params)

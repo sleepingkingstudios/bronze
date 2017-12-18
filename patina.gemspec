@@ -1,12 +1,12 @@
 # patina.gemspec
 
-$: << './lib'
+$LOAD_PATH << './lib'
 require 'patina/version'
 
 Gem::Specification.new do |gem|
   gem.name        = 'patina'
   gem.version     = Patina::VERSION
-  gem.date        = Time.now.utc.strftime "%Y-%m-%d"
+  gem.date        = Time.now.utc.strftime '%Y-%m-%d'
   gem.summary     = 'Extensions for the Bronze application framework.'
 
   description = <<-DESCRIPTION
@@ -20,7 +20,7 @@ Gem::Specification.new do |gem|
   gem.license     = 'MIT'
 
   gem.require_path = 'lib'
-  gem.files        = Dir["lib/**/*.rb", "LICENSE", "*.md"]
+  gem.files        = Dir['lib/**/*.rb', 'LICENSE', '*.md']
 
   gem.add_runtime_dependency 'bronze', '~> 0.0'
 

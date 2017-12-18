@@ -278,7 +278,7 @@ module Bronze::Operations
     def process *_args
       raise NotImplementedError,
         "#{self.class.name} does not implement :process",
-        caller[1..-1]
+        caller(1..-1)
     end # method process
   end # class
 end # module

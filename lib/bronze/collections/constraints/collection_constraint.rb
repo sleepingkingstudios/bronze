@@ -23,7 +23,7 @@ module Bronze::Collections::Constraints
 
       raise RuntimeError,
         'specify a collection using the #with_collection method',
-        caller[1..-1]
+        caller(1..-1)
     end # method require_collection
   end # module
 end # module
