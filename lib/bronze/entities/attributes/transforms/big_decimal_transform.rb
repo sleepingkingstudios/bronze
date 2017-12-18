@@ -15,6 +15,8 @@ module Bronze::Entities::Attributes::Transforms
       return nil if value.nil?
 
       BigDecimal.new(value)
+    rescue ArgumentError
+      BigDecimal.new('0.0')
     end # method denormalize
 
     def normalize value
