@@ -227,7 +227,7 @@
   - Test against MongoDB 2.x, 3.x
 - remove `result, errors =` pattern?
 - remove unnecessary custom error classes
-- standardize error constant names - _ERROR suffix?
+- standardize error constant names - \_ERROR suffix?
 
 ## Optimization
 

@@ -30,7 +30,7 @@ RSpec.describe Bronze::Entities::Attributes::Transforms::BigDecimalTransform do
     describe 'with an empty string' do
       let(:str) { '' }
 
-      it { expect(instance.denormalize str).to be == BigDecimal.new(str) }
+      it { expect(instance.denormalize str).to be == BigDecimal.new('0.0') }
     end # describe
 
     describe 'with "Infinity"' do
@@ -76,7 +76,7 @@ RSpec.describe Bronze::Entities::Attributes::Transforms::BigDecimalTransform do
     describe 'with an invalid string' do
       let(:str) { 'invalid' }
 
-      it { expect(instance.denormalize str).to be == BigDecimal.new(str) }
+      it { expect(instance.denormalize str).to be == BigDecimal.new('0.0') }
     end # describe
 
     describe 'with a BigDecimal' do
