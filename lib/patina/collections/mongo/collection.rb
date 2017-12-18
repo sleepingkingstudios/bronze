@@ -57,10 +57,11 @@ module Patina::Collections::Mongo
     def build_mongo_operation_failure_errors message, id, attributes
       # rubocop:disable Style/EmptyCaseCondition
       case
-      when message.include?('cannot change _id'),          # MongoDB 2.x
-           message.include?('_id field cannot be changed') # MongoDB 3.x
+      when message.include?('cannot change _id'),           # MongoDB 2.x
+           message.include?('_id field cannot be changed'), # MongoDB 3.?
+           message.include?("field '_id' was found to have been altered")
         build_primary_key_invalid_error(id, attributes)
-      when message.include?('duplicate key error index')
+      when message.include?('duplicate key error')
         build_errors.add(Errors.record_already_exists, :id => id)
       end # case
       # rubocop:enable Style/EmptyCaseCondition
