@@ -59,7 +59,7 @@ module Bronze::Constraints
     def raise_invalid_negation call_stack = nil
       raise InvalidNegationError,
         "#{self.class.name} constraints do not support negated matching",
-        call_stack || caller[1..-1]
+        call_stack || caller(*1..-1)
     end # method raise_invalid_negation
   end # class
 end # module

@@ -478,7 +478,7 @@ RSpec.describe Bronze::Errors do
     end # it
 
     describe 'with many keys' do
-      let(:keys) { %i(properties location latitude) }
+      let(:keys) { %i[properties location latitude] }
       let(:expected) do
         {
           :type   => type,
@@ -509,7 +509,7 @@ RSpec.describe Bronze::Errors do
       end # it
 
       describe 'with many keys' do
-        let(:keys) { %i(properties location latitude) }
+        let(:keys) { %i[properties location latitude] }
         let(:expected) do
           {
             :type   => type,

@@ -93,7 +93,7 @@ RSpec.describe Bronze::Entities::Associations::Metadata::ReferencesOneMetadata d
   end # describe
 
   describe '::REQUIRED_KEYS' do
-    let(:expected) { %i(foreign_key) }
+    let(:expected) { %i[foreign_key] }
 
     it 'should define the constant' do
       expect(described_class).
@@ -126,7 +126,7 @@ RSpec.describe Bronze::Entities::Associations::Metadata::ReferencesOneMetadata d
 
           allow(described_class).
             to receive(:required_keys).
-            and_return(keys + %i(required_option))
+            and_return(keys + %i[required_option])
         end # before example
 
         it 'should raise an error' do

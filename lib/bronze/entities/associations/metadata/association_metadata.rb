@@ -11,10 +11,10 @@ module Bronze::Entities::Associations::Metadata
   # reflection on its properties and options.
   class AssociationMetadata
     # Optional configuration keys for an association.
-    OPTIONAL_KEYS = %i(inverse).freeze
+    OPTIONAL_KEYS = %i[inverse].freeze
 
     # Required configuration keys for an association.
-    REQUIRED_KEYS = %i(class_name).freeze
+    REQUIRED_KEYS = %i[class_name].freeze
 
     class << self
       def optional_keys
@@ -262,7 +262,7 @@ module Bronze::Entities::Associations::Metadata
 
       raise Bronze::Entities::Associations::InverseAssociationError,
         message,
-        caller[2..-1]
+        caller(2..-1)
     end # method validate_double_inverse
 
     def validate_inverse_metadata
@@ -285,7 +285,7 @@ module Bronze::Entities::Associations::Metadata
 
       raise Bronze::Entities::Associations::InverseAssociationError,
         message,
-        caller[2..-1]
+        caller(2..-1)
     end # method validate_inverse_metadata
 
     def validate_inverse_metadata_type
@@ -296,7 +296,7 @@ module Bronze::Entities::Associations::Metadata
 
       raise Bronze::Entities::Associations::InverseAssociationError,
         message,
-        caller[2..-1]
+        caller(2..-1)
     end # method inverse_metadata_type
 
     def validate_required_options keys

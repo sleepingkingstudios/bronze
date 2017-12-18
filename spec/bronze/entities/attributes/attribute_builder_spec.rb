@@ -24,9 +24,7 @@ RSpec.describe Bronze::Entities::Attributes::AttributeBuilder do
     end # it
 
     it 'should list the valid options' do
-      expect(described_class::VALID_BUILDER_OPTIONS).to be == %w(
-        foreign_key
-      ) # end array
+      expect(described_class::VALID_BUILDER_OPTIONS).to be == %w[foreign_key]
     end # it
   end # describe
 
@@ -34,11 +32,11 @@ RSpec.describe Bronze::Entities::Attributes::AttributeBuilder do
     it { expect(described_class).to have_immutable_constant :VALID_OPTIONS }
 
     it 'should list the valid options' do
-      expect(described_class::VALID_OPTIONS).to be == %w(
+      expect(described_class::VALID_OPTIONS).to be == %w[
         allow_nil
         default
         read_only
-      ) # end array
+      ] # end array
     end # it
   end # describe
 

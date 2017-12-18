@@ -9,7 +9,7 @@ module Bronze::Entities::Associations::Metadata
     ASSOCIATION_TYPE = :references_one
 
     # Required options for a references_one association.
-    REQUIRED_KEYS = %i(foreign_key).freeze
+    REQUIRED_KEYS = %i[foreign_key].freeze
 
     # @param entity_class [Class] The class of entity whose association is
     #   characterized by the metadata.

@@ -10,17 +10,17 @@ module Bronze::Entities::Attributes
 
     # Provides a list of the valid options for the builder_options parameter
     # for Builder#build.
-    VALID_BUILDER_OPTIONS = %w(
+    VALID_BUILDER_OPTIONS = %w[
       foreign_key
-    ).map(&:freeze).freeze
+    ].map(&:freeze).freeze
 
     # Provides a list of the valid options for the attribute_options parameter
     # for Builder#build.
-    VALID_OPTIONS = %w(
+    VALID_OPTIONS = %w[
       allow_nil
       default
       read_only
-    ).map(&:freeze).freeze
+    ].map(&:freeze).freeze
 
     # @param entity_class [Class] The entity class on which attributes will be
     #   defined.
@@ -155,7 +155,7 @@ module Bronze::Entities::Attributes
     end # method entity_class_attributes
 
     def raise_error error_message
-      raise Error, error_message, caller[1..-1]
+      raise Error, error_message, caller(1..-1)
     end # method raise_error
 
     def validate_attribute_name attribute_name

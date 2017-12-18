@@ -51,9 +51,7 @@ RSpec.describe Bronze::Entities::Associations::Metadata::AssociationMetadata do
   end # let
 
   describe '::OPTIONAL_KEYS' do
-    let(:expected) do
-      %i(inverse)
-    end # let
+    let(:expected) { %i[inverse] }
 
     it 'should define the constant' do
       expect(described_class).
@@ -63,9 +61,7 @@ RSpec.describe Bronze::Entities::Associations::Metadata::AssociationMetadata do
   end # describe
 
   describe '::REQUIRED_KEYS' do
-    let(:expected) do
-      %i(class_name)
-    end # let
+    let(:expected) { %i[class_name] }
 
     it 'should define the constant' do
       expect(described_class).

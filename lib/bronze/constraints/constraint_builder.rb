@@ -69,7 +69,7 @@ module Bronze::Constraints
         return params[key] if params.key?(key)
       end # each
 
-      raise INVALID_CONSTRAINT, message, caller[2..-1]
+      raise INVALID_CONSTRAINT, message, caller(2..-1)
     end # method require_value
   end # module
 end # class

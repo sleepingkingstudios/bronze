@@ -20,7 +20,7 @@ module Spec
     end # method log_attributes
 
     def logged_attributes
-      %w(name)
+      %w[name]
     end # method logged_attributes
   end # module
 end # module

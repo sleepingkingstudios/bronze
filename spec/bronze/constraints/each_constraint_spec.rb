@@ -304,7 +304,7 @@ RSpec.describe Bronze::Constraints::EachConstraint do
 
     describe 'with an array with matching items' do
       let(:constraint) { Bronze::Constraints::TypeConstraint.new(String) }
-      let(:object)     { %w(ichi ni san) }
+      let(:object)     { %w[ichi ni san] }
 
       include_examples 'should return true and an empty errors object'
     end # describe
@@ -465,7 +465,7 @@ RSpec.describe Bronze::Constraints::EachConstraint do
       end # let
       let(:error_params) { { :value => String } }
       let(:constraint)   { Bronze::Constraints::TypeConstraint.new(String) }
-      let(:object)       { %w(ichi ni san yon) }
+      let(:object)       { %w[ichi ni san yon] }
 
       include_examples 'should return false and the errors object',
         lambda { |errors|

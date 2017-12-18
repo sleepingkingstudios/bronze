@@ -35,7 +35,7 @@ RSpec.describe Bronze::Entities::Constraints::UniquenessConstraint do
     ] # end array
   end # let
   let(:collection) { Bronze::Collections::Reference::Collection.new(data) }
-  let(:attributes) { %w(title) }
+  let(:attributes) { %w[title] }
   let(:instance)   { described_class.new(*attributes) }
 
   example_class 'Spec::Book', :base_class => Bronze::Entities::Entity do |klass|
@@ -117,7 +117,7 @@ RSpec.describe Bronze::Entities::Constraints::UniquenessConstraint do
       end # describe
 
       context 'when the uniqueness constraint is scoped to many attributes' do
-        let(:attributes) { %w(title author) }
+        let(:attributes) { %w[title author] }
 
         describe 'with a non-matching entity' do
           let(:object) do

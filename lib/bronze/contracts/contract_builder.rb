@@ -154,7 +154,7 @@ module Bronze::Contracts
 
       raise EMPTY_CONSTRAINTS,
         'must specify at least one constraint',
-        caller[1..-1]
+        caller(1..-1)
     end # method require_constraints
   end # module
 end # module

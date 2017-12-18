@@ -37,7 +37,7 @@ module Bronze::Operations
 
       self::Definitions.const_set(const_name, subclass)
 
-      %w(inspect name to_s).each do |method_name|
+      %w[inspect name to_s].each do |method_name|
         subclass.define_singleton_method(method_name) { qualified_name }
       end # each
 

@@ -40,7 +40,7 @@ module Bronze::Collections
     def not_implemented method_name
       raise NotImplementedError,
         "#{self.class.name} does not implement :#{method_name}",
-        caller[1..-1]
+        caller(1..-1)
     end # method not_implemented
 
     def update_one _id, _attributes

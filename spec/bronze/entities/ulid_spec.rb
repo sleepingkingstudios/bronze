@@ -174,12 +174,12 @@ RSpec.describe Bronze::Entities::Ulid do
     end # it
 
     it 'should generate a random factor' do
-      # rubocop:disable Style/ExtraSpacing
+      # rubocop:disable Layout/ExtraSpacing
       chars = [
         20, 10, 24, 16,  0, 24, 22, 25,
         16, 21,  1, 26, 14, 14, 24, 16
       ] # end array
-      # rubocop:enable Style/ExtraSpacing
+      # rubocop:enable Layout/ExtraSpacing
 
       stub_rand(chars)
 
