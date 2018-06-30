@@ -24,6 +24,7 @@ Gem::Specification.new do |gem| # rubocop:disable Metrics/BlockLength
   gem.require_path = 'lib'
   gem.files        = Dir['lib/**/*.rb', 'LICENSE', '*.md']
 
+  gem.add_runtime_dependency 'cuprum'
   gem.add_runtime_dependency 'sysrandom', '~> 1.0.0', '>= 1.0.2'
   gem.add_runtime_dependency 'sleeping_king_studios-tools',
     '>= 0.7.1'
