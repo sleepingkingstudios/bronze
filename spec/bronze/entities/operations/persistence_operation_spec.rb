@@ -5,7 +5,7 @@ require 'bronze/entities/operations/entity_operation_examples'
 require 'bronze/entities/operations/persistence_operation'
 require 'bronze/operations/operation'
 
-RSpec.describe Bronze::Entities::Operations::PersistenceOperation do
+RSpec.xdescribe Bronze::Entities::Operations::PersistenceOperation do
   include Spec::Entities::Operations::EntityOperationExamples
 
   include_context 'when the entity class is defined'

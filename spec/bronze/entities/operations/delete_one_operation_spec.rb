@@ -3,7 +3,7 @@
 require 'bronze/entities/operations/delete_one_operation'
 require 'bronze/entities/operations/entity_operation_examples'
 
-RSpec.describe Bronze::Entities::Operations::DeleteOneOperation do
+RSpec.xdescribe Bronze::Entities::Operations::DeleteOneOperation do
   include Spec::Entities::Operations::EntityOperationExamples
 
   include_context 'when the entity class is defined'

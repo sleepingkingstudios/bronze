@@ -3,7 +3,7 @@
 require 'bronze/entities/operations/entity_operation_examples'
 require 'bronze/entities/operations/update_one_without_validation_operation'
 
-RSpec.describe Bronze::Entities::Operations::UpdateOneWithoutValidationOperation do # rubocop:disable Metrics/LineLength
+RSpec.xdescribe Bronze::Entities::Operations::UpdateOneWithoutValidationOperation do # rubocop:disable Metrics/LineLength
   include Spec::Entities::Operations::EntityOperationExamples
 
   include_context 'when the entity class is defined'

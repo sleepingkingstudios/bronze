@@ -3,7 +3,7 @@
 require 'bronze/entities/operations/build_and_insert_one_operation'
 require 'bronze/entities/operations/entity_operation_examples'
 
-RSpec.describe Bronze::Entities::Operations::BuildAndInsertOneOperation do
+RSpec.xdescribe Bronze::Entities::Operations::BuildAndInsertOneOperation do
   include Spec::Entities::Operations::EntityOperationExamples
 
   include_context 'when the entity class is defined'

@@ -3,7 +3,7 @@
 require 'bronze/entities/operations/entity_operation_examples'
 require 'bronze/entities/operations/validate_one_operation'
 
-RSpec.describe Bronze::Entities::Operations::ValidateOneOperation do
+RSpec.xdescribe Bronze::Entities::Operations::ValidateOneOperation do
   include Spec::Entities::Operations::EntityOperationExamples
 
   include_context 'when the entity class is defined'

@@ -3,7 +3,7 @@
 require 'bronze/entities/operations/entity_operation_examples'
 require 'bronze/entities/operations/find_matching_operation'
 
-RSpec.describe Bronze::Entities::Operations::FindMatchingOperation do
+RSpec.xdescribe Bronze::Entities::Operations::FindMatchingOperation do
   include Spec::Entities::Operations::EntityOperationExamples
 
   include_context 'when the entity class is defined'
