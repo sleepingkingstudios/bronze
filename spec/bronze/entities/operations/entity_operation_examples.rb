@@ -1,5 +1,3 @@
-# spec/bronze/entities/operations/entity_operation_examples.rb
-
 require 'bronze/contracts/contract'
 require 'bronze/entities/entity'
 
@@ -7,7 +5,7 @@ require 'patina/collections/simple/repository'
 
 module Spec::Entities
   module Operations; end
-end # module
+end
 
 module Spec::Entities::Operations::EntityOperationExamples
   extend RSpec::SleepingKingStudios::Concerns::SharedExampleGroup
@@ -17,7 +15,7 @@ module Spec::Entities::Operations::EntityOperationExamples
     example_class 'Spec::Periodical', options do |klass|
       klass.attribute :title,  String
       klass.attribute :volume, Integer
-    end # example_class
+    end
 
     let(:entity_class)       { Spec::Periodical }
     let(:entity_name)        { 'periodical' }
@@ -27,28 +25,28 @@ module Spec::Entities::Operations::EntityOperationExamples
       {
         :title  => 'Crystal Healing Digest',
         :volume => 7
-      } # end hash
-    end # let
+      }
+    end
     let(:valid_attributes)   { { :title => 'Cryptozoology Monthly' } }
     let(:invalid_attributes) { { :title => nil, :publisher => 'Bigfoot' } }
     let(:empty_attributes) do
       {
         :title  => nil,
         :volume => nil
-      } # end hash
-    end # let
+      }
+    end
 
     let(:entity_contract) do
       Bronze::Contracts::Contract.new.tap do |contract|
         contract.constrain :title, :present => true
-      end # contract
-    end # let
-  end # shared_context
+      end
+    end
+  end
 
   shared_context 'when the repository is defined' do
     let(:repository) { Patina::Collections::Simple::Repository.new }
     let(:collection) { repository.collection(entity_class) }
-  end # shared_context
+  end
 
   shared_context 'when the repository has many entities' do
     before(:example) do
@@ -56,7 +54,7 @@ module Spec::Entities::Operations::EntityOperationExamples
         'Astrology Today',
         'Journal of Applied Phrenology',
         'The Atlantean Diaspora'
-      ]. # end array
+      ].
         each do |title|
           1.upto(3) do |volume|
             attributes =
@@ -64,29 +62,29 @@ module Spec::Entities::Operations::EntityOperationExamples
             entity     = entity_class.new(attributes)
 
             collection.insert(entity)
-          end # upto
-        end # each
-    end # before example
-  end # shared_context
+          end
+        end
+    end
+  end
 
   shared_context 'when a subclass is defined with the entity class' do
     let(:described_class) { super().subclass(entity_class) }
     let(:instance)        { described_class.new(*arguments) }
-  end # shared_context
+  end
 
   shared_examples 'should succeed and clear the errors' do
     it 'should succeed and clear the errors' do
-      execute_operation
+      call_operation
 
       expect(instance.success?).to be true
       expect(instance.halted?).to be false
       expect(instance.errors.empty?).to be true
-    end # it
-  end # shared_examples
+    end
+  end
 
   shared_examples 'should fail and set the errors' do |proc = nil|
     it 'should fail and set the errors' do
-      execute_operation
+      call_operation
 
       expect(instance.failure?).to be true
       expect(instance.halted?).to be false
@@ -100,11 +98,11 @@ module Spec::Entities::Operations::EntityOperationExamples
           to be true
       else
         expect(instance.errors).to include error_expectation
-      end # if
+      end
 
       instance_exec(&proc) unless proc.nil?
-    end # it
-  end # shared_examples
+    end
+  end
 
   shared_examples 'should implement the EntityOperation methods' do
     describe '::subclass' do
@@ -117,15 +115,15 @@ module Spec::Entities::Operations::EntityOperationExamples
         expect(subclass.superclass).to be described_class
         expect(subclass).to be_constructible.with(arguments.count).arguments
         expect(subclass.new(*arguments).entity_class).to be entity_class
-      end # it
-    end # describe
+      end
+    end
 
     describe '#entity_class' do
       include_examples 'should have reader',
         :entity_class,
         ->() { entity_class }
-    end # describe
-  end # shared_examples
+    end
+  end
 
   shared_examples 'should implement the PersistenceOperation methods' do
     describe '#collection' do

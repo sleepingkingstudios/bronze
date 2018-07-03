@@ -1,5 +1,3 @@
-# lib/bronze/entities/operations/entity_operation.rb
-
 require 'sleeping_king_studios/tools/toolbox/mixin'
 
 require 'bronze/entities/operations'
@@ -18,19 +16,24 @@ module Bronze::Entities::Operations
       #   operation subclass will act upon.
       def subclass entity_class
         Class.new(self) do
-          define_method :initialize do |*args, &block|
-            super(entity_class, *args, &block)
-          end # constructor
-        end # class
-      end # class method subclass
-    end # module
+          define_method :initialize do |*args, **kwargs, &block|
+            kwargs = kwargs.merge(entity_class: entity_class)
+
+            super(*args, **kwargs, &block)
+          end
+        end
+      end
+    end
 
     # @param entity_class [Class] The class of entity this operation acts upon.
-    def initialize entity_class, *rest
-      super(*rest)
+    def initialize(*args, entity_class:, **kwargs)
+      # RUBY_VERSION: Required below 2.5
+      args << kwargs unless kwargs.empty?
+
+      super(*args)
 
       @entity_class = entity_class
-    end # constructor
+    end
 
     # @return [Class] The class of entity this operation acts upon.
     attr_reader :entity_class
@@ -44,15 +47,15 @@ module Bronze::Entities::Operations
           name = tools.string.underscore(name)
 
           tools.string.singularize(name)
-        end # entity_name
-    end # method entity_name
+        end
+    end
 
     def plural_entity_name
       @plural_entity_name ||= tools.string.pluralize(entity_name)
-    end # method entity_name
+    end
 
     def tools
       SleepingKingStudios::Tools::Toolbelt.instance
-    end # method tools
-  end # class
-end # module
+    end
+  end
+end
