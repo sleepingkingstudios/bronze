@@ -69,6 +69,7 @@ module Spec::Entities::Operations::EntityOperationExamples
 
   shared_context 'when a subclass is defined with the entity class' do
     let(:described_class) { super().subclass(entity_class) }
+    let(:arguments)       { defined?(super()) ? super() : [] }
     let(:instance)        { described_class.new(*arguments) }
   end
 
@@ -106,6 +107,8 @@ module Spec::Entities::Operations::EntityOperationExamples
 
   shared_examples 'should implement the EntityOperation methods' do
     describe '::subclass' do
+      let(:arguments) { defined?(super()) ? super() : [] }
+
       it { expect(described_class).to respond_to(:subclass).with(1).argument }
 
       it 'should return a subclass of the operation class' do
@@ -492,126 +495,129 @@ module Spec::Entities::Operations::EntityOperationExamples
   end # shared_examples
 
   shared_examples 'should build the entity' do
-    describe '#execute' do
-      it { expect(instance).to respond_to(:execute).with(0..1).arguments }
-
+    describe '#call' do
       describe 'with no arguments' do
-        def execute_operation
-          instance.execute
-        end # method execute_operation
+        def call_operation
+          instance.call
+        end
 
         include_examples 'should succeed and clear the errors'
 
         it 'should set the result' do
-          execute_operation
+          instance.call
 
-          expect(instance.result).to be_a entity_class
-        end # it
+          expect(instance.result).to be_a Cuprum::Result
+          expect(instance.result.value).to be_a entity_class
+        end
 
         it 'should set the attributes', :aggregate_failures do
-          entity = execute_operation.result
+          entity = call_operation.value
 
           initial_attributes.each_key do |key|
             expect(entity.send key).to be nil
-          end # each
-        end # it
-      end # describe
+          end
+        end
+      end
 
       describe 'with nil' do
-        def execute_operation
-          instance.execute(nil)
-        end # method execute_operation
+        def call_operation
+          instance.call(nil)
+        end
 
         include_examples 'should succeed and clear the errors'
 
         it 'should set the result' do
-          execute_operation
+          call_operation
 
-          expect(instance.result).to be_a entity_class
-        end # it
+          expect(instance.result).to be_a Cuprum::Result
+          expect(instance.result.value).to be_a entity_class
+        end
 
         it 'should set the attributes', :aggregate_failures do
-          entity = execute_operation.result
+          entity = call_operation.value
 
           initial_attributes.each_key do |key|
             expect(entity.send key).to be nil
-          end # each
-        end # it
-      end # describe
+          end
+        end
+      end
 
       describe 'with an empty attributes hash' do
-        def execute_operation
-          instance.execute({})
-        end # method execute_operation
+        def call_operation
+          instance.call({})
+        end
 
         include_examples 'should succeed and clear the errors'
 
         it 'should set the result' do
-          execute_operation
+          call_operation
 
-          expect(instance.result).to be_a entity_class
-        end # it
+          expect(instance.result).to be_a Cuprum::Result
+          expect(instance.result.value).to be_a entity_class
+        end
 
         it 'should set the attributes', :aggregate_failures do
-          entity = execute_operation.result
+          entity = call_operation.value
 
           initial_attributes.each_key do |key|
             expect(entity.send key).to be nil
-          end # each
-        end # it
-      end # describe
+          end
+        end
+      end
 
       describe 'with a valid attributes hash with string keys' do
-        def execute_operation
+        def call_operation
           tools      = SleepingKingStudios::Tools::Toolbelt.instance
           attributes = tools.hash.convert_keys_to_strings(initial_attributes)
 
-          instance.execute(attributes)
-        end # method execute_operation
+          instance.call(attributes)
+        end
 
         include_examples 'should succeed and clear the errors'
 
         it 'should set the result' do
-          execute_operation
+          call_operation
 
-          expect(instance.result).to be_a entity_class
-        end # it
+          expect(instance.result).to be_a Cuprum::Result
+          expect(instance.result.value).to be_a entity_class
+        end
 
         it 'should set the attributes', :aggregate_failures do
-          entity = execute_operation.result
+          entity = call_operation.value
 
           initial_attributes.each do |key, value|
             expect(entity.send key).to be == value
-          end # each
-        end # it
-      end # describe
+          end
+        end
+      end
 
       describe 'with a valid attributes hash with symbol keys' do
-        def execute_operation
+        def call_operation
           tools      = SleepingKingStudios::Tools::Toolbelt.instance
           attributes = tools.hash.convert_keys_to_symbols(initial_attributes)
 
-          instance.execute(attributes)
-        end # method execute_operation
+          instance.call(attributes)
+        end
 
         include_examples 'should succeed and clear the errors'
 
         it 'should set the result' do
-          execute_operation
+          call_operation
 
-          expect(instance.result).to be_a entity_class
-        end # it
+          expect(instance.result).to be_a Cuprum::Result
+          expect(instance.result.value).to be_a entity_class
+        end
 
         it 'should set the attributes', :aggregate_failures do
-          entity = execute_operation.result
+          entity = call_operation.value
 
           initial_attributes.each do |key, value|
             expect(entity.send key).to be == value
-          end # each
-        end # it
-      end # describe
-    end # describe
-  end # shared_examples
+          end
+        end
+      end
+    end
+  end
 
   shared_examples 'should build, validate and insert the entity' do
     describe '#execute' do

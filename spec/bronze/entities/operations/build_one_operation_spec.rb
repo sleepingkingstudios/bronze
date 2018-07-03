@@ -1,23 +1,23 @@
-# spec/bronze/entities/operations/build_one_operation_spec.rb
-
 require 'bronze/entities/operations/build_one_operation'
 require 'bronze/entities/operations/entity_operation_examples'
 
-RSpec.xdescribe Bronze::Entities::Operations::BuildOneOperation do
+RSpec.describe Bronze::Entities::Operations::BuildOneOperation do
   include Spec::Entities::Operations::EntityOperationExamples
 
   include_context 'when the entity class is defined'
 
-  let(:arguments) { [] }
-  let(:instance)  { described_class.new(entity_class, *arguments) }
+  let(:instance) do
+    described_class.new(entity_class: entity_class)
+  end
 
   describe '::new' do
-    it { expect(described_class).to be_constructible.with(1).argument }
-  end # describe
-
-  describe '::new' do
-    it { expect(described_class).to be_constructible.with(1).argument }
-  end # describe
+    it 'should define the constructor' do
+      expect(described_class)
+        .to be_constructible
+        .with(0).arguments
+        .and_keywords(:entity_class)
+    end
+  end
 
   include_examples 'should implement the EntityOperation methods'
 
@@ -25,5 +25,5 @@ RSpec.xdescribe Bronze::Entities::Operations::BuildOneOperation do
 
   wrap_context 'when a subclass is defined with the entity class' do
     include_examples 'should build the entity'
-  end # wrap_context
-end # describe
+  end
+end
