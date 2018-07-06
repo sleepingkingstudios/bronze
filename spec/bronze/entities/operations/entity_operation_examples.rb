@@ -149,69 +149,71 @@ module Spec::Entities::Operations::EntityOperationExamples
   end # shared_examples
 
   shared_examples 'should assign the attributes to the entity' do
-    describe '#execute' do
+    describe '#call' do
       let(:expected_attributes) do
         initial_attributes.dup.tap do |hsh|
           valid_attributes.each do |key, value|
             hsh[key] = value
-          end # each
-        end # initial_attributes
-      end # let
+          end
+        end
+      end
       let(:entity) { entity_class.new(initial_attributes) }
 
-      it { expect(instance).to respond_to(:execute).with(2).arguments }
+      it { expect(instance).to respond_to(:call).with(2).arguments }
 
       describe 'with a valid attributes hash with string keys' do
-        def execute_operation
+        def call_operation
           tools      = SleepingKingStudios::Tools::Toolbelt.instance
           attributes = tools.hash.convert_keys_to_strings(valid_attributes)
 
-          instance.execute(entity, attributes)
-        end # method execute_operation
+          instance.call(entity, attributes)
+        end
 
         include_examples 'should succeed and clear the errors'
 
         it 'should set the result' do
-          execute_operation
+          call_operation
 
-          expect(instance.result).to be entity
-        end # it
+          expect(instance.result).to be_a Cuprum::Result
+          expect(instance.result.value).to be == entity
+        end
 
         it 'should update the attributes', :aggregate_failures do
-          execute_operation
+          call_operation
 
           expected_attributes.each do |key, value|
             expect(entity.send key).to be == value
-          end # each
-        end # it
-      end # describe
+          end
+        end
+      end
 
       describe 'with a valid attributes hash with symbol keys' do
-        def execute_operation
+        def call_operation
           tools      = SleepingKingStudios::Tools::Toolbelt.instance
           attributes = tools.hash.convert_keys_to_symbols(valid_attributes)
 
-          instance.execute(entity, attributes)
-        end # method execute_operation
+          instance.call(entity, attributes)
+        end
 
         include_examples 'should succeed and clear the errors'
 
         it 'should set the result' do
-          execute_operation
+          call_operation
 
-          expect(instance.result).to be entity
-        end # it
+          expect(instance.result).to be_a Cuprum::Result
+          expect(instance.result.value).to be == entity
+        end
 
         it 'should update the attributes', :aggregate_failures do
-          execute_operation
+          call_operation
 
           expected_attributes.each do |key, value|
             expect(entity.send key).to be == value
-          end # each
-        end # it
-      end # describe
-    end # describe
-  end # shared_examples
+          end
+        end
+      end
+    end
+  end
 
   shared_examples 'should assign, validate, and update the entity' do
     describe '#execute' do
