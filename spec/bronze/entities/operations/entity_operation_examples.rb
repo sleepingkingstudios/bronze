@@ -1,5 +1,6 @@
 require 'bronze/contracts/contract'
 require 'bronze/entities/entity'
+require 'bronze/transforms/identity_transform'
 
 require 'patina/collections/simple/repository'
 
@@ -70,7 +71,8 @@ module Spec::Entities::Operations::EntityOperationExamples
   shared_context 'when a subclass is defined with the entity class' do
     let(:described_class) { super().subclass(entity_class) }
     let(:arguments)       { defined?(super()) ? super() : [] }
-    let(:instance)        { described_class.new(*arguments) }
+    let(:keywords)        { defined?(super()) ? super() : {} }
+    let(:instance)        { described_class.new(*arguments, **keywords) }
   end
 
   shared_examples 'should succeed and clear the errors' do
@@ -108,6 +110,7 @@ module Spec::Entities::Operations::EntityOperationExamples
   shared_examples 'should implement the EntityOperation methods' do
     describe '::subclass' do
       let(:arguments) { defined?(super()) ? super() : [] }
+      let(:keywords)  { defined?(super()) ? super() : {} }
 
       it { expect(described_class).to respond_to(:subclass).with(1).argument }
 
@@ -116,8 +119,11 @@ module Spec::Entities::Operations::EntityOperationExamples
 
         expect(subclass).to be_a Class
         expect(subclass.superclass).to be described_class
-        expect(subclass).to be_constructible.with(arguments.count).arguments
-        expect(subclass.new(*arguments).entity_class).to be entity_class
+        expect(subclass)
+          .to be_constructible
+          .with(arguments.count).arguments
+          .and_keywords(*keywords.keys)
+        expect(subclass.new(**keywords).entity_class).to be entity_class
       end
     end
 
@@ -140,13 +146,75 @@ module Spec::Entities::Operations::EntityOperationExamples
         expect(collection.transform).
           to be_a Bronze::Entities::Transforms::EntityTransform
         expect(collection.transform.entity_class).to be entity_class
-      end # it
-    end # describe
+      end
+
+      describe 'when the default transform is overriden' do
+        let(:default_transform) { Bronze::Transforms::IdentityTransform.new }
+
+        before(:example) do
+          allow(instance)
+            .to receive(:default_transform)
+            .and_return(default_transform)
+        end
+
+        it 'should return the collection with the default transform' do
+          collection = instance.collection
+
+          expect(collection).to be_a Bronze::Collections::Collection
+          expect(collection.repository).to be repository
+          expect(collection.transform).to be default_transform
+        end
+      end
+
+      describe 'when the transform is set' do
+        let(:transform) { Bronze::Transforms::IdentityTransform.new }
+
+        it 'should return the collection with the given transform' do
+          collection = instance.collection
+
+          expect(collection).to be_a Bronze::Collections::Collection
+          expect(collection.repository).to be repository
+          expect(collection.transform).to be transform
+        end
+      end
+    end
 
     describe '#repository' do
       include_examples 'should have reader', :repository, ->() { repository }
-    end # describe
-  end # shared_examples
+    end
+
+    describe '#transform' do
+      include_examples 'should have reader', :transform
+
+      it 'should return the default transform for the entity class' do
+        expect(instance.transform)
+          .to be_a Bronze::Entities::Transforms::EntityTransform
+        expect(instance.transform.entity_class).to be entity_class
+      end
+
+      describe 'when the default transform is overriden' do
+        let(:default_transform) { Bronze::Transforms::IdentityTransform.new }
+
+        before(:example) do
+          allow(instance)
+            .to receive(:default_transform)
+            .and_return(default_transform)
+        end
+
+        it 'should return the default transform' do
+          expect(instance.transform).to be default_transform
+        end
+      end
+
+      describe 'when the transform is set' do
+        let(:transform) { Bronze::Transforms::IdentityTransform.new }
+
+        it 'should return the set transform' do
+          expect(instance.transform).to be transform
+        end
+      end
+    end
+  end
 
   shared_examples 'should assign the attributes to the entity' do
     describe '#call' do

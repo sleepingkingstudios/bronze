@@ -8,16 +8,14 @@ require 'support/example_entity'
 RSpec.describe Bronze::Entities::Operations::EntityOperation do
   include Spec::Entities::Operations::EntityOperationExamples
 
+  subject(:instance) { described_class.new(entity_class: entity_class) }
+
   let(:described_class) do
     Class.new(Cuprum::Operation) do
       include Bronze::Entities::Operations::EntityOperation
     end
   end
   let(:entity_class) { Spec::ExampleEntity }
-  let(:arguments)    { [] }
-  let(:instance) do
-    described_class.new(*arguments, entity_class: entity_class)
-  end
 
   describe '::new' do
     it 'should define the constructor' do

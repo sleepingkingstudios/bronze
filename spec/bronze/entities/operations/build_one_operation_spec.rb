@@ -6,9 +6,7 @@ RSpec.describe Bronze::Entities::Operations::BuildOneOperation do
 
   include_context 'when the entity class is defined'
 
-  let(:instance) do
-    described_class.new(entity_class: entity_class)
-  end
+  subject(:instance) { described_class.new(entity_class: entity_class) }
 
   describe '::new' do
     it 'should define the constructor' do
