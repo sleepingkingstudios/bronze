@@ -56,7 +56,6 @@ RSpec.xdescribe Bronze::Entities::Operations::EntityOperationBuilder do
       :find_matching,
       :find_one,
       :insert_one,
-      :insert_one_without_validation,
       :update_one,
       :update_one_without_validation,
       :validate_one,

@@ -1,44 +1,34 @@
-# lib/bronze/entities/operations/insert_one_operation.rb
-
-require 'bronze/entities/operations/insert_one_without_validation_operation'
 require 'bronze/entities/operations/persistence_operation'
-require 'bronze/entities/operations/validate_one_operation'
-require 'bronze/entities/operations/validate_one_uniqueness_operation'
-require 'bronze/operations/operation_chain'
+
+require 'cuprum/operation'
 
 module Bronze::Entities::Operations
-  # Operation for validating the given entity and, if valid, inserting the
-  # entity into the repository.
-  class InsertOneOperation < Bronze::Operations::OperationChain
+  # Operation for inserting the given entity into the repository.
+  class InsertOneOperation < Cuprum::Operation
     include Bronze::Entities::Operations::PersistenceOperation
-
-    # @param entity_class [Class] The class of entity this operation acts upon.
-    # @param repository [Bronze::Collections::Repository] The data repository to
-    #   access or reference.
-    def initialize entity_class, repository
-      first_operation = validate_attributes_operation(entity_class)
-
-      super(entity_class, repository, first_operation)
-
-      self.
-        then(validate_uniqueness_operation entity_class).
-        then(insert_operation entity_class)
-    end # constructor
 
     private
 
-    def insert_operation entity_class
-      Bronze::Entities::Operations::InsertOneWithoutValidationOperation.
-        new(entity_class, repository)
-    end # method insert_operation
+    def persist_entity(entity)
+      entity.persist if entity.respond_to?(:persist)
+    end
 
-    def validate_attributes_operation entity_class
-      Bronze::Entities::Operations::ValidateOneOperation.new(entity_class)
-    end # method validate_attributes_operation
+    # Inserts the given entity into the repository.
+    #
+    # @param entity [Bronze::Entities::Entity] The entity to insert into the
+    #   repository.
+    #
+    # @return [Bronze::Entities::Entity] The inserted entity.
+    #
+    # @see Bronze::Collections::Collection#insert.
+    def process(entity)
+      success, errors = collection.insert(entity)
 
-    def validate_uniqueness_operation entity_class
-      Bronze::Entities::Operations::ValidateOneUniquenessOperation.
-        new(entity_class, repository)
-    end # method validate_uniqueness_operation
-  end # module
-end # module
+      persist_entity(entity) if success
+
+      result.errors[entity_name] = errors unless success
+
+      entity
+    end
+  end
+end

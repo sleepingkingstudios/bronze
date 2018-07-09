@@ -40,6 +40,10 @@ module Bronze::Entities::Operations
 
     private
 
+    def build_errors
+      Bronze::Errors.new
+    end
+
     def entity_name
       @entity_name ||=
         begin

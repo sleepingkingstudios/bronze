@@ -1576,8 +1576,8 @@ module Spec::Entities::Operations::EntityOperationExamples
   end # shared_examples
 
   shared_examples 'should insert the entity into the collection' do
-    describe '#execute' do
-      it { expect(instance).to respond_to(:execute).with(1).argument }
+    describe '#call' do
+      it { expect(instance).to respond_to(:call).with(1).argument }
 
       describe 'with nil' do
         let(:expected_error) do
@@ -1586,42 +1586,46 @@ module Spec::Entities::Operations::EntityOperationExamples
             :type   =>
               Bronze::Collections::Collection::Errors.primary_key_missing,
             :params => { :key => :id }
-          } # end expected error
-        end # let
+          }
+        end
 
-        def execute_operation
-          instance.execute(nil)
-        end # method execute operation
+        def call_operation
+          instance.call(nil)
+        end
 
         include_examples 'should fail and set the errors'
 
-        it 'should set the result to nil' do
-          expect(execute_operation.result).to be nil
-        end # it
+        it 'should set the result' do
+          call_operation
 
-        it { expect { execute_operation }.not_to change(collection, :count) }
-      end # describe
+          expect(instance.result).to be_a Cuprum::Result
+          expect(instance.result.value).to be nil
+        end
+
+        it { expect { call_operation }.not_to change(collection, :count) }
+      end
 
       describe 'with an entity' do
         let(:entity) { entity_class.new(initial_attributes) }
 
-        def execute_operation
-          instance.execute(entity)
-        end # method execute operation
+        def call_operation
+          instance.call(entity)
+        end
 
         include_examples 'should succeed and clear the errors'
 
         it 'should set the result to the entity' do
-          execute_operation
+          call_operation
 
-          expect(instance.result).to be_a entity_class
-          expect(instance.result.persisted?).to be true
-        end # it
+          expect(instance.result).to be_a Cuprum::Result
+          expect(instance.result.value).to be_a entity_class
+          expect(instance.result.value.persisted?).to be true
+        end
 
-        it { expect { execute_operation }.to change(collection, :count).by(1) }
-      end # describe
-    end # describe
-  end # shared_examples
+        it { expect { call_operation }.to change(collection, :count).by(1) }
+      end
+    end
+  end
 
   shared_examples 'should update the entity in the collection' do
     describe '#execute' do

@@ -1,7 +1,7 @@
 # lib/bronze/entities/operations/build_and_insert_one_operation.rb
 
 require 'bronze/entities/operations/build_one_operation'
-require 'bronze/entities/operations/insert_one_without_validation_operation'
+require 'bronze/entities/operations/insert_one_operation'
 require 'bronze/entities/operations/persistence_operation'
 require 'bronze/entities/operations/validate_one_operation'
 require 'bronze/entities/operations/validate_one_uniqueness_operation'
@@ -35,7 +35,7 @@ module Bronze::Entities::Operations
     end # method build_operation
 
     def insert_operation entity_class
-      Bronze::Entities::Operations::InsertOneWithoutValidationOperation.
+      Bronze::Entities::Operations::InsertOneOperation.
         new(entity_class, repository)
     end # method insert_operation
 

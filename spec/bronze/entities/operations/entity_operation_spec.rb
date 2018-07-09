@@ -67,4 +67,21 @@ RSpec.describe Bronze::Entities::Operations::EntityOperation do
       end
     end
   end
+
+  describe '#errors' do
+    include_examples 'should have reader', :errors, nil
+
+    context 'when the operation has been called' do
+      before(:example) do
+        allow(instance).to receive(:process)
+      end
+
+      it 'should return the result errors object' do
+        result = instance.call
+
+        expect(instance.errors).to be_a Bronze::Errors
+        expect(instance.errors).to be result.errors
+      end
+    end
+  end
 end
