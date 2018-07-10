@@ -1133,10 +1133,10 @@ module Spec::Entities::Operations::EntityOperationExamples
   end # shared_examples
 
   shared_examples 'should delete the entity from the collection' do
-    describe '#execute' do
+    describe '#call' do
       include_context 'when the repository has many entities'
 
-      it { expect(instance).to respond_to(:execute).with(1).argument }
+      it { expect(instance).to respond_to(:call).with(1).argument }
 
       describe 'with nil' do
         let(:expected_error) do
@@ -1145,17 +1145,24 @@ module Spec::Entities::Operations::EntityOperationExamples
             :type   =>
               Bronze::Collections::Collection::Errors.primary_key_missing,
             :params => { :key => :id }
-          } # end expected error
-        end # let
+          }
+        end
 
-        def execute_operation
-          instance.execute(nil)
-        end # method execute operation
+        def call_operation
+          instance.call(nil)
+        end
 
         include_examples 'should fail and set the errors'
 
-        it { expect { execute_operation }.not_to change(collection, :count) }
-      end # describe
+        it 'should set the result' do
+          call_operation
+
+          expect(instance.result).to be_a Cuprum::Result
+          expect(instance.result.value).to be nil
+        end
+
+        it { expect { call_operation }.not_to change(collection, :count) }
+      end
 
       describe 'with an invalid entity id' do
         let(:entity) { entity_class.new }
@@ -1164,17 +1171,24 @@ module Spec::Entities::Operations::EntityOperationExamples
             :path   => [entity_name.intern],
             :type   => Bronze::Collections::Collection::Errors.record_not_found,
             :params => { :id => entity.id }
-          } # end expected error
-        end # let
+          }
+        end
 
-        def execute_operation
-          instance.execute(entity.id)
-        end # method execute operation
+        def call_operation
+          instance.call(entity.id)
+        end
 
         include_examples 'should fail and set the errors'
 
-        it { expect { execute_operation }.not_to change(collection, :count) }
-      end # describe
+        it 'should set the result' do
+          call_operation
+
+          expect(instance.result).to be_a Cuprum::Result
+          expect(instance.result.value).to be nil
+        end
+
+        it { expect { call_operation }.not_to change(collection, :count) }
+      end
 
       describe 'with an invalid entity' do
         let(:entity) { entity_class.new }
@@ -1183,51 +1197,72 @@ module Spec::Entities::Operations::EntityOperationExamples
             :path   => [entity_name.intern],
             :type   => Bronze::Collections::Collection::Errors.record_not_found,
             :params => { :id => entity.id }
-          } # end expected error
-        end # let
+          }
+        end
 
-        def execute_operation
-          instance.execute(entity)
-        end # method execute operation
+        def call_operation
+          instance.call(entity)
+        end
 
         include_examples 'should fail and set the errors'
 
-        it { expect { execute_operation }.not_to change(collection, :count) }
-      end # describe
+        it 'should set the result' do
+          call_operation
+
+          expect(instance.result).to be_a Cuprum::Result
+          expect(instance.result.value).to be nil
+        end
+
+        it { expect { call_operation }.not_to change(collection, :count) }
+      end
 
       describe 'with a valid entity id' do
         let(:entity) { collection.limit(1).one }
 
-        def execute_operation
-          instance.execute(entity.id)
-        end # method execute operation
+        def call_operation
+          instance.call(entity.id)
+        end
 
         include_examples 'should succeed and clear the errors'
 
+        it 'should set the result' do
+          call_operation
+
+          expect(instance.result).to be_a Cuprum::Result
+          expect(instance.result.value).to be nil
+        end
+
         it 'should delete the entity from the collection' do
-          expect { execute_operation }.to change(collection, :count).by(-1)
+          expect { call_operation }.to change(collection, :count).by(-1)
 
           expect(collection.matching(entity.attributes).exists?).to be false
-        end # it
-      end # describe
+        end
+      end
 
       describe 'with a valid entity' do
         let(:entity) { collection.limit(1).one }
 
-        def execute_operation
-          instance.execute(entity)
-        end # method execute operation
+        def call_operation
+          instance.call(entity)
+        end
 
         include_examples 'should succeed and clear the errors'
 
+        it 'should set the result' do
+          call_operation
+
+          expect(instance.result).to be_a Cuprum::Result
+          expect(instance.result.value).to be nil
+        end
+
         it 'should delete the entity from the collection' do
-          expect { execute_operation }.to change(collection, :count).by(-1)
+          expect { call_operation }.to change(collection, :count).by(-1)
 
           expect(collection.matching(entity.attributes).exists?).to be false
-        end # it
-      end # describe
-    end # describe
-  end # shared_examples
+        end
+      end
+    end
+  end
 
   shared_examples 'should find the entities with given primary keys' do
     describe '#execute' do
