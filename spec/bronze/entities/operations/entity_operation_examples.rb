@@ -1458,105 +1458,112 @@ module Spec::Entities::Operations::EntityOperationExamples
   end
 
   shared_examples 'should find the entities matching the selector' do
-    describe '#execute' do
+    describe '#call' do
       let(:selector) { {} }
       let(:expected) { collection.matching(selector).to_a }
 
       include_context 'when the repository has many entities'
 
-      it { expect(instance).to respond_to(:execute).with(1).argument }
+      it { expect(instance).to respond_to(:call).with(1).argument }
 
       describe 'with no arguments' do
-        def execute_operation
-          instance.execute
-        end # method execute_operation
+        def call_operation
+          instance.call
+        end
 
         include_examples 'should succeed and clear the errors'
 
         it 'should set the result to the matching entities' do
-          operation = execute_operation
+          call_operation
 
-          expect(operation.result).to contain_exactly(*expected)
+          expect(instance.result).to be_a Cuprum::Result
+          expect(instance.result.value).to contain_exactly(*expected)
 
-          operation.result.each do |entity|
+          instance.result.value.each do |entity|
             expect(entity.persisted?).to be true
-          end # each
-        end # it
-      end # describe
+          end
+        end
+      end
 
       describe 'with :matching => empty selector' do
-        def execute_operation
-          instance.execute :matching => selector
-        end # method execute_operation
+        def call_operation
+          instance.call matching: selector
+        end
 
         include_examples 'should succeed and clear the errors'
 
         it 'should set the result to the matching entities' do
-          operation = execute_operation
+          call_operation
 
-          expect(operation.result).to contain_exactly(*expected)
+          expect(instance.result).to be_a Cuprum::Result
+          expect(instance.result.value).to contain_exactly(*expected)
 
-          operation.result.each do |entity|
+          instance.result.value.each do |entity|
             expect(entity.persisted?).to be true
-          end # each
-        end # it
-      end # describe
+          end
+        end
+      end
 
       describe 'with :matching => selector matching no entities' do
-        let(:selector) { { :title => 'Cryptozoology Monthly' } }
+        let(:selector) { { title: 'Cryptozoology Monthly' } }
 
-        def execute_operation
-          instance.execute :matching => selector
-        end # method execute_operation
+        def call_operation
+          instance.call matching: selector
+        end
 
         include_examples 'should succeed and clear the errors'
 
         it 'should set the result to an empty array' do
-          expect(execute_operation.result).to be == []
-        end # it
-      end # describe
+          call_operation
+
+          expect(instance.result).to be_a Cuprum::Result
+          expect(instance.result.value).to be == []
+        end
+      end
 
       describe 'with :matching => selector matching some entities' do
-        let(:selector) { { :title => 'The Atlantean Diaspora' } }
+        let(:selector) { { title: 'The Atlantean Diaspora' } }
 
-        def execute_operation
-          instance.execute :matching => selector
-        end # method execute_operation
+        def call_operation
+          instance.call matching: selector
+        end
 
         include_examples 'should succeed and clear the errors'
 
         it 'should set the result to the matching entities' do
-          operation = execute_operation
+          call_operation
 
-          expect(operation.result).to contain_exactly(*expected)
+          expect(instance.result).to be_a Cuprum::Result
+          expect(instance.result.value).to contain_exactly(*expected)
 
-          operation.result.each do |entity|
+          instance.result.value.each do |entity|
             expect(entity.persisted?).to be true
-          end # each
-        end # it
-      end # describe
+          end
+        end
+      end
 
       describe 'with :matching => selector matching all entities' do
-        let(:selector) { { :volume => { :__in => [1, 2, 3] } } }
+        let(:selector) { { volume: { __in: [1, 2, 3] } } }
 
-        def execute_operation
-          instance.execute :matching => selector
-        end # method execute_operation
+        def call_operation
+          instance.call matching: selector
+        end
 
         include_examples 'should succeed and clear the errors'
 
         it 'should set the result to the matching entities' do
-          operation = execute_operation
+          call_operation
 
-          expect(operation.result).to contain_exactly(*expected)
+          expect(instance.result).to be_a Cuprum::Result
+          expect(instance.result.value).to contain_exactly(*expected)
 
-          operation.result.each do |entity|
+          instance.result.value.each do |entity|
             expect(entity.persisted?).to be true
-          end # each
-        end # it
-      end # describe
-    end # describe
-  end # shared_examples
+          end
+        end
+      end
+    end
+  end
 
   shared_examples 'should find the entity with the given primary key' do
     describe '#execute' do

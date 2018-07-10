@@ -49,5 +49,11 @@ module Bronze::Entities::Operations
     def default_transform
       Bronze::Entities::Transforms::EntityTransform.new(entity_class)
     end
+
+    def persist_entity entity
+      return entity unless entity.respond_to?(:persist)
+
+      entity.tap(&:persist)
+    end
   end
 end

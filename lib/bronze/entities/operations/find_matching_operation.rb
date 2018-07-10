@@ -1,13 +1,14 @@
-# lib/bronze/entities/operations/find_matching_operation.rb
-
 require 'bronze/entities/operations/persistence_operation'
-require 'bronze/operations/operation'
+
+require 'cuprum/operation'
 
 module Bronze::Entities::Operations
   # Operation for retrieving all entities from a repository matching a given
   # selector.
-  class FindMatchingOperation < Bronze::Operations::Operation
+  class FindMatchingOperation < Cuprum::Operation
     include Bronze::Entities::Operations::PersistenceOperation
+
+    private
 
     # Queries the repository for all entities matching the given selector.
     #
@@ -23,14 +24,6 @@ module Bronze::Entities::Operations
       query = query.matching(matching) if matching.is_a?(Hash)
 
       query.to_a.map { |entity| persist_entity(entity) }
-    end # method process
-
-    private
-
-    def persist_entity entity
-      return entity unless entity.respond_to?(:persist)
-
-      entity.tap(&:persist)
-    end # method persist_entity
-  end # class
-end # module
+    end
+  end
+end

@@ -9,10 +9,6 @@ module Bronze::Entities::Operations
 
     private
 
-    def persist_entity(entity)
-      entity.persist if entity.respond_to?(:persist)
-    end
-
     # Inserts the given entity into the repository.
     #
     # @param entity [Bronze::Entities::Entity] The entity to insert into the

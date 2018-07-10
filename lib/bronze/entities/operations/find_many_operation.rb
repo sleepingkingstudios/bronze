@@ -21,12 +21,6 @@ module Bronze::Entities::Operations
       end
     end
 
-    def persist_entity entity
-      return entity unless entity.respond_to?(:persist)
-
-      entity.tap(&:persist)
-    end
-
     # Queries the repository for the entities with the given primary keys. The
     # operation succeeds if an entity is found for each primary key, or fails
     # if an entity is not found for one or more primary keys.
