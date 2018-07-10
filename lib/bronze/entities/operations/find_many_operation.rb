@@ -1,13 +1,31 @@
-# lib/bronze/entities/operations/find_many_operation.rb
-
 require 'bronze/entities/operations/persistence_operation'
-require 'bronze/operations/operation'
+
+require 'cuprum/operation'
 
 module Bronze::Entities::Operations
   # Operation for retrieving entities from a repository from a list of entity
   # primary keys.
-  class FindManyOperation < Bronze::Operations::Operation
+  class FindManyOperation < Cuprum::Operation
     include Bronze::Entities::Operations::PersistenceOperation
+
+    private
+
+    def add_errors expected_keys, actual_keys
+      missing_keys = expected_keys - actual_keys
+
+      missing_keys.each do |primary_key|
+        result.errors[plural_entity_name].add(
+          Bronze::Collections::Collection::Errors.record_not_found,
+          :id => primary_key
+        )
+      end
+    end
+
+    def persist_entity entity
+      return entity unless entity.respond_to?(:persist)
+
+      entity.tap(&:persist)
+    end
 
     # Queries the repository for the entities with the given primary keys. The
     # operation succeeds if an entity is found for each primary key, or fails
@@ -25,7 +43,7 @@ module Bronze::Entities::Operations
 
       if expected_keys.size == 1 && expected_keys.first.is_a?(Array)
         expected_keys = expected_keys.first
-      end # if
+      end
 
       found_entities =
         collection.matching(:id => { :__in => expected_keys }).to_a
@@ -33,25 +51,6 @@ module Bronze::Entities::Operations
       add_errors(expected_keys, found_entities.map(&:id))
 
       found_entities.map { |entity| persist_entity(entity) }
-    end # method process
-
-    private
-
-    def add_errors expected_keys, actual_keys
-      missing_keys = expected_keys - actual_keys
-
-      missing_keys.each do |primary_key|
-        @errors[plural_entity_name].add(
-          Bronze::Collections::Collection::Errors.record_not_found,
-          :id => primary_key
-        ) # end error
-      end # each
-    end # method add_errors
-
-    def persist_entity entity
-      return entity unless entity.respond_to?(:persist)
-
-      entity.tap(&:persist)
-    end # method persist_entity
-  end # class
-end # module
+    end
+  end
+end

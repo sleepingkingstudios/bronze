@@ -1265,27 +1265,30 @@ module Spec::Entities::Operations::EntityOperationExamples
   end
 
   shared_examples 'should find the entities with given primary keys' do
-    describe '#execute' do
+    describe '#call' do
       include_context 'when the repository has many entities'
 
-      it { expect(instance).to respond_to(:execute).with(0..1).arguments }
+      it { expect(instance).to respond_to(:call).with(0..1).arguments }
 
       describe 'with no arguments' do
-        def execute_operation
-          instance.execute
-        end # method execute_operation
+        def call_operation
+          instance.call
+        end
 
         include_examples 'should succeed and clear the errors'
 
-        it 'should set the result to an empty array' do
-          expect(execute_operation.result).to be == []
-        end # it
-      end # describe
+        it 'should set the result' do
+          call_operation
+
+          expect(instance.result).to be_a Cuprum::Result
+          expect(instance.result.value).to be == []
+        end
+      end
 
       describe 'with nil' do
-        def execute_operation
-          instance.execute(nil)
-        end # method execute_operation
+        def call_operation
+          instance.call(nil)
+        end
 
         include_examples 'should fail and set the errors', lambda {
           error_context = Bronze::Collections::Collection::Errors
@@ -1295,20 +1298,23 @@ module Spec::Entities::Operations::EntityOperationExamples
             :type   => error_context.record_not_found,
             :path   => [plural_entity_name.intern],
             :params => { :id => nil }
-          ) # end include
-        } # end lambda
+          )
+        }
 
-        it 'should set the result to an empty array' do
-          expect(execute_operation.result).to be == []
-        end # it
-      end # describe
+        it 'should set the result' do
+          call_operation
+
+          expect(instance.result).to be_a Cuprum::Result
+          expect(instance.result.value).to be == []
+        end
+      end
 
       describe 'with an invalid entity id' do
         let(:entity_id) { entity_class.new.id }
 
-        def execute_operation
-          instance.execute(entity_id)
-        end # method execute_operation
+        def call_operation
+          instance.call(entity_id)
+        end
 
         include_examples 'should fail and set the errors', lambda {
           error_context = Bronze::Collections::Collection::Errors
@@ -1318,49 +1324,56 @@ module Spec::Entities::Operations::EntityOperationExamples
             :type   => error_context.record_not_found,
             :path   => [plural_entity_name.intern],
             :params => { :id => entity_id }
-          ) # end include
-        } # end lambda
+          )
+        }
 
-        it 'should set the result to an empty array' do
-          expect(execute_operation.result).to be == []
-        end # it
-      end # describe
+        it 'should set the result' do
+          call_operation
+
+          expect(instance.result).to be_a Cuprum::Result
+          expect(instance.result.value).to be == []
+        end
+      end
 
       describe 'with a valid entity id' do
         let(:entity)    { collection.limit(1).one }
         let(:entity_id) { entity.id }
 
-        def execute_operation
-          instance.execute(entity_id)
-        end # method execute_operation
+        def call_operation
+          instance.call(entity_id)
+        end
 
         include_examples 'should succeed and clear the errors'
 
-        it 'should set the result to the found entities' do
-          expect(execute_operation.result).to be == [entity]
-        end # it
-      end # describe
+        it 'should set the result' do
+          call_operation
+
+          expect(instance.result).to be_a Cuprum::Result
+          expect(instance.result.value).to contain_exactly entity
+        end
+      end
 
       describe 'with an empty array' do
-        def execute_operation
-          instance.execute([])
-        end # method execute_operation
+        def call_operation
+          instance.call([])
+        end
 
         include_examples 'should succeed and clear the errors'
 
-        it 'should set the result to an empty array' do
-          expect(execute_operation.result).to be == []
-        end # it
-      end # describe
+        it 'should set the result' do
+          call_operation
+
+          expect(instance.result).to be_a Cuprum::Result
+          expect(instance.result.value).to be == []
+        end
+      end
 
       describe 'with an array of invalid entity ids' do
-        let(:entity_ids) do
-          Array.new(3) { entity_class.new.id }
-        end # let
+        let(:entity_ids) { Array.new(3) { entity_class.new.id } }
 
-        def execute_operation
-          instance.execute(entity_ids)
-        end # method execute_operation
+        def call_operation
+          instance.call(entity_ids)
+        end
 
         include_examples 'should fail and set the errors', lambda {
           error_context = Bronze::Collections::Collection::Errors
@@ -1372,26 +1385,27 @@ module Spec::Entities::Operations::EntityOperationExamples
               :type   => error_context.record_not_found,
               :path   => [plural_entity_name.intern],
               :params => { :id => entity_id }
-            ) # end include
-          end # each
-        } # end lambda
+            )
+          end
+        }
 
-        it 'should set the result to an empty array' do
-          expect(execute_operation.result).to be == []
-        end # it
-      end # describe
+        it 'should set the result' do
+          call_operation
+
+          expect(instance.result).to be_a Cuprum::Result
+          expect(instance.result.value).to be == []
+        end
+      end
 
       describe 'with an array of mixed valid and invalid entity ids' do
-        let(:invalid_entity_ids) do
-          Array.new(3) { entity_class.new.id }
-        end # let
-        let(:entities)         { collection.limit(3).to_a }
-        let(:valid_entity_ids) { entities.map(&:id) }
-        let(:entity_ids)       { [*invalid_entity_ids, *valid_entity_ids] }
+        let(:invalid_entity_ids) { Array.new(3) { entity_class.new.id } }
+        let(:entities)           { collection.limit(3).to_a }
+        let(:valid_entity_ids)   { entities.map(&:id) }
+        let(:entity_ids)         { [*invalid_entity_ids, *valid_entity_ids] }
 
-        def execute_operation
-          instance.execute(entity_ids)
-        end # method execute_operation
+        def call_operation
+          instance.call(entity_ids)
+        end
 
         include_examples 'should fail and set the errors', lambda {
           error_context = Bronze::Collections::Collection::Errors
@@ -1403,43 +1417,45 @@ module Spec::Entities::Operations::EntityOperationExamples
               :type   => error_context.record_not_found,
               :path   => [plural_entity_name.intern],
               :params => { :id => entity_id }
-            ) # end include
-          end # each
-        } # end lambda
+            )
+          end
+        }
 
         it 'should set the result to the found entities' do
-          operation = execute_operation
+          call_operation
 
-          expect(operation.result).to contain_exactly(*entities)
+          expect(instance.result).to be_a Cuprum::Result
+          expect(instance.result.value).to contain_exactly(*entities)
 
-          operation.result.each do |entity|
+          instance.result.value.each do |entity|
             expect(entity.persisted?).to be true
-          end # each
-        end # it
-      end # describe
+          end
+        end
+      end
 
       describe 'with an array of valid entity ids' do
         let(:entities)   { collection.limit(3).to_a }
         let(:entity_ids) { entities.map(&:id) }
 
-        def execute_operation
-          instance.execute(entity_ids)
-        end # method execute_operation
+        def call_operation
+          instance.call(entity_ids)
+        end
 
         include_examples 'should succeed and clear the errors'
 
         it 'should set the result to the found entities' do
-          operation = execute_operation
+          call_operation
 
-          expect(operation.result).to contain_exactly(*entities)
+          expect(instance.result).to be_a Cuprum::Result
+          expect(instance.result.value).to contain_exactly(*entities)
 
-          operation.result.each do |entity|
+          instance.result.value.each do |entity|
             expect(entity.persisted?).to be true
-          end # each
-        end # it
-      end # describe
-    end # describe
-  end # shared_examples
+          end
+        end
+      end
+    end
+  end
 
   shared_examples 'should find the entities matching the selector' do
     describe '#execute' do
