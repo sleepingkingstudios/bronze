@@ -1,44 +1,48 @@
-# lib/bronze/entities/operations/update_one_operation.rb
-
 require 'bronze/entities/operations/persistence_operation'
-require 'bronze/entities/operations/validate_one_operation'
-require 'bronze/entities/operations/validate_one_uniqueness_operation'
-require 'bronze/entities/operations/update_one_without_validation_operation'
-require 'bronze/operations/operation_chain'
+
+require 'cuprum/operation'
 
 module Bronze::Entities::Operations
   # Operation for validating the given entity and, if valid, updating the
   # entity in the repository.
-  class UpdateOneOperation < Bronze::Operations::OperationChain
+  class UpdateOneOperation < Cuprum::Operation
     include Bronze::Entities::Operations::PersistenceOperation
-
-    # @param entity_class [Class] The class of entity this operation acts upon.
-    # @param repository [Bronze::Collections::Repository] The data repository to
-    #   access or reference.
-    def initialize entity_class, repository
-      first_operation = validate_attributes_operation(entity_class)
-
-      super(entity_class, repository, first_operation)
-
-      self.
-        then(validate_uniqueness_operation entity_class).
-        then(update_operation entity_class)
-    end # constructor
 
     private
 
-    def update_operation entity_class
-      Bronze::Entities::Operations::UpdateOneWithoutValidationOperation.
-        new(entity_class, repository)
-    end # method update_operation
+    def add_missing_key_error
+      result.errors[entity_name].add(
+        Bronze::Collections::Collection::Errors.primary_key_missing,
+        :key => :id
+      )
+    end
 
-    def validate_attributes_operation entity_class
-      Bronze::Entities::Operations::ValidateOneOperation.new(entity_class)
-    end # method validate_attributes_operation
+    def clean_entity_attributes entity
+      entity.clean_attributes if entity.respond_to?(:clean_attributes)
+    end
 
-    def validate_uniqueness_operation entity_class
-      Bronze::Entities::Operations::ValidateOneUniquenessOperation.
-        new(entity_class, repository)
-    end # method validate_uniqueness_operation
-  end # module
-end # module
+    # Updates the given entity in the repository.
+    #
+    # @param entity [Bronze::Entities::Entity] The entity to update in the
+    #   repository.
+    #
+    # @return [Bronze::Entities::Entity] The updated entity.
+    #
+    # @see Bronze::Collections::Collection#update.
+    def process entity
+      unless entity
+        add_missing_key_error
+
+        return entity
+      end
+
+      success, errors = collection.update(entity.id, entity)
+
+      result.errors[entity_name] = errors unless success
+
+      clean_entity_attributes(entity) if success
+
+      entity
+    end
+  end
+end

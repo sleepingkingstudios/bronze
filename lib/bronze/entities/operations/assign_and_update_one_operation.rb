@@ -2,7 +2,7 @@
 
 require 'bronze/entities/operations/assign_one_operation'
 require 'bronze/entities/operations/persistence_operation'
-require 'bronze/entities/operations/update_one_without_validation_operation'
+require 'bronze/entities/operations/update_one_operation'
 require 'bronze/entities/operations/validate_one_operation'
 require 'bronze/entities/operations/validate_one_uniqueness_operation'
 require 'bronze/operations/operation_chain'
@@ -35,7 +35,7 @@ module Bronze::Entities::Operations
     end # method build_operation
 
     def update_operation entity_class
-      Bronze::Entities::Operations::UpdateOneWithoutValidationOperation.
+      Bronze::Entities::Operations::UpdateOneOperation.
         new(entity_class, repository)
     end # method insert_operation
 
