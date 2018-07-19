@@ -1789,38 +1789,44 @@ module Spec::Entities::Operations::EntityOperationExamples
   end
 
   shared_examples 'should validate the entity with the contract' do
-    describe '#execute' do
-      it { expect(instance).to respond_to(:execute).with(1).argument }
+    describe '#call' do
+      it { expect(instance).to respond_to(:call).with(1).argument }
 
       context 'when the contract has no constraints' do
         let(:contract) { Bronze::Contracts::Contract.new }
 
         describe 'with nil' do
-          def execute_operation
-            instance.execute(nil)
-          end # method execute_operation
+          def call_operation
+            instance.call(nil)
+          end
 
           include_examples 'should succeed and clear the errors'
 
           it 'should set the result to nil' do
-            expect(execute_operation.result).to be nil
-          end # it
-        end # describe
+            call_operation
+
+            expect(instance.result).to be_a Cuprum::Result
+            expect(instance.result.value).to be nil
+          end
+        end
 
         describe 'with an entity' do
           let(:entity) { entity_class.new(initial_attributes) }
 
-          def execute_operation
-            instance.execute(entity)
-          end # method execute_operation
+          def call_operation
+            instance.call(entity)
+          end
 
           include_examples 'should succeed and clear the errors'
 
           it 'should set the result to the entity' do
-            expect(execute_operation.result).to be entity
-          end # it
-        end # describe
-      end # context
+            call_operation
+
+            expect(instance.result).to be_a Cuprum::Result
+            expect(instance.result.value).to be == entity
+          end
+        end
+      end
 
       context 'when the contract validates the entity properties' do
         let(:contract) { entity_contract }
@@ -1831,19 +1837,22 @@ module Spec::Entities::Operations::EntityOperationExamples
               :type   => Bronze::Constraints::PresenceConstraint::EMPTY_ERROR,
               :path   => [entity_name.intern, :title],
               :params => {}
-            } # end error
-          end # let
+            }
+          end
 
-          def execute_operation
-            instance.execute(nil)
-          end # method execute_operation
+          def call_operation
+            instance.call(nil)
+          end
 
           include_examples 'should fail and set the errors'
 
           it 'should set the result to nil' do
-            expect(execute_operation.result).to be nil
-          end # it
-        end # describe
+            call_operation
+
+            expect(instance.result).to be_a Cuprum::Result
+            expect(instance.result.value).to be nil
+          end
+        end
 
         describe 'with an invalid entity' do
           let(:entity) { entity_class.new(initial_attributes) }
@@ -1852,40 +1861,46 @@ module Spec::Entities::Operations::EntityOperationExamples
               :type   => Bronze::Constraints::PresenceConstraint::EMPTY_ERROR,
               :path   => [entity_name.intern, :title],
               :params => {}
-            } # end error
-          end # let
+            }
+          end
 
           before(:example) do
             entity.assign(invalid_attributes)
-          end # before example
+          end
 
-          def execute_operation
-            instance.execute(entity)
-          end # method execute_operation
+          def call_operation
+            instance.call(entity)
+          end
 
           include_examples 'should fail and set the errors'
 
           it 'should set the result to the entity' do
-            expect(execute_operation.result).to be entity
-          end # it
-        end # describe
+            call_operation
+
+            expect(instance.result).to be_a Cuprum::Result
+            expect(instance.result.value).to be == entity
+          end
+        end
 
         describe 'with a valid entity' do
           let(:entity) { entity_class.new(initial_attributes) }
 
-          def execute_operation
-            instance.execute(entity)
-          end # method execute_operation
+          def call_operation
+            instance.call(entity)
+          end
 
           include_examples 'should succeed and clear the errors'
 
           it 'should set the result to the entity' do
-            expect(execute_operation.result).to be entity
-          end # it
-        end # describe
-      end # context
-    end # describe
-  end # shared_examples
+            call_operation
+
+            expect(instance.result).to be_a Cuprum::Result
+            expect(instance.result.value).to be == entity
+          end
+        end
+      end
+    end
+  end
 
   shared_examples 'should validate the uniqueness of the entity' do
     describe '#execute' do

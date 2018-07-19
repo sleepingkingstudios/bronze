@@ -1,5 +1,3 @@
-# lib/bronze/entities/operations/persistence_operation.rb
-
 require 'sleeping_king_studios/tools/toolbox/mixin'
 
 require 'bronze/entities/operations/entity_operation'
