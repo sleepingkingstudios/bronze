@@ -53,9 +53,7 @@ module Bronze::Entities::Operations
 
     def entity_operation_names # rubocop:disable Metrics/MethodLength
       [
-        :assign_and_update_one,
         :assign_one,
-        :build_and_insert_one,
         :build_one,
         :delete_one,
         :find_many,
@@ -63,9 +61,7 @@ module Bronze::Entities::Operations
         :find_one,
         :insert_one,
         :update_one,
-        :update_one_without_validation,
-        :validate_one,
-        :validate_one_uniqueness
+        :validate_one
       ] # end names
     end # method entity_operation_names
   end # class
