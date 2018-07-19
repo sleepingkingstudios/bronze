@@ -15,7 +15,8 @@ module Bronze::Entities::Operations
     # @param entity_class [Class] The class of entity this operation acts upon.
     # @param repository [Bronze::Collections::Repository] The data repository to
     #   access or reference.
-    # @param entity_class [Class] The class of entity this operation acts upon.
+    # @param transform [Bronze::Transforms::Transform] The transform used to
+    #   serialize and deserialize entities to and from the repository.
     def initialize(*args, repository:, transform: nil, **kwargs)
       # RUBY_VERSION: Required below 2.5
       args << kwargs unless kwargs.empty?

@@ -43,6 +43,11 @@ module Spec::Support::Examples::Entities
       end
     end
 
+    shared_context 'when the operation is defined with a contract' do
+      let(:keywords) { super().merge contract: contract }
+      let(:contract) { Bronze::Contracts::Contract.new }
+    end
+
     shared_context 'when the repository is defined' do
       let(:repository) { Patina::Collections::Simple::Repository.new }
       let(:collection) { repository.collection(entity_class) }
@@ -103,6 +108,90 @@ module Spec::Support::Examples::Entities
         end
 
         instance_exec(&proc) unless proc.nil?
+      end
+    end
+
+    shared_examples 'should implement the ContractOperation methods' do
+      shared_context 'when the entity class defines a ::Contract constant' do
+        let(:contract) { Bronze::Contracts::Contract.new }
+
+        before(:example) do
+          entity_class.const_set(:Contract, contract)
+        end
+      end
+
+      shared_context 'when the entity class defines a .contract method' do
+        let(:contract) { Bronze::Contracts::Contract.new }
+
+        before(:example) do
+          defined_contract = contract
+
+          entity_class.define_singleton_method(:contract) { defined_contract }
+        end
+      end
+
+      describe '#contract' do
+        include_examples 'should have reader', :contract, nil
+
+        wrap_context 'when the operation is defined with a contract' do
+          it { expect(instance.contract).to be contract }
+        end
+
+        wrap_context 'when the entity class defines a ::Contract constant' do
+          it { expect(instance.contract).to be contract }
+        end
+
+        wrap_context 'when the entity class defines a .contract method' do
+          it { expect(instance.contract).to be contract }
+        end
+
+        wrap_context 'when a subclass is defined with the entity class' do
+          include_examples 'should have reader', :contract, nil
+
+          wrap_context 'when the operation is defined with a contract' do
+            it { expect(instance.contract).to be contract }
+          end
+
+          wrap_context 'when the entity class defines a ::Contract constant' do
+            it { expect(instance.contract).to be contract }
+          end
+
+          wrap_context 'when the entity class defines a .contract method' do
+            it { expect(instance.contract).to be contract }
+          end
+        end
+      end
+
+      describe '#contract?' do
+        include_examples 'should have predicate', :contract?, false
+
+        wrap_context 'when the operation is defined with a contract' do
+          it { expect(instance.contract?).to be true }
+        end
+
+        wrap_context 'when the entity class defines a ::Contract constant' do
+          it { expect(instance.contract?).to be true }
+        end
+
+        wrap_context 'when the entity class defines a .contract method' do
+          it { expect(instance.contract?).to be true }
+        end
+
+        wrap_context 'when a subclass is defined with the entity class' do
+          include_examples 'should have predicate', :contract?, false
+
+          wrap_context 'when the operation is defined with a contract' do
+            it { expect(instance.contract?).to be true }
+          end
+
+          wrap_context 'when the entity class defines a ::Contract constant' do
+            it { expect(instance.contract?).to be true }
+          end
+
+          wrap_context 'when the entity class defines a .contract method' do
+            it { expect(instance.contract?).to be true }
+          end
+        end
       end
     end
 

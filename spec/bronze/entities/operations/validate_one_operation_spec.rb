@@ -7,24 +7,6 @@ RSpec.describe Bronze::Entities::Operations::ValidateOneOperation do
 
   include_context 'when the entity class is defined'
 
-  shared_context 'when the operation is defined with a contract' do
-    let(:contract) { Bronze::Contracts::Contract.new }
-  end
-
-  shared_context 'when the entity class defines a ::Contract constant' do
-    before(:example) do
-      entity_class.const_set(:Contract, contract)
-    end
-  end
-
-  shared_context 'when the entity class defines a .contract method' do
-    before(:example) do
-      defined_contract = contract
-
-      entity_class.define_singleton_method(:contract) { defined_contract }
-    end
-  end
-
   subject(:instance) { described_class.new(**keywords) }
 
   let(:contract) { nil }
@@ -41,39 +23,9 @@ RSpec.describe Bronze::Entities::Operations::ValidateOneOperation do
     end
   end
 
+  include_examples 'should implement the ContractOperation methods'
+
   include_examples 'should implement the EntityOperation methods'
-
-  describe '#contract' do
-    include_examples 'should have reader', :contract, nil
-
-    wrap_context 'when the operation is defined with a contract' do
-      it { expect(instance.contract).to be contract }
-    end
-
-    wrap_context 'when the entity class defines a ::Contract constant' do
-      it { expect(instance.contract).to be contract }
-    end
-
-    wrap_context 'when the entity class defines a .contract method' do
-      it { expect(instance.contract).to be contract }
-    end
-
-    wrap_context 'when a subclass is defined with the entity class' do
-      include_examples 'should have reader', :contract, nil
-
-      wrap_context 'when the operation is defined with a contract' do
-        it { expect(instance.contract).to be contract }
-      end
-
-      wrap_context 'when the entity class defines a ::Contract constant' do
-        it { expect(instance.contract).to be contract }
-      end
-
-      wrap_context 'when the entity class defines a .contract method' do
-        it { expect(instance.contract).to be contract }
-      end
-    end
-  end
 
   describe '#call' do
     shared_examples 'should validate the entity with the contract' do
