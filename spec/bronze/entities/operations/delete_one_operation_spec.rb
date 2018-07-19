@@ -1,8 +1,9 @@
+require 'support/examples/entities/entity_operation_examples'
+
 require 'bronze/entities/operations/delete_one_operation'
-require 'bronze/entities/operations/entity_operation_examples'
 
 RSpec.describe Bronze::Entities::Operations::DeleteOneOperation do
-  include Spec::Entities::Operations::EntityOperationExamples
+  include Spec::Support::Examples::Entities::EntityOperationExamples
 
   include_context 'when the entity class is defined'
 
@@ -28,9 +29,141 @@ RSpec.describe Bronze::Entities::Operations::DeleteOneOperation do
 
   include_examples 'should implement the PersistenceOperation methods'
 
-  include_examples 'should delete the entity from the collection'
+  describe '#call' do
+    shared_examples 'should delete the entity from the collection' do
+      include_context 'when the repository has many entities'
 
-  wrap_context 'when a subclass is defined with the entity class' do
+      describe 'with nil' do
+        let(:expected_error) do
+          {
+            :path   => [entity_name.intern],
+            :type   =>
+              Bronze::Collections::Collection::Errors.primary_key_missing,
+            :params => { :key => :id }
+          }
+        end
+
+        def call_operation
+          instance.call(nil)
+        end
+
+        include_examples 'should fail and set the errors'
+
+        it 'should set the result' do
+          call_operation
+
+          expect(instance.result).to be_a Cuprum::Result
+          expect(instance.result.value).to be nil
+        end
+
+        it { expect { call_operation }.not_to change(collection, :count) }
+      end
+
+      describe 'with an invalid entity id' do
+        let(:entity) { entity_class.new }
+        let(:expected_error) do
+          {
+            :path   => [entity_name.intern],
+            :type   => Bronze::Collections::Collection::Errors.record_not_found,
+            :params => { :id => entity.id }
+          }
+        end
+
+        def call_operation
+          instance.call(entity.id)
+        end
+
+        include_examples 'should fail and set the errors'
+
+        it 'should set the result' do
+          call_operation
+
+          expect(instance.result).to be_a Cuprum::Result
+          expect(instance.result.value).to be nil
+        end
+
+        it { expect { call_operation }.not_to change(collection, :count) }
+      end
+
+      describe 'with an invalid entity' do
+        let(:entity) { entity_class.new }
+        let(:expected_error) do
+          {
+            :path   => [entity_name.intern],
+            :type   => Bronze::Collections::Collection::Errors.record_not_found,
+            :params => { :id => entity.id }
+          }
+        end
+
+        def call_operation
+          instance.call(entity)
+        end
+
+        include_examples 'should fail and set the errors'
+
+        it 'should set the result' do
+          call_operation
+
+          expect(instance.result).to be_a Cuprum::Result
+          expect(instance.result.value).to be nil
+        end
+
+        it { expect { call_operation }.not_to change(collection, :count) }
+      end
+
+      describe 'with a valid entity id' do
+        let(:entity) { collection.limit(1).one }
+
+        def call_operation
+          instance.call(entity.id)
+        end
+
+        include_examples 'should succeed and clear the errors'
+
+        it 'should set the result' do
+          call_operation
+
+          expect(instance.result).to be_a Cuprum::Result
+          expect(instance.result.value).to be nil
+        end
+
+        it 'should delete the entity from the collection' do
+          expect { call_operation }.to change(collection, :count).by(-1)
+
+          expect(collection.matching(entity.attributes).exists?).to be false
+        end
+      end
+
+      describe 'with a valid entity' do
+        let(:entity) { collection.limit(1).one }
+
+        def call_operation
+          instance.call(entity)
+        end
+
+        include_examples 'should succeed and clear the errors'
+
+        it 'should set the result' do
+          call_operation
+
+          expect(instance.result).to be_a Cuprum::Result
+          expect(instance.result.value).to be nil
+        end
+
+        it 'should delete the entity from the collection' do
+          expect { call_operation }.to change(collection, :count).by(-1)
+
+          expect(collection.matching(entity.attributes).exists?).to be false
+        end
+      end
+    end
+
+    it { expect(instance).to respond_to(:call).with(1).argument }
+
     include_examples 'should delete the entity from the collection'
+
+    wrap_context 'when a subclass is defined with the entity class' do
+      include_examples 'should delete the entity from the collection'
+    end
   end
 end

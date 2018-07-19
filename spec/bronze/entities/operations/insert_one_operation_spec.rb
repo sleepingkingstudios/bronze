@@ -1,8 +1,9 @@
-require 'bronze/entities/operations/entity_operation_examples'
 require 'bronze/entities/operations/insert_one_operation'
 
+require 'support/examples/entities/entity_operation_examples'
+
 RSpec.describe Bronze::Entities::Operations::InsertOneOperation do
-  include Spec::Entities::Operations::EntityOperationExamples
+  include Spec::Support::Examples::Entities::EntityOperationExamples
 
   include_context 'when the entity class is defined'
 
@@ -28,9 +29,61 @@ RSpec.describe Bronze::Entities::Operations::InsertOneOperation do
 
   include_examples 'should implement the PersistenceOperation methods'
 
-  include_examples 'should insert the entity into the collection'
+  describe '#call' do
+    shared_examples 'should insert the entity into the collection' do
+      describe 'with nil' do
+        let(:expected_error) do
+          {
+            :path   => [entity_name.intern],
+            :type   =>
+              Bronze::Collections::Collection::Errors.primary_key_missing,
+            :params => { :key => :id }
+          }
+        end
 
-  wrap_context 'when a subclass is defined with the entity class' do
+        def call_operation
+          instance.call(nil)
+        end
+
+        include_examples 'should fail and set the errors'
+
+        it 'should set the result' do
+          call_operation
+
+          expect(instance.result).to be_a Cuprum::Result
+          expect(instance.result.value).to be nil
+        end
+
+        it { expect { call_operation }.not_to change(collection, :count) }
+      end
+
+      describe 'with an entity' do
+        let(:entity) { entity_class.new(initial_attributes) }
+
+        def call_operation
+          instance.call(entity)
+        end
+
+        include_examples 'should succeed and clear the errors'
+
+        it 'should set the result to the entity' do
+          call_operation
+
+          expect(instance.result).to be_a Cuprum::Result
+          expect(instance.result.value).to be_a entity_class
+          expect(instance.result.value.persisted?).to be true
+        end
+
+        it { expect { call_operation }.to change(collection, :count).by(1) }
+      end
+    end
+
+    it { expect(instance).to respond_to(:call).with(1).argument }
+
     include_examples 'should insert the entity into the collection'
+
+    wrap_context 'when a subclass is defined with the entity class' do
+      include_examples 'should insert the entity into the collection'
+    end
   end
 end

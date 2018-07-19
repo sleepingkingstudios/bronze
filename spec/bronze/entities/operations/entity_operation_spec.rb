@@ -1,12 +1,12 @@
-require 'bronze/entities/operations/entity_operation'
-require 'bronze/entities/operations/entity_operation_examples'
-
 require 'cuprum/operation'
 
+require 'bronze/entities/operations/entity_operation'
+
 require 'support/example_entity'
+require 'support/examples/entities/entity_operation_examples'
 
 RSpec.describe Bronze::Entities::Operations::EntityOperation do
-  include Spec::Entities::Operations::EntityOperationExamples
+  include Spec::Support::Examples::Entities::EntityOperationExamples
 
   subject(:instance) { described_class.new(entity_class: entity_class) }
 

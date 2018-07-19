@@ -1,11 +1,12 @@
-require 'bronze/entities/operations/entity_operation'
-require 'bronze/entities/operations/entity_operation_examples'
-require 'bronze/entities/operations/persistence_operation'
-
 require 'cuprum/operation'
 
+require 'bronze/entities/operations/entity_operation'
+require 'bronze/entities/operations/persistence_operation'
+
+require 'support/examples/entities/entity_operation_examples'
+
 RSpec.describe Bronze::Entities::Operations::PersistenceOperation do
-  include Spec::Entities::Operations::EntityOperationExamples
+  include Spec::Support::Examples::Entities::EntityOperationExamples
 
   include_context 'when the entity class is defined'
 
