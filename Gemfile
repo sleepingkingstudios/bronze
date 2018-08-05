@@ -14,7 +14,7 @@ gemspec name: 'bronze'
 
 gemspec name: 'patina'
 
-gem 'cuprum', '~> 0.7.0'
+gem 'cuprum', git: 'https://github.com/sleepingkingstudios/cuprum'
 
 gem 'sleeping_king_studios-tasks',
   git: 'https://github.com/sleepingkingstudios/sleeping_king_studios-tasks'

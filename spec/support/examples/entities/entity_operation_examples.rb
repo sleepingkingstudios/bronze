@@ -28,7 +28,7 @@ module Spec::Support::Examples::Entities
         }
       end
       let(:valid_attributes)   { { :title => 'Cryptozoology Monthly' } }
-      let(:invalid_attributes) { { :title => nil, :publisher => 'Bigfoot' } }
+      let(:invalid_attributes) { { :title => nil, :volume => 13 } }
       let(:empty_attributes) do
         {
           :title  => nil,
@@ -240,7 +240,7 @@ module Spec::Support::Examples::Entities
           let(:default_transform) { Bronze::Transforms::IdentityTransform.new }
 
           before(:example) do
-            allow(instance)
+            allow_any_instance_of(described_class)
               .to receive(:default_transform)
               .and_return(default_transform)
           end
@@ -284,7 +284,7 @@ module Spec::Support::Examples::Entities
           let(:default_transform) { Bronze::Transforms::IdentityTransform.new }
 
           before(:example) do
-            allow(instance)
+            allow_any_instance_of(described_class)
               .to receive(:default_transform)
               .and_return(default_transform)
           end
