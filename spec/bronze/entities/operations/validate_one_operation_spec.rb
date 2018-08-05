@@ -7,12 +7,12 @@ RSpec.describe Bronze::Entities::Operations::ValidateOneOperation do
 
   include_context 'when the entity class is defined'
 
-  subject(:instance) { described_class.new(**keywords) }
+  subject(:instance) do
+    described_class.new(entity_class: entity_class, **keywords)
+  end
 
   let(:contract) { nil }
-  let(:keywords) do
-    { entity_class: entity_class, contract: contract }
-  end
+  let(:keywords) { { contract: contract } }
 
   describe '::new' do
     it 'should define the constructor' do

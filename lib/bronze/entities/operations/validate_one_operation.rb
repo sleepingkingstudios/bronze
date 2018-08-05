@@ -1,12 +1,10 @@
+require 'bronze/entities/operations/base_operation'
 require 'bronze/entities/operations/contract_operation'
-require 'bronze/entities/operations/entity_operation'
-
-require 'cuprum/operation'
 
 module Bronze::Entities::Operations
   # Validates the given entity using the given contract, or with the entity
   # class's default contract.
-  class ValidateOneOperation < Cuprum::Operation
+  class ValidateOneOperation < Bronze::Entities::Operations::BaseOperation
     include Bronze::Entities::Operations::ContractOperation
 
     private

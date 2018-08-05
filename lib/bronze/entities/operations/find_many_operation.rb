@@ -1,11 +1,10 @@
+require 'bronze/entities/operations/base_operation'
 require 'bronze/entities/operations/persistence_operation'
-
-require 'cuprum/operation'
 
 module Bronze::Entities::Operations
   # Operation for retrieving entities from a repository from a list of entity
   # primary keys.
-  class FindManyOperation < Cuprum::Operation
+  class FindManyOperation < Bronze::Entities::Operations::BaseOperation
     include Bronze::Entities::Operations::PersistenceOperation
 
     private

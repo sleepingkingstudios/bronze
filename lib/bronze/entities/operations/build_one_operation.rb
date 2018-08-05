@@ -1,12 +1,8 @@
-require 'bronze/entities/operations/entity_operation'
-
-require 'cuprum/operation'
+require 'bronze/entities/operations/base_operation'
 
 module Bronze::Entities::Operations
   # Operation for building a new entity with the contents of an attributes hash.
-  class BuildOneOperation < Cuprum::Operation
-    include Bronze::Entities::Operations::EntityOperation
-
+  class BuildOneOperation < Bronze::Entities::Operations::BaseOperation
     private
 
     # Builds an instance of the entity class and updates the attributes with

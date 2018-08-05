@@ -1,16 +1,13 @@
 require 'sleeping_king_studios/tools/toolbox/mixin'
 
 require 'bronze/constraints/constraint'
-require 'bronze/entities/operations/entity_operation'
 
 module Bronze::Entities::Operations
-  # Abstract operation class for entity operations that act on a repository,
+  # Abstract operation mixin for entity operations that act on a repository,
   # such as reading or writing data or checking for the existence of an entity
   # within the repository.
   module ContractOperation
     extend SleepingKingStudios::Tools::Toolbox::Mixin
-
-    include Bronze::Entities::Operations::EntityOperation
 
     DEFAULT_CONTRACT = Object.new.freeze
     private_constant :DEFAULT_CONTRACT

@@ -111,6 +111,87 @@ module Spec::Support::Examples::Entities
       end
     end
 
+    shared_examples 'should implement the BaseOperation methods' do
+      describe '::subclass' do
+        let(:defaults) { defined?(super()) ? super() : {} }
+        let(:keywords) { defined?(super()) ? super() : {} }
+
+        it 'should define the class method' do
+          expect(described_class)
+            .to respond_to(:subclass)
+            .with(1).argument
+            .and_any_keywords
+        end
+
+        describe 'with nil' do
+          it 'should raise an error' do
+            expect { described_class.subclass(nil) }
+              .to raise_error ArgumentError, 'must specify an entity class'
+          end
+        end
+
+        describe 'with an entity class' do
+          let(:subclass) { described_class.subclass(entity_class) }
+          let(:instance) { subclass.new(**keywords) }
+
+          it { expect(subclass).to be_a Class }
+
+          it { expect(subclass.superclass).to be described_class }
+
+          it { expect(instance.entity_class).to be entity_class }
+
+          it 'should pass through the keywords', :aggregate_failures do
+            keywords.each do |key, value|
+              expect(instance.send key).to be == value
+            end
+          end
+        end
+
+        describe 'with an entity class and options' do
+          let(:subclass) { described_class.subclass(entity_class, **defaults) }
+
+          it { expect(subclass).to be_a Class }
+
+          it { expect(subclass.superclass).to be described_class }
+
+          describe 'with the default options' do
+            let(:keywords) { super().reject { |k, _| defaults.include?(k) } }
+            let(:instance) { subclass.new(**keywords) }
+
+            it { expect(instance.entity_class).to be entity_class }
+
+            it 'should apply the default options', :aggregate_failures do
+              defaults.each do |key, value|
+                expect(instance.send key).to be == value
+              end
+            end
+
+            it 'should pass through the keywords', :aggregate_failures do
+              keywords.each do |key, value|
+                expect(instance.send key).to be == value
+              end
+            end
+          end
+
+          describe 'with all keywords specified' do
+            let(:instance) { subclass.new(**keywords) }
+
+            it { expect(instance.entity_class).to be entity_class }
+
+            it 'should pass through the keywords', :aggregate_failures do
+              keywords.each do |key, value|
+                expect(instance.send key).to be == value
+              end
+            end
+          end
+        end
+      end
+
+      describe '#errors' do
+        include_examples 'should have reader', :errors, nil
+      end
+    end
+
     shared_examples 'should implement the ContractOperation methods' do
       shared_context 'when the entity class defines a ::Contract constant' do
         let(:contract) { Bronze::Contracts::Contract.new }
@@ -196,25 +277,6 @@ module Spec::Support::Examples::Entities
     end
 
     shared_examples 'should implement the EntityOperation methods' do
-      describe '::subclass' do
-        let(:arguments) { defined?(super()) ? super() : [] }
-        let(:keywords)  { defined?(super()) ? super() : {} }
-
-        it { expect(described_class).to respond_to(:subclass).with(1).argument }
-
-        it 'should return a subclass of the operation class' do
-          subclass = described_class.subclass(entity_class)
-
-          expect(subclass).to be_a Class
-          expect(subclass.superclass).to be described_class
-          expect(subclass)
-            .to be_constructible
-            .with(arguments.count).arguments
-            .and_keywords(*keywords.keys)
-          expect(subclass.new(**keywords).entity_class).to be entity_class
-        end
-      end
-
       describe '#entity_class' do
         include_examples 'should have reader',
           :entity_class,

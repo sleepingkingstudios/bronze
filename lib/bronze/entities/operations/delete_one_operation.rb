@@ -1,10 +1,9 @@
+require 'bronze/entities/operations/base_operation'
 require 'bronze/entities/operations/persistence_operation'
-
-require 'cuprum/operation'
 
 module Bronze::Entities::Operations
   # Operation for deleting an existing entity from a repository.
-  class DeleteOneOperation < Cuprum::Operation
+  class DeleteOneOperation < Bronze::Entities::Operations::BaseOperation
     include Bronze::Entities::Operations::PersistenceOperation
 
     private

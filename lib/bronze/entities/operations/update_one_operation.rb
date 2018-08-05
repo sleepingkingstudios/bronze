@@ -1,11 +1,10 @@
+require 'bronze/entities/operations/base_operation'
 require 'bronze/entities/operations/persistence_operation'
-
-require 'cuprum/operation'
 
 module Bronze::Entities::Operations
   # Operation for validating the given entity and, if valid, updating the
   # entity in the repository.
-  class UpdateOneOperation < Cuprum::Operation
+  class UpdateOneOperation < Bronze::Entities::Operations::BaseOperation
     include Bronze::Entities::Operations::PersistenceOperation
 
     private

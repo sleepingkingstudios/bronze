@@ -3,27 +3,9 @@ require 'sleeping_king_studios/tools/toolbox/mixin'
 require 'bronze/entities/operations'
 
 module Bronze::Entities::Operations
-  # Abstract base class for operations that act on instances of an entity.
+  # Abstract operation mixin for operations that act on instances of an entity.
   module EntityOperation
     extend SleepingKingStudios::Tools::Toolbox::Mixin
-
-    # Class methods to define when including EntityOperation in a class.
-    module ClassMethods
-      # Defines a new subclass of the operation class and sets the entity class
-      # of all subclass instances to the given entity class.
-      #
-      # @param entity_class [Class] The class of entity instances of the
-      #   operation subclass will act upon.
-      def subclass entity_class
-        Class.new(self) do
-          define_method :initialize do |*args, **kwargs, &block|
-            kwargs = kwargs.merge(entity_class: entity_class)
-
-            super(*args, **kwargs, &block)
-          end
-        end
-      end
-    end
 
     # @param entity_class [Class] The class of entity this operation acts upon.
     def initialize(*args, entity_class:, **kwargs)
@@ -39,10 +21,6 @@ module Bronze::Entities::Operations
     attr_reader :entity_class
 
     private
-
-    def build_errors
-      Bronze::Errors.new
-    end
 
     def entity_name
       @entity_name ||=

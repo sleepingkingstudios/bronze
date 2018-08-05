@@ -1,6 +1,6 @@
 require 'cuprum/operation'
 
-require 'bronze/entities/operations/entity_operation'
+require 'bronze/entities/operations/base_operation'
 require 'bronze/entities/operations/persistence_operation'
 
 require 'support/examples/entities/entity_operation_examples'
@@ -12,14 +12,20 @@ RSpec.describe Bronze::Entities::Operations::PersistenceOperation do
 
   include_context 'when the repository is defined'
 
-  subject(:instance) { described_class.new(**keywords) }
+  subject(:instance) do
+    described_class.new(entity_class: entity_class, **keywords)
+  end
 
   let(:transform) { nil }
-  let(:keywords) do
-    { entity_class: entity_class, repository: repository, transform: transform }
+  let(:defaults) do
+    {
+      repository: Patina::Collections::Simple::Repository.new,
+      transform:  Bronze::Transforms::IdentityTransform.new
+    }
   end
+  let(:keywords) { { repository: repository, transform: transform } }
   let(:described_class) do
-    Class.new(Cuprum::Operation) do
+    Class.new(Bronze::Entities::Operations::BaseOperation) do
       include Bronze::Entities::Operations::PersistenceOperation
     end
   end

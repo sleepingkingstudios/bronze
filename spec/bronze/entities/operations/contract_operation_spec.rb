@@ -1,7 +1,7 @@
 require 'cuprum/operation'
 
+require 'bronze/entities/operations/base_operation'
 require 'bronze/entities/operations/contract_operation'
-require 'bronze/entities/operations/entity_operation'
 
 require 'support/examples/entities/entity_operation_examples'
 
@@ -10,12 +10,15 @@ RSpec.describe Bronze::Entities::Operations::ContractOperation do
 
   include_context 'when the entity class is defined'
 
-  subject(:instance) { described_class.new(**keywords) }
+  subject(:instance) do
+    described_class.new(entity_class: entity_class, **keywords)
+  end
 
   let(:contract) { nil }
-  let(:keywords) { { entity_class: entity_class } }
+  let(:defaults) { { contract: Bronze::Contracts::Contract.new } }
+  let(:keywords) { {} }
   let(:described_class) do
-    Class.new(Cuprum::Operation) do
+    Class.new(Bronze::Entities::Operations::BaseOperation) do
       include Bronze::Entities::Operations::ContractOperation
     end
   end
