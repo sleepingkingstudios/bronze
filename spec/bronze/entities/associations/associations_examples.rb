@@ -1286,7 +1286,7 @@ module Spec::Entities::Associations::AssociationsExamples
 
             include_examples 'should return the new value'
 
-            include_examples 'should not change the association value'
+            include_examples 'should change the association value'
 
             include_examples 'should not change the foreign key'
           end # describe
