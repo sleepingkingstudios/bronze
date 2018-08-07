@@ -24,12 +24,13 @@ Gem::Specification.new do |gem| # rubocop:disable Metrics/BlockLength
   gem.require_path = 'lib'
   gem.files        = Dir['lib/**/*.rb', 'LICENSE', '*.md']
 
+  gem.add_runtime_dependency 'cuprum'
   gem.add_runtime_dependency 'sysrandom', '~> 1.0.0', '>= 1.0.2'
   gem.add_runtime_dependency 'sleeping_king_studios-tools',
     '>= 0.7.1'
 
   gem.add_development_dependency 'rake',      '~> 12.0'
-  gem.add_development_dependency 'rspec',     '~> 3.6'
+  gem.add_development_dependency 'rspec',     '~> 3.6', '< 3.8.0'
   gem.add_development_dependency 'thor',      '~> 0.19', '>= 0.19.1'
   gem.add_development_dependency 'rubocop',   '~> 0.49.0'
   gem.add_development_dependency 'simplecov', '~> 0.14', '>= 0.14.1'
