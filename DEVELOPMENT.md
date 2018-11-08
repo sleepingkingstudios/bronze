@@ -1,86 +1,5 @@
 # Development
 
-- Revisit Entity<->Operation interactions:
-
-  Two "types" of EntityOperation:
-  - abstract: |
-
-    Takes an entity class as a constructor argument.
-
-    E.g. ValidateOneOperation.new(Book).call(book)
-
-  - concrete: |
-
-    Defined with an entity class. Extends abstract class ?
-
-    E.g. ValidateOneBookOperation.new.call(book)
-
-    Or Book::Operations::ValidateOne ?
-
-  Pre-defined chained operations for resourceful actions?
-  - create => build, validate, validate_uniqueness, insert
-  - update => assign, validate, validate_uniqueness, update
-
-  Dual inheritance issue:
-  - from the operation class
-  - from common entity configuration
-
-  Procedural Generation/Metaprogramming
-  - shouldn't have to define each operation for each entity
-  - should always have human readable name
-  - should be easily open for extension, esp. chaining
-
-  Coordinator object - Book::Operations?
-  - use module builder pattern?
-  - access as class:  Book::Operations::ValidateOne.new(book)
-  - access as method: Book::Operations.validate_one(book)
-  - defines DSL for adding, redefining operations:
-
-    operation :validate_one, ValidateOneBookOperation
-
-    operation :custom_operation do; end
-
-  - ResourcefulOperationsCoordinator (rename pls) defines standard resourceful
-    operations with single DSL (resource Book ?)
-
-  Steps:
-
-  ...
-
-  3.  Create coordinator class/module - OperationBuilder
-
-      class Book
-        Operations = EntityOperationBuilder.new(self)
-      end # class
-
-      ::operation method: |
-
-          operation :validate_one, ValidateOneBookOperation
-          operation :custom_operation do; end
-
-          Defines Book::Operations::ValidateOne, #validate_one.
-
-  3A. Create entity operations class/module - EntityOperationBuilder.
-
-      Takes entity class, builds default entity operations.
-
-      ::entity_operations method
-
-  4.  Create resourceful operations class/module - ResourceOperationGroup ?
-
-      Belongs to Bronze::Rails !
-
-      ::resource_operations method: |
-
-          for each undefined entity operation:
-          - defines class in namespace
-
-            class Book::Operations::ValidateOne < ValidateOneOperation
-              def initialize(*rest)
-                super(Book, *rest)
-              end # constructor
-            end # class
-
 ## Bug Fixes
 
 ## MVP
@@ -88,7 +7,6 @@
 ## Code Cleanup
 
 - Remove Constraint passed_errors pattern.
-- Remove Operation#failure_message.
 
 ## Features
 
@@ -134,9 +52,7 @@
     - otherwise adds TypeConstraint => Class
   - add_constraint Publisher.contract, :each => :publisher # Like :on, but wraps in an EachConstraint
 - Entitlement:
-
-  super-charged permissions model? Superset of permissions?
-
+    super-charged permissions model? Superset of permissions?
 - Entity
   - associations
     - implicit inverse associations
@@ -167,10 +83,6 @@
       - 5 32-bit chars (SHA-1?)
     - can be slug (see dependent_attribute)
 - Errors#first
-- Operations
-  - #curry
-  - #always,  #chain,  #else,  #then  return copies of chain w/ added operation/block
-  - #always!, #chain!, #else!, #then! modify the current chain
 - Query
   - #each with no block returns an enumerator
   - #all returns with JSON envelope for advanced features?
@@ -199,7 +111,9 @@
     - full word converts to shorthand: __not_equal(_to) => :ne
   - #order
   - #includes
-- Repository#except, #only - returns a copy of the repository that only has the given collections.
+- Repository
+  - #collections
+  - #except, #only - returns a copy of the repository that only has the given collections.
 - Scope |
 
   ActivatedScope.new(params).call(query)
@@ -221,7 +135,6 @@
     - associations
     - attributes
     - contracts
-  - operations
 - Documentation Pass
 - Extract Patina::Collections::Mongo to standalone gem.
   - Test against MongoDB 2.x, 3.x
