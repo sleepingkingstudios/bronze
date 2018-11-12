@@ -1,6 +1,7 @@
 require 'cuprum/operation'
 
 require 'bronze/operations/entity_operation'
+require 'bronze/operations/result'
 
 module Bronze::Operations
   # Abstract base class for operations that act on instances of an entity.
@@ -27,8 +28,8 @@ module Bronze::Operations
 
     private
 
-    def build_errors
-      Bronze::Errors.new
+    def build_result(value = nil, **options)
+      Bronze::Operations::Result.new(value, options)
     end
   end
 end
