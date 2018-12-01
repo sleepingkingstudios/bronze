@@ -3,10 +3,10 @@
 require 'bronze/entities/attributes'
 require 'bronze/entities/base_entity'
 require 'bronze/entities/normalization'
-require 'bronze/entities/normalization_examples'
+require 'bronze/entities/normalization/normalization_examples'
 
 RSpec.describe Bronze::Entities::Normalization do
-  include Spec::Entities::NormalizationExamples
+  include Spec::Entities::Normalization::NormalizationExamples
 
   let(:described_class) do
     Class.new(Bronze::Entities::BaseEntity) do

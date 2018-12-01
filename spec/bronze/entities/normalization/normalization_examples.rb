@@ -1,10 +1,14 @@
-# spec/bronze/entities/normalization_examples.rb
+# spec/bronze/entities/normalization/normalization_examples.rb
 
 require 'bigdecimal'
 
 require 'bronze/entities/attributes/dirty_tracking'
 
 module Spec::Entities
+  module Normalization; end
+end # module
+
+module Spec::Entities::Normalization
   module NormalizationExamples
     extend RSpec::SleepingKingStudios::Concerns::SharedExampleGroup
 
