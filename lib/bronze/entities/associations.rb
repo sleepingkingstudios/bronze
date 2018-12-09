@@ -48,7 +48,7 @@ module Bronze::Entities
         (@attributes ||= {})[metadata.attribute_name] = metadata
       end # class method foreign_key
 
-      # rubocop:disable Style/PredicateName
+      # rubocop:disable Naming/PredicateName
 
       # Defines a has_one association with the specified entity.
       #
@@ -123,7 +123,7 @@ module Bronze::Entities
         (@associations ||= {})[metadata.association_name] = metadata
       end # class method has_many
 
-      # rubocop:enable Style/PredicateName
+      # rubocop:enable Naming/PredicateName
 
       # Defines a references_one association with the specified entity.
       #

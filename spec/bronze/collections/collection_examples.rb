@@ -23,7 +23,7 @@ module Spec::Collections
           ":#{attribute} => #{value.inspect}"
         end # humanize_list
 
-        describe "with #{desc}" do
+        describe "with #{desc}" do # rubocop:disable RSpec/EmptyExampleGroup
           params.each do |key, value|
             let(key) { value }
           end # each

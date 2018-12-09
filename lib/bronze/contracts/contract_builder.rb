@@ -119,7 +119,7 @@ module Bronze::Contracts
         caller
     end # method extract_constraint
 
-    # rubocop:disable Style/PredicateName
+    # rubocop:disable Naming/PredicateName
     def has_contract_const? object
       object.is_a?(Module) &&
         object.const_defined?(:Contract) &&
@@ -130,7 +130,7 @@ module Bronze::Contracts
       object.respond_to?(:contract) &&
         object.contract.is_a?(Bronze::Constraints::Constraint)
     end # method has_contract_method?
-    # rubocop:enable Style/PredicateName
+    # rubocop:enable Naming/PredicateName
 
     def normalize_params params
       return [{ :negated => !params }, {}] if !params || params == true

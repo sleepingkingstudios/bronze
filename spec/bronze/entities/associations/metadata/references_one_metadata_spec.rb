@@ -41,11 +41,13 @@ RSpec.describe Bronze::Entities::Associations::Metadata::ReferencesOneMetadata d
   end # shared_context
 
   shared_examples 'should validate the inverse metadata' do
+    # rubocop:disable RSpec/EmptyExampleGroup
     wrap_context 'when options[:inverse] is set' do
       wrap_examples 'should validate the inverse metadata presence'
 
       wrap_examples 'should validate the inverse metadata type'
     end # wrap_context
+    # rubocop:enable RSpec/EmptyExampleGroup
 
     wrap_context 'when the inverse is a has_many association' do
       include_examples 'should validate the inverse metadata inverse'

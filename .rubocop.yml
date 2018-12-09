@@ -1,5 +1,9 @@
+require:
+  - rubocop-rspec
+  - ./spec/support/rubocop_patch
+
 AllCops:
-  TargetRubyVersion: 2.1
+  TargetRubyVersion: 2.6
   Include:
     - 'lib/**/*.rb'
     - 'lib/**/*.thor'
@@ -12,17 +16,6 @@ Layout/AlignParameters:
   EnforcedStyle: with_fixed_indentation
   IndentationWidth: ~
 
-Layout/DotPosition:
-  # Disabled while transitioning to modern syntax.
-  Enabled: false
-
-Layout/EmptyLineBetweenDefs:
-  AllowAdjacentOneLineDefs: true
-
-Lint/AmbiguousBlockAssociation:
-  Exclude:
-    - 'spec/**/*.rb'
-
 Metrics/BlockLength:
   Exclude:
     - 'spec/**/*.rb'
@@ -31,9 +24,19 @@ Metrics/ModuleLength:
   Exclude:
     - 'spec/**/*.rb'
 
+Naming/FileName:
+  Exclude:
+    - 'Gemfile'
+
 Performance/RedundantBlockCall:
   # Incompatible with documentation/testing requirement of explicitly defining
   # a block argument.
+  Enabled: false
+
+RSpec/ExampleWording:
+  Enabled: false
+
+RSpec/HookArgument:
   Enabled: false
 
 Style/Alias:
@@ -49,9 +52,92 @@ Style/ClassAndModuleChildren:
 Style/DoubleNegation:
   Enabled: false
 
-Style/FileName:
+Style/NestedParenthesizedCalls:
+  # This cop is excessively strict, especially in cases where the nested method
+  # call has only one argument, e.g. outer_method(inner_method arg). Adding the
+  # inner parentheses reduces readability.
+  Enabled: false
+
+Style/SingleLineBlockParams:
+  # Prefer descriptive block param names.
+  Enabled: false
+
+Style/TrailingUnderscoreVariable:
+  # Prefer more explicit syntax when ignoring destructured results.
+  Enabled: false
+
+### TEMPORARILY DISABLED COPS
+
+# These should be applied to new code and to code that has been reformatted to
+# updated standards.
+
+Layout/AlignHash:
+  Enabled: false
+
+Layout/DotPosition:
+  # Disabled while transitioning to modern syntax.
+  Enabled: false
+
+Layout/EmptyLineBetweenDefs:
+  AllowAdjacentOneLineDefs: true
+
+Lint/AmbiguousBlockAssociation:
   Exclude:
-    - 'Gemfile'
+    - 'spec/**/*.rb'
+
+Lint/BigDecimalNew:
+  Enabled: false
+
+Naming/ConstantName:
+  Enabled: false
+
+Naming/MemoizedInstanceVariableName:
+  Enabled: false
+
+Naming/UncommunicativeMethodParamName:
+  Enabled: false
+
+RSpec/AnyInstance:
+  Enabled: false
+
+RSpec/DescribedClass:
+  Enabled: false
+
+RSpec/ExampleLength:
+  Enabled: false
+
+RSpec/FilePath:
+  Enabled: false
+
+RSpec/LetSetup:
+  Enabled: false
+
+RSpec/HooksBeforeExamples:
+  Enabled: false
+
+RSpec/LetBeforeExamples:
+  Enabled: false
+
+RSpec/MessageSpies:
+  Enabled: false
+
+RSpec/MultipleExpectations:
+  Enabled: false
+
+RSpec/NestedGroups:
+  Enabled: false
+
+RSpec/SubjectStub:
+  Enabled: false
+
+RSpec/VerifiedDoubles:
+  Enabled: false
+
+Style/CommentedKeyword:
+  Enabled: false
+
+Style/EmptyLambdaParameter:
+  Enabled: false
 
 Style/FrozenStringLiteralComment:
   # Incompatible with file location comments.
@@ -65,23 +151,21 @@ Style/MethodDefParentheses:
   # Disabled while transitioning to modern syntax.
   Enabled: false
 
-Style/NestedParenthesizedCalls:
-  # This cop is excessively strict, especially in cases where the nested method
-  # call has only one argument, e.g. outer_method(inner_method arg). Adding the
-  # inner parentheses reduces readability.
+Style/MutableConstant:
   Enabled: false
 
 Style/NumericLiterals:
   Exclude:
     - 'spec/**/*.rb'
 
-Style/SingleLineBlockParams:
-  # Prefer descriptive block param names.
+Style/NumericPredicate:
+  Enabled: false
+
+Style/RedundantBegin:
+  Enabled: false
+
+Style/SafeNavigation:
   Enabled: false
 
 Style/SymbolArray:
-  Enabled: false
-
-Style/TrailingUnderscoreVariable:
-  # Prefer more explicit syntax when ignoring destructured results.
   Enabled: false
