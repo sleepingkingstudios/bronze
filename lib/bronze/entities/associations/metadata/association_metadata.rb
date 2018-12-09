@@ -180,11 +180,11 @@ module Bronze::Entities::Associations::Metadata
 
     protected
 
-    # rubocop:disable Style/AccessorMethodName
+    # rubocop:disable Naming/AccessorMethodName
     def get_inverse_metadata
       @inverse_metadata
     end # method get_inverse_metadata
-    # rubocop:enable Style/AccessorMethodName
+    # rubocop:enable Naming/AccessorMethodName
 
     private
 

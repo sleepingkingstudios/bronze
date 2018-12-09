@@ -32,7 +32,8 @@ Gem::Specification.new do |gem| # rubocop:disable Metrics/BlockLength
   gem.add_development_dependency 'rake',      '~> 12.0'
   gem.add_development_dependency 'rspec',     '~> 3.8'
   gem.add_development_dependency 'thor',      '~> 0.19', '>= 0.19.1'
-  gem.add_development_dependency 'rubocop',   '~> 0.49.0'
+  gem.add_development_dependency 'rubocop',   '~> 0.61.1'
+  gem.add_development_dependency 'rubocop-rspec', '~> 1.30.1'
   gem.add_development_dependency 'simplecov', '~> 0.14', '>= 0.14.1'
   gem.add_development_dependency 'rspec-sleeping_king_studios',
     '>= 2.3.0.rc.1'
