@@ -5,6 +5,7 @@
 /.rubocop
 /.ruby-gemset
 /.ruby-version
+Gemfile.lock
 
 # Ignore local and generated documentation.
 /coverage
@@ -13,6 +14,7 @@
 .yardopts
 
 # Ignore temporary files.
+*.gem
 /.byebug_history
 /spec/examples.txt
 /tmp
