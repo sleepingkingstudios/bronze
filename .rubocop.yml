@@ -1,4 +1,9 @@
+require:
+  - rubocop-rspec
+  - ./spec/support/rubocop_patch
+
 AllCops:
+  TargetRubyVersion: 2.6
   Include:
     - 'lib/**/*.rb'
     - 'lib/**/*.thor'
@@ -7,16 +12,35 @@ AllCops:
     - 'tmp/**/*'
     - 'vendor/**/*'
 
+Layout/AlignParameters:
+  EnforcedStyle: with_fixed_indentation
+  IndentationWidth: ~
+
+Metrics/BlockLength:
+  Exclude:
+    - 'spec/**/*.rb'
+
 Metrics/ModuleLength:
   Exclude:
     - 'spec/**/*.rb'
 
+Naming/FileName:
+  Exclude:
+    - 'Gemfile'
+
+Performance/RedundantBlockCall:
+  # Incompatible with documentation/testing requirement of explicitly defining
+  # a block argument.
+  Enabled: false
+
+RSpec/ExampleWording:
+  Enabled: false
+
+RSpec/HookArgument:
+  Enabled: false
+
 Style/Alias:
   EnforcedStyle: prefer_alias_method
-
-Style/AlignParameters:
-  EnforcedStyle: with_fixed_indentation
-  IndentationWidth: ~
 
 Style/ClassAndModuleChildren:
   # Checks the style of children definitions at classes and modules.
@@ -25,21 +49,8 @@ Style/ClassAndModuleChildren:
   # existing styles, so we disable this cop.
   Enabled: false
 
-Style/DotPosition:
-  EnforcedStyle: trailing
-
-Style/EmptyLineBetweenDefs:
-  AllowAdjacentOneLineDefs: true
-
-Style/FrozenStringLiteralComment:
-  # Incompatible with file location comments.
+Style/DoubleNegation:
   Enabled: false
-
-Style/HashSyntax:
-  EnforcedStyle: hash_rockets
-
-Style/MethodDefParentheses:
-  EnforcedStyle: require_no_parentheses_except_multiline
 
 Style/NestedParenthesizedCalls:
   # This cop is excessively strict, especially in cases where the nested method
@@ -47,6 +58,10 @@ Style/NestedParenthesizedCalls:
   # inner parentheses reduces readability.
   Enabled: false
 
-Style/NumericLiterals:
-  Exclude:
-    - 'spec/**/*.rb'
+Style/SingleLineBlockParams:
+  # Prefer descriptive block param names.
+  Enabled: false
+
+Style/TrailingUnderscoreVariable:
+  # Prefer more explicit syntax when ignoring destructured results.
+  Enabled: false

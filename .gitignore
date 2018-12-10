@@ -2,10 +2,12 @@
 
 # Ignore local configuration files.
 /.rspec
+/.rubocop
 /.ruby-gemset
 /.ruby-version
 
 # Ignore local and generated documentation.
+/coverage
 /doc
 .yardoc
 .yardopts
