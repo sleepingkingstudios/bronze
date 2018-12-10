@@ -2,6 +2,7 @@
 
 # Ignore local configuration files.
 /.rspec
+/.rubocop
 /.ruby-gemset
 /.ruby-version
 

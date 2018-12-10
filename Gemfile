@@ -13,7 +13,8 @@ group :test do
   gem 'rspec-sleeping_king_studios', '~> 2.4', '>= 2.4.1'
 
   # Use Rubocop for evaluating and maintaining code quality.
-  gem 'rubocop', '~> 0.42'
+  gem 'rubocop',       '~> 0.61', '>= 0.61.1'
+  gem 'rubocop-rspec', '~> 1.30', '>= 1.30.1'
 end
 
 gem 'sleeping_king_studios-tasks',

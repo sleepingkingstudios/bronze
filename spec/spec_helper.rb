@@ -1,4 +1,4 @@
-# spec/spec_helper.rb
+# frozen_string_literal: true
 
 require 'rspec/sleeping_king_studios/all'
 require 'byebug'
