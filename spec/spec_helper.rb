@@ -1,5 +1,11 @@
 # frozen_string_literal: true
 
+unless ENV['CI']
+  require 'simplecov'
+
+  SimpleCov.start
+end
+
 require 'rspec/sleeping_king_studios/all'
 require 'byebug'
 

@@ -15,6 +15,8 @@ group :test do
   # Use Rubocop for evaluating and maintaining code quality.
   gem 'rubocop',       '~> 0.61', '>= 0.61.1'
   gem 'rubocop-rspec', '~> 1.30', '>= 1.30.1'
+
+  gem 'simplecov', '~> 0.16', '>= 0.16.1'
 end
 
 gem 'sleeping_king_studios-tasks',
