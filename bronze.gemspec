@@ -25,6 +25,9 @@ Gem::Specification.new do |gem| # rubocop:disable Metrics/BlockLength
   gem.require_path = 'lib'
   gem.files = Dir['lib/**/*.rb', 'LICENSE', '*.md']
 
+  gem.add_runtime_dependency \
+    'sleeping_king_studios-tools', '~> 0.7', '>= 0.7.1'
+
   gem.add_development_dependency 'rspec', '~> 3.8'
   gem.add_development_dependency \
     'rspec-sleeping_king_studios', '~> 2.4', '>= 2.4.1'
