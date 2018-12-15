@@ -441,6 +441,100 @@ module Support::Examples::Entities
         end
       end
 
+      describe '::each_attribute' do
+        it 'should define the method' do
+          expect(described_class)
+            .to respond_to(:each_attribute)
+            .with(0).arguments
+        end
+
+        describe 'without a block' do
+          let(:enumerator) { entity_class.each_attribute }
+
+          it { expect(entity_class.each_attribute).to be_a Enumerator }
+
+          it 'should not yield control' do
+            expect { |block| enumerator.each(&block) }
+              .not_to yield_control
+          end
+        end
+
+        describe 'with a block' do
+          it 'should not yield control' do
+            expect { |block| entity_class.each_attribute(&block) }
+              .not_to yield_control
+          end
+        end
+
+        wrap_context 'when the entity class has many attributes' do
+          let(:expected_attributes) do
+            defined_attributes.map do |name|
+              [name, entity_class.attributes[name]]
+            end
+          end
+
+          describe 'without a block' do
+            let(:enumerator) { entity_class.each_attribute }
+
+            it 'should yield each attribute name and metadata' do
+              expect { |block| enumerator.each(&block) }
+                .to yield_successive_args(*expected_attributes)
+            end
+          end
+
+          describe 'with a block' do
+            it 'should yield each attribute name and metadata' do
+              expect { |block| entity_class.each_attribute(&block) }
+                .to yield_successive_args(*expected_attributes)
+            end
+          end
+        end
+
+        wrap_context 'with a subclass of the entity class' do
+          describe 'without a block' do
+            let(:enumerator) { entity_class.each_attribute }
+
+            it { expect(entity_class.each_attribute).to be_a Enumerator }
+
+            it 'should not yield control' do
+              expect { |block| enumerator.each(&block) }
+                .not_to yield_control
+            end
+          end
+
+          describe 'with a block' do
+            it 'should not yield control' do
+              expect { |block| entity_class.each_attribute(&block) }
+                .not_to yield_control
+            end
+          end
+
+          wrap_context 'when the entity class has many attributes' do
+            let(:expected_attributes) do
+              defined_attributes.map do |name|
+                [name, entity_class.attributes[name]]
+              end
+            end
+
+            describe 'without a block' do
+              let(:enumerator) { entity_class.each_attribute }
+
+              it 'should yield each attribute name and metadata' do
+                expect { |block| enumerator.each(&block) }
+                  .to yield_successive_args(*expected_attributes)
+              end
+            end
+
+            describe 'with a block' do
+              it 'should yield each attribute name and metadata' do
+                expect { |block| entity_class.each_attribute(&block) }
+                  .to yield_successive_args(*expected_attributes)
+              end
+            end
+          end
+        end
+      end
+
       describe '#==' do
         # rubocop:disable Style/NilComparison
         describe 'with nil' do
@@ -1071,22 +1165,30 @@ module Support::Examples::Entities
       describe '#attribute?' do
         it { expect(entity).to respond_to(:attribute?).with(1).argument }
 
-        it { expect(entity.attribute? nil).to be false }
-
         it { expect(entity.attribute? 'mystery').to be false }
 
         it { expect(entity.attribute? :mystery).to be false }
 
-        describe 'with an object' do
+        describe 'with nil' do
+          let(:error_message) { 'invalid attribute nil' }
+
           it 'should raise an error' do
-            expect { entity.attribute?(Object.new) }
-              .to raise_error NoMethodError
+            expect { entity.attribute?(nil) }
+              .to raise_error ArgumentError, error_message
+          end
+        end
+
+        describe 'with an object' do
+          let(:object)        { Object.new }
+          let(:error_message) { "invalid attribute #{object.inspect}" }
+
+          it 'should raise an error' do
+            expect { entity.attribute?(object) }
+              .to raise_error ArgumentError, error_message
           end
         end
 
         wrap_context 'when the entity class has many attributes' do
-          it { expect(entity.attribute? nil).to be false }
-
           it { expect(entity.attribute? 'mystery').to be false }
 
           it { expect(entity.attribute? :mystery).to be false }
@@ -1095,10 +1197,22 @@ module Support::Examples::Entities
 
           it { expect(entity.attribute? :title).to be true }
 
-          describe 'with an object' do
+          describe 'with nil' do
+            let(:error_message) { 'invalid attribute nil' }
+
             it 'should raise an error' do
-              expect { entity.attribute?(Object.new) }
-                .to raise_error NoMethodError
+              expect { entity.attribute?(nil) }
+                .to raise_error ArgumentError, error_message
+            end
+          end
+
+          describe 'with an object' do
+            let(:object)        { Object.new }
+            let(:error_message) { "invalid attribute #{object.inspect}" }
+
+            it 'should raise an error' do
+              expect { entity.attribute?(object) }
+                .to raise_error ArgumentError, error_message
             end
           end
         end
@@ -1651,9 +1765,12 @@ module Support::Examples::Entities
         end
 
         describe 'with an Object' do
+          let(:object)        { Object.new }
+          let(:error_message) { "invalid attribute #{object.inspect}" }
+
           it 'should raise an error' do
-            expect { entity.get_attribute(Object.new) }
-              .to raise_error NoMethodError
+            expect { entity.get_attribute(object) }
+              .to raise_error ArgumentError, error_message
           end
         end
 
@@ -1686,9 +1803,12 @@ module Support::Examples::Entities
           end
 
           describe 'with an Object' do
+            let(:object)        { Object.new }
+            let(:error_message) { "invalid attribute #{object.inspect}" }
+
             it 'should raise an error' do
-              expect { entity.get_attribute(Object.new) }
-                .to raise_error NoMethodError
+              expect { entity.get_attribute(object) }
+                .to raise_error ArgumentError, error_message
             end
           end
 
@@ -1782,9 +1902,12 @@ module Support::Examples::Entities
         end
 
         describe 'with an Object and a value' do
+          let(:object)        { Object.new }
+          let(:error_message) { "invalid attribute #{object.inspect}" }
+
           it 'should raise an error' do
-            expect { entity.set_attribute(Object.new, value) }
-              .to raise_error NoMethodError
+            expect { entity.set_attribute(object, value) }
+              .to raise_error ArgumentError, error_message
           end
         end
 
@@ -1817,9 +1940,12 @@ module Support::Examples::Entities
           end
 
           describe 'with an Object and a value' do
+            let(:object)        { Object.new }
+            let(:error_message) { "invalid attribute #{object.inspect}" }
+
             it 'should raise an error' do
-              expect { entity.set_attribute(Object.new, value) }
-                .to raise_error NoMethodError
+              expect { entity.set_attribute(object, value) }
+                .to raise_error ArgumentError, error_message
             end
           end
 

@@ -46,12 +46,40 @@ module Bronze::Entities
       #
       # @return [Hash{Symbol => Attributes::Metadata}] the metadata for each
       #   attribute.
+      #
+      # @note This method allocates a new hash each time it is called and is not
+      #   cached. To loop through the attributes, use the ::each_attribute
+      #   method instead.
       def attributes
-        if superclass.respond_to?(:attributes)
-          superclass.attributes.merge(@attributes ||= {}).freeze
-        else
-          (@attributes ||= {}).dup.freeze
+        each_attribute
+          .with_object({}) do |(name, metadata), hsh|
+            hsh[name] = metadata
+          end
+          .freeze
+      end
+
+      # @overload each_attribute
+      #   Returns an enumerator that iterates through the attributes defined on
+      #   the entity class and any parent classes.
+      #
+      #   @return [Enumerator] the enumerator.
+      #
+      # @overload each_attribute
+      #   Iterates through the attributes defined on the entity class and any
+      #   parent classes, and yields the name and metadata of each attribute to
+      #   the block.
+      #
+      #   @yieldparam name [Symbol] The name of the attribute.
+      #   @yieldparam name [Bronze::Entities::Attributes::Metadata] The metadata
+      #     for the attribute.
+      def each_attribute
+        return enum_for(:each_attribute) unless block_given?
+
+        if superclass.respond_to?(:each_attribute)
+          superclass.each_attribute { |name, metadata| yield(name, metadata) }
         end
+
+        (@attributes ||= {}).each { |name, metadata| yield(name, metadata) }
       end
     end
 
@@ -84,7 +112,7 @@ module Bronze::Entities
     def assign_attributes(hash)
       validate_attributes(hash)
 
-      each_attribute do |name, metadata|
+      self.class.each_attribute do |name, metadata|
         next if metadata.read_only?
         next unless hash.key?(name) || hash.key?(name.to_s)
 
@@ -96,14 +124,18 @@ module Bronze::Entities
     # @return true if the entity has an attribute with the given name, otherwise
     #   false.
     def attribute?(name)
-      self.class.attributes.key?(name&.intern)
+      attribute_name = name.intern
+
+      self.class.each_attribute.any? { |key, _metadata| key == attribute_name }
+    rescue NoMethodError
+      raise ArgumentError, "invalid attribute #{name.inspect}"
     end
 
     # Returns the current value of each attribute.
     #
     # @return [Hash{Symbol => Object}] the attribute values.
     def attributes
-      self.class.attributes.each_key.with_object({}) do |attr_name, hsh|
+      each_attribute.with_object({}) do |attr_name, hsh|
         hsh[attr_name] = get_attribute(attr_name)
       end
     end
@@ -115,7 +147,7 @@ module Bronze::Entities
     def attributes=(hash)
       validate_attributes(hash)
 
-      each_attribute do |name, _metadata|
+      self.class.each_attribute do |name, _metadata|
         @attributes[name] = hash[name] || hash[name.to_s]
       end
     end
@@ -164,7 +196,7 @@ module Bronze::Entities
     def each_attribute
       return enum_for(:each_attribute) unless block_given?
 
-      self.class.attributes.each { |name, metadata| yield(name, metadata) }
+      self.class.each_attribute { |name, _metadata| yield(name) }
     end
 
     def initialize_attributes(data)
@@ -172,7 +204,7 @@ module Bronze::Entities
 
       validate_attributes(data)
 
-      each_attribute do |name, metadata|
+      self.class.each_attribute do |name, metadata|
         value = data[name] || data[name.intern] || metadata.default
 
         @attributes[name] = value
