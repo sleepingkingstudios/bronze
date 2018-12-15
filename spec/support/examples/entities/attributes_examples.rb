@@ -441,6 +441,193 @@ module Support::Examples::Entities
         end
       end
 
+      describe '#==' do
+        # rubocop:disable Style/NilComparison
+        describe 'with nil' do
+          it { expect(entity == nil).to be false }
+        end
+        # rubocop:enable Style/NilComparison
+
+        describe 'with an Object' do
+          it { expect(entity == Object.new).to be false }
+        end
+
+        describe 'with an entity with a different class' do
+          let(:other_entity_class) { Spec::OtherEntityClass }
+          let(:other_entity)       { other_entity_class.new }
+
+          example_class 'Spec::OtherEntityClass' do |klass|
+            klass.send :include, Bronze::Entities::Attributes
+          end
+
+          it { expect(entity == other_entity).to be false }
+        end
+
+        describe 'with an instance of a subclass' do
+          let(:other_entity_class) { Class.new(entity_class) }
+          let(:other_entity)       { other_entity_class.new }
+
+          it { expect(entity == other_entity).to be false }
+        end
+
+        describe 'with a non-matching attributes hash' do
+          let(:attributes) { { title: 'Green Eggs And Ham' } }
+
+          it { expect(entity == attributes).to be false }
+        end
+
+        describe 'with a matching attributes hash' do
+          let(:attributes) { {} }
+
+          it { expect(entity == attributes).to be true }
+        end
+
+        describe 'with an entity with the same class' do
+          let(:other_entity) { entity_class.new }
+
+          it { expect(entity == other_entity).to be true }
+        end
+
+        wrap_context 'when the entity class has many attributes' do
+          # rubocop:disable Style/NilComparison
+          describe 'with nil' do
+            it { expect(entity == nil).to be false }
+          end
+          # rubocop:enable Style/NilComparison
+
+          describe 'with an Object' do
+            it { expect(entity == Object.new).to be false }
+          end
+
+          describe 'with an entity with a different class' do
+            let(:other_entity_class) { Spec::OtherEntityClass }
+            let(:other_entity)       { other_entity_class.new }
+
+            example_class 'Spec::OtherEntityClass' do |klass|
+              klass.send :include, Bronze::Entities::Attributes
+            end
+
+            it { expect(entity == other_entity).to be false }
+          end
+
+          describe 'with an instance of a subclass' do
+            let(:other_entity_class) { Class.new(entity_class) }
+            let(:other_entity)       { other_entity_class.new }
+
+            it { expect(entity == other_entity).to be false }
+          end
+
+          describe 'with a non-matching attributes hash' do
+            let(:attributes) do
+              {
+                title:            'Green Eggs And Ham',
+                page_count:       nil,
+                publication_date: nil
+              }
+            end
+
+            it { expect(entity == attributes).to be false }
+          end
+
+          describe 'with a matching attributes hash' do
+            let(:attributes) do
+              {
+                title:            nil,
+                page_count:       nil,
+                publication_date: nil
+              }
+            end
+
+            it { expect(entity == attributes).to be true }
+          end
+
+          describe 'with an entity with non-matching attributes' do
+            let(:attributes) do
+              {
+                title:            'Green Eggs And Ham',
+                page_count:       nil,
+                publication_date: nil
+              }
+            end
+            let(:other_entity) { entity_class.new(attributes) }
+
+            it { expect(entity == other_entity).to be false }
+          end
+
+          describe 'with an entity with matching attributes' do
+            let(:attributes) do
+              {
+                title:            nil,
+                page_count:       nil,
+                publication_date: nil
+              }
+            end
+            let(:other_entity) { entity_class.new(attributes) }
+
+            it { expect(entity == other_entity).to be true }
+          end
+
+          context 'when the entity is initialized with attributes' do
+            let(:initial_attributes) do
+              super().merge(
+                title:            'The Once And Future King',
+                publication_date: Date.new(1958, 1, 1)
+              )
+            end
+
+            describe 'with a non-matching attributes hash' do
+              let(:attributes) do
+                {
+                  title:            'Green Eggs And Ham',
+                  page_count:       nil,
+                  publication_date: nil
+                }
+              end
+
+              it { expect(entity == attributes).to be false }
+            end
+
+            describe 'with a matching attributes hash' do
+              let(:attributes) do
+                {
+                  title:            initial_attributes[:title],
+                  page_count:       nil,
+                  publication_date: initial_attributes[:publication_date]
+                }
+              end
+
+              it { expect(entity == attributes).to be true }
+            end
+
+            describe 'with an entity with non-matching attributes' do
+              let(:attributes) do
+                {
+                  title:            'Green Eggs And Ham',
+                  page_count:       nil,
+                  publication_date: nil
+                }
+              end
+              let(:other_entity) { entity_class.new(attributes) }
+
+              it { expect(entity == other_entity).to be false }
+            end
+
+            describe 'with an entity with matching attributes' do
+              let(:attributes) do
+                {
+                  title:            initial_attributes[:title],
+                  page_count:       nil,
+                  publication_date: initial_attributes[:publication_date]
+                }
+              end
+              let(:other_entity) { entity_class.new(attributes) }
+
+              it { expect(entity == other_entity).to be true }
+            end
+          end
+        end
+      end
+
       describe '#assign_attributes' do
         it 'should define the method' do
           expect(entity).to respond_to(:assign_attributes).with(1).arguments
@@ -1547,6 +1734,35 @@ module Support::Examples::Entities
             describe 'with a valid symbol' do
               it { expect(entity.get_attribute(:title)).to be expected }
             end
+          end
+        end
+      end
+
+      describe '#inspect' do
+        let(:attributes) do
+          entity_class
+            .attributes
+            .map do |name, _metadata|
+              ' ' + name.to_s + ': ' + entity.send(name).inspect
+            end
+            .join ','
+        end
+        let(:expected) { "#<#{entity_class.name}#{attributes}>" }
+
+        it { expect(entity.inspect).to be == expected }
+
+        wrap_context 'when the entity class has many attributes' do
+          it { expect(entity.inspect).to be == expected }
+
+          context 'when the entity is initialized with attributes' do
+            let(:initial_attributes) do
+              super().merge(
+                title:            'The Once And Future King',
+                publication_date: Date.new(1958, 1, 1)
+              )
+            end
+
+            it { expect(entity.inspect).to be == expected }
           end
         end
       end

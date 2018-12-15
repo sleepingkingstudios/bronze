@@ -61,6 +61,22 @@ module Bronze::Entities
       initialize_attributes(attributes)
     end
 
+    # Compares with the other object.
+    #
+    # If the other object is a Hash, returns true if the entity attributes hash
+    # is equal to the given hash. Otherwise, returns true if the other object
+    # has the same class and attributes as the entity.
+    #
+    # @param other [Bronze::Entities::Attributes, Hash] The object to compare.
+    #
+    # @return [Boolean] true if the other object matches the entity, otherwise
+    #   false.
+    def ==(other)
+      return attributes == other if other.is_a?(Hash)
+
+      other.class == self.class && other.attributes == attributes
+    end
+
     # Updates the attributes with the given hash. If an attribute is not in the
     # hash, it is unchanged.
     #
@@ -117,6 +133,18 @@ module Bronze::Entities
       @attributes[name.intern]
     end
 
+    # @return [String] a human-readable representation of the entity, composed
+    #   of the class name and the attribute keys and values.
+    def inspect # rubocop:disable Metrics/AbcSize
+      buffer = +'#<'
+      buffer << self.class.name
+      each_attribute.with_index do |(name, _metadata), index|
+        buffer << ',' unless index.zero?
+        buffer << ' ' << name.to_s << ': ' << get_attribute(name).inspect
+      end
+      buffer << '>'
+    end
+
     # @param name [String] The name of the attribute.
     # @param value [Object] The new value of the attribute.
     #
@@ -134,6 +162,8 @@ module Bronze::Entities
     private
 
     def each_attribute
+      return enum_for(:each_attribute) unless block_given?
+
       self.class.attributes.each { |name, metadata| yield(name, metadata) }
     end
 
