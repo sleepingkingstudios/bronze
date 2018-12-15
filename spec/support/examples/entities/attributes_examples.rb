@@ -22,13 +22,99 @@ module Support::Examples::Entities
       end
     end
 
+    shared_context 'when the entity class has an attribute with default block' \
+    do
+      let(:defined_attributes) { defined?(super()) ? super() : [] }
+      let(:series_counter)     { Struct.new(:index).new(0) }
+
+      before(:example) do
+        described_class.attribute :series_index,
+          Integer,
+          default: -> { series_counter.index += 1 }
+
+        defined_attributes << :series_index
+      end
+    end
+
+    shared_context 'when the entity class has an attribute with default value' \
+    do
+      let(:defined_attributes) { defined?(super()) ? super() : [] }
+      let(:default_introduction) do
+        'There was a storm in the city that night, pouring rain like a ' \
+        'biblical deluge, the tears of angels sent down from Heaven to ' \
+        'wash away the sins of Man.'
+      end
+
+      before(:example) do
+        described_class.attribute :introduction,
+          String,
+          default: default_introduction
+
+        defined_attributes << :introduction
+      end
+    end
+
+    shared_context 'when the entity class has a read-only attribute' do
+      let(:defined_attributes) { defined?(super()) ? super() : [] }
+
+      before(:example) do
+        described_class.attribute :isbn,
+          String,
+          read_only: true
+
+        defined_attributes << :isbn
+      end
+    end
+
+    shared_context 'with a subclass of the entity class' do
+      let(:entity_class) { Spec::EntitySubclass }
+
+      example_constant 'Spec::EntitySubclass' do
+        Class.new(described_class)
+      end
+    end
+
     shared_examples 'should implement the Attributes methods' do
+      describe '::new' do
+        describe 'with a hash with invalid string keys' do
+          let(:mystery) do
+            'Princess Pink, in the Playroom, with the Squeaky Mallet'
+          end
+          let(:error_message) { 'invalid attribute "mystery"' }
+          let(:attributes) do
+            { 'mystery' => mystery }
+          end
+
+          it 'should raise an error' do
+            expect { described_class.new(attributes) }
+              .to raise_error ArgumentError, error_message
+          end
+        end
+
+        describe 'with a hash with invalid symbol keys' do
+          let(:mystery) do
+            'Princess Pink, in the Playroom, with the Squeaky Mallet'
+          end
+          let(:error_message) { 'invalid attribute :mystery' }
+          let(:attributes) do
+            {
+              mystery: mystery
+            }
+          end
+
+          it 'should raise an error' do
+            expect { described_class.new(attributes) }
+              .to raise_error ArgumentError, error_message
+          end
+        end
+      end
+
       describe '::attribute' do
         shared_examples 'should define the attribute' do |options = {}|
           let(:metadata) { build_attribute }
 
           def build_attribute
-            described_class
+            entity_class
               .attribute(attribute_name, attribute_type, attribute_opts)
           end
 
@@ -48,6 +134,20 @@ module Support::Examples::Entities
           it 'should set the attribute type' do
             expect(metadata.type).to be == attribute_type
           end
+
+          # rubocop:disable RSpec/ExampleLength
+          it 'should add the metadata to ::attributes' do
+            metadata_class = Bronze::Entities::Attributes::Metadata
+
+            expect { build_attribute }
+              .to change(entity_class, :attributes)
+              .to(
+                satisfy do |hsh|
+                  hsh[attribute_name.intern].is_a?(metadata_class)
+                end
+              )
+          end
+          # rubocop:enable RSpec/ExampleLength
 
           describe '#%<attribute>' do
             before(:example) { build_attribute }
@@ -104,7 +204,7 @@ module Support::Examples::Entities
         end
 
         describe 'with a valid attribute name and attribute type' do
-          let(:attribute_name) { :title }
+          let(:attribute_name) { :subtitle }
           let(:attribute_type) { String }
           let(:attribute_opts) { {} }
           let(:metadata)       { build_attribute }
@@ -119,6 +219,86 @@ module Support::Examples::Entities
           let(:metadata)       { build_attribute }
 
           include_examples 'should define the attribute', read_only: true
+        end
+
+        wrap_context 'when the entity class has many attributes' do
+          describe 'with a valid attribute name and attribute type' do
+            let(:attribute_name) { :subtitle }
+            let(:attribute_type) { String }
+            let(:attribute_opts) { {} }
+            let(:metadata)       { build_attribute }
+
+            include_examples 'should define the attribute'
+          end
+
+          describe 'with read_only: true' do
+            let(:attribute_name) { :isbn }
+            let(:attribute_type) { String }
+            let(:attribute_opts) { { read_only: true } }
+            let(:metadata)       { build_attribute }
+
+            include_examples 'should define the attribute', read_only: true
+          end
+        end
+
+        wrap_context 'with a subclass of the entity class' do
+          describe 'with a valid attribute name and attribute type' do
+            let(:attribute_name) { :subtitle }
+            let(:attribute_type) { String }
+            let(:attribute_opts) { {} }
+            let(:metadata)       { build_attribute }
+
+            include_examples 'should define the attribute'
+
+            it 'should not change the parent class' do
+              expect { build_attribute }
+                .not_to change(described_class, :attributes)
+            end
+          end
+
+          describe 'with read_only: true' do
+            let(:attribute_name) { :isbn }
+            let(:attribute_type) { String }
+            let(:attribute_opts) { { read_only: true } }
+            let(:metadata)       { build_attribute }
+
+            include_examples 'should define the attribute', read_only: true
+
+            it 'should not change the parent class' do
+              expect { build_attribute }
+                .not_to change(described_class, :attributes)
+            end
+          end
+
+          wrap_context 'when the entity class has many attributes' do
+            describe 'with a valid attribute name and attribute type' do
+              let(:attribute_name) { :subtitle }
+              let(:attribute_type) { String }
+              let(:attribute_opts) { {} }
+              let(:metadata)       { build_attribute }
+
+              include_examples 'should define the attribute'
+
+              it 'should not change the parent class' do
+                expect { build_attribute }
+                  .not_to change(described_class, :attributes)
+              end
+            end
+
+            describe 'with read_only: true' do
+              let(:attribute_name) { :isbn }
+              let(:attribute_type) { String }
+              let(:attribute_opts) { { read_only: true } }
+              let(:metadata)       { build_attribute }
+
+              include_examples 'should define the attribute', read_only: true
+
+              it 'should not change the parent class' do
+                expect { build_attribute }
+                  .not_to change(described_class, :attributes)
+              end
+            end
+          end
         end
       end
 
@@ -177,6 +357,528 @@ module Support::Examples::Entities
             end
           end
         end
+
+        wrap_context 'with a subclass of the entity class' do
+          it { expect(entity_class.attributes).to be == {} }
+
+          context 'when the subclass has many attributes' do
+            let(:defined_attributes) { defined?(super()) ? super() : [] }
+
+            before(:example) do
+              described_class.attribute :imprint,  String
+              described_class.attribute :preface,  String
+              described_class.attribute :subtitle, String
+
+              defined_attributes << :imprint << :preface << :subtitle
+            end
+
+            it 'should have a key for each attribute' do
+              expect(described_class.attributes.keys)
+                .to contain_exactly(*defined_attributes)
+            end
+
+            it 'should have metadata for each attribute' do
+              expect(described_class.attributes.values)
+                .to all be_a Bronze::Entities::Attributes::Metadata
+            end
+
+            it 'should return the metadata for each attribute',
+              :aggregate_failures \
+            do
+              described_class.attributes.each do |name, metadata|
+                expect(metadata.name).to be name
+              end
+            end
+          end
+
+          wrap_context 'when the entity class has many attributes' do
+            it 'should have a key for each attribute' do
+              expect(described_class.attributes.keys)
+                .to contain_exactly(*defined_attributes)
+            end
+
+            it 'should have metadata for each attribute' do
+              expect(described_class.attributes.values)
+                .to all be_a Bronze::Entities::Attributes::Metadata
+            end
+
+            it 'should return the metadata for each attribute',
+              :aggregate_failures \
+            do
+              described_class.attributes.each do |name, metadata|
+                expect(metadata.name).to be name
+              end
+            end
+
+            context 'when the subclass has many attributes' do
+              before(:example) do
+                described_class.attribute :imprint,  String
+                described_class.attribute :preface,  String
+                described_class.attribute :subtitle, String
+
+                defined_attributes << :imprint << :preface << :subtitle
+              end
+
+              it 'should have a key for each attribute' do
+                expect(described_class.attributes.keys)
+                  .to contain_exactly(*defined_attributes)
+              end
+
+              it 'should have metadata for each attribute' do
+                expect(described_class.attributes.values)
+                  .to all be_a Bronze::Entities::Attributes::Metadata
+              end
+
+              it 'should return the metadata for each attribute',
+                :aggregate_failures \
+              do
+                described_class.attributes.each do |name, metadata|
+                  expect(metadata.name).to be name
+                end
+              end
+            end
+          end
+        end
+      end
+
+      describe '#assign_attributes' do
+        it 'should define the method' do
+          expect(entity).to respond_to(:assign_attributes).with(1).arguments
+        end
+
+        it { expect(entity).to alias_method(:assign_attributes).as(:assign) }
+
+        describe 'with nil' do
+          let(:error_message) do
+            'expected attributes to be a Hash, but was nil'
+          end
+
+          it 'should raise an error' do
+            expect { entity.assign_attributes nil }
+              .to raise_error ArgumentError, error_message
+          end
+        end
+
+        describe 'with an empty hash' do
+          it 'should not change the attributes' do
+            expect { entity.assign_attributes({}) }
+              .not_to change(entity, :attributes)
+          end
+        end
+
+        describe 'with a hash with invalid string keys' do
+          let(:mystery) do
+            'Princess Pink, in the Playroom, with the Squeaky Mallet'
+          end
+          let(:error_message) { 'invalid attribute "mystery"' }
+          let(:attributes)    { { 'mystery' => mystery } }
+
+          it 'should raise an error' do
+            expect { entity.assign_attributes(attributes) }
+              .to raise_error ArgumentError, error_message
+          end
+
+          # rubocop:disable Lint/HandleExceptions
+          # rubocop:disable RSpec/ExampleLength
+          it 'should not change the attributes' do
+            expect do
+              begin
+                entity.attributes = attributes
+              rescue ArgumentError
+              end
+            end
+              .not_to change(entity, :attributes)
+          end
+          # rubocop:enable Lint/HandleExceptions
+          # rubocop:enable RSpec/ExampleLength
+        end
+
+        describe 'with a hash with invalid symbol keys' do
+          let(:mystery) do
+            'Princess Pink, in the Playroom, with the Squeaky Mallet'
+          end
+          let(:error_message) { 'invalid attribute :mystery' }
+          let(:attributes)    { { mystery: mystery } }
+
+          it 'should raise an error' do
+            expect { entity.assign_attributes(attributes) }
+              .to raise_error ArgumentError, error_message
+          end
+
+          # rubocop:disable Lint/HandleExceptions
+          # rubocop:disable RSpec/ExampleLength
+          it 'should not change the attributes' do
+            expect do
+              begin
+                entity.attributes = attributes
+              rescue ArgumentError
+              end
+            end
+              .not_to change(entity, :attributes)
+          end
+          # rubocop:enable Lint/HandleExceptions
+          # rubocop:enable RSpec/ExampleLength
+        end
+
+        wrap_context 'when the entity class has many attributes' do
+          describe 'with nil' do
+            let(:error_message) do
+              'expected attributes to be a Hash, but was nil'
+            end
+
+            it 'should raise an error' do
+              expect { entity.assign_attributes nil }
+                .to raise_error ArgumentError, error_message
+            end
+          end
+
+          describe 'with an empty hash' do
+            it 'should not change the attributes' do
+              expect { entity.assign_attributes({}) }
+                .not_to change(entity, :attributes)
+            end
+          end
+
+          describe 'with a hash with invalid string keys' do
+            let(:mystery) do
+              'Princess Pink, in the Playroom, with the Squeaky Mallet'
+            end
+            let(:error_message) { 'invalid attribute "mystery"' }
+            let(:attributes)    { { 'mystery' => mystery } }
+
+            it 'should raise an error' do
+              expect { entity.assign_attributes(attributes) }
+                .to raise_error ArgumentError, error_message
+            end
+
+            # rubocop:disable Lint/HandleExceptions
+            # rubocop:disable RSpec/ExampleLength
+            it 'should not change the attributes' do
+              expect do
+                begin
+                  entity.attributes = attributes
+                rescue ArgumentError
+                end
+              end
+                .not_to change(entity, :attributes)
+            end
+            # rubocop:enable Lint/HandleExceptions
+            # rubocop:enable RSpec/ExampleLength
+          end
+
+          describe 'with a hash with invalid symbol keys' do
+            let(:mystery) do
+              'Princess Pink, in the Playroom, with the Squeaky Mallet'
+            end
+            let(:error_message) { 'invalid attribute :mystery' }
+            let(:attributes)    { { mystery: mystery } }
+
+            it 'should raise an error' do
+              expect { entity.assign_attributes(attributes) }
+                .to raise_error ArgumentError, error_message
+            end
+
+            # rubocop:disable Lint/HandleExceptions
+            # rubocop:disable RSpec/ExampleLength
+            it 'should not change the attributes' do
+              expect do
+                begin
+                  entity.attributes = attributes
+                rescue ArgumentError
+                end
+              end
+                .not_to change(entity, :attributes)
+            end
+            # rubocop:enable Lint/HandleExceptions
+            # rubocop:enable RSpec/ExampleLength
+          end
+
+          describe 'with a hash with valid string keys' do
+            let(:attributes) do
+              {
+                'title'      => 'The Lay of Beleriand',
+                'page_count' => 500
+              }
+            end
+            let(:expected) do
+              {
+                title:            attributes['title'],
+                page_count:       attributes['page_count'],
+                publication_date: nil
+              }
+            end
+
+            it 'should set the attributes' do
+              expect { entity.assign_attributes(attributes) }
+                .to change(entity, :attributes)
+                .to be == expected
+            end
+          end
+
+          describe 'with a hash with valid symbol keys' do
+            let(:attributes) do
+              {
+                title:      'The Lay of Beleriand',
+                page_count: 500
+              }
+            end
+            let(:expected) do
+              {
+                title:            attributes[:title],
+                page_count:       attributes[:page_count],
+                publication_date: nil
+              }
+            end
+
+            it 'should set the attributes' do
+              expect { entity.assign_attributes(attributes) }
+                .to change(entity, :attributes)
+                .to be == expected
+            end
+          end
+
+          context 'when the entity is initialized with attributes' do
+            let(:initial_attributes) do
+              super().merge(
+                title:            'The Once And Future King',
+                publication_date: Date.new(1958, 1, 1)
+              )
+            end
+
+            describe 'with an empty hash' do
+              it 'should not change the attributes' do
+                expect { entity.assign_attributes({}) }
+                  .not_to change(entity, :attributes)
+              end
+            end
+
+            describe 'with a hash with invalid string keys' do
+              let(:mystery) do
+                'Princess Pink, in the Playroom, with the Squeaky Mallet'
+              end
+              let(:error_message) { 'invalid attribute "mystery"' }
+              let(:attributes)    { { 'mystery' => mystery } }
+
+              it 'should raise an error' do
+                expect { entity.assign_attributes(attributes) }
+                  .to raise_error ArgumentError, error_message
+              end
+
+              # rubocop:disable Lint/HandleExceptions
+              # rubocop:disable RSpec/ExampleLength
+              it 'should not change the attributes' do
+                expect do
+                  begin
+                    entity.attributes = attributes
+                  rescue ArgumentError
+                  end
+                end
+                  .not_to change(entity, :attributes)
+              end
+              # rubocop:enable Lint/HandleExceptions
+              # rubocop:enable RSpec/ExampleLength
+            end
+
+            describe 'with a hash with invalid symbol keys' do
+              let(:mystery) do
+                'Princess Pink, in the Playroom, with the Squeaky Mallet'
+              end
+              let(:error_message) { 'invalid attribute :mystery' }
+              let(:attributes)    { { mystery: mystery } }
+
+              it 'should raise an error' do
+                expect { entity.assign_attributes(attributes) }
+                  .to raise_error ArgumentError, error_message
+              end
+
+              # rubocop:disable Lint/HandleExceptions
+              # rubocop:disable RSpec/ExampleLength
+              it 'should not change the attributes' do
+                expect do
+                  begin
+                    entity.attributes = attributes
+                  rescue ArgumentError
+                  end
+                end
+                  .not_to change(entity, :attributes)
+              end
+              # rubocop:enable Lint/HandleExceptions
+              # rubocop:enable RSpec/ExampleLength
+            end
+
+            describe 'with a hash with valid string keys' do
+              let(:attributes) do
+                {
+                  'title'      => 'The Lay of Beleriand',
+                  'page_count' => 500
+                }
+              end
+              let(:expected) do
+                {
+                  title:            attributes['title'],
+                  page_count:       attributes['page_count'],
+                  publication_date: initial_attributes[:publication_date]
+                }
+              end
+
+              it 'should set the attributes' do
+                expect { entity.assign_attributes(attributes) }
+                  .to change(entity, :attributes)
+                  .to be == expected
+              end
+            end
+
+            describe 'with a hash with valid symbol keys' do
+              let(:attributes) do
+                {
+                  title:      'The Lay of Beleriand',
+                  page_count: 500
+                }
+              end
+              let(:expected) do
+                {
+                  title:            attributes[:title],
+                  page_count:       attributes[:page_count],
+                  publication_date: initial_attributes[:publication_date]
+                }
+              end
+
+              it 'should set the attributes' do
+                expect { entity.assign_attributes(attributes) }
+                  .to change(entity, :attributes)
+                  .to be == expected
+              end
+            end
+          end
+        end
+
+        wrap_context \
+          'when the entity class has an attribute with default value' \
+        do
+          describe 'with an empty hash' do
+            let(:expected) { { introduction: nil } }
+
+            it 'should not change the attributes' do
+              expect { entity.assign_attributes({}) }
+                .not_to change(entity, :attributes)
+            end
+          end
+
+          describe 'with attribute: nil' do
+            let(:expected) { { introduction: nil } }
+
+            it 'should update the attributes' do
+              expect { entity.assign_attributes(introduction: nil) }
+                .to change(entity, :attributes)
+                .to be == expected
+            end
+          end
+
+          describe 'with attribute: value' do
+            let(:introduction) do
+              'It was the best of times, it was the worst of times.'
+            end
+            let(:expected) { { introduction: introduction } }
+
+            it 'should update the attributes' do
+              expect { entity.assign_attributes(introduction: introduction) }
+                .to change(entity, :attributes)
+                .to be == expected
+            end
+          end
+
+          context 'when the entity is initialized with attributes' do
+            let(:custom_introduction) do
+              'In a hole in the ground there lived a hobbit.'
+            end
+            let(:initial_attributes) do
+              super().merge(introduction: custom_introduction)
+            end
+
+            describe 'with an empty hash' do
+              let(:expected) { { introduction: nil } }
+
+              it 'should not change the attributes' do
+                expect { entity.assign_attributes({}) }
+                  .not_to change(entity, :attributes)
+              end
+            end
+
+            describe 'with attribute: nil' do
+              let(:expected) { { introduction: nil } }
+
+              it 'should update the attributes' do
+                expect { entity.assign_attributes(introduction: nil) }
+                  .to change(entity, :attributes)
+                  .to be == expected
+              end
+            end
+
+            describe 'with attribute: value' do
+              let(:introduction) do
+                'It was the best of times, it was the worst of times.'
+              end
+              let(:expected) { { introduction: introduction } }
+
+              it 'should update the attributes' do
+                expect { entity.assign_attributes(introduction: introduction) }
+                  .to change(entity, :attributes)
+                  .to be == expected
+              end
+            end
+          end
+        end
+
+        wrap_context 'when the entity class has a read-only attribute' do
+          describe 'with an empty hash' do
+            it 'should not change the attributes' do
+              expect { entity.assign_attributes({}) }
+                .not_to change(entity, :attributes)
+            end
+          end
+
+          describe 'with attribute: nil' do
+            it 'should not change the attributes' do
+              expect { entity.assign_attributes(isbn: nil) }
+                .not_to change(entity, :attributes)
+            end
+          end
+
+          describe 'with attribute: value' do
+            it 'should not change the attributes' do
+              expect { entity.assign_attributes(isbn: '123-4-56-789012-3') }
+                .not_to change(entity, :attributes)
+            end
+          end
+
+          context 'when the entity is initialized with attributes' do
+            let(:custom_isbn) { '978-3-16-148410-0' }
+            let(:initial_attributes) do
+              super().merge(isbn: custom_isbn)
+            end
+
+            describe 'with an empty hash' do
+              it 'should not change the attributes' do
+                expect { entity.assign_attributes({}) }
+                  .not_to change(entity, :attributes)
+              end
+            end
+
+            describe 'with attribute: nil' do
+              it 'should not change the attributes' do
+                expect { entity.assign_attributes(isbn: nil) }
+                  .not_to change(entity, :attributes)
+              end
+            end
+
+            describe 'with attribute: value' do
+              it 'should not change the attributes' do
+                expect { entity.assign_attributes(isbn: '123-4-56-789012-3') }
+                  .not_to change(entity, :attributes)
+              end
+            end
+          end
+        end
       end
 
       describe '#attribute?' do
@@ -210,6 +912,540 @@ module Support::Examples::Entities
             it 'should raise an error' do
               expect { entity.attribute?(Object.new) }
                 .to raise_error NoMethodError
+            end
+          end
+        end
+      end
+
+      describe '#attributes' do
+        let(:defined_attributes) { defined?(super()) ? super() : [] }
+        let(:expected_attributes) do
+          defined_attributes
+            .each
+            .with_object({}) do |name, hsh|
+              hsh[name] = nil
+            end
+            .merge(initial_attributes)
+        end
+
+        it { expect(entity).to respond_to(:attributes).with(0).arguments }
+
+        it { expect(entity.attributes).to be == expected_attributes }
+
+        wrap_context 'when the entity class has many attributes' do
+          it { expect(entity.attributes).to be == expected_attributes }
+
+          context 'when the entity is initialized with attributes' do
+            let(:initial_attributes) do
+              super().merge(
+                title:            'The Once And Future King',
+                publication_date: Date.new(1958, 1, 1)
+              )
+            end
+
+            it { expect(entity.attributes).to be == expected_attributes }
+          end
+        end
+
+        wrap_context \
+          'when the entity class has an attribute with default block' \
+        do
+          let(:expected_attributes) do
+            super().merge(series_index: series_counter.index)
+          end
+
+          it { expect(entity.attributes).to be == expected_attributes }
+        end
+
+        wrap_context \
+          'when the entity class has an attribute with default value' \
+        do
+          let(:expected_attributes) do
+            super().merge(introduction: default_introduction)
+          end
+
+          it { expect(entity.attributes).to be == expected_attributes }
+
+          context 'when the attribute is initialized with nil' do
+            let(:initial_attributes) do
+              super().merge(introduction: nil)
+            end
+
+            it { expect(entity.attributes).to be == expected_attributes }
+          end
+
+          context 'when the attribute is initialized with a value' do
+            let(:custom_introduction) do
+              'In a hole in the ground there lived a hobbit.'
+            end
+            let(:initial_attributes) do
+              super().merge(introduction: custom_introduction)
+            end
+            let(:expected_attributes) do
+              super().merge(introduction: custom_introduction)
+            end
+
+            it { expect(entity.attributes).to be == expected_attributes }
+          end
+        end
+      end
+
+      describe '#attributes=' do
+        it { expect(entity).to respond_to(:attributes=).with(1).arguments }
+
+        describe 'with nil' do
+          let(:error_message) do
+            'expected attributes to be a Hash, but was nil'
+          end
+
+          it 'should raise an error' do
+            expect { entity.attributes = nil }
+              .to raise_error ArgumentError, error_message
+          end
+        end
+
+        describe 'with an empty hash' do
+          it 'should not change the attributes' do
+            expect { entity.attributes = {} }
+              .not_to change(entity, :attributes)
+          end
+        end
+
+        describe 'with a hash with invalid string keys' do
+          let(:mystery) do
+            'Princess Pink, in the Playroom, with the Squeaky Mallet'
+          end
+          let(:error_message) { 'invalid attribute "mystery"' }
+          let(:attributes)    { { 'mystery' => mystery } }
+
+          it 'should raise an error' do
+            expect { entity.attributes = attributes }
+              .to raise_error ArgumentError, error_message
+          end
+
+          # rubocop:disable Lint/HandleExceptions
+          # rubocop:disable RSpec/ExampleLength
+          it 'should not change the attributes' do
+            expect do
+              begin
+                entity.attributes = attributes
+              rescue ArgumentError
+              end
+            end
+              .not_to change(entity, :attributes)
+          end
+          # rubocop:enable Lint/HandleExceptions
+          # rubocop:enable RSpec/ExampleLength
+        end
+
+        describe 'with a hash with invalid symbol keys' do
+          let(:mystery) do
+            'Princess Pink, in the Playroom, with the Squeaky Mallet'
+          end
+          let(:error_message) { 'invalid attribute :mystery' }
+          let(:attributes)    { { mystery: mystery } }
+
+          it 'should raise an error' do
+            expect { entity.attributes = attributes }
+              .to raise_error ArgumentError, error_message
+          end
+
+          # rubocop:disable Lint/HandleExceptions
+          # rubocop:disable RSpec/ExampleLength
+          it 'should not change the attributes' do
+            expect do
+              begin
+                entity.attributes = attributes
+              rescue ArgumentError
+              end
+            end
+              .not_to change(entity, :attributes)
+          end
+          # rubocop:enable Lint/HandleExceptions
+          # rubocop:enable RSpec/ExampleLength
+        end
+
+        wrap_context 'when the entity class has many attributes' do
+          describe 'with nil' do
+            let(:error_message) do
+              'expected attributes to be a Hash, but was nil'
+            end
+
+            it 'should raise an error' do
+              expect { entity.attributes = nil }
+                .to raise_error ArgumentError, error_message
+            end
+          end
+
+          describe 'with an empty hash' do
+            it 'should not change the attributes' do
+              expect { entity.attributes = {} }
+                .not_to change(entity, :attributes)
+            end
+          end
+
+          describe 'with a hash with invalid string keys' do
+            let(:mystery) do
+              'Princess Pink, in the Playroom, with the Squeaky Mallet'
+            end
+            let(:error_message) { 'invalid attribute "mystery"' }
+            let(:attributes)    { { 'mystery' => mystery } }
+
+            it 'should raise an error' do
+              expect { entity.attributes = attributes }
+                .to raise_error ArgumentError, error_message
+            end
+
+            # rubocop:disable Lint/HandleExceptions
+            # rubocop:disable RSpec/ExampleLength
+            it 'should not change the attributes' do
+              expect do
+                begin
+                  entity.attributes = attributes
+                rescue ArgumentError
+                end
+              end
+                .not_to change(entity, :attributes)
+            end
+            # rubocop:enable Lint/HandleExceptions
+            # rubocop:enable RSpec/ExampleLength
+          end
+
+          describe 'with a hash with invalid symbol keys' do
+            let(:mystery) do
+              'Princess Pink, in the Playroom, with the Squeaky Mallet'
+            end
+            let(:error_message) { 'invalid attribute :mystery' }
+            let(:attributes) { { mystery: mystery } }
+
+            it 'should raise an error' do
+              expect { entity.attributes = attributes }
+                .to raise_error ArgumentError, error_message
+            end
+
+            # rubocop:disable Lint/HandleExceptions
+            # rubocop:disable RSpec/ExampleLength
+            it 'should not change the attributes' do
+              expect do
+                begin
+                  entity.attributes = attributes
+                rescue ArgumentError
+                end
+              end
+                .not_to change(entity, :attributes)
+            end
+            # rubocop:enable Lint/HandleExceptions
+            # rubocop:enable RSpec/ExampleLength
+          end
+
+          describe 'with a hash with valid string keys' do
+            let(:attributes) do
+              {
+                'title'      => 'The Lay of Beleriand',
+                'page_count' => 500
+              }
+            end
+            let(:expected) do
+              {
+                title:            attributes['title'],
+                page_count:       attributes['page_count'],
+                publication_date: nil
+              }
+            end
+
+            it 'should set the attributes' do
+              expect { entity.attributes = attributes }
+                .to change(entity, :attributes)
+                .to be == expected
+            end
+          end
+
+          describe 'with a hash with valid symbol keys' do
+            let(:attributes) do
+              {
+                title:      'The Lay of Beleriand',
+                page_count: 500
+              }
+            end
+            let(:expected) do
+              {
+                title:            attributes[:title],
+                page_count:       attributes[:page_count],
+                publication_date: nil
+              }
+            end
+
+            it 'should set the attributes' do
+              expect { entity.attributes = attributes }
+                .to change(entity, :attributes)
+                .to be == expected
+            end
+          end
+
+          context 'when the entity is initialized with attributes' do
+            let(:initial_attributes) do
+              super().merge(
+                title:            'The Once And Future King',
+                publication_date: Date.new(1958, 1, 1)
+              )
+            end
+
+            describe 'with an empty hash' do
+              let(:expected) do
+                {
+                  title:            nil,
+                  page_count:       nil,
+                  publication_date: nil
+                }
+              end
+
+              it 'should clear the attributes' do
+                expect { entity.attributes = {} }
+                  .to change(entity, :attributes)
+                  .to be == expected
+              end
+            end
+
+            describe 'with a hash with invalid string keys' do
+              let(:mystery) do
+                'Princess Pink, in the Playroom, with the Squeaky Mallet'
+              end
+              let(:error_message) { 'invalid attribute "mystery"' }
+              let(:attributes)    { { 'mystery' => mystery } }
+
+              it 'should raise an error' do
+                expect { entity.attributes = attributes }
+                  .to raise_error ArgumentError, error_message
+              end
+
+              # rubocop:disable Lint/HandleExceptions
+              # rubocop:disable RSpec/ExampleLength
+              it 'should not change the attributes' do
+                expect do
+                  begin
+                    entity.attributes = attributes
+                  rescue ArgumentError
+                  end
+                end
+                  .not_to change(entity, :attributes)
+              end
+              # rubocop:enable Lint/HandleExceptions
+              # rubocop:enable RSpec/ExampleLength
+            end
+
+            describe 'with a hash with invalid symbol keys' do
+              let(:mystery) do
+                'Princess Pink, in the Playroom, with the Squeaky Mallet'
+              end
+              let(:error_message) { 'invalid attribute :mystery' }
+              let(:attributes)    { { mystery: mystery } }
+
+              it 'should raise an error' do
+                expect { entity.attributes = attributes }
+                  .to raise_error ArgumentError, error_message
+              end
+
+              # rubocop:disable Lint/HandleExceptions
+              # rubocop:disable RSpec/ExampleLength
+              it 'should not change the attributes' do
+                expect do
+                  begin
+                    entity.attributes = attributes
+                  rescue ArgumentError
+                  end
+                end
+                  .not_to change(entity, :attributes)
+              end
+              # rubocop:enable Lint/HandleExceptions
+              # rubocop:enable RSpec/ExampleLength
+            end
+
+            describe 'with a hash with valid string keys' do
+              let(:attributes) do
+                {
+                  'title'      => 'The Lay of Beleriand',
+                  'page_count' => 500
+                }
+              end
+              let(:expected) do
+                {
+                  title:            attributes['title'],
+                  page_count:       attributes['page_count'],
+                  publication_date: nil
+                }
+              end
+
+              it 'should set the attributes' do
+                expect { entity.attributes = attributes }
+                  .to change(entity, :attributes)
+                  .to be == expected
+              end
+            end
+
+            describe 'with a hash with valid symbol keys' do
+              let(:attributes) do
+                {
+                  title:      'The Lay of Beleriand',
+                  page_count: 500
+                }
+              end
+              let(:expected) do
+                {
+                  title:            attributes[:title],
+                  page_count:       attributes[:page_count],
+                  publication_date: nil
+                }
+              end
+
+              it 'should set the attributes' do
+                expect { entity.attributes = attributes }
+                  .to change(entity, :attributes)
+                  .to be == expected
+              end
+            end
+          end
+        end
+
+        wrap_context \
+          'when the entity class has an attribute with default value' \
+        do
+          describe 'with an empty hash' do
+            let(:expected) { { introduction: nil } }
+
+            it 'should update the attributes' do
+              expect { entity.attributes = {} }
+                .to change(entity, :attributes)
+                .to be == expected
+            end
+          end
+
+          describe 'with attribute: nil' do
+            let(:expected) { { introduction: nil } }
+
+            it 'should update the attributes' do
+              expect { entity.attributes = { introduction: nil } }
+                .to change(entity, :attributes)
+                .to be == expected
+            end
+          end
+
+          describe 'with attribute: value' do
+            let(:introduction) do
+              'It was the best of times, it was the worst of times.'
+            end
+            let(:expected) { { introduction: introduction } }
+
+            it 'should update the attributes' do
+              expect { entity.attributes = { introduction: introduction } }
+                .to change(entity, :attributes)
+                .to be == expected
+            end
+          end
+
+          context 'when the entity is initialized with attributes' do
+            let(:custom_introduction) do
+              'In a hole in the ground there lived a hobbit.'
+            end
+            let(:initial_attributes) do
+              super().merge(introduction: custom_introduction)
+            end
+
+            describe 'with an empty hash' do
+              let(:expected) { { introduction: nil } }
+
+              it 'should update the attributes' do
+                expect { entity.attributes = {} }
+                  .to change(entity, :attributes)
+                  .to be == expected
+              end
+            end
+
+            describe 'with attribute: nil' do
+              let(:expected) { { introduction: nil } }
+
+              it 'should update the attributes' do
+                expect { entity.attributes = { introduction: nil } }
+                  .to change(entity, :attributes)
+                  .to be == expected
+              end
+            end
+
+            describe 'with attribute: value' do
+              let(:introduction) do
+                'It was the best of times, it was the worst of times.'
+              end
+              let(:expected) { { introduction: introduction } }
+
+              it 'should update the attributes' do
+                expect { entity.attributes = { introduction: introduction } }
+                  .to change(entity, :attributes)
+                  .to be == expected
+              end
+            end
+          end
+        end
+
+        wrap_context 'when the entity class has a read-only attribute' do
+          describe 'with an empty hash' do
+            it 'should not change the attributes' do
+              expect { entity.attributes = {} }
+                .not_to change(entity, :attributes)
+            end
+          end
+
+          describe 'with attribute: nil' do
+            it 'should not change the attributes' do
+              expect { entity.attributes = { isbn: nil } }
+                .not_to change(entity, :attributes)
+            end
+          end
+
+          describe 'with attribute: value' do
+            let(:isbn)     { '123-4-56-789012-3' }
+            let(:expected) { { isbn: isbn } }
+
+            it 'should update the attributes' do
+              expect { entity.attributes = { isbn: isbn } }
+                .to change(entity, :attributes)
+                .to be == expected
+            end
+          end
+
+          context 'when the entity is initialized with attributes' do
+            let(:custom_isbn) { '978-3-16-148410-0' }
+            let(:initial_attributes) do
+              super().merge(isbn: custom_isbn)
+            end
+
+            describe 'with an empty hash' do
+              let(:expected) { { isbn: nil } }
+
+              it 'should update the attributes' do
+                expect { entity.attributes = {} }
+                  .to change(entity, :attributes)
+                  .to be == expected
+              end
+            end
+
+            describe 'with attribute: nil' do
+              let(:expected) { { isbn: nil } }
+
+              it 'should update the attributes' do
+                expect { entity.attributes = {} }
+                  .to change(entity, :attributes)
+                  .to be == expected
+              end
+            end
+
+            describe 'with attribute: value' do
+              let(:isbn)     { '123-4-56-789012-3' }
+              let(:expected) { { isbn: isbn } }
+
+              it 'should update the attributes' do
+                expect { entity.attributes = { isbn: isbn } }
+                  .to change(entity, :attributes)
+                  .to be == expected
+              end
             end
           end
         end
@@ -434,8 +1670,6 @@ module Support::Examples::Entities
           end
         end
       end
-
-      pending
     end
   end
 end

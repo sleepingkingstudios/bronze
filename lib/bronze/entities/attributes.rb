@@ -61,15 +61,54 @@ module Bronze::Entities
       initialize_attributes(attributes)
     end
 
+    # Updates the attributes with the given hash. If an attribute is not in the
+    # hash, it is unchanged.
+    #
+    # @raise ArgumentError if one of the keys is not a valid attribute
+    def assign_attributes(hash)
+      validate_attributes(hash)
+
+      each_attribute do |name, metadata|
+        next if metadata.read_only?
+        next unless hash.key?(name) || hash.key?(name.to_s)
+
+        set_attribute(name, hash[name] || hash[name.to_s])
+      end
+    end
+    alias_method :assign, :assign_attributes
+
     # @return true if the entity has an attribute with the given name, otherwise
     #   false.
     def attribute?(name)
       self.class.attributes.key?(name&.intern)
     end
 
+    # Returns the current value of each attribute.
+    #
+    # @return [Hash{Symbol => Object}] the attribute values.
+    def attributes
+      self.class.attributes.each_key.with_object({}) do |attr_name, hsh|
+        hsh[attr_name] = get_attribute(attr_name)
+      end
+    end
+
+    # Replaces the attributes with the given hash. If an attribute is not in the
+    # hash, it is set to nil.
+    #
+    # @raise ArgumentError if one of the keys is not a valid attribute
+    def attributes=(hash)
+      validate_attributes(hash)
+
+      each_attribute do |name, _metadata|
+        @attributes[name] = hash[name] || hash[name.to_s]
+      end
+    end
+
     # @param name [String] The name of the attribute.
     #
     # @return [Object] the value of the given attribute.
+    #
+    # @raise ArgumentError when the attribute name is not a valid attribute
     def get_attribute(name)
       unless attribute?(name)
         raise ArgumentError, "invalid attribute #{name.inspect}"
@@ -82,6 +121,8 @@ module Bronze::Entities
     # @param value [Object] The new value of the attribute.
     #
     # @return [Object] the new value of the given attribute.
+    #
+    # @raise ArgumentError when the attribute name is not a valid attribute
     def set_attribute(name, value)
       unless attribute?(name)
         raise ArgumentError, "invalid attribute #{name.inspect}"
@@ -92,13 +133,32 @@ module Bronze::Entities
 
     private
 
+    def each_attribute
+      self.class.attributes.each { |name, metadata| yield(name, metadata) }
+    end
+
     def initialize_attributes(data)
       @attributes = {}
 
-      self.class.attributes.each do |name, metadata|
+      validate_attributes(data)
+
+      each_attribute do |name, metadata|
         value = data[name] || data[name.intern] || metadata.default
 
         @attributes[name] = value
+      end
+    end
+
+    def validate_attributes(obj)
+      unless obj.is_a?(Hash)
+        raise ArgumentError,
+          "expected attributes to be a Hash, but was #{obj.inspect}"
+      end
+
+      obj.each_key do |name|
+        unless attribute?(name)
+          raise ArgumentError, "invalid attribute #{name.inspect}"
+        end
       end
     end
   end

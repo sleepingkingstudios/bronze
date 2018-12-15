@@ -7,9 +7,10 @@ require 'support/examples/entities/attributes_examples'
 RSpec.describe Bronze::Entities::Attributes do
   include Support::Examples::Entities::AttributesExamples
 
-  subject(:entity) { described_class.new(initial_attributes) }
+  subject(:entity) { entity_class.new(initial_attributes) }
 
   let(:described_class)    { Spec::EntityWithAttributes }
+  let(:entity_class)       { described_class }
   let(:initial_attributes) { {} }
 
   example_class 'Spec::EntityWithAttributes' do |klass|
