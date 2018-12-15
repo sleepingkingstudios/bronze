@@ -11,10 +11,10 @@ Gem::Specification.new do |gem| # rubocop:disable Metrics/BlockLength
   gem.summary = 'A composable application framework.'
 
   description = <<~DESCRIPTION
-    A set of objects and tools for building composable applications without the
-    conceptual overhead of common frameworks. Allows the developer to
-    incorporate other architectures by composition without forcing foreign
-    constraints on your business logic.
+    A composable application toolkit, providing data entities and collections,
+    transforms, contract-based validations and pre-built operations.
+    Architecture agnostic for easy integration with other toolkits or
+    frameworks.
   DESCRIPTION
   gem.description = description.strip.gsub(/\n +/, ' ')
   gem.authors = ['Rob "Merlin" Smith']
