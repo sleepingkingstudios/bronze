@@ -3,7 +3,7 @@ require:
   - ./spec/support/rubocop_patch
 
 AllCops:
-  TargetRubyVersion: 2.6
+  TargetRubyVersion: 2.3
   Include:
     - 'lib/**/*.rb'
     - 'lib/**/*.thor'
@@ -11,6 +11,10 @@ AllCops:
   Exclude:
     - 'tmp/**/*'
     - 'vendor/**/*'
+
+Layout/AlignHash:
+  EnforcedColonStyle: table
+  EnforcedHashRocketStyle: table
 
 Layout/AlignParameters:
   EnforcedStyle: with_fixed_indentation
@@ -35,6 +39,10 @@ Performance/RedundantBlockCall:
 
 RSpec/ExampleWording:
   Enabled: false
+
+RSpec/FilePath:
+  Exclude:
+    - spec/integration/**/*.rb
 
 RSpec/HookArgument:
   Enabled: false
