@@ -20,91 +20,30 @@ module Support::Examples::Entities
 
         -> { next_index += 1 }
       end
+      let(:primary_key_args) do
+        return super() if defined?(super())
 
-      before(:example) do
-        described_class.define_primary_key(
+        [
           primary_key_name,
           primary_key_type,
-          default: primary_key_default
-        )
+          { default: primary_key_default }
+        ]
+      end
+
+      before(:example) do
+        described_class.define_primary_key(*primary_key_args)
 
         defined_attributes << primary_key_name
       end
     end
 
     shared_examples 'should implement the PrimaryKey methods' do
-      describe '::define_primary_key' do
-        it 'should define the class method' do
-          expect(described_class)
-            .to respond_to(:define_primary_key)
-            .with(2).arguments
-            .and_keywords(:default)
-        end
-
-        describe 'with a valid attribute name, type, and default' do
-          let(:attribute_name) { :id }
-          let(:attribute_type) { Integer }
-          let(:attribute_opts) do
-            {
-              default:     default,
-              primary_key: true,
-              read_only:   true
-            }
-          end
-          let(:attribute_value) { 0 }
-          let(:default) do
-            next_index = -1
-
-            -> { next_index += 1 }
-          end
-
-          def build_attribute
-            entity_class.define_primary_key :id, Integer, default: default
-          end
-
-          include_examples 'should define the attribute', read_only: true
-        end
-
-        wrap_context 'with a subclass of the entity class' do
-          describe 'with a valid attribute name, type, and default' do
-            let(:attribute_name) { :id }
-            let(:attribute_type) { Integer }
-            let(:attribute_opts) do
-              {
-                default:     default,
-                primary_key: true,
-                read_only:   true
-              }
-            end
-            let(:attribute_value) { 0 }
-            let(:default) do
-              next_index = -1
-
-              -> { next_index += 1 }
-            end
-
-            def build_attribute
-              entity_class.define_primary_key :id, Integer, default: default
-            end
-
-            include_examples 'should define the attribute', read_only: true
-          end
-        end
-      end
-
       describe '::primary_key' do
         it 'should define the class reader' do
           expect(described_class).to have_reader(:primary_key).with_value(nil)
         end
 
         wrap_context 'when the entity class has a primary key' do
-          let(:attribute_opts) do
-            {
-              default:     primary_key_default,
-              primary_key: true,
-              read_only:   true
-            }
-          end
           let(:metadata) { described_class.primary_key }
 
           it 'should return the metadata' do
@@ -115,8 +54,6 @@ module Support::Examples::Entities
           it { expect(metadata.name).to be primary_key_name }
 
           it { expect(metadata.type).to be primary_key_type }
-
-          it { expect(metadata.options).to be == attribute_opts }
 
           it { expect(metadata.allow_nil?).to be false }
 
@@ -135,13 +72,6 @@ module Support::Examples::Entities
           it { expect(described_class.primary_key).to be nil }
 
           wrap_context 'when the entity class has a primary key' do
-            let(:attribute_opts) do
-              {
-                default:     primary_key_default,
-                primary_key: true,
-                read_only:   true
-              }
-            end
             let(:metadata) { described_class.primary_key }
 
             it 'should return the metadata' do
@@ -152,8 +82,6 @@ module Support::Examples::Entities
             it { expect(metadata.name).to be primary_key_name }
 
             it { expect(metadata.type).to be primary_key_type }
-
-            it { expect(metadata.options).to be == attribute_opts }
 
             it { expect(metadata.allow_nil?).to be false }
 
@@ -226,6 +154,67 @@ module Support::Examples::Entities
             end
 
             it { expect(entity.primary_key).to be == primary_key_value }
+          end
+        end
+      end
+    end
+
+    shared_examples 'should implement the generic PrimaryKey methods' do
+      describe '::define_primary_key' do
+        it 'should define the class method' do
+          expect(described_class)
+            .to respond_to(:define_primary_key)
+            .with(2).arguments
+            .and_keywords(:default)
+        end
+
+        describe 'with a valid attribute name, type, and default' do
+          let(:attribute_name) { :id }
+          let(:attribute_type) { Integer }
+          let(:attribute_opts) do
+            {
+              default:     default,
+              primary_key: true,
+              read_only:   true
+            }
+          end
+          let(:attribute_value) { 0 }
+          let(:default) do
+            next_index = -1
+
+            -> { next_index += 1 }
+          end
+
+          def build_attribute
+            entity_class.define_primary_key :id, Integer, default: default
+          end
+
+          include_examples 'should define the attribute', read_only: true
+        end
+
+        wrap_context 'with a subclass of the entity class' do
+          describe 'with a valid attribute name, type, and default' do
+            let(:attribute_name) { :id }
+            let(:attribute_type) { Integer }
+            let(:attribute_opts) do
+              {
+                default:     default,
+                primary_key: true,
+                read_only:   true
+              }
+            end
+            let(:attribute_value) { 0 }
+            let(:default) do
+              next_index = -1
+
+              -> { next_index += 1 }
+            end
+
+            def build_attribute
+              entity_class.define_primary_key :id, Integer, default: default
+            end
+
+            include_examples 'should define the attribute', read_only: true
           end
         end
       end

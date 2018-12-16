@@ -19,7 +19,7 @@ module Bronze::Entities
       #     include Bronze::Entities::PrimaryKey
       #
       #     next_id = -1
-      #     primary_key :id, Integer, default: -> { next_id += 1 }
+      #     define_primary_key :id, Integer, default: -> { next_id += 1 }
       #   end # class
       #
       #   book = Book.new

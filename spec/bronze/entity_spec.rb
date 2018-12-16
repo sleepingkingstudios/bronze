@@ -26,4 +26,6 @@ RSpec.describe Bronze::Entity do
   include_examples 'should implement the Attributes methods'
 
   include_examples 'should implement the PrimaryKey methods'
+
+  include_examples 'should implement the generic PrimaryKey methods'
 end
