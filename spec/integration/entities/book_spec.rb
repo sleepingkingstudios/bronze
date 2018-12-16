@@ -7,6 +7,7 @@ RSpec.describe Spec::Book do
 
   let(:default_attributes) do
     {
+      id:               nil,
       title:            nil,
       isbn:             nil,
       introduction:     described_class.attributes[:introduction].default,
@@ -26,6 +27,162 @@ RSpec.describe Spec::Book do
 
   describe '::new' do
     it { expect(described_class).to be_constructible.with(0..1).arguments }
+  end
+
+  describe '::attributes' do
+    it { expect(described_class).to respond_to(:attributes).with(0).arguments }
+
+    describe 'with :banned_date' do
+      it { expect(described_class.attributes[:banned_date]).to be nil }
+    end
+
+    describe 'with :id' do
+      let(:metadata) { described_class.attributes[:id] }
+
+      it { expect(metadata).to be_a Bronze::Entities::Attributes::Metadata }
+
+      it { expect(metadata.name).to be :id }
+
+      it { expect(metadata.type).to be String }
+
+      it { expect(metadata.allow_nil?).to be false }
+
+      it { expect(metadata.default?).to be true }
+
+      it { expect(metadata.default).to be_a String }
+
+      it { expect(metadata.foreign_key?).to be false }
+
+      it { expect(metadata.primary_key?).to be true }
+
+      it { expect(metadata.read_only?).to be true }
+    end
+
+    describe 'with :introduction' do
+      let(:metadata) { described_class.attributes[:introduction] }
+
+      it { expect(metadata).to be_a Bronze::Entities::Attributes::Metadata }
+
+      it { expect(metadata.name).to be :introduction }
+
+      it { expect(metadata.type).to be String }
+
+      it { expect(metadata.allow_nil?).to be false }
+
+      it { expect(metadata.default?).to be true }
+
+      it { expect(metadata.default).to be == default_attributes[:introduction] }
+
+      it { expect(metadata.foreign_key?).to be false }
+
+      it { expect(metadata.primary_key?).to be false }
+
+      it { expect(metadata.read_only?).to be false }
+    end
+
+    describe 'with :isbn' do
+      let(:metadata) { described_class.attributes[:isbn] }
+
+      it { expect(metadata).to be_a Bronze::Entities::Attributes::Metadata }
+
+      it { expect(metadata.name).to be :isbn }
+
+      it { expect(metadata.type).to be String }
+
+      it { expect(metadata.allow_nil?).to be false }
+
+      it { expect(metadata.default?).to be false }
+
+      it { expect(metadata.foreign_key?).to be false }
+
+      it { expect(metadata.primary_key?).to be false }
+
+      it { expect(metadata.read_only?).to be true }
+    end
+
+    describe 'with :page_count' do
+      let(:metadata) { described_class.attributes[:page_count] }
+
+      it { expect(metadata).to be_a Bronze::Entities::Attributes::Metadata }
+
+      it { expect(metadata.name).to be :page_count }
+
+      it { expect(metadata.type).to be Integer }
+
+      it { expect(metadata.allow_nil?).to be false }
+
+      it { expect(metadata.default?).to be false }
+
+      it { expect(metadata.foreign_key?).to be false }
+
+      it { expect(metadata.primary_key?).to be false }
+
+      it { expect(metadata.read_only?).to be false }
+    end
+
+    describe 'with :publication_date' do
+      let(:metadata) { described_class.attributes[:publication_date] }
+
+      it { expect(metadata).to be_a Bronze::Entities::Attributes::Metadata }
+
+      it { expect(metadata.name).to be :publication_date }
+
+      it { expect(metadata.type).to be Date }
+
+      it { expect(metadata.allow_nil?).to be false }
+
+      it { expect(metadata.default?).to be false }
+
+      it { expect(metadata.foreign_key?).to be false }
+
+      it { expect(metadata.primary_key?).to be false }
+
+      it { expect(metadata.read_only?).to be false }
+    end
+
+    describe 'with :rarity' do
+      it { expect(described_class.attributes[:banned_date]).to be nil }
+    end
+
+    describe 'with :subtitle' do
+      let(:metadata) { described_class.attributes[:subtitle] }
+
+      it { expect(metadata).to be_a Bronze::Entities::Attributes::Metadata }
+
+      it { expect(metadata.name).to be :subtitle }
+
+      it { expect(metadata.type).to be String }
+
+      it { expect(metadata.allow_nil?).to be true }
+
+      it { expect(metadata.default?).to be false }
+
+      it { expect(metadata.foreign_key?).to be false }
+
+      it { expect(metadata.primary_key?).to be false }
+
+      it { expect(metadata.read_only?).to be false }
+    end
+
+    describe 'with :title' do
+      let(:metadata) { described_class.attributes[:title] }
+
+      it { expect(metadata).to be_a Bronze::Entities::Attributes::Metadata }
+
+      it { expect(metadata.name).to be :title }
+
+      it { expect(metadata.type).to be String }
+
+      it { expect(metadata.allow_nil?).to be false }
+
+      it { expect(metadata.default?).to be false }
+
+      it { expect(metadata.foreign_key?).to be false }
+
+      it { expect(metadata.primary_key?).to be false }
+
+      it { expect(metadata.read_only?).to be false }
+    end
   end
 
   describe '#==' do
@@ -81,128 +238,6 @@ RSpec.describe Spec::Book do
       let(:other_entity) { described_class.new(attributes) }
 
       it { expect(book == other_entity).to be true }
-    end
-  end
-
-  describe '::attributes' do
-    it { expect(described_class).to respond_to(:attributes).with(0).arguments }
-
-    describe 'with :banned_date' do
-      it { expect(described_class.attributes[:banned_date]).to be nil }
-    end
-
-    describe 'with :introduction' do
-      let(:metadata) { described_class.attributes[:introduction] }
-
-      it { expect(metadata).to be_a Bronze::Entities::Attributes::Metadata }
-
-      it { expect(metadata.name).to be :introduction }
-
-      it { expect(metadata.type).to be String }
-
-      it { expect(metadata.allow_nil?).to be false }
-
-      it { expect(metadata.default?).to be true }
-
-      it { expect(metadata.default).to be == default_attributes[:introduction] }
-
-      it { expect(metadata.foreign_key?).to be false }
-
-      it { expect(metadata.read_only?).to be false }
-    end
-
-    describe 'with :isbn' do
-      let(:metadata) { described_class.attributes[:isbn] }
-
-      it { expect(metadata).to be_a Bronze::Entities::Attributes::Metadata }
-
-      it { expect(metadata.name).to be :isbn }
-
-      it { expect(metadata.type).to be String }
-
-      it { expect(metadata.allow_nil?).to be false }
-
-      it { expect(metadata.default?).to be false }
-
-      it { expect(metadata.foreign_key?).to be false }
-
-      it { expect(metadata.read_only?).to be true }
-    end
-
-    describe 'with :page_count' do
-      let(:metadata) { described_class.attributes[:page_count] }
-
-      it { expect(metadata).to be_a Bronze::Entities::Attributes::Metadata }
-
-      it { expect(metadata.name).to be :page_count }
-
-      it { expect(metadata.type).to be Integer }
-
-      it { expect(metadata.allow_nil?).to be false }
-
-      it { expect(metadata.default?).to be false }
-
-      it { expect(metadata.foreign_key?).to be false }
-
-      it { expect(metadata.read_only?).to be false }
-    end
-
-    describe 'with :publication_date' do
-      let(:metadata) { described_class.attributes[:publication_date] }
-
-      it { expect(metadata).to be_a Bronze::Entities::Attributes::Metadata }
-
-      it { expect(metadata.name).to be :publication_date }
-
-      it { expect(metadata.type).to be Date }
-
-      it { expect(metadata.allow_nil?).to be false }
-
-      it { expect(metadata.default?).to be false }
-
-      it { expect(metadata.foreign_key?).to be false }
-
-      it { expect(metadata.read_only?).to be false }
-    end
-
-    describe 'with :rarity' do
-      it { expect(described_class.attributes[:banned_date]).to be nil }
-    end
-
-    describe 'with :subtitle' do
-      let(:metadata) { described_class.attributes[:subtitle] }
-
-      it { expect(metadata).to be_a Bronze::Entities::Attributes::Metadata }
-
-      it { expect(metadata.name).to be :subtitle }
-
-      it { expect(metadata.type).to be String }
-
-      it { expect(metadata.allow_nil?).to be true }
-
-      it { expect(metadata.default?).to be false }
-
-      it { expect(metadata.foreign_key?).to be false }
-
-      it { expect(metadata.read_only?).to be false }
-    end
-
-    describe 'with :title' do
-      let(:metadata) { described_class.attributes[:title] }
-
-      it { expect(metadata).to be_a Bronze::Entities::Attributes::Metadata }
-
-      it { expect(metadata.name).to be :title }
-
-      it { expect(metadata.type).to be String }
-
-      it { expect(metadata.allow_nil?).to be false }
-
-      it { expect(metadata.default?).to be false }
-
-      it { expect(metadata.foreign_key?).to be false }
-
-      it { expect(metadata.read_only?).to be false }
     end
   end
 
@@ -291,6 +326,7 @@ RSpec.describe Spec::Book do
       end
       let(:expected_attributes) do
         {
+          id:               book.id,
           title:            'The Hobbit',
           introduction:     default_attributes[:introduction],
           isbn:             initial_attributes[:isbn],
@@ -317,6 +353,7 @@ RSpec.describe Spec::Book do
       end
       let(:expected_attributes) do
         {
+          id:               book.id,
           title:            'The Hobbit',
           introduction:     default_attributes[:introduction],
           isbn:             initial_attributes[:isbn],
@@ -356,7 +393,9 @@ RSpec.describe Spec::Book do
 
   describe '#attributes' do
     let(:expected) do
-      default_attributes.merge(initial_attributes)
+      default_attributes
+        .merge(initial_attributes)
+        .merge(id: book.id)
     end
 
     it { expect(book).to respond_to(:attributes).with(0).arguments }
@@ -381,6 +420,7 @@ RSpec.describe Spec::Book do
     describe 'with an empty hash' do
       let(:expected) do
         {
+          id:               book.id,
           title:            nil,
           introduction:     nil,
           isbn:             nil,
@@ -461,6 +501,7 @@ RSpec.describe Spec::Book do
       end
       let(:expected_attributes) do
         {
+          id:               book.id,
           title:            'The Hobbit',
           introduction:     nil,
           isbn:             nil,
@@ -487,6 +528,7 @@ RSpec.describe Spec::Book do
       end
       let(:expected_attributes) do
         {
+          id:               book.id,
           title:            'The Hobbit',
           introduction:     nil,
           isbn:             nil,
@@ -526,6 +568,7 @@ RSpec.describe Spec::Book do
   describe '#inspect' do
     let(:expected) do
       '#<Spec::Book ' \
+        "id: #{book.id.inspect}, " \
         "title: #{book.title.inspect}, " \
         "subtitle: #{book.subtitle.inspect}, " \
         "isbn: #{book.isbn.inspect}, " \
@@ -535,6 +578,16 @@ RSpec.describe Spec::Book do
     end
 
     it { expect(book.inspect).to be == expected }
+  end
+
+  describe '#id' do
+    include_examples 'should have reader',
+      :id,
+      -> { be_a String }
+  end
+
+  describe '#id=' do
+    include_examples 'should have private writer', :id=
   end
 
   describe '#introduction' do
