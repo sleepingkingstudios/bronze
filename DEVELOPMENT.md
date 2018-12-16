@@ -35,6 +35,25 @@
     entity.power_level => 'memetic'
     entity.normalize => { power_level: 9001 }
 
+    Integration spec:
+      class PlayingCard
+        attribute :suit,
+          String,
+          enum: %w[clubs diamonds hearts spades]
+        attribute :value,
+          Integer,
+          enum: {
+            ace:   1,
+            two:   2,
+            ...
+            ten:   10,
+            jack:  11,
+            king:  12,
+            queen: 13
+          }
+      }
+      end
+
 #### :visible option
 
 - attribute :hidden, String, visible: false
