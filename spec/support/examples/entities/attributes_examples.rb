@@ -74,6 +74,96 @@ module Support::Examples::Entities
       end
     end
 
+    shared_examples 'should define the attribute' do |options = {}|
+      let(:metadata) { build_attribute }
+
+      it 'should return the metadata' do
+        expect(build_attribute)
+          .to be_a Bronze::Entities::Attributes::Metadata
+      end
+
+      it 'should set the attribute name' do
+        expect(metadata.name).to be == attribute_name.intern
+      end
+
+      it 'should set the attribute options' do
+        expect(metadata.options).to be == attribute_opts
+      end
+
+      it 'should set the attribute type' do
+        expect(metadata.type).to be == attribute_type
+      end
+
+      # rubocop:disable RSpec/ExampleLength
+      it 'should add the metadata to ::attributes' do
+        metadata_class = Bronze::Entities::Attributes::Metadata
+
+        expect { build_attribute }
+          .to change(entity_class, :attributes)
+          .to(
+            satisfy do |hsh|
+              hsh[attribute_name.intern].is_a?(metadata_class)
+            end
+          )
+      end
+      # rubocop:enable RSpec/ExampleLength
+
+      describe '#%<attribute>' do
+        let(:attribute_value) do
+          next super() if defined?(super())
+
+          initial_attributes[attribute_name.intern]
+        end
+
+        before(:example) { build_attribute }
+
+        it 'should define the reader method' do
+          expect(entity)
+            .to have_reader(attribute_name)
+            .with_value(attribute_value)
+        end
+
+        context 'when the entity is initialized with attributes' do
+          let(:value) { 'attribute value' }
+          let(:initial_attributes) do
+            super().merge(attribute_name.intern => value)
+          end
+
+          it { expect(entity.send attribute_name).to be value }
+        end
+      end
+
+      describe '#%<attribute>=' do
+        let(:value) { 'attribute value' }
+
+        before(:example) { build_attribute }
+
+        # rubocop:disable RSpec/RepeatedDescription
+        if options.fetch(:read_only, false)
+          it 'should define the writer method' do
+            expect(entity)
+              .to respond_to(:"#{attribute_name}=", true)
+              .with(1).argument
+          end
+
+          it 'should set the writer method as private' do
+            expect(entity).not_to respond_to(:"#{attribute_name}=")
+          end
+        else
+          it 'should define the writer method' do
+            expect(entity).to have_writer(:"#{attribute_name}=")
+          end
+        end
+        # rubocop:enable RSpec/RepeatedDescription
+
+        it 'should update the attribute' do
+          expect { entity.send(:"#{attribute_name}=", value) }
+            .to change { entity.get_attribute(attribute_name.intern) }
+            .to be value
+        end
+      end
+    end
+
     shared_examples 'should implement the Attributes methods' do
       describe '::new' do
         describe 'with a hash with invalid string keys' do
@@ -110,93 +200,9 @@ module Support::Examples::Entities
       end
 
       describe '::attribute' do
-        shared_examples 'should define the attribute' do |options = {}|
-          let(:metadata) { build_attribute }
-
-          def build_attribute
-            entity_class
-              .attribute(attribute_name, attribute_type, attribute_opts)
-          end
-
-          it 'should return the metadata' do
-            expect(build_attribute)
-              .to be_a Bronze::Entities::Attributes::Metadata
-          end
-
-          it 'should set the attribute name' do
-            expect(metadata.name).to be == attribute_name.intern
-          end
-
-          it 'should set the attribute options' do
-            expect(metadata.options).to be == attribute_opts
-          end
-
-          it 'should set the attribute type' do
-            expect(metadata.type).to be == attribute_type
-          end
-
-          # rubocop:disable RSpec/ExampleLength
-          it 'should add the metadata to ::attributes' do
-            metadata_class = Bronze::Entities::Attributes::Metadata
-
-            expect { build_attribute }
-              .to change(entity_class, :attributes)
-              .to(
-                satisfy do |hsh|
-                  hsh[attribute_name.intern].is_a?(metadata_class)
-                end
-              )
-          end
-          # rubocop:enable RSpec/ExampleLength
-
-          describe '#%<attribute>' do
-            before(:example) { build_attribute }
-
-            it 'should define the reader method' do
-              expect(entity)
-                .to have_reader(attribute_name)
-                .with_value(initial_attributes[attribute_name.intern])
-            end
-
-            context 'when the entity is initialized with attributes' do
-              let(:value) { 'attribute value' }
-              let(:initial_attributes) do
-                super().merge(attribute_name.intern => value)
-              end
-
-              it { expect(entity.send attribute_name).to be value }
-            end
-          end
-
-          describe '#%<attribute>=' do
-            let(:value) { 'attribute value' }
-
-            before(:example) { build_attribute }
-
-            # rubocop:disable RSpec/RepeatedDescription
-            if options.fetch(:read_only, false)
-              it 'should define the writer method' do
-                expect(entity)
-                  .to respond_to(:"#{attribute_name}=", true)
-                  .with(1).argument
-              end
-
-              it 'should set the writer method as private' do
-                expect(entity).not_to respond_to(:"#{attribute_name}=")
-              end
-            else
-              it 'should define the writer method' do
-                expect(entity).to have_writer(:"#{attribute_name}=")
-              end
-            end
-            # rubocop:enable RSpec/RepeatedDescription
-
-            it 'should update the attribute' do
-              expect { entity.send(:"#{attribute_name}=", value) }
-                .to change { entity.get_attribute(attribute_name.intern) }
-                .to be value
-            end
-          end
+        def build_attribute
+          entity_class
+            .attribute(attribute_name, attribute_type, attribute_opts)
         end
 
         it 'should respond to the method' do
@@ -2006,6 +2012,48 @@ module Support::Examples::Entities
                 expect { entity.set_attribute(:title, value) }
                   .to change { entity.get_attribute(:title) }
                   .from(initial_attributes[:title])
+                  .to be value
+              end
+            end
+          end
+        end
+
+        wrap_context 'when the entity class has a read-only attribute' do
+          let(:value) { '123-4-56-789012-3' }
+
+          describe 'with attribute: nil' do
+            it 'should not change the attributes' do
+              expect { entity.set_attribute(:isbn, nil) }
+                .not_to change(entity, :attributes)
+            end
+          end
+
+          describe 'with attribute: value' do
+            it 'should update the attributes' do
+              expect { entity.set_attribute(:isbn, value) }
+                .to change { entity.get_attribute(:isbn) }
+                .to be value
+            end
+          end
+
+          context 'when the entity is initialized with attributes' do
+            let(:custom_isbn) { '978-3-16-148410-0' }
+            let(:initial_attributes) do
+              super().merge(isbn: custom_isbn)
+            end
+
+            describe 'with attribute: nil' do
+              it 'should update the attributes' do
+                expect { entity.set_attribute(:isbn, nil) }
+                  .to change { entity.get_attribute(:isbn) }
+                  .to be nil
+              end
+            end
+
+            describe 'with attribute: value' do
+              it 'should update the attributes' do
+                expect { entity.set_attribute(:isbn, value) }
+                  .to change { entity.get_attribute(:isbn) }
                   .to be value
               end
             end

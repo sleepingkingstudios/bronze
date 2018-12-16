@@ -100,6 +100,16 @@ RSpec.describe Bronze::Entities::Attributes::Metadata do
     include_examples 'should have reader', :options, -> { be == options }
   end
 
+  describe '#primary_key?' do
+    include_examples 'should have predicate', :primary_key?, false
+
+    context 'when the primary key flag is set to true' do
+      let(:options) { { primary_key: true } }
+
+      it { expect(metadata.primary_key?).to be true }
+    end
+  end
+
   describe '#read_only?' do
     include_examples 'should have predicate', :read_only?, false
 

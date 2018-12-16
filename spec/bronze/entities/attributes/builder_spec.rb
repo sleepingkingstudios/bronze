@@ -18,6 +18,7 @@ RSpec.describe Bronze::Entities::Attributes::Builder do
         allow_nil
         default
         foreign_key
+        primary_key
         read_only
       ]
     end
@@ -61,6 +62,40 @@ RSpec.describe Bronze::Entities::Attributes::Builder do
 
       it 'should set the attribute type' do
         expect(metadata.type).to be == attribute_type
+      end
+
+      if options[:allow_nil]
+        it { expect(metadata.allow_nil?).to be true }
+      else
+        it { expect(metadata.allow_nil?).to be false }
+      end
+
+      if options[:default]
+        it { expect(metadata.default).to be == default_value }
+
+        it { expect(metadata.default?).to be true }
+      else
+        it { expect(metadata.default).to be nil }
+
+        it { expect(metadata.default?).to be false }
+      end
+
+      if options[:foreign_key]
+        it { expect(metadata.foreign_key?).to be true }
+      else
+        it { expect(metadata.foreign_key?).to be false }
+      end
+
+      if options[:primary_key]
+        it { expect(metadata.primary_key?).to be true }
+      else
+        it { expect(metadata.primary_key?).to be false }
+      end
+
+      if options[:read_only]
+        it { expect(metadata.read_only?).to be true }
+      else
+        it { expect(metadata.read_only?).to be false }
       end
 
       context 'when the attribute is defined' do
@@ -176,6 +211,42 @@ RSpec.describe Bronze::Entities::Attributes::Builder do
       let(:attribute_name) { :title }
 
       include_examples 'should define the attribute'
+    end
+
+    describe 'with allow_nil: true' do
+      let(:attribute_opts) { super().merge allow_nil: true }
+
+      include_examples 'should define the attribute', allow_nil: true
+    end
+
+    describe 'with default: block' do
+      let(:default_value)  { 'default' }
+      let(:attribute_opts) do
+        value = default_value
+
+        super().merge default: -> { value }
+      end
+
+      include_examples 'should define the attribute', default: true
+    end
+
+    describe 'with default: value' do
+      let(:default_value)  { 'default' }
+      let(:attribute_opts) { super().merge default: default_value }
+
+      include_examples 'should define the attribute', default: true
+    end
+
+    describe 'with foreign_key: true' do
+      let(:attribute_opts) { super().merge foreign_key: true }
+
+      include_examples 'should define the attribute', foreign_key: true
+    end
+
+    describe 'with primary_key: true' do
+      let(:attribute_opts) { super().merge primary_key: true }
+
+      include_examples 'should define the attribute', primary_key: true
     end
 
     describe 'with read_only: true' do

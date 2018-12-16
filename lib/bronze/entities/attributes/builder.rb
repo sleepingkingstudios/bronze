@@ -12,6 +12,7 @@ module Bronze::Entities::Attributes
       allow_nil
       default
       foreign_key
+      primary_key
       read_only
     ].map(&:freeze).freeze
 
