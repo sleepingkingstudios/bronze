@@ -4,6 +4,23 @@ require 'bronze/entities/attributes/builder'
 require 'bronze/transforms/transform'
 
 RSpec.describe Bronze::Entities::Attributes::Builder do
+  shared_context 'when the builder defines a custom attribute transform' do
+    let(:described_class)  { Spec::CustomBuilder }
+    let(:custom_transform) { Spec::PointTransform }
+
+    # rubocop:disable RSpec/DescribedClass
+    example_class 'Spec::CustomBuilder', Bronze::Entities::Attributes::Builder
+    # rubocop:enable RSpec/DescribedClass
+
+    example_class 'Spec::Point', Struct.new(:x, :y)
+
+    example_class 'Spec::PointTransform', Bronze::Transforms::Transform
+
+    before(:example) do
+      Spec::CustomBuilder.attribute_transform Spec::Point, custom_transform
+    end
+  end
+
   subject(:builder) { described_class.new(entity_class) }
 
   let(:entity_class) { Spec::ExampleEntity }
@@ -40,6 +57,14 @@ RSpec.describe Bronze::Entities::Attributes::Builder do
     end
   end
 
+  describe '::attribute_transform' do
+    it 'should define the method' do
+      expect(described_class)
+        .to respond_to(:attribute_transform)
+        .with(2).arguments
+    end
+  end
+
   describe '#build' do
     shared_examples 'should define the attribute' do |options = {}|
       let(:metadata) { build_attribute }
@@ -59,7 +84,7 @@ RSpec.describe Bronze::Entities::Attributes::Builder do
       end
 
       it 'should set the attribute options' do
-        expect(metadata.options).to be == attribute_opts
+        expect(metadata.options).to be >= attribute_opts
       end
 
       it 'should set the attribute type' do
@@ -102,8 +127,20 @@ RSpec.describe Bronze::Entities::Attributes::Builder do
 
       if options[:transform]
         it { expect(metadata.transform).to be attribute_opts[:transform] }
+
+        it { expect(metadata.transform?).to be true }
       else
-        it { expect(metadata.transform).to be nil }
+        let(:be_expected_transform) do
+          next be(nil) unless defined?(expected_transform)
+
+          next be_a(expected_transform) if expected_transform.is_a?(Class)
+
+          be expected_transform
+        end
+
+        it { expect(metadata.transform).to be_expected_transform }
+
+        it { expect(metadata.transform?).to be !!defined?(expected_transform) }
       end
 
       context 'when the attribute is defined' do
@@ -268,6 +305,67 @@ RSpec.describe Bronze::Entities::Attributes::Builder do
       let(:attribute_opts) { super().merge transform: transform }
 
       include_examples 'should define the attribute', transform: true
+    end
+
+    wrap_context 'when the builder defines a custom attribute transform' do
+      let(:attribute_type)     { Spec::Point }
+      let(:expected_transform) { Spec::PointTransform }
+
+      include_examples 'should define the attribute'
+
+      context 'when the attribute transform is a transform instance' do
+        let(:custom_transform)   { Spec::PointTransform.new }
+        let(:expected_transform) { custom_transform }
+
+        include_examples 'should define the attribute'
+      end
+
+      context 'when the attribute transform class defines ::instance' do
+        let(:custom_transform)   { Spec::InstancedPointTransform }
+        let(:expected_transform) { Spec::InstancedPointTransform.instance }
+
+        example_class 'Spec::InstancedPointTransform', 'Spec::PointTransform' \
+        do |klass|
+          klass.singleton_class.send :define_method, :instance do
+            @instance ||= new
+          end
+        end
+
+        include_examples 'should define the attribute'
+      end
+
+      context 'when the attribute type is a subclass of the transformed type' do
+        let(:attribute_type) { Spec::PolarPoint }
+
+        example_class 'Spec::PolarPoint', 'Spec::Point'
+
+        include_examples 'should define the attribute'
+
+        # rubocop:disable RSpec/NestedGroups
+        context 'when the subclass has its own attribute transform' do
+          let(:expected_transform) { Spec::PolarPointTransform }
+
+          example_class 'Spec::PolarPointTransform', \
+            Bronze::Transforms::Transform
+
+          before(:example) do
+            Spec::CustomBuilder.attribute_transform(
+              Spec::PolarPoint,
+              Spec::PolarPointTransform
+            )
+          end
+
+          include_examples 'should define the attribute'
+        end
+        # rubocop:enable RSpec/NestedGroups
+      end
+
+      describe 'with transform: value' do
+        let(:transform)      { Bronze::Transforms::Transform.new }
+        let(:attribute_opts) { super().merge transform: transform }
+
+        include_examples 'should define the attribute', transform: true
+      end
     end
 
     context 'when the entity class has many attributes' do

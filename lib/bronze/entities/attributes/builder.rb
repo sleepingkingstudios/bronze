@@ -5,7 +5,7 @@ require 'bronze/entities/attributes/metadata'
 
 module Bronze::Entities::Attributes
   # Service class to define attributes on an entity.
-  class Builder
+  class Builder # rubocop:disable Metrics/ClassLength
     # Provides a list of the valid options for the attribute_options parameter
     # for Builder#build.
     VALID_OPTIONS = %w[
@@ -16,6 +16,31 @@ module Bronze::Entities::Attributes
       read_only
       transform
     ].map(&:freeze).freeze
+
+    class << self
+      def attribute_transform(type, transform)
+        if transform.is_a?(Class)
+          transform =
+            if transform.respond_to?(:instance)
+              transform.instance
+            else
+              transform.new
+            end
+        end
+
+        (@attribute_transforms ||= {})[type] = transform
+      end
+
+      private
+
+      def transform_for_attribute(attribute_type)
+        (@attribute_transforms ||= {}).reverse_each do |type, transform|
+          return transform if attribute_type <= type
+        end
+
+        return super if superclass.respond_to?(:transform_for_attribute)
+      end
+    end
 
     # @param entity_class [Class] The entity class on which attributes will be
     #   defined.
@@ -86,16 +111,10 @@ module Bronze::Entities::Attributes
     end
 
     def characterize(attribute_name, attribute_type, attribute_options)
-      options = {}
-
-      attribute_options.each do |key, value|
-        options[key.intern] = value
-      end
-
       Bronze::Entities::Attributes::Metadata.new(
         attribute_name,
         attribute_type,
-        attribute_options
+        normalize_options(attribute_options, type: attribute_type)
       )
     end
 
@@ -135,6 +154,17 @@ module Bronze::Entities::Attributes
       return unless metadata.read_only?
 
       attributes_module.send(:private, metadata.writer_name)
+    end
+
+    def normalize_options(options, type:)
+      options = options.each.with_object({}) do |(key, value), hsh|
+        hsh[key.intern] = value
+      end
+
+      options[:transform] ||=
+        self.class.send(:transform_for_attribute, type)
+
+      options
     end
 
     def validate_attribute_name(attribute_name)
