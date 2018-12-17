@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'bronze/entities/attributes/builder'
+require 'bronze/transforms/transform'
 
 RSpec.describe Bronze::Entities::Attributes::Builder do
   subject(:builder) { described_class.new(entity_class) }
@@ -20,6 +21,7 @@ RSpec.describe Bronze::Entities::Attributes::Builder do
         foreign_key
         primary_key
         read_only
+        transform
       ]
     end
 
@@ -96,6 +98,12 @@ RSpec.describe Bronze::Entities::Attributes::Builder do
         it { expect(metadata.read_only?).to be true }
       else
         it { expect(metadata.read_only?).to be false }
+      end
+
+      if options[:transform]
+        it { expect(metadata.transform).to be attribute_opts[:transform] }
+      else
+        it { expect(metadata.transform).to be nil }
       end
 
       context 'when the attribute is defined' do
@@ -253,6 +261,13 @@ RSpec.describe Bronze::Entities::Attributes::Builder do
       let(:attribute_opts) { super().merge read_only: true }
 
       include_examples 'should define the attribute', read_only: true
+    end
+
+    describe 'with transform: value' do
+      let(:transform)      { Bronze::Transforms::Transform.new }
+      let(:attribute_opts) { super().merge transform: transform }
+
+      include_examples 'should define the attribute', transform: true
     end
 
     context 'when the entity class has many attributes' do

@@ -14,6 +14,7 @@ module Bronze::Entities::Attributes
       foreign_key
       primary_key
       read_only
+      transform
     ].map(&:freeze).freeze
 
     # @param entity_class [Class] The entity class on which attributes will be

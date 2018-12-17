@@ -37,8 +37,7 @@ module Bronze::Entities
       # @raise (see Attributes::Builder#build)
       def attribute(attribute_name, attribute_type, attribute_options = {})
         metadata =
-          Bronze::Entities::Attributes::Builder
-          .new(self)
+          attribute_builder
           .build(attribute_name, attribute_type, attribute_options)
 
         (@attributes ||= {})[metadata.name] = metadata
@@ -82,6 +81,12 @@ module Bronze::Entities
         end
 
         (@attributes ||= {}).each { |name, metadata| yield(name, metadata) }
+      end
+
+      private
+
+      def attribute_builder
+        Bronze::Entities::Attributes::Builder.new(self)
       end
     end
 
