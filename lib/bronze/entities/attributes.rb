@@ -15,7 +15,9 @@ module Bronze::Entities
       # Defines an attribute with the specified name and type.
       #
       # @example Defining an Attribute
-      #   class Book < Bronze::Entities::Entity
+      #   class Book
+      #     include Bronze::Entities::Attributes
+      #
       #     attribute :title, String
       #   end # class
       #
@@ -26,13 +28,13 @@ module Bronze::Entities
       #   book.title
       #   #=> 'Romance of the Three Kingdoms'
       #
-      # @param (see Attributes::AttributeBuilder#build)
+      # @param (see Attributes::Builder#build)
       #
-      # @option (see Attributes::AttributeBuilder#build)
+      # @option (see Attributes::Builder#build)
       #
-      # @return (see Attributes::AttributeBuilder#build)
+      # @return (see Attributes::Builder#build)
       #
-      # @raise (see Attributes::AttributeBuilder#build)
+      # @raise (see Attributes::Builder#build)
       def attribute(attribute_name, attribute_type, attribute_options = {})
         metadata =
           Bronze::Entities::Attributes::Builder
@@ -140,14 +142,16 @@ module Bronze::Entities
       end
     end
 
-    # Replaces the attributes with the given hash. If an attribute is not in the
-    # hash, it is set to nil.
+    # Replaces the attributes with the given hash. If a non-primary key
+    # attribute is not in the hash, it is set to nil.
     #
     # @raise ArgumentError if one of the keys is not a valid attribute
     def attributes=(hash)
       validate_attributes(hash)
 
-      self.class.each_attribute do |name, _metadata|
+      self.class.each_attribute do |name, metadata|
+        next if metadata.primary_key?
+
         @attributes[name] = hash[name] || hash[name.to_s]
       end
     end

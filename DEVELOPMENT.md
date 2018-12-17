@@ -4,6 +4,12 @@
 
 ### Attributes
 
+#### Boolean attributes
+
+- attribute :flag, Boolean, default: false
+
+- also generates #flag? predicate
+
 #### :default option
 
 - default value method: |
@@ -11,6 +17,10 @@
 
 - update #set_attribute to use default value unless allow_nil is true ?
 
+- default proc can call instance methods: |
+    attribute :serial_id, String, default: -> { generate_serial_id }
+
+    also applies to Primary Key generation
 - default proc that uses existing attributes: |
     attribute :full_name, String, default:
       ->(user) { [user.first_name, user.last_name].compact.join(' ') }
@@ -34,6 +44,25 @@
     entity.attributes[:power_level] => 9001
     entity.power_level => 'memetic'
     entity.normalize => { power_level: 9001 }
+
+    Integration spec:
+      class PlayingCard
+        attribute :suit,
+          String,
+          enum: %w[clubs diamonds hearts spades]
+        attribute :value,
+          Integer,
+          enum: {
+            ace:   1,
+            two:   2,
+            ...
+            ten:   10,
+            jack:  11,
+            king:  12,
+            queen: 13
+          }
+      }
+      end
 
 #### :visible option
 

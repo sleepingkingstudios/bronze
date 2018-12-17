@@ -56,6 +56,11 @@ module Bronze::Entities::Attributes
       !!@options[:foreign_key]
     end
 
+    # @return [Boolean] true if the attribute is a primary key, otherwise false.
+    def primary_key?
+      !!@options[:primary_key]
+    end
+
     # @return [Boolean] True if the attribute is read-only, otherwise false.
     def read_only?
       !!@options[:read_only]

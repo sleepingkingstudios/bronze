@@ -2,11 +2,14 @@
 
 require 'date'
 
-require 'bronze/entities/attributes'
+require 'bronze/entity'
+require 'bronze/entities/primary_keys/uuid'
 
 module Spec
-  class Book
-    include Bronze::Entities::Attributes
+  class Book < Bronze::Entity
+    include Bronze::Entities::PrimaryKeys::Uuid
+
+    define_primary_key :id
 
     attribute :title,            String
     attribute :subtitle,         String, allow_nil: true
