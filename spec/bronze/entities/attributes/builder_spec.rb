@@ -258,6 +258,56 @@ RSpec.describe Bronze::Entities::Attributes::Builder do
       include_examples 'should define the attribute'
     end
 
+    describe 'with a attribute type BigDecimal' do
+      let(:attribute_name) { :fuel }
+      let(:attribute_type) { BigDecimal }
+      let(:expected_transform) do
+        Bronze::Transforms::Attributes::BigDecimalTransform
+      end
+
+      include_examples 'should define the attribute'
+    end
+
+    describe 'with a attribute type Date' do
+      let(:attribute_name) { :release_date }
+      let(:attribute_type) { Date }
+      let(:expected_transform) do
+        Bronze::Transforms::Attributes::DateTransform
+      end
+
+      include_examples 'should define the attribute'
+    end
+
+    describe 'with a attribute type DateTime' do
+      let(:attribute_name) { :launch_date }
+      let(:attribute_type) { DateTime }
+      let(:expected_transform) do
+        Bronze::Transforms::Attributes::DateTimeTransform
+      end
+
+      include_examples 'should define the attribute'
+    end
+
+    describe 'with a attribute type Symbol' do
+      let(:attribute_name) { :inscription }
+      let(:attribute_type) { Symbol }
+      let(:expected_transform) do
+        Bronze::Transforms::Attributes::SymbolTransform
+      end
+
+      include_examples 'should define the attribute'
+    end
+
+    describe 'with a attribute type Time' do
+      let(:attribute_name) { :epoch }
+      let(:attribute_type) { Time }
+      let(:expected_transform) do
+        Bronze::Transforms::Attributes::TimeTransform
+      end
+
+      include_examples 'should define the attribute'
+    end
+
     describe 'with allow_nil: true' do
       let(:attribute_opts) { super().merge allow_nil: true }
 

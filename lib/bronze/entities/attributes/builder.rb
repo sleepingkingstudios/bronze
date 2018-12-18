@@ -2,6 +2,11 @@
 
 require 'bronze/entities'
 require 'bronze/entities/attributes/metadata'
+require 'bronze/transforms/attributes/big_decimal_transform'
+require 'bronze/transforms/attributes/date_time_transform'
+require 'bronze/transforms/attributes/date_transform'
+require 'bronze/transforms/attributes/symbol_transform'
+require 'bronze/transforms/attributes/time_transform'
 
 module Bronze::Entities::Attributes
   # Service class to define attributes on an entity.
@@ -41,6 +46,21 @@ module Bronze::Entities::Attributes
         return super if superclass.respond_to?(:transform_for_attribute)
       end
     end
+
+    attribute_transform BigDecimal,
+      Bronze::Transforms::Attributes::BigDecimalTransform
+
+    attribute_transform Date,
+      Bronze::Transforms::Attributes::DateTransform
+
+    attribute_transform DateTime,
+      Bronze::Transforms::Attributes::DateTimeTransform
+
+    attribute_transform Symbol,
+      Bronze::Transforms::Attributes::SymbolTransform
+
+    attribute_transform Time,
+      Bronze::Transforms::Attributes::TimeTransform
 
     # @param entity_class [Class] The entity class on which attributes will be
     #   defined.
