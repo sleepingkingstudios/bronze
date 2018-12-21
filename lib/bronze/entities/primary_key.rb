@@ -9,7 +9,7 @@ module Bronze::Entities
   module PrimaryKey
     extend SleepingKingStudios::Tools::Toolbox::Mixin
 
-    # Class methods to define when including Attributes in a class.
+    # Class methods to define when including PrimaryKey in a class.
     module ClassMethods
       # Defines the primary key with the specified name and type.
       #

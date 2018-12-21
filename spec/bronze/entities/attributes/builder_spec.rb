@@ -69,6 +69,16 @@ RSpec.describe Bronze::Entities::Attributes::Builder do
     shared_examples 'should define the attribute' do |options = {}|
       let(:metadata) { build_attribute }
       let(:entity)   { entity_class.new }
+      let(:expected_opts) do
+        attribute_opts.tap { |hsh| hsh.delete(:transform) }
+      end
+      let(:be_expected_transform) do
+        next be(attribute_opts[:transform]) unless defined?(expected_transform)
+
+        next be_a(expected_transform) if expected_transform.is_a?(Class)
+
+        be expected_transform
+      end
 
       def build_attribute
         builder.build(attribute_name, attribute_type, attribute_opts)
@@ -84,7 +94,7 @@ RSpec.describe Bronze::Entities::Attributes::Builder do
       end
 
       it 'should set the attribute options' do
-        expect(metadata.options).to be >= attribute_opts
+        expect(metadata.options).to be >= expected_opts
       end
 
       it 'should set the attribute type' do
@@ -125,21 +135,11 @@ RSpec.describe Bronze::Entities::Attributes::Builder do
         it { expect(metadata.read_only?).to be false }
       end
 
-      if options[:transform]
-        it { expect(metadata.transform).to be attribute_opts[:transform] }
+      it { expect(metadata.transform).to be_expected_transform }
 
+      if options[:transform]
         it { expect(metadata.transform?).to be true }
       else
-        let(:be_expected_transform) do
-          next be(nil) unless defined?(expected_transform)
-
-          next be_a(expected_transform) if expected_transform.is_a?(Class)
-
-          be expected_transform
-        end
-
-        it { expect(metadata.transform).to be_expected_transform }
-
         it { expect(metadata.transform?).to be !!defined?(expected_transform) }
       end
 
@@ -350,6 +350,31 @@ RSpec.describe Bronze::Entities::Attributes::Builder do
       include_examples 'should define the attribute', read_only: true
     end
 
+    describe 'with transform: class' do
+      let(:transform)          { Spec::ExampleTransform }
+      let(:attribute_opts)     { super().merge transform: transform }
+      let(:expected_transform) { Spec::ExampleTransform }
+
+      example_class 'Spec::ExampleTransform', Bronze::Transform
+
+      include_examples 'should define the attribute', transform: true
+
+      # rubocop:disable RSpec/NestedGroups
+      context 'when the attribute transform class defines ::instance' do
+        let(:transform)          { Spec::InstancedTransform }
+        let(:expected_transform) { Spec::InstancedTransform.instance }
+
+        example_class 'Spec::InstancedTransform', Bronze::Transform do |klass|
+          klass.singleton_class.send :define_method, :instance do
+            @instance ||= new
+          end
+        end
+
+        include_examples 'should define the attribute', transform: true
+      end
+      # rubocop:enable RSpec/NestedGroups
+    end
+
     describe 'with transform: value' do
       let(:transform)      { Bronze::Transform.new }
       let(:attribute_opts) { super().merge transform: transform }
@@ -411,8 +436,9 @@ RSpec.describe Bronze::Entities::Attributes::Builder do
       end
 
       describe 'with transform: value' do
-        let(:transform)      { Bronze::Transform.new }
-        let(:attribute_opts) { super().merge transform: transform }
+        let(:transform)          { Bronze::Transform.new }
+        let(:attribute_opts)     { super().merge transform: transform }
+        let(:expected_transform) { transform }
 
         include_examples 'should define the attribute', transform: true
       end

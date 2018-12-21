@@ -41,15 +41,6 @@ module Bronze::Entities::Attributes
       #   Otherwise, will set the default transform to the result of ::instance
       #   (if defined) or ::new.
       def attribute_transform(type, transform)
-        if transform.is_a?(Class)
-          transform =
-            if transform.respond_to?(:instance)
-              transform.instance
-            else
-              transform.new
-            end
-        end
-
         (@attribute_transforms ||= {})[type] = transform
       end
 
@@ -198,10 +189,25 @@ module Bronze::Entities::Attributes
         hsh[key.intern] = value
       end
 
-      options[:transform] ||=
-        self.class.send(:transform_for_attribute, type)
+      options[:transform] = normalize_transform(options[:transform], type: type)
 
       options
+    end
+
+    def normalize_transform(transform, type:)
+      transform ||= self.class.send(:transform_for_attribute, type)
+
+      return nil if transform.nil?
+
+      transform_instance(transform)
+    end
+
+    def transform_instance(transform)
+      return transform unless transform.is_a?(Class)
+
+      return transform.instance if transform.respond_to?(:instance)
+
+      transform.new
     end
 
     def validate_attribute_name(attribute_name)
