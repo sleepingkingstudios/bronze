@@ -23,6 +23,23 @@ module Bronze::Entities::Attributes
     ].map(&:freeze).freeze
 
     class << self
+      # Registers a transform as the default transform for attributes with the
+      # specified type or a subtype of the specified type.
+      #
+      # This default is not retroactive - any attributes already defined will
+      # use their existing default transform, if any. If more than one
+      # registered transform has a matching type, the most recently defined
+      # transform will be used.
+      #
+      # @param type [Class] The attribute type. When defining an attribute, if
+      #   the type of the attribute is this class or a subclass of this class
+      #   and no :transform option is given, the transform for the attribute
+      #   will be the transform passed to ::attribute_transform.
+      # @param transform [Class, Bronze::Transforms::Transform] The transform to
+      #   use as the default. If this value is a transform instance, the default
+      #   transform for matching attributes will be the given transform.
+      #   Otherwise, will set the default transform to the result of ::instance
+      #   (if defined) or ::new.
       def attribute_transform(type, transform)
         if transform.is_a?(Class)
           transform =

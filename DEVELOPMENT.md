@@ -13,7 +13,7 @@
 #### :default option
 
 - default value method: |
-  #default_introduction => 'It was a dark...'
+  #default_introduction => 'It was a dark and stormy night...'
 
 - update #set_attribute to use default value unless allow_nil is true ?
 
@@ -67,8 +67,12 @@
 #### :visible option
 
 - attribute :hidden, String, visible: false
--  defaults to true
+- defaults to true
 - if visible: false:
     - do not include in #attributes
     - make getter, setter private
     - do include in normalize-denormalize
+
+## Transforms
+
+- JSON transform - to/from JSON string

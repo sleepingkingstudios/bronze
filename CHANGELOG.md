@@ -17,3 +17,7 @@ Adds the Bronze::Entity class, which serves as an abstract base class for defini
 Adds the Bronze::Entity::PrimaryKey module, which can be included in any entity with attributes to define a primary key for the entity class.
 
 Adds the Bronze::Entity::PrimaryKeys::Uuid module, which defines a UUID primary key for the entity class.
+
+### Transforms
+
+Adds the Bronze::Transform class, which provides an abstract base class for mono- or bi-directional data transformations. Adds normalization transforms for the BigDecimal, DateTime, Date, Symbol and Time classes.
