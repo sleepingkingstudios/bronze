@@ -1,11 +1,11 @@
 # frozen_string_literal: true
 
+require 'bronze/transform'
 require 'bronze/transforms/attributes'
-require 'bronze/transforms/transform'
 
 module Bronze::Transforms::Attributes
   # Transform class that converts a Symbol to a string.
-  class SymbolTransform < Bronze::Transforms::Transform
+  class SymbolTransform < Bronze::Transform
     # @return [SymbolTransform] a memoized instance of SymbolTransform.
     def self.instance
       @instance ||= new

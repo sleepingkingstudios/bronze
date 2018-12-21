@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
-require 'bronze/transforms/transform'
+require 'bronze/transform'
 
-RSpec.describe Bronze::Transforms::Transform do
+RSpec.describe Bronze::Transform do
   subject(:transform) { described_class.new }
 
   describe '::new' do

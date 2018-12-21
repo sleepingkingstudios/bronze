@@ -2,7 +2,7 @@
 
 require 'bronze/transforms'
 
-module Bronze::Transforms
+module Bronze
   # Abstract class for converting an object to and from a normalized form. This
   # can be a hash for database serialization, an active model object, another
   # object, or any other transformation.

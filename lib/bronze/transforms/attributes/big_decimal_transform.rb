@@ -2,12 +2,12 @@
 
 require 'bigdecimal'
 
+require 'bronze/transform'
 require 'bronze/transforms/attributes'
-require 'bronze/transforms/transform'
 
 module Bronze::Transforms::Attributes
   # Transform class that normalizes a BigDecimal to a string representation.
-  class BigDecimalTransform < Bronze::Transforms::Transform
+  class BigDecimalTransform < Bronze::Transform
     # @return [BigDecimalTransform] a memoized instance of BigDecimalTranform.
     def self.instance
       @instance ||= new

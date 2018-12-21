@@ -2,12 +2,12 @@
 
 require 'date'
 
+require 'bronze/transform'
 require 'bronze/transforms/attributes'
-require 'bronze/transforms/transform'
 
 module Bronze::Transforms::Attributes
   # Transform class that converts a Time to an integer timestamp.
-  class TimeTransform < Bronze::Transforms::Transform
+  class TimeTransform < Bronze::Transform
     # @return [TimeTransform] a memoized instance of TimeTransform.
     def self.instance
       @instance ||= new

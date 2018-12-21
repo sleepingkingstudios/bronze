@@ -2,13 +2,13 @@
 
 require 'date'
 
+require 'bronze/transform'
 require 'bronze/transforms/attributes'
-require 'bronze/transforms/transform'
 
 module Bronze::Transforms::Attributes
   # Transform class that normalizes a DateTime to a formatted string
   # representation.
-  class DateTimeTransform < Bronze::Transforms::Transform
+  class DateTimeTransform < Bronze::Transform
     # Format string for ISO 8601 date+time format. Equivalent to
     # YYYY-MM-DDTHH:MM:SS+ZZZZ.
     ISO_8601 = '%FT%T%z'

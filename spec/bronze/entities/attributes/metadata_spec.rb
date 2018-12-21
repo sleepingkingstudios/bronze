@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 require 'bronze/entities/attributes/metadata'
-require 'bronze/transforms/transform'
+require 'bronze/transform'
 
 RSpec.describe Bronze::Entities::Attributes::Metadata do
   subject(:metadata) do
@@ -131,7 +131,7 @@ RSpec.describe Bronze::Entities::Attributes::Metadata do
     include_examples 'should have reader', :transform, nil
 
     context 'when the transform is set' do
-      let(:transform) { Bronze::Transforms::Transform.new }
+      let(:transform) { Bronze::Transform.new }
       let(:options)   { super().merge(transform: transform) }
 
       it { expect(metadata.transform).to be transform }
@@ -142,7 +142,7 @@ RSpec.describe Bronze::Entities::Attributes::Metadata do
     include_examples 'should have predicate', :transform?, false
 
     context 'when the transform is set' do
-      let(:transform) { Bronze::Transforms::Transform.new }
+      let(:transform) { Bronze::Transform.new }
       let(:options)   { super().merge(transform: transform) }
 
       it { expect(metadata.transform?).to be true }

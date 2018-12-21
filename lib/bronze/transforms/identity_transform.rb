@@ -1,10 +1,10 @@
 # frozen_string_literal: true
 
-require 'bronze/transforms/transform'
+require 'bronze/transform'
 
 module Bronze::Transforms
   # Transform class that maps an object to itself.
-  class IdentityTransform < Bronze::Transforms::Transform
+  class IdentityTransform < Bronze::Transform
     # @return [IdentityTransform] a memoized instance of IdentityTransform.
     def self.instance
       @instance ||= new

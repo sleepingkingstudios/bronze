@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 require 'bronze/entities/attributes/builder'
-require 'bronze/transforms/transform'
+require 'bronze/transform'
 
 RSpec.describe Bronze::Entities::Attributes::Builder do
   shared_context 'when the builder defines a custom attribute transform' do
@@ -14,7 +14,7 @@ RSpec.describe Bronze::Entities::Attributes::Builder do
 
     example_class 'Spec::Point', Struct.new(:x, :y)
 
-    example_class 'Spec::PointTransform', Bronze::Transforms::Transform
+    example_class 'Spec::PointTransform', Bronze::Transform
 
     before(:example) do
       Spec::CustomBuilder.attribute_transform Spec::Point, custom_transform
@@ -351,7 +351,7 @@ RSpec.describe Bronze::Entities::Attributes::Builder do
     end
 
     describe 'with transform: value' do
-      let(:transform)      { Bronze::Transforms::Transform.new }
+      let(:transform)      { Bronze::Transform.new }
       let(:attribute_opts) { super().merge transform: transform }
 
       include_examples 'should define the attribute', transform: true
@@ -396,7 +396,7 @@ RSpec.describe Bronze::Entities::Attributes::Builder do
           let(:expected_transform) { Spec::PolarPointTransform }
 
           example_class 'Spec::PolarPointTransform', \
-            Bronze::Transforms::Transform
+            Bronze::Transform
 
           before(:example) do
             Spec::CustomBuilder.attribute_transform(
@@ -411,7 +411,7 @@ RSpec.describe Bronze::Entities::Attributes::Builder do
       end
 
       describe 'with transform: value' do
-        let(:transform)      { Bronze::Transforms::Transform.new }
+        let(:transform)      { Bronze::Transform.new }
         let(:attribute_opts) { super().merge transform: transform }
 
         include_examples 'should define the attribute', transform: true

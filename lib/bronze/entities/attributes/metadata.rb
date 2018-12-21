@@ -66,8 +66,8 @@ module Bronze::Entities::Attributes
       !!@options[:read_only]
     end
 
-    # @return [Bronze::Transforms::Transform] the transform used to normalize
-    #   and denormalize the attribute.
+    # @return [Bronze::Transform] the transform used to normalize and
+    #   denormalize the attribute.
     def transform
       @options[:transform]
     end
