@@ -49,6 +49,8 @@ RSpec.describe Spec::PlayingCard do
       it { expect(metadata.primary_key?).to be false }
 
       it { expect(metadata.read_only?).to be true }
+
+      it { expect(metadata.transform?).to be false }
     end
 
     describe 'with :value' do
@@ -71,6 +73,8 @@ RSpec.describe Spec::PlayingCard do
       it { expect(metadata.primary_key?).to be false }
 
       it { expect(metadata.read_only?).to be true }
+
+      it { expect(metadata.transform?).to be false }
     end
   end
 

@@ -57,6 +57,8 @@ RSpec.describe Spec::RareBook do
       it { expect(metadata.primary_key?).to be true }
 
       it { expect(metadata.read_only?).to be true }
+
+      it { expect(metadata.transform?).to be false }
     end
 
     describe 'with :introduction' do
@@ -79,6 +81,8 @@ RSpec.describe Spec::RareBook do
       it { expect(metadata.primary_key?).to be false }
 
       it { expect(metadata.read_only?).to be false }
+
+      it { expect(metadata.transform?).to be false }
     end
 
     describe 'with :isbn' do
@@ -99,6 +103,8 @@ RSpec.describe Spec::RareBook do
       it { expect(metadata.primary_key?).to be false }
 
       it { expect(metadata.read_only?).to be true }
+
+      it { expect(metadata.transform?).to be false }
     end
 
     describe 'with :page_count' do
@@ -119,6 +125,8 @@ RSpec.describe Spec::RareBook do
       it { expect(metadata.primary_key?).to be false }
 
       it { expect(metadata.read_only?).to be false }
+
+      it { expect(metadata.transform?).to be false }
     end
 
     describe 'with :publication_date' do
@@ -139,6 +147,13 @@ RSpec.describe Spec::RareBook do
       it { expect(metadata.primary_key?).to be false }
 
       it { expect(metadata.read_only?).to be false }
+
+      it 'should return the transform' do
+        expect(metadata.transform)
+          .to be_a Bronze::Transforms::Attributes::DateTransform
+      end
+
+      it { expect(metadata.transform?).to be true }
     end
 
     describe 'with :rarity' do
@@ -159,6 +174,8 @@ RSpec.describe Spec::RareBook do
       it { expect(metadata.primary_key?).to be false }
 
       it { expect(metadata.read_only?).to be false }
+
+      it { expect(metadata.transform?).to be false }
     end
 
     describe 'with :subtitle' do
@@ -179,6 +196,8 @@ RSpec.describe Spec::RareBook do
       it { expect(metadata.primary_key?).to be false }
 
       it { expect(metadata.read_only?).to be false }
+
+      it { expect(metadata.transform?).to be false }
     end
 
     describe 'with :title' do
@@ -199,6 +218,166 @@ RSpec.describe Spec::RareBook do
       it { expect(metadata.primary_key?).to be false }
 
       it { expect(metadata.read_only?).to be false }
+
+      it { expect(metadata.transform?).to be false }
+    end
+  end
+
+  describe '::denormalize' do
+    let(:expected) do
+      {
+        title:            nil,
+        isbn:             nil,
+        introduction:     nil,
+        page_count:       nil,
+        publication_date: nil,
+        rarity:           nil,
+        subtitle:         nil
+      }
+    end
+
+    describe 'with nil' do
+      let(:error_message) do
+        'expected attributes to be a Hash, but was nil'
+      end
+
+      it 'should raise an error' do
+        expect { described_class.denormalize(nil) }
+          .to raise_error ArgumentError, error_message
+      end
+    end
+
+    describe 'with an empty hash' do
+      it 'should return an instance of the entity class' do
+        expect(described_class.denormalize({})).to be_a described_class
+      end
+
+      it 'should denormalize the attributes' do
+        expect(described_class.denormalize({}).attributes)
+          .to be >= expected
+      end
+
+      it 'should generate the primary key' do
+        expect(described_class.denormalize({}).primary_key).to be_a String
+      end
+    end
+
+    describe 'with a hash with invalid string keys' do
+      let(:mystery) do
+        'Princess Pink, in the Playroom, with the Squeaky Mallet'
+      end
+      let(:error_message) { 'invalid attribute "mystery"' }
+      let(:attributes)    { { 'mystery' => mystery } }
+
+      it 'should raise an error' do
+        expect { described_class.denormalize(attributes) }
+          .to raise_error ArgumentError, error_message
+      end
+    end
+
+    describe 'with a hash with invalid symbol keys' do
+      let(:mystery) do
+        'Princess Pink, in the Playroom, with the Squeaky Mallet'
+      end
+      let(:error_message) { 'invalid attribute :mystery' }
+      let(:attributes)    { { mystery: mystery } }
+
+      it 'should raise an error' do
+        expect { described_class.denormalize(attributes) }
+          .to raise_error ArgumentError, error_message
+      end
+    end
+
+    describe 'with a hash with valid string keys' do
+      let(:attributes) do
+        {
+          'title'            => 'The Hobbit',
+          'subtitle'         => 'There And Back Again',
+          'page_count'       => 200,
+          'publication_date' => '1937-09-21'
+        }
+      end
+      let(:expected) do
+        {
+          title:            'The Hobbit',
+          page_count:       200,
+          publication_date: Date.new(1937, 9, 21),
+          subtitle:         'There And Back Again'
+        }
+      end
+
+      it 'should return an instance of the entity class' do
+        expect(described_class.denormalize(attributes)).to be_a described_class
+      end
+
+      it 'should denormalize the attributes' do
+        expect(described_class.denormalize(attributes).attributes)
+          .to be >= expected
+      end
+
+      it 'should generate the primary key' do
+        expect(described_class.denormalize(attributes).primary_key)
+          .to be_a String
+      end
+
+      # rubocop:disable RSpec/NestedGroups
+      context 'when the attributes include a primary key' do
+        let(:book_uuid)  { 'a6abad76-b312-435a-a0b4-133a5dd080f9' }
+        let(:attributes) { super().merge('id' => book_uuid) }
+        let(:expected)   { super().merge(id: book_uuid) }
+
+        it 'should denormalize the attributes' do
+          expect(described_class.denormalize(attributes).attributes)
+            .to be >= expected
+        end
+      end
+      # rubocop:enable RSpec/NestedGroups
+    end
+
+    describe 'with a hash with valid symbol keys' do
+      let(:attributes) do
+        {
+          title:            'The Hobbit',
+          subtitle:         'There And Back Again',
+          page_count:       200,
+          publication_date: '1937-09-21'
+        }
+      end
+      let(:expected) do
+        {
+          title:            'The Hobbit',
+          page_count:       200,
+          publication_date: Date.new(1937, 9, 21),
+          subtitle:         'There And Back Again'
+        }
+      end
+
+      it 'should return an instance of the entity class' do
+        expect(described_class.denormalize(attributes)).to be_a described_class
+      end
+
+      it 'should denormalize the attributes' do
+        expect(described_class.denormalize(attributes).attributes)
+          .to be >= expected
+      end
+
+      it 'should generate the primary key' do
+        expect(described_class.denormalize(attributes).primary_key)
+          .to be_a String
+      end
+
+      # rubocop:disable RSpec/NestedGroups
+      context 'when the attributes include a primary key' do
+        let(:book_uuid)  { 'a6abad76-b312-435a-a0b4-133a5dd080f9' }
+        let(:attributes) { super().merge(id: book_uuid) }
+        let(:expected)   { super().merge(id: book_uuid) }
+
+        it 'should denormalize the attributes' do
+          expect(described_class.denormalize(attributes).attributes)
+            .to be >= expected
+        end
+      end
+      # rubocop:enable RSpec/NestedGroups
     end
   end
 
@@ -443,6 +622,28 @@ RSpec.describe Spec::RareBook do
 
   describe '#isbn=' do
     include_examples 'should have private writer', :isbn=
+  end
+
+  describe '#normalize' do
+    let(:expected_date) do
+      transform = Bronze::Transforms::Attributes::DateTransform.instance
+
+      transform.normalize(rare_book.publication_date)
+    end
+    let(:tools) do
+      SleepingKingStudios::Tools::Toolbelt.instance
+    end
+    let(:expected) do
+      hsh =
+        default_attributes
+        .merge(initial_attributes)
+        .merge(id: rare_book.id)
+        .merge(publication_date: expected_date)
+
+      tools.hash.convert_keys_to_strings(hsh)
+    end
+
+    it { expect(rare_book.normalize).to be == expected }
   end
 
   describe '#page_count' do

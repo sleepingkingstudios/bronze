@@ -2,13 +2,16 @@
 
 require 'bronze/entities/attributes'
 require 'bronze/entities/normalization'
+require 'bronze/entities/primary_key'
 
 require 'support/examples/entities/attributes_examples'
 require 'support/examples/entities/normalization_examples'
+require 'support/examples/entities/primary_key_examples'
 
 RSpec.describe Bronze::Entities::Normalization do
   include Support::Examples::Entities::AttributesExamples
   include Support::Examples::Entities::NormalizationExamples
+  include Support::Examples::Entities::PrimaryKeyExamples
 
   subject(:entity) { entity_class.new(initial_attributes) }
 
@@ -24,4 +27,18 @@ RSpec.describe Bronze::Entities::Normalization do
   # rubocop:enable RSpec/DescribedClass
 
   include_examples 'should implement the Normalization methods'
+
+  wrap_context 'when the entity class has a primary key' do
+    let(:described_class) { Spec::EntityWithPrimaryKey }
+
+    # rubocop:disable RSpec/DescribedClass
+    example_class 'Spec::EntityWithPrimaryKey' do |klass|
+      klass.send :include, Bronze::Entities::Attributes
+      klass.send :include, Bronze::Entities::Normalization
+      klass.send :include, Bronze::Entities::PrimaryKey
+    end
+    # rubocop:enable RSpec/DescribedClass
+
+    include_examples 'should implement the Normalization methods'
+  end
 end
