@@ -42,7 +42,7 @@ This project is dedicated to the memory of my grandfather, who taught me the joy
 
     require 'bronze/entity'
 
-An entity is a data object. Each entity class can define [attributes](#label-Entities-3A+Attributes), including a [primary key](#label-Primary+Keys).
+An entity is a data object. Each entity class can define [attributes](#label-Entities-3A+Attributes), including a [primary key](#label-Primary+Keys). Entities can be [normalized](#label-Normalization), which transforms the entity to a hash of data values or vice versa.
 
     class Book < Bronze::Entity
       attribute :title, String
@@ -357,6 +357,105 @@ Most attributes do not require a transform, and are unchanged during normalizati
 
     point = Point.new(3, 4)
     map   = Map.new(point: point)
+
+### Normalization
+
+    require 'bronze/entities/normalization'
+
+An entity class can define normalization helper methods, which convert an entity to a hash of data values and vice versa.
+
+A normalized value is one of the following:
+
+- A literal value:
+    - `nil`
+    - `true` or `false`
+    - A `String`
+    - An `Integer`
+    - A `Float`
+- An `Array` of normalized items
+- A `Hash` with `String` keys and with normalized values
+
+Any other values should be converted to a normalized value, e.g. by setting a [:transform option](#label-3Atransform+Option) when defining the attribute.
+
+#### ::denormalize Class Method
+
+The `::denormalize` class method converts a normalized hash to an entity instance.
+
+    class Book < Bronze::Entity
+      attribute :title,    String
+      attribute :subtitle, String, allow_nil: true
+      attribute :isbn,     String, read_only: true
+    end
+
+    attributes = {
+      title: 'Journey To The West',
+      isbn:  '123-4-56-789012-3'
+    }
+    book = Book.denormalize(attributes)
+    book.class    #=> Book
+    book.title    #=> 'Journey To The West'
+    book.subtitle #=> nil
+    book.isbn     #=> '123-4-56-789012-3'
+
+When an attribute has a defined transform (either from an [attribute transform](#label-Attribute+Transforms) or by defining the [:transform option](#label-3Atransform+Option)), then that transform is used when creating the entity from the data hash.
+
+    class Periodical
+      attribute :title, String
+      attribute :issue, Integer
+      attribute :date,  DateTime
+    end
+
+    attributes = {
+      title: 'Triskadecaphobia Today',
+      issue: 13,
+      date:  '2013-10-03T13:13:13+1300'
+    }
+    periodical = Periodical.denormalize(attributes)
+    periodical.class #=> Periodical
+    periodical.title #=> 'Triskadecaphobia Today'
+    periodical.issue #=> 13
+    periodical.date  #=> #<DateTime: 2013-10-03T13:13:13+13:00>
+
+#### #normalize Method
+
+The `#normalize` method converts an entity instance to a normalized hash.
+
+    class Book < Bronze::Entity
+      attribute :title,    String
+      attribute :subtitle, String, allow_nil: true
+      attribute :isbn,     String, read_only: true
+    end
+
+    attributes = {
+      title: 'Journey To The West',
+      isbn:  '123-4-56-789012-3'
+    }
+    book = Book.new(attributes)
+    hash = book.normalize
+    hash.class       #=> Hash
+    hash['title']    #=> 'Journey To The West'
+    hash['subtitle'] #=> nil
+    hash['isbn']     #=> '123-4-56-789012-3'
+
+When an attribute has a defined transform (either from an [attribute transform](#label-Attribute+Transforms) or by defining the [:transform option](#label-3Atransform+Option)), then that transform is used when generating the entity from the data hash.
+
+    class Periodical
+      attribute :title, String
+      attribute :issue, Integer
+      attribute :date,  DateTime
+    end
+
+    attributes = {
+      title: 'Triskadecaphobia Today',
+      issue: 13,
+      date:  #<DateTime: 2013-10-03T13:13:13+13:00>
+    }
+    periodical = Periodical.new(attributes)
+    hash       = periodical.normalize
+    hash.class    #=> Hash
+    hash['title'] #=> 'Triskadecaphobia Today'
+    hash['issue'] #=> 13
+    hash['date']  #=> '2013-10-03T13:13:13+1300'
 
 ### Primary Keys
 
