@@ -1,8 +1,26 @@
 # frozen_string_literal: true
 
 require 'bronze/entities/attributes/builder'
+require 'bronze/transform'
 
 RSpec.describe Bronze::Entities::Attributes::Builder do
+  shared_context 'when the builder defines a custom attribute transform' do
+    let(:described_class)  { Spec::CustomBuilder }
+    let(:custom_transform) { Spec::PointTransform }
+
+    # rubocop:disable RSpec/DescribedClass
+    example_class 'Spec::CustomBuilder', Bronze::Entities::Attributes::Builder
+    # rubocop:enable RSpec/DescribedClass
+
+    example_class 'Spec::Point', Struct.new(:x, :y)
+
+    example_class 'Spec::PointTransform', Bronze::Transform
+
+    before(:example) do
+      Spec::CustomBuilder.attribute_transform Spec::Point, custom_transform
+    end
+  end
+
   subject(:builder) { described_class.new(entity_class) }
 
   let(:entity_class) { Spec::ExampleEntity }
@@ -20,6 +38,7 @@ RSpec.describe Bronze::Entities::Attributes::Builder do
         foreign_key
         primary_key
         read_only
+        transform
       ]
     end
 
@@ -38,10 +57,28 @@ RSpec.describe Bronze::Entities::Attributes::Builder do
     end
   end
 
+  describe '::attribute_transform' do
+    it 'should define the method' do
+      expect(described_class)
+        .to respond_to(:attribute_transform)
+        .with(2).arguments
+    end
+  end
+
   describe '#build' do
     shared_examples 'should define the attribute' do |options = {}|
       let(:metadata) { build_attribute }
       let(:entity)   { entity_class.new }
+      let(:expected_opts) do
+        attribute_opts.tap { |hsh| hsh.delete(:transform) }
+      end
+      let(:be_expected_transform) do
+        next be(attribute_opts[:transform]) unless defined?(expected_transform)
+
+        next be_a(expected_transform) if expected_transform.is_a?(Class)
+
+        be expected_transform
+      end
 
       def build_attribute
         builder.build(attribute_name, attribute_type, attribute_opts)
@@ -57,7 +94,7 @@ RSpec.describe Bronze::Entities::Attributes::Builder do
       end
 
       it 'should set the attribute options' do
-        expect(metadata.options).to be == attribute_opts
+        expect(metadata.options).to be >= expected_opts
       end
 
       it 'should set the attribute type' do
@@ -96,6 +133,14 @@ RSpec.describe Bronze::Entities::Attributes::Builder do
         it { expect(metadata.read_only?).to be true }
       else
         it { expect(metadata.read_only?).to be false }
+      end
+
+      it { expect(metadata.transform).to be_expected_transform }
+
+      if options[:transform]
+        it { expect(metadata.transform?).to be true }
+      else
+        it { expect(metadata.transform?).to be !!defined?(expected_transform) }
       end
 
       context 'when the attribute is defined' do
@@ -213,6 +258,56 @@ RSpec.describe Bronze::Entities::Attributes::Builder do
       include_examples 'should define the attribute'
     end
 
+    describe 'with a attribute type BigDecimal' do
+      let(:attribute_name) { :fuel }
+      let(:attribute_type) { BigDecimal }
+      let(:expected_transform) do
+        Bronze::Transforms::Attributes::BigDecimalTransform
+      end
+
+      include_examples 'should define the attribute'
+    end
+
+    describe 'with a attribute type Date' do
+      let(:attribute_name) { :release_date }
+      let(:attribute_type) { Date }
+      let(:expected_transform) do
+        Bronze::Transforms::Attributes::DateTransform
+      end
+
+      include_examples 'should define the attribute'
+    end
+
+    describe 'with a attribute type DateTime' do
+      let(:attribute_name) { :launch_date }
+      let(:attribute_type) { DateTime }
+      let(:expected_transform) do
+        Bronze::Transforms::Attributes::DateTimeTransform
+      end
+
+      include_examples 'should define the attribute'
+    end
+
+    describe 'with a attribute type Symbol' do
+      let(:attribute_name) { :inscription }
+      let(:attribute_type) { Symbol }
+      let(:expected_transform) do
+        Bronze::Transforms::Attributes::SymbolTransform
+      end
+
+      include_examples 'should define the attribute'
+    end
+
+    describe 'with a attribute type Time' do
+      let(:attribute_name) { :epoch }
+      let(:attribute_type) { Time }
+      let(:expected_transform) do
+        Bronze::Transforms::Attributes::TimeTransform
+      end
+
+      include_examples 'should define the attribute'
+    end
+
     describe 'with allow_nil: true' do
       let(:attribute_opts) { super().merge allow_nil: true }
 
@@ -253,6 +348,100 @@ RSpec.describe Bronze::Entities::Attributes::Builder do
       let(:attribute_opts) { super().merge read_only: true }
 
       include_examples 'should define the attribute', read_only: true
+    end
+
+    describe 'with transform: class' do
+      let(:transform)          { Spec::ExampleTransform }
+      let(:attribute_opts)     { super().merge transform: transform }
+      let(:expected_transform) { Spec::ExampleTransform }
+
+      example_class 'Spec::ExampleTransform', Bronze::Transform
+
+      include_examples 'should define the attribute', transform: true
+
+      # rubocop:disable RSpec/NestedGroups
+      context 'when the attribute transform class defines ::instance' do
+        let(:transform)          { Spec::InstancedTransform }
+        let(:expected_transform) { Spec::InstancedTransform.instance }
+
+        example_class 'Spec::InstancedTransform', Bronze::Transform do |klass|
+          klass.singleton_class.send :define_method, :instance do
+            @instance ||= new
+          end
+        end
+
+        include_examples 'should define the attribute', transform: true
+      end
+      # rubocop:enable RSpec/NestedGroups
+    end
+
+    describe 'with transform: value' do
+      let(:transform)      { Bronze::Transform.new }
+      let(:attribute_opts) { super().merge transform: transform }
+
+      include_examples 'should define the attribute', transform: true
+    end
+
+    wrap_context 'when the builder defines a custom attribute transform' do
+      let(:attribute_type)     { Spec::Point }
+      let(:expected_transform) { Spec::PointTransform }
+
+      include_examples 'should define the attribute'
+
+      context 'when the attribute transform is a transform instance' do
+        let(:custom_transform)   { Spec::PointTransform.new }
+        let(:expected_transform) { custom_transform }
+
+        include_examples 'should define the attribute'
+      end
+
+      context 'when the attribute transform class defines ::instance' do
+        let(:custom_transform)   { Spec::InstancedPointTransform }
+        let(:expected_transform) { Spec::InstancedPointTransform.instance }
+
+        example_class 'Spec::InstancedPointTransform', 'Spec::PointTransform' \
+        do |klass|
+          klass.singleton_class.send :define_method, :instance do
+            @instance ||= new
+          end
+        end
+
+        include_examples 'should define the attribute'
+      end
+
+      context 'when the attribute type is a subclass of the transformed type' do
+        let(:attribute_type) { Spec::PolarPoint }
+
+        example_class 'Spec::PolarPoint', 'Spec::Point'
+
+        include_examples 'should define the attribute'
+
+        # rubocop:disable RSpec/NestedGroups
+        context 'when the subclass has its own attribute transform' do
+          let(:expected_transform) { Spec::PolarPointTransform }
+
+          example_class 'Spec::PolarPointTransform', \
+            Bronze::Transform
+
+          before(:example) do
+            Spec::CustomBuilder.attribute_transform(
+              Spec::PolarPoint,
+              Spec::PolarPointTransform
+            )
+          end
+
+          include_examples 'should define the attribute'
+        end
+        # rubocop:enable RSpec/NestedGroups
+      end
+
+      describe 'with transform: value' do
+        let(:transform)          { Bronze::Transform.new }
+        let(:attribute_opts)     { super().merge transform: transform }
+        let(:expected_transform) { transform }
+
+        include_examples 'should define the attribute', transform: true
+      end
     end
 
     context 'when the entity class has many attributes' do

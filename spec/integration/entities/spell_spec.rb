@@ -49,6 +49,8 @@ RSpec.describe Spec::Spell do
       it { expect(metadata.primary_key?).to be true }
 
       it { expect(metadata.read_only?).to be true }
+
+      it { expect(metadata.transform?).to be false }
     end
 
     describe 'with :mana_cost' do
@@ -71,6 +73,8 @@ RSpec.describe Spec::Spell do
       it { expect(metadata.primary_key?).to be false }
 
       it { expect(metadata.read_only?).to be false }
+
+      it { expect(metadata.transform?).to be false }
     end
 
     describe 'with :name' do
@@ -93,6 +97,8 @@ RSpec.describe Spec::Spell do
       it { expect(metadata.primary_key?).to be false }
 
       it { expect(metadata.read_only?).to be false }
+
+      it { expect(metadata.transform?).to be false }
     end
   end
 

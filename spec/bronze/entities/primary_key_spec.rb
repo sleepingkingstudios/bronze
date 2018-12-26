@@ -26,4 +26,8 @@ RSpec.describe Bronze::Entities::PrimaryKey do
   include_examples 'should implement the PrimaryKey methods'
 
   include_examples 'should implement the generic PrimaryKey methods'
+
+  wrap_context 'when the entity class has many attributes' do
+    include_examples 'should implement the PrimaryKey methods'
+  end
 end

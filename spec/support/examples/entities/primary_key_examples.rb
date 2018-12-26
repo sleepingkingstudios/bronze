@@ -175,7 +175,8 @@ module Support::Examples::Entities
             {
               default:     default,
               primary_key: true,
-              read_only:   true
+              read_only:   true,
+              transform:   nil
             }
           end
           let(:attribute_value) { 0 }
@@ -200,7 +201,8 @@ module Support::Examples::Entities
               {
                 default:     default,
                 primary_key: true,
-                read_only:   true
+                read_only:   true,
+                transform:   nil
               }
             end
             let(:attribute_value) { 0 }

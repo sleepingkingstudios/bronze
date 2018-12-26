@@ -3,10 +3,12 @@
 require 'bronze/entity'
 
 require 'support/examples/entities/attributes_examples'
+require 'support/examples/entities/normalization_examples'
 require 'support/examples/entities/primary_key_examples'
 
 RSpec.describe Bronze::Entity do
   include Support::Examples::Entities::AttributesExamples
+  include Support::Examples::Entities::NormalizationExamples
   include Support::Examples::Entities::PrimaryKeyExamples
 
   subject(:entity) { entity_class.new(initial_attributes) }
@@ -24,6 +26,8 @@ RSpec.describe Bronze::Entity do
   end
 
   include_examples 'should implement the Attributes methods'
+
+  include_examples 'should implement the Normalization methods'
 
   include_examples 'should implement the PrimaryKey methods'
 

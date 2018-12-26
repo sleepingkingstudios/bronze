@@ -61,9 +61,21 @@ module Bronze::Entities::Attributes
       !!@options[:primary_key]
     end
 
-    # @return [Boolean] True if the attribute is read-only, otherwise false.
+    # @return [Boolean] true if the attribute is read-only, otherwise false.
     def read_only?
       !!@options[:read_only]
+    end
+
+    # @return [Bronze::Transform] the transform used to normalize and
+    #   denormalize the attribute.
+    def transform
+      @options[:transform]
+    end
+
+    # @return [Boolean] true if the attribute has a custom transform, otherwise
+    #   false.
+    def transform?
+      !!@options[:transform]
     end
   end
 end

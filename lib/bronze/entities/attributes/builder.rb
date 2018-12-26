@@ -2,10 +2,15 @@
 
 require 'bronze/entities'
 require 'bronze/entities/attributes/metadata'
+require 'bronze/transforms/attributes/big_decimal_transform'
+require 'bronze/transforms/attributes/date_time_transform'
+require 'bronze/transforms/attributes/date_transform'
+require 'bronze/transforms/attributes/symbol_transform'
+require 'bronze/transforms/attributes/time_transform'
 
 module Bronze::Entities::Attributes
   # Service class to define attributes on an entity.
-  class Builder
+  class Builder # rubocop:disable Metrics/ClassLength
     # Provides a list of the valid options for the attribute_options parameter
     # for Builder#build.
     VALID_OPTIONS = %w[
@@ -14,7 +19,56 @@ module Bronze::Entities::Attributes
       foreign_key
       primary_key
       read_only
+      transform
     ].map(&:freeze).freeze
+
+    class << self
+      # Registers a transform as the default transform for attributes with the
+      # specified type or a subtype of the specified type.
+      #
+      # This default is not retroactive - any attributes already defined will
+      # use their existing default transform, if any. If more than one
+      # registered transform has a matching type, the most recently defined
+      # transform will be used.
+      #
+      # @param type [Class] The attribute type. When defining an attribute, if
+      #   the type of the attribute is this class or a subclass of this class
+      #   and no :transform option is given, the transform for the attribute
+      #   will be the transform passed to ::attribute_transform.
+      # @param transform [Class, Bronze::Transforms::Transform] The transform to
+      #   use as the default. If this value is a transform instance, the default
+      #   transform for matching attributes will be the given transform.
+      #   Otherwise, will set the default transform to the result of ::instance
+      #   (if defined) or ::new.
+      def attribute_transform(type, transform)
+        (@attribute_transforms ||= {})[type] = transform
+      end
+
+      private
+
+      def transform_for_attribute(attribute_type)
+        (@attribute_transforms ||= {}).reverse_each do |type, transform|
+          return transform if attribute_type <= type
+        end
+
+        return super if superclass.respond_to?(:transform_for_attribute)
+      end
+    end
+
+    attribute_transform BigDecimal,
+      Bronze::Transforms::Attributes::BigDecimalTransform
+
+    attribute_transform Date,
+      Bronze::Transforms::Attributes::DateTransform
+
+    attribute_transform DateTime,
+      Bronze::Transforms::Attributes::DateTimeTransform
+
+    attribute_transform Symbol,
+      Bronze::Transforms::Attributes::SymbolTransform
+
+    attribute_transform Time,
+      Bronze::Transforms::Attributes::TimeTransform
 
     # @param entity_class [Class] The entity class on which attributes will be
     #   defined.
@@ -85,16 +139,10 @@ module Bronze::Entities::Attributes
     end
 
     def characterize(attribute_name, attribute_type, attribute_options)
-      options = {}
-
-      attribute_options.each do |key, value|
-        options[key.intern] = value
-      end
-
       Bronze::Entities::Attributes::Metadata.new(
         attribute_name,
         attribute_type,
-        attribute_options
+        normalize_options(attribute_options, type: attribute_type)
       )
     end
 
@@ -134,6 +182,32 @@ module Bronze::Entities::Attributes
       return unless metadata.read_only?
 
       attributes_module.send(:private, metadata.writer_name)
+    end
+
+    def normalize_options(options, type:)
+      options = options.each.with_object({}) do |(key, value), hsh|
+        hsh[key.intern] = value
+      end
+
+      options[:transform] = normalize_transform(options[:transform], type: type)
+
+      options
+    end
+
+    def normalize_transform(transform, type:)
+      transform ||= self.class.send(:transform_for_attribute, type)
+
+      return nil if transform.nil?
+
+      transform_instance(transform)
+    end
+
+    def transform_instance(transform)
+      return transform unless transform.is_a?(Class)
+
+      return transform.instance if transform.respond_to?(:instance)
+
+      transform.new
     end
 
     def validate_attribute_name(attribute_name)

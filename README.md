@@ -12,7 +12,7 @@ Bronze defines the following components:
 
 ### Compatibility
 
-Cuprum is tested against Ruby (MRI) 2.3 through 2.5.
+Bronze is tested against Ruby (MRI) 2.3 through 2.5.
 
 ### Documentation
 
@@ -34,11 +34,15 @@ To report a bug or submit a feature request, please use the [Issue Tracker](http
 
 To contribute code, please fork the repository, make the desired updates, and then provide a [Pull Request](https://github.com/sleepingkingstudios/bronze/pulls). Pull requests must include appropriate tests for consideration, and all code must be properly formatted.
 
+### Dedication
+
+This project is dedicated to the memory of my grandfather, who taught me the joy of flight.
+
 ## Entities
 
     require 'bronze/entity'
 
-An entity is a data object. Each entity class can define [attributes](#label-Entities-3A+Attributes), including a [primary key](#label-Primary+Keys).
+An entity is a data object. Each entity class can define [attributes](#label-Entities-3A+Attributes), including a [primary key](#label-Primary+Keys). Entities can be [normalized](#label-Normalization), which transforms the entity to a hash of data values or vice versa.
 
     class Book < Bronze::Entity
       attribute :title, String
@@ -328,6 +332,131 @@ The `:read_only` option marks the attribute as being read-only, i.e. written to 
     book.set_attribute(:isbn, '098-7-65-432109-8')
     book.isbn #=> '123-4-56-789012-3'
 
+#### :transform Option
+
+The `:transform` option sets the transform used to convert the attribute to and
+from a normal form. This is used for normalization, e.g. converting the entity to a portable form, and for serializing the entity to and from a data store.
+
+Most attributes do not require a transform, and are unchanged during normalization/serialization since most data stores will natively support that data type. For select builtin types, there are default transforms defined (see [Attribute Transforms](#label-Attribute+Transforms), below). Finally, the `:transform` option lets you set the transform for the current attribute, whether that is to override an existing default or to support a custom data type.
+
+    class Point < Struct.new(:x, :y)
+
+    class PointTransform < Bronze::Transform
+      def denormalize(coords)
+        Point.new(*Array(coords))
+      end
+
+      def normalize(point)
+        [point.x, point.y]
+      end
+    end
+
+    class Map
+      attribute :treasure, Point, transform: PointTransform
+    end
+
+    point = Point.new(3, 4)
+    map   = Map.new(point: point)
+
+### Normalization
+
+    require 'bronze/entities/normalization'
+
+An entity class can define normalization helper methods, which convert an entity to a hash of data values and vice versa.
+
+A normalized value is one of the following:
+
+- A literal value:
+    - `nil`
+    - `true` or `false`
+    - A `String`
+    - An `Integer`
+    - A `Float`
+- An `Array` of normalized items
+- A `Hash` with `String` keys and with normalized values
+
+Any other values should be converted to a normalized value, e.g. by setting a [:transform option](#label-3Atransform+Option) when defining the attribute.
+
+#### ::denormalize Class Method
+
+The `::denormalize` class method converts a normalized hash to an entity instance.
+
+    class Book < Bronze::Entity
+      attribute :title,    String
+      attribute :subtitle, String, allow_nil: true
+      attribute :isbn,     String, read_only: true
+    end
+
+    attributes = {
+      title: 'Journey To The West',
+      isbn:  '123-4-56-789012-3'
+    }
+    book = Book.denormalize(attributes)
+    book.class    #=> Book
+    book.title    #=> 'Journey To The West'
+    book.subtitle #=> nil
+    book.isbn     #=> '123-4-56-789012-3'
+
+When an attribute has a defined transform (either from an [attribute transform](#label-Attribute+Transforms) or by defining the [:transform option](#label-3Atransform+Option)), then that transform is used when creating the entity from the data hash.
+
+    class Periodical
+      attribute :title, String
+      attribute :issue, Integer
+      attribute :date,  DateTime
+    end
+
+    attributes = {
+      title: 'Triskadecaphobia Today',
+      issue: 13,
+      date:  '2013-10-03T13:13:13+1300'
+    }
+    periodical = Periodical.denormalize(attributes)
+    periodical.class #=> Periodical
+    periodical.title #=> 'Triskadecaphobia Today'
+    periodical.issue #=> 13
+    periodical.date  #=> #<DateTime: 2013-10-03T13:13:13+13:00>
+
+#### #normalize Method
+
+The `#normalize` method converts an entity instance to a normalized hash.
+
+    class Book < Bronze::Entity
+      attribute :title,    String
+      attribute :subtitle, String, allow_nil: true
+      attribute :isbn,     String, read_only: true
+    end
+
+    attributes = {
+      title: 'Journey To The West',
+      isbn:  '123-4-56-789012-3'
+    }
+    book = Book.new(attributes)
+    hash = book.normalize
+    hash.class       #=> Hash
+    hash['title']    #=> 'Journey To The West'
+    hash['subtitle'] #=> nil
+    hash['isbn']     #=> '123-4-56-789012-3'
+
+When an attribute has a defined transform (either from an [attribute transform](#label-Attribute+Transforms) or by defining the [:transform option](#label-3Atransform+Option)), then that transform is used when generating the entity from the data hash.
+
+    class Periodical
+      attribute :title, String
+      attribute :issue, Integer
+      attribute :date,  DateTime
+    end
+
+    attributes = {
+      title: 'Triskadecaphobia Today',
+      issue: 13,
+      date:  #<DateTime: 2013-10-03T13:13:13+13:00>
+    }
+    periodical = Periodical.new(attributes)
+    hash       = periodical.normalize
+    hash.class    #=> Hash
+    hash['title'] #=> 'Triskadecaphobia Today'
+    hash['issue'] #=> 13
+    hash['date']  #=> '2013-10-03T13:13:13+1300'
+
 ### Primary Keys
 
     require 'bronze/entities/primary_key'
@@ -401,3 +530,218 @@ The `::define_primary_key` class method is used to define a UUID primary key. Bo
 
       define_primary_key :id
     end
+
+## Transforms
+
+    require 'bronze/transform'
+
+A transform represents a mapping between one type of object to another.
+
+    class Point < Struct.new(:x, :y)
+
+    class PointTransform < Bronze::Transform
+      def denormalize(coords)
+        Point.new(*Array(coords))
+      end
+
+      def normalize(point)
+        [point.x, point.y]
+      end
+    end
+
+    point     = Point.new(3, 4)
+    transform = PointTransform.new
+    transform.normalize(point)
+    #=> [3, 4]
+
+    point = transform.denormalize([5, 12])
+    point.class
+    #=> Point
+    point.x
+    #=> 5
+    point.y
+    #=> 12
+
+Transforms can be either mono- or bi-directional.
+
+    class UpcaseTransform < Bronze::Transform
+      # No denormalize method is defined, since this not reversible.
+
+      def normalize(string)
+        string.upcase
+      end
+    end
+
+    transform = UpcaseTransform
+    transform.normalize('lower case string')
+    #=> 'LOWER CASE STRING'
+
+    transform.denormalize('UPPER CASE STRING')
+    #=> raises NotImplementedError
+
+### Methods
+
+Each transform must define the `#normalize` and `#denormalize` methods. Transforms that inherit from Bronze::Transform will raise a `NotImplementedError` unless those methods are redefined.
+
+#### ::instance Class Method
+
+Optional. An `::instance` class method is recommended For transforms that take no arguments and have no internal state. `::instance` should memoize a call to `::new` and return the same transform instance each time it is called to minimize object allocation and memory usage.
+
+    class CaseTransform
+      def self.instance
+        @instance ||= new
+      end
+    end
+
+    transform = CaseTransform.instance
+
+If the transform does have internal state, e.g. stores values with instance variables, an alternative might be to use a thread-local instance.
+
+#### #denormalize Method
+
+The `#denormalize` method converts the object or data back from an alternate form. This should be the inverse of the `#normalize` method (see below).
+
+    transform = CaseTransform.new
+    transform.denormalize('lower case string')
+    #=> 'LOWER CASE STRING'
+
+For one-way transforms, the `#denormalize` method should raise a `NotImplementedError`.
+
+#### #normalize Method
+
+The `#normalize` method converts the object or data to an alternate form. By convention, the normalized result is a simpler or standardized form, such as converting an entity to a hash of attributes.
+
+    transform = CaseTransform.new
+    transform.normalize('UPPER CASE STRING')
+    #=> 'upper case string'
+
+For one-way transforms, use the `#normalize` method to transform the data.
+
+### Attribute Transforms
+
+Transforms can be used to serialize and store custom attributes (see [:transform Option](#label-3Atransform+Option), above). Each attribute transform converts the value to an easily-stored form with `#normalize` and restores the original form with `#denormalize`.
+
+#### BigDecimalTransform
+
+    require 'bronze/transforms/attributes/big_decimal_transform'
+
+Converts a BigDecimal to a string representation.
+
+    transform = Bronze::Transforms::Attributes::BigDecimalTransform.instance
+    transform.normalize(BigDecimal('3.14'))
+    #=> '3.14'
+
+    decimal = transform.denormalize('3.14')
+    decimal.class
+    #=> BigDecimal
+    decimal.to_f
+    #=> 3.14
+
+#### DateTimeTransform
+
+    require 'bronze/transforms/attributes/date_time_transform'
+
+Converts a DateTime to a string representation. By default, uses an ISO 8601 string format.
+
+    transform = Bronze::Transforms::Attributes::DateTimeTransform.instance
+    date_time = DateTime.new(1982, 7, 9, 12, 30, 0)
+    transform.normalize(date)
+    #=> '1982-07-09T12:30:00+0000'
+
+    date_time = transform.denormalize('1982-07-09T12:30:00+0000')
+    date_time.class
+    #=> DateTime
+    date_time.year
+    #=> 1982
+    date_time.hour
+    #=> 12
+    date_time.zone
+    #=> '+00:00'
+
+By passing an optional format parameter, the transform can serialize to and from an alternate string format. Not all possible formats are guaranteed to work with both `#normalize` and `#denormalize`, however, and custom formats may not ensure that all data from the date is stored in the serialized string.
+
+    format    = '%B %-d, %Y at %T'
+    transform = Bronze::Transforms::Attributes::DateTimeTransform.new(format)
+    date_time = DateTime.new(1982, 7, 9, 12, 30, 0)
+    transform.normalize(date_time)
+    #=> 'July 9, 1982 at 12:30:00'
+
+    date_time = transform.denormalize('July 9, 1982 at 12:30:00')
+    date_time.class
+    #=> DateTime
+    date_time.year
+    #=> 1982
+    date_time.hour
+    #=> 12
+    date_time.zone
+    #=> '+00:00'
+
+#### DateTransform
+
+    require 'bronze/transforms/attributes/date_transform'
+
+Converts a Date to a string representation. By default, uses an ISO 8601 string format.
+
+    transform = Bronze::Transforms::Attributes::DateTransform.instance
+    date      = Date.new(1982, 7, 9)
+    transform.normalize(date)
+    #=> '1982-07-09'
+
+    date = transform.denormalize('1982-07-09')
+    date.class
+    #=> DateTime
+    date.year
+    #=> 1982
+    date.month
+    #=> 7
+    date.day
+    #=> 9
+
+By passing an optional format parameter, the transform can serialize to and from an alternate string format. Not all possible formats are guaranteed to work with both `#normalize` and `#denormalize`, however, and custom formats may not ensure that all data from the date is stored in the serialized string.
+
+    format    = '%B %-d, %Y'
+    transform = Bronze::Transforms::Attributes::DateTransform.new(format)
+    date      = Date.new(1982, 7, 9)
+    transform.normalize(date)
+    #=> 'July 9, 1982'
+
+    date = transform.denormalize('July 9, 1982')
+    date.class
+    #=> DateTime
+    date.year
+    #=> 1982
+    date.month
+    #=> 7
+    date.day
+    #=> 9
+
+#### SymbolTransform
+
+    require 'bronze/transforms/attributes/symbol_transform'
+
+Converts a Symbol to a string representation.
+
+    transform = Bronze::Transforms::Attributes::SymbolTransform.instance
+    transform.normalize(:symbol_value)
+    #=> 'symbol_value'
+    transform.denormalize('string_value')
+    #=> :string_value
+
+#### TimeTransform
+
+    require 'bronze/transforms/attributes/time_transform'
+
+Converts a Time to an integer representation.
+
+    transform = Bronze::Transforms::Attributes::SymbolTransform.instance
+    time      = Time.new(1982, 7, 9)
+    transform.normalize(time)
+    #=> 395035200
+
+    time = transform.denormalize(395035200)
+    time.class
+    #=> Time
+    time.year
+    #=> 1982
+    time.hour
+    #=> 0

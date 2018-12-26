@@ -87,7 +87,7 @@ module Support::Examples::Entities
       end
 
       it 'should set the attribute options' do
-        expect(metadata.options).to be == attribute_opts
+        expect(metadata.options).to be >= attribute_opts
       end
 
       it 'should set the attribute type' do
