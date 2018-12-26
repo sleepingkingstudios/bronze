@@ -29,22 +29,68 @@ RSpec.describe Bronze::Transforms::Attributes::TimeTransform do
     end
 
     describe 'with an Integer' do
-      let(:value) { Time.new(1982, 7, 9) }
+      let(:value)    { 395_020_800 }
+      let(:expected) { Time.utc(1982, 7, 9) }
 
-      it { expect(transform.denormalize value.to_i).to be == value }
+      it { expect(transform.denormalize value).to be_a Time }
+
+      it { expect(transform.denormalize value).to be == expected }
+
+      it 'should set the time zone to UTC' do
+        expect(transform.denormalize(value).strftime('%:z')).to be == '+00:00'
+      end
     end
 
     describe 'with a Time' do
-      let(:value) { Time.new(1982, 7, 9) }
+      let(:value) { Time.utc(1982, 7, 9) }
+
+      it { expect(transform.denormalize value).to be_a Time }
 
       it { expect(transform.denormalize value).to be == value }
+
+      it 'should set the time zone to UTC' do
+        expect(transform.denormalize(value).strftime('%:z')).to be == '+00:00'
+      end
+    end
+
+    describe 'with a non-utc Time' do
+      let(:value) { Time.new(1982, 7, 9, 0, 0, 0, '+05:00') }
+
+      it { expect(transform.denormalize value).to be_a Time }
+
+      it { expect(transform.denormalize value).to be == value }
+
+      it 'should set the time zone to UTC' do
+        expect(transform.denormalize(value).strftime('%:z')).to be == '+00:00'
+      end
     end
 
     describe 'with a normalized Time' do
-      let(:value)      { Time.new(1982, 7, 9) }
+      let(:value)      { Time.utc(1982, 7, 9) }
       let(:normalized) { transform.normalize(value) }
 
-      it { expect(transform.denormalize(normalized)).to be == value }
+      it { expect(transform.denormalize normalized).to be_a Time }
+
+      it { expect(transform.denormalize normalized).to be == value }
+
+      it 'should set the time zone to UTC' do
+        expect(transform.denormalize(normalized).strftime('%:z'))
+          .to be == '+00:00'
+      end
+    end
+
+    describe 'with a normalized non-utc Time' do
+      let(:value)      { Time.new(1982, 7, 9, 0, 0, 0, '+05:00') }
+      let(:normalized) { transform.normalize(value) }
+
+      it { expect(transform.denormalize normalized).to be_a Time }
+
+      it { expect(transform.denormalize normalized).to be == value }
+
+      it 'should set the time zone to UTC' do
+        expect(transform.denormalize(normalized).strftime('%:z'))
+          .to be == '+00:00'
+      end
     end
   end
 
@@ -56,9 +102,15 @@ RSpec.describe Bronze::Transforms::Attributes::TimeTransform do
     end
 
     describe 'with a Time' do
-      let(:value) { Time.new(1982, 7, 9) }
+      let(:value) { Time.utc(1982, 7, 9) }
 
       it { expect(transform.normalize value).to be == value.to_i }
+    end
+
+    describe 'with a non-utc Time' do
+      let(:value) { Time.new(1982, 7, 9, 0, 0, 0, '+05:00') }
+
+      it { expect(transform.normalize value).to be == value.utc.to_i }
     end
   end
 end

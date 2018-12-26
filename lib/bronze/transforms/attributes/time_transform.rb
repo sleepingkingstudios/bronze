@@ -21,7 +21,7 @@ module Bronze::Transforms::Attributes
     def denormalize(value)
       return nil if value.nil?
 
-      Time.at(value)
+      Time.at(value).utc
     end
 
     # Converts a Time to an integer timestamp.
