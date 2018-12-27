@@ -12,7 +12,7 @@ Bronze defines the following components:
 
 ### Compatibility
 
-Bronze is tested against Ruby (MRI) 2.3 through 2.5.
+Bronze is tested against Ruby (MRI) 2.4 through 2.6.
 
 ### Documentation
 
