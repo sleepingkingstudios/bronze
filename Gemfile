@@ -1,6 +1,10 @@
-# Gemfile
+# frozen_string_literal: true
 
 source 'https://rubygems.org'
+
+gemspec name: 'bronze'
+
+gemspec name: 'patina'
 
 group :doc do
   gem 'yard', '~> 0.9', '>= 0.9.5', require: false
@@ -9,10 +13,6 @@ end
 group :test do
   gem 'byebug', '~> 9.0', '~> 9.0.5'
 end
-
-gemspec name: 'bronze'
-
-gemspec name: 'patina'
 
 gem 'cuprum', git: 'https://github.com/sleepingkingstudios/cuprum'
 

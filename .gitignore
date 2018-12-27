@@ -1,7 +1,6 @@
-# .gitignore
-
 # Ignore local configuration files.
 /.rspec
+/.rubocop
 /.ruby-gemset
 /.ruby-version
 Gemfile.lock
@@ -13,6 +12,7 @@ Gemfile.lock
 .yardopts
 
 # Ignore temporary files.
+*.gem
 /.byebug_history
 /spec/examples.txt
 /tmp
