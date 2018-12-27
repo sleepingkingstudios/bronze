@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-unless ENV['CI']
+unless ENV['COVERAGE'] == 'false'
   require 'simplecov'
 
   SimpleCov.start
