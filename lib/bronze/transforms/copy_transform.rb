@@ -1,10 +1,10 @@
 # lib/bronze/transforms/copy_transform.rb
 
-require 'bronze/transforms/transform'
+require 'bronze/transform'
 
 module Bronze::Transforms
   # Copies the object when denormalizing the object from the datastore.
-  class CopyTransform < Bronze::Transforms::Transform
+  class CopyTransform < Bronze::Transform
     # Performs a deep copy on the object. This prevents scopes that receive the
     # object from changing the datastore by manipulating the received object.
     #

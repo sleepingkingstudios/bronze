@@ -2,7 +2,7 @@
 
 require 'bronze/entities/attributes'
 require 'bronze/entities/attributes/transforms'
-require 'bronze/transforms/transform'
+require 'bronze/transform'
 
 module Bronze::Entities::Attributes
   # Data class that characterizes an attribute type. An attribute type can be
@@ -116,7 +116,7 @@ module Bronze::Entities::Attributes
 
       @transform =
         Bronze::Entities::Attributes::Transforms.transform_for(object_type)
-      @transform ||= Bronze::Transforms::Transform.new
+      @transform ||= Bronze::Transform.new
     end # method parse_class_definition
 
     def parse_definition definition

@@ -1,13 +1,13 @@
 # lib/patina/collections/mongo/primary_key_transform.rb
 
-require 'bronze/transforms/transform'
+require 'bronze/transform'
 
 require 'patina/collections/mongo'
 
 module Patina::Collections::Mongo
   # Transform to format the primary key entry for MongoDB.
-  class PrimaryKeyTransform < Bronze::Transforms::Transform
-    # (see Bronze::Transforms::Transform#denormalize)
+  class PrimaryKeyTransform < Bronze::Transform
+    # (see Bronze::Transform#denormalize)
     def denormalize hsh
       return hsh unless hsh.is_a?(Hash)
 
@@ -18,7 +18,7 @@ module Patina::Collections::Mongo
       hsh
     end # method denormalize
 
-    # (see Bronze::Transforms::Transform#normalize)
+    # (see Bronze::Transform#normalize)
     def normalize hsh
       return hsh unless hsh.is_a?(Hash)
 

@@ -40,8 +40,11 @@ module Patina::Collections::Mongo
         elsif transform.is_a?(Bronze::Transforms::TransformChain) &&
               transform.transforms.last.is_a?(PrimaryKeyTransform)
           transform
-        elsif transform.is_a?(Bronze::Transforms::Transform)
-          transform.chain(primary_key_transform)
+        elsif transform.is_a?(Bronze::Transform)
+          Bronze::Transforms::TransformChain.new(
+            transform,
+            primary_key_transform
+          )
         else
           default_transform
         end # if-elsif-else
