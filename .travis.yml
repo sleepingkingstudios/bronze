@@ -1,18 +1,16 @@
-# .travis.yml
-
 # Build Options
 language: ruby
 rvm:
-- 2.3.7
-- 2.4.4
-- 2.5.1
+  - 2.4.5
+  - 2.5.3
+  - 2.6.0
 before_script:
-- cp .rspec.example .rspec
+  - cp .rspec.example .rspec
 script:
-- bundle exec thor ci:steps
+  - bundle exec thor ci:steps
 
 # Travis-CI Configuration
 cache: bundler
 sudo:  false # Enable containerized builds.
 services:
-- mongodb
+  - mongodb
