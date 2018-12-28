@@ -139,7 +139,7 @@ module Spec::Entities::Attributes::DirtyTrackingExamples
         expect(instance.attributes_changed?).to be false
 
         instance.class.attributes.each do |_, metadata|
-          next if metadata.attribute_name == :id
+          next if metadata.name == :id
 
           attr_changed_name      = :"#{metadata.reader_name}_changed?"
           attr_changed_from_name = :"#{metadata.reader_name}_changed_from"
@@ -162,7 +162,7 @@ module Spec::Entities::Attributes::DirtyTrackingExamples
           expect(instance.attributes_changed?).to be false
 
           instance.class.attributes.each do |_, metadata|
-            next if metadata.attribute_name == :id
+            next if metadata.name == :id
 
             attr_changed_name      = :"#{metadata.reader_name}_changed?"
             attr_changed_from_name = :"#{metadata.reader_name}_changed_from"

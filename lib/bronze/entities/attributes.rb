@@ -40,13 +40,13 @@ module Bronze::Entities
           attribute_options
         ) # end build_attribute
 
-        (@attributes ||= {})[metadata.attribute_name] = metadata
+        (@attributes ||= {})[metadata.name] = metadata
       end # class method attribute
 
       # Returns the metadata for the attributes defined for the current class.
       #
-      # @return [Hash{Symbol => Attributes::AttributeMetadata}] The metadata for
-      #   the attributes.
+      # @return [Hash{Symbol => Attributes::Metadata}] The metadata for the
+      #   attributes.
       def attributes
         if superclass.respond_to?(:attributes)
           superclass.attributes.merge(@attributes ||= {}).freeze

@@ -204,7 +204,7 @@ RSpec.describe Bronze::Entities::Associations::Metadata::ReferencesOneMetadata d
     let(:expected) do
       foreign_key = association_options.fetch(:foreign_key)
 
-      entity_class.attributes[foreign_key].object_type
+      entity_class.attributes[foreign_key].type
     end # let
 
     it 'should return the option value' do

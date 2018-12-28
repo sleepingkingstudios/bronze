@@ -25,10 +25,10 @@ module Bronze::Entities::Constraints
     end # method attribute_definitions
 
     def build_error_params metadata
-      hsh = { :type => metadata.object_type }
+      hsh = { :type => metadata.type }
 
-      if Array == metadata.object_type
-        hsh[:member_type] = metadata.attribute_type.member_type.object_type
+      if Array == metadata.type
+        hsh[:member_type] = metadata.type
       end # if
 
       hsh
@@ -43,41 +43,13 @@ module Bronze::Entities::Constraints
       false
     end # method defines_attributes?
 
-    def match_array_attribute_type ary, attr_type, nesting
-      member_type = attr_type.member_type
-
-      ary.each.with_index do |member, index|
-        match_attribute_type member, member_type, nesting.dup.push(index)
-      end # each
-    end # match_array_attribute_type
-
     def match_attribute_type value, attribute_type, nesting
-      error_type  = Bronze::Constraints::TypeConstraint::NOT_KIND_OF_ERROR
-      object_type = attribute_type.object_type
+      error_type = Bronze::Constraints::TypeConstraint::NOT_KIND_OF_ERROR
 
-      unless value.is_a?(object_type)
-        errors.dig(*nesting).add(error_type, :type => object_type) && return
-      end # unless
+      return if value.is_a?(attribute_type)
 
-      if Array == object_type
-        match_array_attribute_type value, attribute_type, nesting
-      elsif Hash == object_type
-        match_hash_attribute_type value, attribute_type, nesting
-      end # if-elsif
+      errors.dig(*nesting).add(error_type, :type => attribute_type)
     end # method match_attribute_type
-
-    def match_hash_attribute_type hsh, attr_type, nesting
-      key_type    = attr_type.key_type
-      member_type = attr_type.member_type
-
-      hsh.each do |key, value|
-        inner_nesting = nesting.dup.push(key)
-
-        match_attribute_type key, key_type, inner_nesting
-
-        match_attribute_type value, member_type, inner_nesting
-      end # each
-    end # method match_hash_attribute_type
 
     def matches_attribute_types? object
       attribute_definitions(object).each do |attr_name, metadata|
@@ -85,7 +57,7 @@ module Bronze::Entities::Constraints
 
         next matches_nil?(attr_name, metadata) if value.nil?
 
-        match_attribute_type(value, metadata.attribute_type, [attr_name])
+        match_attribute_type(value, metadata.type, [attr_name])
       end # all?
 
       errors.empty?

@@ -1,10 +1,16 @@
 # lib/bronze/entities/attributes/attribute_builder.rb
 
-require 'bronze/entities/attributes/attribute_metadata'
+require 'bronze/entities/attributes/metadata'
+require 'bronze/transform'
+require 'bronze/transforms/attributes/big_decimal_transform'
+require 'bronze/transforms/attributes/date_time_transform'
+require 'bronze/transforms/attributes/date_transform'
+require 'bronze/transforms/attributes/symbol_transform'
+require 'bronze/transforms/attributes/time_transform'
 
 module Bronze::Entities::Attributes
   # Service class to define attributes on an entity.
-  class AttributeBuilder
+  class AttributeBuilder # rubocop:disable Metrics/ClassLength
     # Error class for handling invalid attribute definitions.
     class Error < ::StandardError; end
 
@@ -66,8 +72,8 @@ module Bronze::Entities::Attributes
     # @option attribute_options [Boolean] :read_only If true, the writer method
     #   for the attribute will be set as private. Defaults to false.
     #
-    # @return [Attributes::AttributeMetadata] The generated metadata for the
-    #   attribute.
+    # @return [Bronze::Entities::Attributes::Metadata] The generated metadata
+    #   for the attribute.
     #
     # @raise Builder::Error if the attribute name or attribute type is missing
     #   or invalid.
@@ -98,6 +104,7 @@ module Bronze::Entities::Attributes
 
     private
 
+    # rubocop:disable Metrics/MethodLength
     def characterize attribute_name, attribute_type, attribute_options
       options = {}
 
@@ -105,12 +112,27 @@ module Bronze::Entities::Attributes
         options[key.intern] = value
       end # options
 
-      Bronze::Entities::Attributes::AttributeMetadata.new(
+      attribute_options[:transform] =
+        case attribute_type.name
+        when 'BigDecimal'
+          Bronze::Transforms::Attributes::BigDecimalTransform.instance
+        when 'Date'
+          Bronze::Transforms::Attributes::DateTransform.instance
+        when 'DateTime'
+          Bronze::Transforms::Attributes::DateTimeTransform.instance
+        when 'Symbol'
+          Bronze::Transforms::Attributes::SymbolTransform.instance
+        when 'Time'
+          Bronze::Transforms::Attributes::TimeTransform.instance
+        end
+
+      Bronze::Entities::Attributes::Metadata.new(
         attribute_name,
         attribute_type,
         attribute_options
       ) # end new
     end # method characterize
+    # rubocop:enable Metrics/MethodLength
 
     def define_property_methods metadata
       define_reader(metadata)
@@ -118,7 +140,7 @@ module Bronze::Entities::Attributes
     end # method define_property_methods
 
     def define_reader metadata
-      attr_name = metadata.attribute_name
+      attr_name = metadata.name
 
       entity_class_attributes.send :define_method,
         metadata.reader_name,
@@ -126,7 +148,7 @@ module Bronze::Entities::Attributes
     end # method define_reader
 
     def define_writer metadata
-      attr_name = metadata.attribute_name
+      attr_name = metadata.name
 
       entity_class_attributes.send :define_method,
         metadata.writer_name,

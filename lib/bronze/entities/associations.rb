@@ -45,7 +45,7 @@ module Bronze::Entities
           :foreign_key => true
         ) # end build_attribute
 
-        (@attributes ||= {})[metadata.attribute_name] = metadata
+        (@attributes ||= {})[metadata.name] = metadata
       end # class method foreign_key
 
       # rubocop:disable Naming/PredicateName

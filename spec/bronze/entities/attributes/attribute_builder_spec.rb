@@ -1,7 +1,7 @@
 # spec/bronze/entities/attributes/attribute_builder_spec.rb
 
 require 'bronze/entities/attributes/attribute_builder'
-require 'bronze/entities/attributes/attribute_metadata'
+require 'bronze/entities/attributes/metadata'
 require 'bronze/entities/attributes'
 require 'bronze/entities/base_entity'
 
@@ -94,12 +94,11 @@ RSpec.describe Bronze::Entities::Attributes::AttributeBuilder do
 
       it 'should return the metadata' do
         metadata = instance.build attribute_name, attribute_type
-        mt_class = Bronze::Entities::Attributes::AttributeMetadata
+        mt_class = Bronze::Entities::Attributes::Metadata
 
         expect(metadata).to be_a mt_class
-        expect(metadata.attribute_name).to be == attribute_name
-        expect(metadata.attribute_type).to be_a attribute_type_class
-        expect(metadata.object_type).to be == attribute_type
+        expect(metadata.name).to be == attribute_name
+        expect(metadata.type).to be == attribute_type
 
         expect(metadata.allow_nil?).to be false
         expect(metadata.default).to be nil
