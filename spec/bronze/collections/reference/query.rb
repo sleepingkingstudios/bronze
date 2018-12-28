@@ -28,8 +28,8 @@ module Bronze::Collections::Reference
     end # module
 
     # @param data [Array[Hash]] The source data for the query.
-    # @param transform [Bronze::Transforms::Transform] The transform
-    #   object to map raw data into entities.
+    # @param transform [Bronze::Transform] The transform object to map raw data
+    #   into entities.
     def initialize data, transform
       @data      = data
       @transform = transform

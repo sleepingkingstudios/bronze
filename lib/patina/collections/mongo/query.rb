@@ -1,6 +1,7 @@
 # lib/patina/collections/mongo/query.rb
 
 require 'bronze/collections/query'
+require 'bronze/transforms/transform_chain'
 
 require 'patina/collections/mongo'
 require 'patina/collections/mongo/primary_key_transform'
@@ -19,8 +20,8 @@ module Patina::Collections::Mongo
   class Query < Bronze::Collections::Query
     # @param mongo_collection [::Mongo::Collection] The collection object for
     #   the data from the native Mongo ruby driver.
-    # @param transform [Bronze::Transforms::Transform] The transform
-    #   object to map raw data into entities.
+    # @param transform [Bronze::Transform] The transform object to map raw data
+    #   into entities.
     def initialize mongo_collection, transform
       @mongo_collection = mongo_collection
 
@@ -55,6 +56,7 @@ module Patina::Collections::Mongo
 
     protected
 
+    # rubocop:disable Metrics/MethodLength
     def transform= transform
       @transform =
         if transform.is_a?(PrimaryKeyTransform)
@@ -63,9 +65,13 @@ module Patina::Collections::Mongo
               transform.transforms.last.is_a?(PrimaryKeyTransform)
           transform
         else
-          transform.chain(primary_key_transform)
+          Bronze::Transforms::TransformChain.new(
+            transform,
+            primary_key_transform
+          )
         end # if-elsif-else
     end # method transform=
+    # rubocop:enable Metrics/MethodLength
 
     private
 

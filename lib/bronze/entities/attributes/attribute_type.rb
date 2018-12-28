@@ -1,15 +1,19 @@
 # lib/bronze/entities/attributes/attribute_type.rb
 
 require 'bronze/entities/attributes'
-require 'bronze/entities/attributes/transforms'
-require 'bronze/transforms/transform'
+require 'bronze/transform'
+require 'bronze/transforms/attributes/big_decimal_transform'
+require 'bronze/transforms/attributes/date_time_transform'
+require 'bronze/transforms/attributes/date_transform'
+require 'bronze/transforms/attributes/symbol_transform'
+require 'bronze/transforms/attributes/time_transform'
 
 module Bronze::Entities::Attributes
   # Data class that characterizes an attribute type. An attribute type can be
   # either a class or a collection such as an array or hash. If the type is a
   # collection, then all members of the collection must themselves match an
   # attribute type.
-  class AttributeType
+  class AttributeType # rubocop:disable Metrics/ClassLength
     VALUE_TYPES = [
       NilClass,
       FalseClass,
@@ -114,9 +118,7 @@ module Bronze::Entities::Attributes
 
       return if value_type?(object_type)
 
-      @transform =
-        Bronze::Entities::Attributes::Transforms.transform_for(object_type)
-      @transform ||= Bronze::Transforms::Transform.new
+      @transform = transform_for(object_type)
     end # method parse_class_definition
 
     def parse_definition definition
@@ -146,6 +148,23 @@ module Bronze::Entities::Attributes
       @object_type = Hash
     end # method parse_hash_definition
     # rubocop:enable Metrics/AbcSize
+
+    def transform_for(object_type) # rubocop:disable Metrics/MethodLength
+      case object_type.name
+      when 'BigDecimal'
+        Bronze::Transforms::Attributes::BigDecimalTransform.instance
+      when 'Date'
+        Bronze::Transforms::Attributes::DateTransform.instance
+      when 'DateTime'
+        Bronze::Transforms::Attributes::DateTimeTransform.instance
+      when 'Symbol'
+        Bronze::Transforms::Attributes::SymbolTransform.instance
+      when 'Time'
+        Bronze::Transforms::Attributes::TimeTransform.instance
+      else
+        Bronze::Transform.new
+      end
+    end
 
     def value_type? object_type
       VALUE_TYPES.include?(object_type)

@@ -17,8 +17,8 @@ module Spec::Operations
     #   be validated using the contract defined for the entity class, if any.
     # @param repository [Bronze::Collections::Repository] The data repository to
     #   access or reference.
-    # @param transform [Bronze::Transforms::Transform] The transform used to
-    #   serialize and deserialize entities to and from the repository.
+    # @param transform [Bronze::Transform] The transform used to serialize and
+    #   deserialize entities to and from the repository.
     def initialize(*args, **kwargs)
       # RUBY_VERSION: Required below 2.5
       args << kwargs unless kwargs.empty?

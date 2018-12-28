@@ -19,7 +19,7 @@ module Bronze::Collections
     # and the provided transform (if any).
     #
     # @param collection_name [String, Symbol] The name of the collection.
-    # @param transform [Bronze::Transforms::Transform] The transform, if any.
+    # @param transform [Bronze::Transform] The transform, if any.
     def collection collection_name, transform = nil
       builder    = build_collection collection_name
       collection = builder.build

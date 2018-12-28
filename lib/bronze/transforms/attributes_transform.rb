@@ -1,11 +1,11 @@
 # lib/bronze/transforms/attributes_transform.rb
 
 require 'set'
-require 'bronze/transforms/transform'
+require 'bronze/transform'
 
 module Bronze::Transforms
   # Maps an object to a data hash using the specified attributes.
-  class AttributesTransform < Transform
+  class AttributesTransform < Bronze::Transform
     class << self
       # Adds the named attribute to the attributes set.
       #
