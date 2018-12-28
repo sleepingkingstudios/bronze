@@ -161,10 +161,10 @@ module Spec::Entities::Attributes::AttributesExamples
               end # let
 
               describe 'with nil' do
-                it 'should set the value to the default' do
+                it 'should clear the value to the default' do
                   expect { instance.title = nil }.
                     to change(instance, :title).
-                    to be == attribute_opts[:default]
+                    to be nil
                 end # describe
               end # describe
             end # context

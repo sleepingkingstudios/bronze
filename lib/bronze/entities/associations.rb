@@ -38,11 +38,9 @@ module Bronze::Entities
         metadata = build_attribute(
           attribute_name,
           Bronze::Entities::PrimaryKey::KEY_TYPE,
-          {
-            :allow_nil => true,
-            :read_only => true
-          }, # end options
-          :foreign_key => true
+          :allow_nil   => true,
+          :foreign_key => true,
+          :read_only   => true
         ) # end build_attribute
 
         (@attributes ||= {})[metadata.name] = metadata

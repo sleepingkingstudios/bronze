@@ -85,6 +85,9 @@ Lint/AmbiguousBlockAssociation:
   Exclude:
     - 'spec/**/*.rb'
 
+Lint/UnneededCopDisableDirective:
+  Enabled: false
+
 Lint/BigDecimalNew:
   Enabled: false
 

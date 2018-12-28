@@ -26,13 +26,13 @@ module Bronze::Entities
       #   book.title
       #   #=> 'Romance of the Three Kingdoms'
       #
-      # @param (see Attributes::AttributeBuilder#build)
+      # @param (see Attributes::Builder#build)
       #
-      # @option (see Attributes::AttributeBuilder#build)
+      # @option (see Attributes::Builder#build)
       #
-      # @return (see Attributes::AttributeBuilder#build)
+      # @return (see Attributes::Builder#build)
       #
-      # @raise (see Attributes::AttributeBuilder#build)
+      # @raise (see Attributes::Builder#build)
       def attribute attribute_name, attribute_type, attribute_options = {}
         metadata = build_attribute(
           attribute_name,
@@ -62,15 +62,13 @@ module Bronze::Entities
       def build_attribute(
         attribute_name,
         attribute_type,
-        attribute_options,
-        builder_opts = {}
+        attribute_options
       )
-        builder = Bronze::Entities::Attributes::AttributeBuilder.new(self)
+        builder = Bronze::Entities::Attributes::Builder.new(self)
         builder.build(
           attribute_name,
           attribute_type,
-          attribute_options,
-          builder_opts
+          attribute_options
         ) # end build
       end # method build_attribute
     end # module
@@ -151,7 +149,7 @@ module Bronze::Entities
 
     # rubocop:disable Metrics/AbcSize
     def assign_with_defaults values, force: false
-      missing = self.class.attributes.keys - values.keys.map(&:intern)
+      missing = self.class.attributes.keys - values.compact.keys.map(&:intern)
       missing.each do |key|
         next if !force && self.class.attributes[key].read_only?
 
@@ -161,7 +159,15 @@ module Bronze::Entities
       assign values
     end # method assign_with_defaults
     # rubocop:enable Metrics/AbcSize
+
+    def get_attribute(name)
+      @attributes[name.intern]
+    end
+
+    def set_attribute(name, value)
+      @attributes[name.intern] = value
+    end
   end # module
 end # module
 
-require 'bronze/entities/attributes/attribute_builder'
+require 'bronze/entities/attributes/builder'

@@ -110,9 +110,6 @@ module Spec::Entities::Attributes::DirtyTrackingExamples
         let(:attributes) do
           super().merge :association_id => Bronze::Entities::Ulid.generate
         end # let
-        let(:attribute_type_class) do
-          Bronze::Entities::Attributes::AttributeType
-        end # let
 
         context 'when the attribute has been defined' do
           before(:example) { described_class.foreign_key(attribute_name) }
