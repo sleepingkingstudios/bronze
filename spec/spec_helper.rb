@@ -9,6 +9,9 @@ end # unless
 require 'rspec/sleeping_king_studios/all'
 require 'byebug'
 
+require 'support/matchers/match_attributes'
+require 'support/matchers/not_yield_control'
+
 # Require vendor-ed files.
 $LOAD_PATH << File.expand_path('./vendor')
 require 'rspec/sleeping_king_studios/concerns/shared_example'
