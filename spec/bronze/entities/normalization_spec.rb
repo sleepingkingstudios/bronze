@@ -14,8 +14,8 @@ RSpec.describe Bronze::Entities::Normalization do
       include Bronze::Entities::Normalization
     end # described_class
   end # let
-  let(:attributes) { {} }
-  let(:instance)   { described_class.new attributes }
+  let(:initial_attributes) { {} }
+  let(:instance)           { described_class.new initial_attributes }
 
   include_examples 'should implement the Normalization methods'
 end # describe

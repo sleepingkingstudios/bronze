@@ -58,7 +58,7 @@ module Bronze::Entities::Attributes
     private
 
     def track_attribute_changes_for_attribute metadata, new_value
-      attr_name   = metadata.attribute_name
+      attr_name   = metadata.name
       prior_value = send(metadata.reader_name)
 
       return if prior_value == new_value

@@ -95,7 +95,9 @@ module Spec::Entities::Attributes::DirtyTrackingExamples
         let(:attribute_name) { :title }
         let(:attribute_type) { String }
         let(:attribute_opts) { {} }
-        let(:attributes)     { super().merge :title => 'The Ramayana' }
+        let(:initial_attributes) do
+          super().merge :title => 'The Ramayana'
+        end
 
         wrap_context 'when the attribute has been defined' do
           include_examples 'should track changes to attribute', :title
@@ -107,11 +109,8 @@ module Spec::Entities::Attributes::DirtyTrackingExamples
       describe 'with a valid attribute name' do
         let(:attribute_name) { :association_id }
         let(:attribute_type) { described_class::KEY_TYPE }
-        let(:attributes) do
+        let(:initial_attributes) do
           super().merge :association_id => Bronze::Entities::Ulid.generate
-        end # let
-        let(:attribute_type_class) do
-          Bronze::Entities::Attributes::AttributeType
         end # let
 
         context 'when the attribute has been defined' do
@@ -139,7 +138,7 @@ module Spec::Entities::Attributes::DirtyTrackingExamples
         expect(instance.attributes_changed?).to be false
 
         instance.class.attributes.each do |_, metadata|
-          next if metadata.attribute_name == :id
+          next if metadata.name == :id
 
           attr_changed_name      = :"#{metadata.reader_name}_changed?"
           attr_changed_from_name = :"#{metadata.reader_name}_changed_from"
@@ -162,7 +161,7 @@ module Spec::Entities::Attributes::DirtyTrackingExamples
           expect(instance.attributes_changed?).to be false
 
           instance.class.attributes.each do |_, metadata|
-            next if metadata.attribute_name == :id
+            next if metadata.name == :id
 
             attr_changed_name      = :"#{metadata.reader_name}_changed?"
             attr_changed_from_name = :"#{metadata.reader_name}_changed_from"

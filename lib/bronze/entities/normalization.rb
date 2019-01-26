@@ -24,7 +24,9 @@ module Bronze::Entities
 
           next unless metadata
 
-          attrs[key] = metadata.attribute_type.denormalize(value)
+          value = metadata.transform.denormalize(value) if metadata.transform?
+
+          attrs[key] = value
         end # each
 
         new(attrs)
@@ -46,8 +48,8 @@ module Bronze::Entities
       self.class.attributes.each do |attr_name, metadata|
         value = send(metadata.reader_name)
 
-        unless permitted.include?(metadata.object_type)
-          value = metadata.attribute_type.normalize(value)
+        unless permitted.include?(metadata.type)
+          value = metadata.transform.normalize(value) if metadata.transform?
         end # unless
 
         hsh[attr_name] = value

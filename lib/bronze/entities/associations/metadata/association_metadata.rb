@@ -97,7 +97,8 @@ module Bronze::Entities::Associations::Metadata
       @foreign_key_defined ||= !!foreign_key
     end # method foreign_key?
 
-    # @return [AttributeMetadata] The metadata for the foreign key attribute.
+    # @return [Bronze::Entities::Attributes::Metadata] The metadata for the
+    #   foreign key attribute.
     def foreign_key_metadata
       return nil unless foreign_key?
 
@@ -115,7 +116,7 @@ module Bronze::Entities::Associations::Metadata
     def foreign_key_type
       return nil unless foreign_key_metadata
 
-      foreign_key_metadata.object_type
+      foreign_key_metadata.type
     end # method foreign_key_type
 
     # @return [Symbol] The name of the foreign key writer method, if any.

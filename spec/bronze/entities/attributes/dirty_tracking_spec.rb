@@ -9,6 +9,8 @@ require 'bronze/entities/primary_key'
 RSpec.describe Bronze::Entities::Attributes::DirtyTracking do
   include Spec::Entities::Attributes::DirtyTrackingExamples
 
+  subject(:instance) { described_class.new(initial_attributes) }
+
   let(:described_class) do
     klass = Class.new(Bronze::Entities::BaseEntity)
     klass.send :include, Bronze::Entities::Attributes
@@ -18,8 +20,8 @@ RSpec.describe Bronze::Entities::Attributes::DirtyTracking do
     klass
   end # let
   let(:defined_attributes) { {} }
-  let(:attributes)         { {} }
-  let(:instance)           { described_class.new attributes }
+  let(:initial_attributes) { {} }
+  let(:attributes)         { initial_attributes }
 
   describe '::new' do
     it { expect(described_class).to be_constructible.with(0..1).arguments }

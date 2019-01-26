@@ -1,24 +1,31 @@
-# spec/bronze/entities/attributes_spec.rb
+# frozen_string_literal: true
 
 require 'bronze/entities/attributes'
-require 'bronze/entities/attributes/attributes_examples'
-require 'bronze/entities/base_entity'
+
+require 'support/examples/entities/attributes_examples'
 
 RSpec.describe Bronze::Entities::Attributes do
-  include Spec::Entities::Attributes::AttributesExamples
+  include Spec::Support::Examples::Entities::AttributesExamples
 
-  let(:described_class) do
-    klass = Class.new(Bronze::Entities::BaseEntity)
-    klass.send :include, super()
-    klass
-  end # let
-  let(:defined_attributes) { {} }
-  let(:attributes)         { {} }
-  let(:instance)           { described_class.new attributes }
+  subject(:entity) { entity_class.new(initial_attributes) }
+
+  let(:described_class)    { Spec::EntityWithAttributes }
+  let(:entity_class)       { described_class }
+  let(:initial_attributes) { {} }
+  let(:default_attributes) { {} }
+  let(:expected_attributes) do
+    default_attributes.merge(initial_attributes)
+  end
+
+  example_class 'Spec::EntityWithAttributes' do |klass|
+    # rubocop:disable RSpec/DescribedClass
+    klass.send :include, Bronze::Entities::Attributes
+    # rubocop:enable RSpec/DescribedClass
+  end
 
   describe '::new' do
     it { expect(described_class).to be_constructible.with(0..1).arguments }
-  end # describe
+  end
 
   include_examples 'should implement the Attributes methods'
-end # describe
+end

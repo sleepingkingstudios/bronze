@@ -19,8 +19,8 @@ RSpec.describe Bronze::Entities::Associations do
   let(:described_class)      { Spec::Book }
   let(:entity_class)         { described_class }
   let(:defined_associations) { {} }
-  let(:attributes)           { {} }
-  let(:instance)             { described_class.new attributes }
+  let(:initial_attributes)   { {} }
+  let(:instance)             { described_class.new initial_attributes }
 
   describe '::new' do
     it { expect(described_class).to be_constructible.with(0..1).arguments }

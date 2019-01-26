@@ -15,8 +15,9 @@ module Bronze::Entities
     def self.included other
       other.attribute :id,
         KEY_TYPE,
-        :default   => KEY_DEFAULT,
-        :read_only => true
+        :default     => KEY_DEFAULT,
+        :primary_key => true,
+        :read_only   => true
     end # class method included
 
     # @!attribute [r] id

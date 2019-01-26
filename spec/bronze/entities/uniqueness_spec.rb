@@ -16,9 +16,9 @@ RSpec.describe Bronze::Entities::Uniqueness do
       include Bronze::Entities::Uniqueness
     end # class
   end # let
-  let(:entity_class) { described_class }
-  let(:attributes)   { {} }
-  let(:instance)     { entity_class.new attributes }
+  let(:entity_class)       { described_class }
+  let(:initial_attributes) { {} }
+  let(:instance)           { entity_class.new initial_attributes }
 
   describe '::new' do
     it { expect(described_class).to be_constructible.with(0..1).arguments }

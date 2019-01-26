@@ -17,8 +17,8 @@ module Bronze::Entities::Attributes::DirtyTracking
     # Adds attribute change tracking to the entity class for the given
     # attribute.
     #
-    # @param metadata [Attributes::AttributeMetadata] The metadata for the
-    #   attribute to track.
+    # @param metadata [Bronze::Entities::Attributes::Metadata] The metadata for
+    #   the attribute to track.
     def build metadata
       define_attribute_change_tracking_methods(metadata)
     end # method build
@@ -33,7 +33,7 @@ module Bronze::Entities::Attributes::DirtyTracking
     end # method define_attribute_change_tracking_methods
 
     def define_attribute_changed_from_reader metadata
-      attr_name = metadata.attribute_name
+      attr_name = metadata.name
 
       entity_class_attribute_dirty_tracking.send :define_method,
         :"#{attr_name}_changed_from",
@@ -43,7 +43,7 @@ module Bronze::Entities::Attributes::DirtyTracking
     end # method define_attribute_changed_from_reader
 
     def define_attribute_changed_predicate metadata
-      attr_name = metadata.attribute_name
+      attr_name = metadata.name
 
       entity_class_attribute_dirty_tracking.send :define_method,
         :"#{attr_name}_changed?",

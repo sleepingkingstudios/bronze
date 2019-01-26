@@ -109,7 +109,7 @@ module Spec::Entities::Normalization
           end
 
           example_class 'Spec::Variant', Bronze::Entities::Entity do |klass|
-            klass.attribute :shape, String
+            klass.attribute :color, String
 
             klass.references_one :book,
               class_name: 'Spec::Book',
