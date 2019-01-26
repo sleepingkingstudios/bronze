@@ -11,6 +11,7 @@ module Spec::Support::Examples::Entities
     shared_context 'when the entity class has an attribute with a custom ' \
                    'transform' \
     do
+      let(:default_transform) { false }
       let(:default_attributes) do
         super().merge(coordinates: nil)
       end
@@ -34,7 +35,8 @@ module Spec::Support::Examples::Entities
       before(:example) do
         described_class.attribute :coordinates,
           Spec::Point,
-          transform: Spec::PointTransform
+          default_transform: default_transform,
+          transform:         Spec::PointTransform
       end
     end
 
@@ -146,15 +148,42 @@ module Spec::Support::Examples::Entities
           describe 'with a hash with valid string keys' do
             let(:attributes) do
               {
-                'title'      => 'The Lay of Beleriand',
-                'page_count' => 500
+                'title'            => 'The Lay of Beleriand',
+                'page_count'       => 500,
+                'publication_date' => '1985-01-01'
               }
             end
             let(:expected) do
               {
                 title:            attributes['title'],
                 page_count:       attributes['page_count'],
-                publication_date: nil
+                publication_date: Date.parse(attributes['publication_date'])
+              }
+            end
+
+            it 'should return an instance of the entity class' do
+              expect(entity_class.denormalize(attributes)).to be_a entity_class
+            end
+
+            it 'should denormalize the attributes' do
+              expect(entity_class.denormalize(attributes).attributes)
+                .to be >= expected
+            end
+          end
+
+          describe 'with a hash with valid string keys and non-normal values' do
+            let(:attributes) do
+              {
+                'title'            => 'The Lay of Beleriand',
+                'page_count'       => 500,
+                'publication_date' => Date.parse('1985-01-01')
+              }
+            end
+            let(:expected) do
+              {
+                title:            attributes['title'],
+                page_count:       attributes['page_count'],
+                publication_date: attributes['publication_date']
               }
             end
 
@@ -171,15 +200,42 @@ module Spec::Support::Examples::Entities
           describe 'with a hash with valid symbol keys' do
             let(:attributes) do
               {
-                title:      'The Lay of Beleriand',
-                page_count: 500
+                title:            'The Lay of Beleriand',
+                page_count:       500,
+                publication_date: '1985-01-01'
               }
             end
             let(:expected) do
               {
                 title:            attributes[:title],
                 page_count:       attributes[:page_count],
-                publication_date: nil
+                publication_date: Date.parse(attributes[:publication_date])
+              }
+            end
+
+            it 'should return an instance of the entity class' do
+              expect(entity_class.denormalize(attributes)).to be_a entity_class
+            end
+
+            it 'should denormalize the attributes' do
+              expect(entity_class.denormalize(attributes).attributes)
+                .to be >= expected
+            end
+          end
+
+          describe 'with a hash with valid symbol keys and non-normal values' do
+            let(:attributes) do
+              {
+                title:            'The Lay of Beleriand',
+                page_count:       500,
+                publication_date: Date.parse('1985-01-01')
+              }
+            end
+            let(:expected) do
+              {
+                title:            attributes[:title],
+                page_count:       attributes[:page_count],
+                publication_date: attributes[:publication_date]
               }
             end
 
@@ -232,6 +288,20 @@ module Spec::Support::Examples::Entities
               expect(point.y).to be 4
             end
           end
+
+          describe 'with attribute: non-normal value' do
+            let(:attributes) { { coordinates: Spec::Point.new(3, 4) } }
+
+            it 'should return an instance of the entity class' do
+              expect(entity_class.denormalize(attributes)).to be_a entity_class
+            end
+
+            it 'should denormalize the attribute', :aggregate_failures do
+              point = entity_class.denormalize(attributes).coordinates
+
+              expect(point).to be == attributes[:coordinates]
+            end
+          end
         end
       end
 
@@ -241,12 +311,34 @@ module Spec::Support::Examples::Entities
           tools.hash.convert_keys_to_strings(expected_attributes)
         end
 
-        it { expect(entity).to respond_to(:normalize).with(0).arguments }
+        it 'should define the method' do
+          expect(entity)
+            .to respond_to(:normalize)
+            .with(0).arguments
+            .and_keywords(:permit)
+        end
 
         it { expect(entity.normalize).to match_attributes expected }
 
+        describe('with permit: []') do
+          it { expect(entity.normalize).to match_attributes expected }
+        end
+
         wrap_context 'when the entity class has many attributes' do
           it { expect(entity.normalize).to match_attributes expected }
+
+          describe('with permit: []') do
+            it 'should normalize the attributes' do
+              expect(entity.normalize permit: []).to match_attributes expected
+            end
+          end
+
+          describe('with permit: [Date]') do
+            it 'should normalize the attributes' do
+              expect(entity.normalize permit: [Date])
+                .to match_attributes expected
+            end
+          end
 
           context 'when the entity is initialized with attributes' do
             let(:initial_attributes) do
@@ -264,6 +356,25 @@ module Spec::Support::Examples::Entities
             end
 
             it { expect(entity.normalize).to match_attributes expected }
+
+            describe('with permit: []') do
+              it 'should normalize the attributes' do
+                expect(entity.normalize permit: []).to match_attributes expected
+              end
+            end
+
+            describe('with permit: [Date]') do
+              let(:expected) do
+                super().merge(
+                  'publication_date' => initial_attributes[:publication_date]
+                )
+              end
+
+              it 'should normalize the attributes' do
+                expect(entity.normalize permit: [Date])
+                  .to match_attributes expected
+              end
+            end
           end
         end
 
@@ -271,6 +382,19 @@ module Spec::Support::Examples::Entities
                      'transform' \
         do
           it { expect(entity.normalize).to match_attributes expected }
+
+          describe('with permit: []') do
+            it 'should normalize the attributes' do
+              expect(entity.normalize permit: []).to match_attributes expected
+            end
+          end
+
+          describe('with permit: [Spec::Point]') do
+            it 'should normalize the attributes' do
+              expect(entity.normalize permit: [Spec::Point])
+                .to match_attributes expected
+            end
+          end
 
           context 'when the entity is initialized with attributes' do
             let(:coordinates) { Spec::Point.new(3, 4) }
@@ -282,6 +406,41 @@ module Spec::Support::Examples::Entities
             end
 
             it { expect(entity.normalize).to match_attributes expected }
+
+            describe('with permit: []') do
+              it 'should normalize the attributes' do
+                expect(entity.normalize permit: []).to match_attributes expected
+              end
+            end
+
+            describe('with permit: [Spec::Point]') do
+              it 'should normalize the attributes' do
+                expect(entity.normalize permit: [Spec::Point])
+                  .to match_attributes expected
+              end
+            end
+
+            context 'when the transform is flagged as a default transform' do
+              let(:default_transform) { true }
+
+              it { expect(entity.normalize).to match_attributes expected }
+
+              describe('with permit: []') do
+                it 'should normalize the attributes' do
+                  expect(entity.normalize permit: [])
+                    .to match_attributes expected
+                end
+              end
+
+              describe('with permit: [Spec::Point]') do
+                let(:expected) { super().merge('coordinates' => coordinates) }
+
+                it 'should normalize the attributes' do
+                  expect(entity.normalize permit: [Spec::Point])
+                    .to match_attributes expected
+                end
+              end
+            end
           end
         end
       end

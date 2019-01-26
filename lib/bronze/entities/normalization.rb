@@ -39,14 +39,31 @@ module Bronze::Entities
     # nil, a literal value (true, false, a String, an Integer, a Float, etc), an
     # Array of normal values, or a Hash with String keys and normal values.
     #
+    # @param [Array<Class>] permit An optional array of types to normalize
+    #   as-is, rather than applying a transform. Only default transforms can be
+    #   permitted, i.e. the built-in default transforms for BigDecimal, Date,
+    #   DateTime, Symbol, and Time, or for an attribute with the
+    #   :default_transform flag set to true.
+    #
     # @return [Hash] The normal representation.
-    def normalize
+    def normalize(permit: [])
       self.class.each_attribute.with_object({}) do |(name, metadata), hsh|
         value = get_attribute(name)
-        value = metadata.transform.normalize(value) if metadata.transform?
+        value = normalize_attribute(value, metadata: metadata, permit: permit)
 
         hsh[name.to_s] = value
       end
+    end
+
+    private
+
+    def normalize_attribute(value, metadata:, permit:)
+      return value unless metadata.transform?
+
+      return value if metadata.default_transform? &&
+                      Array(permit).any? { |type| metadata.type <= type }
+
+      metadata.transform.normalize(value)
     end
   end
 end
