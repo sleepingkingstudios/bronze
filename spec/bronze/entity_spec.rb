@@ -7,15 +7,19 @@ require 'support/examples/entities/normalization_examples'
 require 'support/examples/entities/primary_key_examples'
 
 RSpec.describe Bronze::Entity do
-  include Support::Examples::Entities::AttributesExamples
-  include Support::Examples::Entities::NormalizationExamples
-  include Support::Examples::Entities::PrimaryKeyExamples
+  include Spec::Support::Examples::Entities::AttributesExamples
+  include Spec::Support::Examples::Entities::NormalizationExamples
+  include Spec::Support::Examples::Entities::PrimaryKeyExamples
 
   subject(:entity) { entity_class.new(initial_attributes) }
 
   let(:described_class)    { Spec::ExampleEntity }
   let(:entity_class)       { described_class }
   let(:initial_attributes) { {} }
+  let(:default_attributes) { {} }
+  let(:expected_attributes) do
+    default_attributes.merge(initial_attributes)
+  end
 
   # rubocop:disable RSpec/DescribedClass
   example_class 'Spec::ExampleEntity', Bronze::Entity

@@ -7,8 +7,8 @@ require 'support/examples/entities/attributes_examples'
 require 'support/examples/entities/primary_key_examples'
 
 RSpec.describe Bronze::Entities::PrimaryKeys::Uuid do
-  include Support::Examples::Entities::AttributesExamples
-  include Support::Examples::Entities::PrimaryKeyExamples
+  include Spec::Support::Examples::Entities::AttributesExamples
+  include Spec::Support::Examples::Entities::PrimaryKeyExamples
 
   subject(:entity) { entity_class.new(initial_attributes) }
 

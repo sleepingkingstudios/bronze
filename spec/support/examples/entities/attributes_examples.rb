@@ -1,68 +1,69 @@
 # frozen_string_literal: true
 
-require 'date'
-
 require 'rspec/sleeping_king_studios/concerns/shared_example_group'
 
 require 'support/examples/entities'
 
-module Support::Examples::Entities
+module Spec::Support::Examples::Entities
   module AttributesExamples
     extend RSpec::SleepingKingStudios::Concerns::SharedExampleGroup
 
     shared_context 'when the entity class has many attributes' do
-      let(:defined_attributes) { defined?(super()) ? super() : [] }
+      let(:default_attributes) do
+        super().merge(
+          title:            nil,
+          page_count:       nil,
+          publication_date: nil
+        )
+      end
 
       before(:example) do
         described_class.attribute :title,            String
         described_class.attribute :page_count,       Integer
         described_class.attribute :publication_date, Date
-
-        defined_attributes << :title << :page_count << :publication_date
       end
     end
 
     shared_context 'when the entity class has an attribute with default block' \
     do
-      let(:defined_attributes) { defined?(super()) ? super() : [] }
-      let(:series_counter)     { Struct.new(:index).new(0) }
+      let(:series_counter) { Struct.new(:index).new(0) }
+      let(:default_attributes) do
+        super().merge(series_index: series_counter.index)
+      end
+      let(:expected_attributes) do
+        super().merge(series_index: an_instance_of(Integer))
+      end
 
       before(:example) do
         described_class.attribute :series_index,
           Integer,
           default: -> { series_counter.index += 1 }
-
-        defined_attributes << :series_index
       end
     end
 
     shared_context 'when the entity class has an attribute with default value' \
     do
-      let(:defined_attributes) { defined?(super()) ? super() : [] }
       let(:default_introduction) do
         'There was a storm in the city that night, pouring rain like a ' \
         'biblical deluge, the tears of angels sent down from Heaven to ' \
         'wash away the sins of Man.'
+      end
+      let(:default_attributes) do
+        super().merge(introduction: default_introduction)
       end
 
       before(:example) do
         described_class.attribute :introduction,
           String,
           default: default_introduction
-
-        defined_attributes << :introduction
       end
     end
 
     shared_context 'when the entity class has a read-only attribute' do
-      let(:defined_attributes) { defined?(super()) ? super() : [] }
-
       before(:example) do
         described_class.attribute :isbn,
           String,
           read_only: true
-
-        defined_attributes << :isbn
       end
     end
 
@@ -347,7 +348,7 @@ module Support::Examples::Entities
         wrap_context 'when the entity class has many attributes' do
           it 'should have a key for each attribute' do
             expect(described_class.attributes.keys)
-              .to contain_exactly(*defined_attributes)
+              .to contain_exactly(*expected_attributes.keys)
           end
 
           it 'should have metadata for each attribute' do
@@ -365,22 +366,29 @@ module Support::Examples::Entities
         end
 
         wrap_context 'with a subclass of the entity class' do
-          it { expect(entity_class.attributes).to be == {} }
+          it 'should have a key for each attribute' do
+            expect(described_class.attributes.keys)
+              .to contain_exactly(*expected_attributes.keys)
+          end
 
           context 'when the subclass has many attributes' do
-            let(:defined_attributes) { defined?(super()) ? super() : [] }
+            let(:default_attributes) do
+              super().merge(
+                imprint:  nil,
+                preface:  nil,
+                subtitle: nil
+              )
+            end
 
             before(:example) do
               described_class.attribute :imprint,  String
               described_class.attribute :preface,  String
               described_class.attribute :subtitle, String
-
-              defined_attributes << :imprint << :preface << :subtitle
             end
 
             it 'should have a key for each attribute' do
               expect(described_class.attributes.keys)
-                .to contain_exactly(*defined_attributes)
+                .to contain_exactly(*expected_attributes.keys)
             end
 
             it 'should have metadata for each attribute' do
@@ -400,7 +408,7 @@ module Support::Examples::Entities
           wrap_context 'when the entity class has many attributes' do
             it 'should have a key for each attribute' do
               expect(described_class.attributes.keys)
-                .to contain_exactly(*defined_attributes)
+                .to contain_exactly(*expected_attributes.keys)
             end
 
             it 'should have metadata for each attribute' do
@@ -417,17 +425,23 @@ module Support::Examples::Entities
             end
 
             context 'when the subclass has many attributes' do
+              let(:default_attributes) do
+                super().merge(
+                  imprint:  nil,
+                  preface:  nil,
+                  subtitle: nil
+                )
+              end
+
               before(:example) do
                 described_class.attribute :imprint,  String
                 described_class.attribute :preface,  String
                 described_class.attribute :subtitle, String
-
-                defined_attributes << :imprint << :preface << :subtitle
               end
 
               it 'should have a key for each attribute' do
                 expect(described_class.attributes.keys)
-                  .to contain_exactly(*defined_attributes)
+                  .to contain_exactly(*expected_attributes.keys)
               end
 
               it 'should have metadata for each attribute' do
@@ -448,10 +462,22 @@ module Support::Examples::Entities
       end
 
       describe '::each_attribute' do
+        let(:attribute_definitions) do
+          expected_attributes.map do |name, _value|
+            [name, entity_class.attributes[name]]
+          end
+        end
+
         it 'should define the method' do
           expect(described_class)
             .to respond_to(:each_attribute)
             .with(0).arguments
+        end
+
+        def yield_each_attribute
+          return not_yield_control if expected_attributes.empty?
+
+          yield_successive_args(*attribute_definitions)
         end
 
         describe 'without a block' do
@@ -459,39 +485,32 @@ module Support::Examples::Entities
 
           it { expect(entity_class.each_attribute).to be_a Enumerator }
 
-          it 'should not yield control' do
-            expect { |block| enumerator.each(&block) }
-              .not_to yield_control
+          it 'should yield each attribute name and metadata' do
+            expect { |block| enumerator.each(&block) }.to yield_each_attribute
           end
         end
 
         describe 'with a block' do
-          it 'should not yield control' do
+          it 'should yield each attribute name and metadata' do
             expect { |block| entity_class.each_attribute(&block) }
-              .not_to yield_control
+              .to yield_each_attribute
           end
         end
 
         wrap_context 'when the entity class has many attributes' do
-          let(:expected_attributes) do
-            defined_attributes.map do |name|
-              [name, entity_class.attributes[name]]
-            end
-          end
-
           describe 'without a block' do
             let(:enumerator) { entity_class.each_attribute }
 
             it 'should yield each attribute name and metadata' do
               expect { |block| enumerator.each(&block) }
-                .to yield_successive_args(*expected_attributes)
+                .to yield_each_attribute
             end
           end
 
           describe 'with a block' do
             it 'should yield each attribute name and metadata' do
               expect { |block| entity_class.each_attribute(&block) }
-                .to yield_successive_args(*expected_attributes)
+                .to yield_each_attribute
             end
           end
         end
@@ -502,39 +521,32 @@ module Support::Examples::Entities
 
             it { expect(entity_class.each_attribute).to be_a Enumerator }
 
-            it 'should not yield control' do
-              expect { |block| enumerator.each(&block) }
-                .not_to yield_control
+            it 'should yield each attribute name and metadata' do
+              expect { |block| enumerator.each(&block) }.to yield_each_attribute
             end
           end
 
           describe 'with a block' do
-            it 'should not yield control' do
+            it 'should yield each attribute name and metadata' do
               expect { |block| entity_class.each_attribute(&block) }
-                .not_to yield_control
+                .to yield_each_attribute
             end
           end
 
           wrap_context 'when the entity class has many attributes' do
-            let(:expected_attributes) do
-              defined_attributes.map do |name|
-                [name, entity_class.attributes[name]]
-              end
-            end
-
             describe 'without a block' do
               let(:enumerator) { entity_class.each_attribute }
 
               it 'should yield each attribute name and metadata' do
                 expect { |block| enumerator.each(&block) }
-                  .to yield_successive_args(*expected_attributes)
+                  .to yield_each_attribute
               end
             end
 
             describe 'with a block' do
               it 'should yield each attribute name and metadata' do
                 expect { |block| entity_class.each_attribute(&block) }
-                  .to yield_successive_args(*expected_attributes)
+                  .to yield_each_attribute
               end
             end
           end
@@ -577,13 +589,13 @@ module Support::Examples::Entities
         end
 
         describe 'with a matching attributes hash' do
-          let(:attributes) { {} }
+          let(:attributes) { entity.attributes }
 
           it { expect(entity == attributes).to be true }
         end
 
         describe 'with an entity with the same class' do
-          let(:other_entity) { entity_class.new }
+          let(:other_entity) { entity_class.new(entity.attributes) }
 
           it { expect(entity == other_entity).to be true }
         end
@@ -630,24 +642,14 @@ module Support::Examples::Entities
           end
 
           describe 'with a matching attributes hash' do
-            let(:attributes) do
-              {
-                title:            nil,
-                page_count:       nil,
-                publication_date: nil
-              }
-            end
+            let(:attributes) { entity.attributes }
 
             it { expect(entity == attributes).to be true }
           end
 
           describe 'with an entity with non-matching attributes' do
             let(:attributes) do
-              {
-                title:            'Green Eggs And Ham',
-                page_count:       nil,
-                publication_date: nil
-              }
+              entity.attributes.merge(title: 'Green Eggs And Ham')
             end
             let(:other_entity) { entity_class.new(attributes) }
 
@@ -655,13 +657,7 @@ module Support::Examples::Entities
           end
 
           describe 'with an entity with matching attributes' do
-            let(:attributes) do
-              {
-                title:            nil,
-                page_count:       nil,
-                publication_date: nil
-              }
-            end
+            let(:attributes)   { entity.attributes }
             let(:other_entity) { entity_class.new(attributes) }
 
             it { expect(entity == other_entity).to be true }
@@ -688,13 +684,7 @@ module Support::Examples::Entities
             end
 
             describe 'with a matching attributes hash' do
-              let(:attributes) do
-                {
-                  title:            initial_attributes[:title],
-                  page_count:       nil,
-                  publication_date: initial_attributes[:publication_date]
-                }
-              end
+              let(:attributes) { entity.attributes }
 
               it { expect(entity == attributes).to be true }
             end
@@ -713,13 +703,7 @@ module Support::Examples::Entities
             end
 
             describe 'with an entity with matching attributes' do
-              let(:attributes) do
-                {
-                  title:            initial_attributes[:title],
-                  page_count:       nil,
-                  publication_date: initial_attributes[:publication_date]
-                }
-              end
+              let(:attributes)   { entity.attributes }
               let(:other_entity) { entity_class.new(attributes) }
 
               it { expect(entity == other_entity).to be true }
@@ -888,17 +872,17 @@ module Support::Examples::Entities
               }
             end
             let(:expected) do
-              {
+              expected_attributes.merge(
                 title:            attributes['title'],
                 page_count:       attributes['page_count'],
                 publication_date: nil
-              }
+              )
             end
 
             it 'should set the attributes' do
               expect { entity.assign_attributes(attributes) }
                 .to change(entity, :attributes)
-                .to be == expected
+                .to match_attributes expected
             end
           end
 
@@ -910,17 +894,17 @@ module Support::Examples::Entities
               }
             end
             let(:expected) do
-              {
+              expected_attributes.merge(
                 title:            attributes[:title],
                 page_count:       attributes[:page_count],
                 publication_date: nil
-              }
+              )
             end
 
             it 'should set the attributes' do
               expect { entity.assign_attributes(attributes) }
                 .to change(entity, :attributes)
-                .to be == expected
+                .to match_attributes expected
             end
           end
 
@@ -1001,17 +985,17 @@ module Support::Examples::Entities
                 }
               end
               let(:expected) do
-                {
+                expected_attributes.merge(
                   title:            attributes['title'],
                   page_count:       attributes['page_count'],
                   publication_date: initial_attributes[:publication_date]
-                }
+                )
               end
 
               it 'should set the attributes' do
                 expect { entity.assign_attributes(attributes) }
                   .to change(entity, :attributes)
-                  .to be == expected
+                  .to match_attributes(expected)
               end
             end
 
@@ -1023,17 +1007,17 @@ module Support::Examples::Entities
                 }
               end
               let(:expected) do
-                {
+                expected_attributes.merge(
                   title:            attributes[:title],
                   page_count:       attributes[:page_count],
                   publication_date: initial_attributes[:publication_date]
-                }
+                )
               end
 
               it 'should set the attributes' do
                 expect { entity.assign_attributes(attributes) }
                   .to change(entity, :attributes)
-                  .to be == expected
+                  .to match_attributes expected
               end
             end
           end
@@ -1043,8 +1027,6 @@ module Support::Examples::Entities
           'when the entity class has an attribute with default value' \
         do
           describe 'with an empty hash' do
-            let(:expected) { { introduction: nil } }
-
             it 'should not change the attributes' do
               expect { entity.assign_attributes({}) }
                 .not_to change(entity, :attributes)
@@ -1052,12 +1034,12 @@ module Support::Examples::Entities
           end
 
           describe 'with attribute: nil' do
-            let(:expected) { { introduction: nil } }
+            let(:expected) { expected_attributes.merge(introduction: nil) }
 
             it 'should update the attributes' do
               expect { entity.assign_attributes(introduction: nil) }
                 .to change(entity, :attributes)
-                .to be == expected
+                .to match_attributes expected
             end
           end
 
@@ -1065,12 +1047,14 @@ module Support::Examples::Entities
             let(:introduction) do
               'It was the best of times, it was the worst of times.'
             end
-            let(:expected) { { introduction: introduction } }
+            let(:expected) do
+              expected_attributes.merge(introduction: introduction)
+            end
 
             it 'should update the attributes' do
               expect { entity.assign_attributes(introduction: introduction) }
                 .to change(entity, :attributes)
-                .to be == expected
+                .to match_attributes expected
             end
           end
 
@@ -1083,8 +1067,6 @@ module Support::Examples::Entities
             end
 
             describe 'with an empty hash' do
-              let(:expected) { { introduction: nil } }
-
               it 'should not change the attributes' do
                 expect { entity.assign_attributes({}) }
                   .not_to change(entity, :attributes)
@@ -1092,12 +1074,12 @@ module Support::Examples::Entities
             end
 
             describe 'with attribute: nil' do
-              let(:expected) { { introduction: nil } }
+              let(:expected) { expected_attributes.merge(introduction: nil) }
 
               it 'should update the attributes' do
                 expect { entity.assign_attributes(introduction: nil) }
                   .to change(entity, :attributes)
-                  .to be == expected
+                  .to match_attributes expected
               end
             end
 
@@ -1105,12 +1087,14 @@ module Support::Examples::Entities
               let(:introduction) do
                 'It was the best of times, it was the worst of times.'
               end
-              let(:expected) { { introduction: introduction } }
+              let(:expected) do
+                expected_attributes.merge(introduction: introduction)
+              end
 
               it 'should update the attributes' do
                 expect { entity.assign_attributes(introduction: introduction) }
                   .to change(entity, :attributes)
-                  .to be == expected
+                  .to match_attributes expected
               end
             end
           end
@@ -1225,22 +1209,16 @@ module Support::Examples::Entities
       end
 
       describe '#attributes' do
-        let(:defined_attributes) { defined?(super()) ? super() : [] }
-        let(:expected_attributes) do
-          defined_attributes
-            .each
-            .with_object({}) do |name, hsh|
-              hsh[name] = nil
-            end
-            .merge(initial_attributes)
-        end
-
         it { expect(entity).to respond_to(:attributes).with(0).arguments }
 
-        it { expect(entity.attributes).to be == expected_attributes }
+        it 'should return the attributes' do
+          expect(entity.attributes).to match_attributes(expected_attributes)
+        end
 
         wrap_context 'when the entity class has many attributes' do
-          it { expect(entity.attributes).to be == expected_attributes }
+          it 'should return the attributes' do
+            expect(entity.attributes).to match_attributes expected_attributes
+          end
 
           context 'when the entity is initialized with attributes' do
             let(:initial_attributes) do
@@ -1250,35 +1228,38 @@ module Support::Examples::Entities
               )
             end
 
-            it { expect(entity.attributes).to be == expected_attributes }
+            it 'should return the attributes' do
+              expect(entity.attributes).to match_attributes expected_attributes
+            end
           end
         end
 
         wrap_context \
           'when the entity class has an attribute with default block' \
         do
-          let(:expected_attributes) do
-            super().merge(series_index: series_counter.index)
+          it 'should return the attributes' do
+            expect(entity.attributes).to match_attributes expected_attributes
           end
-
-          it { expect(entity.attributes).to be == expected_attributes }
         end
 
         wrap_context \
           'when the entity class has an attribute with default value' \
         do
-          let(:expected_attributes) do
-            super().merge(introduction: default_introduction)
+          it 'should return the attributes' do
+            expect(entity.attributes).to match_attributes expected_attributes
           end
-
-          it { expect(entity.attributes).to be == expected_attributes }
 
           context 'when the attribute is initialized with nil' do
             let(:initial_attributes) do
               super().merge(introduction: nil)
             end
+            let(:expected_attributes) do
+              super().merge(introduction: default_introduction)
+            end
 
-            it { expect(entity.attributes).to be == expected_attributes }
+            it 'should return the attributes' do
+              expect(entity.attributes).to match_attributes expected_attributes
+            end
           end
 
           context 'when the attribute is initialized with a value' do
@@ -1292,7 +1273,9 @@ module Support::Examples::Entities
               super().merge(introduction: custom_introduction)
             end
 
-            it { expect(entity.attributes).to be == expected_attributes }
+            it 'should return the attributes' do
+              expect(entity.attributes).to match_attributes expected_attributes
+            end
           end
         end
       end
@@ -1453,17 +1436,17 @@ module Support::Examples::Entities
               }
             end
             let(:expected) do
-              {
+              expected_attributes.merge(
                 title:            attributes['title'],
                 page_count:       attributes['page_count'],
                 publication_date: nil
-              }
+              )
             end
 
             it 'should set the attributes' do
               expect { entity.attributes = attributes }
                 .to change(entity, :attributes)
-                .to be == expected
+                .to match_attributes expected
             end
           end
 
@@ -1475,17 +1458,17 @@ module Support::Examples::Entities
               }
             end
             let(:expected) do
-              {
+              expected_attributes.merge(
                 title:            attributes[:title],
                 page_count:       attributes[:page_count],
                 publication_date: nil
-              }
+              )
             end
 
             it 'should set the attributes' do
               expect { entity.attributes = attributes }
                 .to change(entity, :attributes)
-                .to be == expected
+                .to match_attributes expected
             end
           end
 
@@ -1499,17 +1482,17 @@ module Support::Examples::Entities
 
             describe 'with an empty hash' do
               let(:expected) do
-                {
+                expected_attributes.merge(
                   title:            nil,
                   page_count:       nil,
                   publication_date: nil
-                }
+                )
               end
 
               it 'should clear the attributes' do
                 expect { entity.attributes = {} }
                   .to change(entity, :attributes)
-                  .to be == expected
+                  .to match_attributes expected
               end
             end
 
@@ -1575,17 +1558,17 @@ module Support::Examples::Entities
                 }
               end
               let(:expected) do
-                {
+                expected_attributes.merge(
                   title:            attributes['title'],
                   page_count:       attributes['page_count'],
                   publication_date: nil
-                }
+                )
               end
 
               it 'should set the attributes' do
                 expect { entity.attributes = attributes }
                   .to change(entity, :attributes)
-                  .to be == expected
+                  .to match_attributes expected
               end
             end
 
@@ -1597,17 +1580,17 @@ module Support::Examples::Entities
                 }
               end
               let(:expected) do
-                {
+                expected_attributes.merge(
                   title:            attributes[:title],
                   page_count:       attributes[:page_count],
                   publication_date: nil
-                }
+                )
               end
 
               it 'should set the attributes' do
                 expect { entity.attributes = attributes }
                   .to change(entity, :attributes)
-                  .to be == expected
+                  .to match_attributes expected
               end
             end
           end
@@ -1617,22 +1600,22 @@ module Support::Examples::Entities
           'when the entity class has an attribute with default value' \
         do
           describe 'with an empty hash' do
-            let(:expected) { { introduction: nil } }
+            let(:expected) { expected_attributes.merge(introduction: nil) }
 
             it 'should update the attributes' do
               expect { entity.attributes = {} }
                 .to change(entity, :attributes)
-                .to be == expected
+                .to match_attributes expected
             end
           end
 
           describe 'with attribute: nil' do
-            let(:expected) { { introduction: nil } }
+            let(:expected) { expected_attributes.merge(introduction: nil) }
 
             it 'should update the attributes' do
               expect { entity.attributes = { introduction: nil } }
                 .to change(entity, :attributes)
-                .to be == expected
+                .to match_attributes expected
             end
           end
 
@@ -1640,12 +1623,14 @@ module Support::Examples::Entities
             let(:introduction) do
               'It was the best of times, it was the worst of times.'
             end
-            let(:expected) { { introduction: introduction } }
+            let(:expected) do
+              expected_attributes.merge(introduction: introduction)
+            end
 
             it 'should update the attributes' do
               expect { entity.attributes = { introduction: introduction } }
                 .to change(entity, :attributes)
-                .to be == expected
+                .to match_attributes expected
             end
           end
 
@@ -1658,22 +1643,22 @@ module Support::Examples::Entities
             end
 
             describe 'with an empty hash' do
-              let(:expected) { { introduction: nil } }
+              let(:expected) { expected_attributes.merge(introduction: nil) }
 
               it 'should update the attributes' do
                 expect { entity.attributes = {} }
                   .to change(entity, :attributes)
-                  .to be == expected
+                  .to match_attributes expected
               end
             end
 
             describe 'with attribute: nil' do
-              let(:expected) { { introduction: nil } }
+              let(:expected) { expected_attributes.merge(introduction: nil) }
 
               it 'should update the attributes' do
                 expect { entity.attributes = { introduction: nil } }
                   .to change(entity, :attributes)
-                  .to be == expected
+                  .to match_attributes expected
               end
             end
 
@@ -1681,12 +1666,14 @@ module Support::Examples::Entities
               let(:introduction) do
                 'It was the best of times, it was the worst of times.'
               end
-              let(:expected) { { introduction: introduction } }
+              let(:expected) do
+                expected_attributes.merge(introduction: introduction)
+              end
 
               it 'should update the attributes' do
                 expect { entity.attributes = { introduction: introduction } }
                   .to change(entity, :attributes)
-                  .to be == expected
+                  .to match_attributes expected
               end
             end
           end
@@ -1709,12 +1696,12 @@ module Support::Examples::Entities
 
           describe 'with attribute: value' do
             let(:isbn)     { '123-4-56-789012-3' }
-            let(:expected) { { isbn: isbn } }
+            let(:expected) { expected_attributes.merge(isbn: isbn) }
 
             it 'should update the attributes' do
               expect { entity.attributes = { isbn: isbn } }
                 .to change(entity, :attributes)
-                .to be == expected
+                .to match_attributes expected
             end
           end
 
@@ -1725,33 +1712,33 @@ module Support::Examples::Entities
             end
 
             describe 'with an empty hash' do
-              let(:expected) { { isbn: nil } }
+              let(:expected) { expected_attributes.merge(isbn: nil) }
 
               it 'should update the attributes' do
                 expect { entity.attributes = {} }
                   .to change(entity, :attributes)
-                  .to be == expected
+                  .to match_attributes expected
               end
             end
 
             describe 'with attribute: nil' do
-              let(:expected) { { isbn: nil } }
+              let(:expected) { expected_attributes.merge(isbn: nil) }
 
               it 'should update the attributes' do
-                expect { entity.attributes = {} }
+                expect { entity.attributes = { isbn: nil } }
                   .to change(entity, :attributes)
-                  .to be == expected
+                  .to match_attributes expected
               end
             end
 
             describe 'with attribute: value' do
               let(:isbn)     { '123-4-56-789012-3' }
-              let(:expected) { { isbn: isbn } }
+              let(:expected) { expected_attributes.merge(isbn: isbn) }
 
               it 'should update the attributes' do
                 expect { entity.attributes = { isbn: isbn } }
                   .to change(entity, :attributes)
-                  .to be == expected
+                  .to match_attributes expected
               end
             end
           end

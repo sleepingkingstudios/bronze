@@ -1,5 +1,5 @@
 # frozen_string_literal: true
 
-# A text-based adventure game engine, and testbed for experimenting with
-# alternative frameworks and design patterns.
+# A component-based application toolkit designed around dependency injection,
+# composable objects, and modern design principles.
 module Bronze; end

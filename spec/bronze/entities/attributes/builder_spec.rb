@@ -23,9 +23,9 @@ RSpec.describe Bronze::Entities::Attributes::Builder do
 
   subject(:builder) { described_class.new(entity_class) }
 
-  let(:entity_class) { Spec::ExampleEntity }
+  let(:entity_class) { Spec::EntityWithAttributes }
 
-  example_class 'Spec::ExampleEntity' do |klass|
+  example_class 'Spec::EntityWithAttributes' do |klass|
     klass.send :define_method, :get_attribute, ->(_name) {}
     klass.send :define_method, :set_attribute, ->(_name, _value) {}
   end
@@ -448,9 +448,15 @@ RSpec.describe Bronze::Entities::Attributes::Builder do
       let(:attribute_name) { :publisher }
 
       before(:example) do
-        described_class.new(Spec::ExampleEntity).build(:title,      String)
-        described_class.new(Spec::ExampleEntity).build(:author,     String)
-        described_class.new(Spec::ExampleEntity).build(:page_count, Integer)
+        described_class
+          .new(Spec::EntityWithAttributes)
+          .build(:title, String)
+        described_class
+          .new(Spec::EntityWithAttributes)
+          .build(:author, String)
+        described_class
+          .new(Spec::EntityWithAttributes)
+          .build(:page_count, Integer)
       end
 
       include_examples 'should define the attribute'
@@ -458,13 +464,13 @@ RSpec.describe Bronze::Entities::Attributes::Builder do
 
     context 'when the entity class has a parent class with attributes' do
       let(:entity_class)   { Spec::ExampleSubclass }
-      let(:parent_entity)  { Spec::ExampleEntity.new }
+      let(:parent_entity)  { Spec::EntityWithAttributes.new }
       let(:attribute_name) { :publisher }
 
-      example_class 'Spec::ExampleSubclass', 'Spec::ExampleEntity'
+      example_class 'Spec::ExampleSubclass', 'Spec::EntityWithAttributes'
 
       before(:example) do
-        described_class.new(Spec::ExampleEntity).build(:title, String)
+        described_class.new(Spec::EntityWithAttributes).build(:title, String)
       end
 
       include_examples 'should define the attribute'
