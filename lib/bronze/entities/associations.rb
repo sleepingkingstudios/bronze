@@ -180,8 +180,8 @@ module Bronze::Entities
     # @param values [Hash{String, Symbol => Object}] The association values to
     #   set.
     #
-    # @see Attributes#assign.
-    def assign values
+    # @see Attributes#assign_attributes.
+    def assign_attributes values
       super
 
       values.each do |key, value|
@@ -189,7 +189,8 @@ module Bronze::Entities
 
         send("#{key}=", value)
       end # each
-    end # method assign
+    end # method assign_attributes
+    alias_method :assign, :assign_attributes
 
     # Checks if the entity defines the specified association.
     #
@@ -202,6 +203,18 @@ module Bronze::Entities
     end # method association?
 
     private
+
+    def validate_attributes(obj)
+      return super unless obj.is_a?(Hash)
+
+      hsh = {}
+
+      obj.each do |key, value|
+        hsh[key] = value unless association?(key)
+      end
+
+      super hsh
+    end
 
     # rubocop:disable Metrics/MethodLength
     def write_has_many_association metadata, new_values

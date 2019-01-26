@@ -12,9 +12,9 @@ RSpec.describe Bronze::Entities::Normalization::Associations do
   include Spec::Entities::Normalization::AssociationsExamples
   include Spec::Entities::Normalization::NormalizationExamples
 
-  let(:described_class) { Spec::Book }
-  let(:attributes)      { {} }
-  let(:instance)        { described_class.new attributes }
+  let(:described_class)    { Spec::Book }
+  let(:initial_attributes) { {} }
+  let(:instance)           { described_class.new initial_attributes }
 
   example_class 'Spec::Book', Bronze::Entities::BaseEntity do |klass|
     klass.send :include, Bronze::Entities::Associations

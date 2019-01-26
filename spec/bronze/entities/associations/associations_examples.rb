@@ -365,7 +365,9 @@ module Spec::Entities::Associations::AssociationsExamples
           let(:prior_values) do
             defined?(super()) ? super() : Array.new(3) { association_class.new }
           end # let
-          let(:attributes) { super().merge association_name => prior_values }
+          let(:initial_attributes) do
+            super().merge association_name => prior_values
+          end
 
           it { expect(entity.send reader_name).to be == prior_values }
         end # context
@@ -877,7 +879,9 @@ module Spec::Entities::Associations::AssociationsExamples
           let(:prior_value) do
             defined?(super()) ? super() : association_class.new
           end # let
-          let(:attributes) { super().merge association_name => prior_value }
+          let(:initial_attributes) do
+            super().merge association_name => prior_value
+          end
 
           it { expect(entity.send reader_name).to be == prior_value }
         end # context
@@ -1127,7 +1131,9 @@ module Spec::Entities::Associations::AssociationsExamples
           let(:prior_value) do
             defined?(super()) ? super() : association_class.new
           end # let
-          let(:attributes) { super().merge association_name => prior_value }
+          let(:initial_attributes) do
+            super().merge association_name => prior_value
+          end
 
           it { expect(entity.send foreign_key).to be == prior_value.id }
         end # context
@@ -1146,7 +1152,9 @@ module Spec::Entities::Associations::AssociationsExamples
           let(:prior_value) do
             defined?(super()) ? super() : association_class.new
           end # let
-          let(:attributes) { super().merge association_name => prior_value }
+          let(:initial_attributes) do
+            super().merge association_name => prior_value
+          end
 
           it { expect(entity.send reader_name).to be == prior_value }
         end # context
@@ -1548,7 +1556,7 @@ module Spec::Entities::Associations::AssociationsExamples
       describe 'with a valid attribute name' do
         let(:attribute_name) { :association_id }
         let(:attribute_type) { described_class::KEY_TYPE }
-        let(:attributes) do
+        let(:initial_attributes) do
           super().merge :association_id => Bronze::Entities::Ulid.generate
         end # let
         let(:attribute_type_class) do
@@ -1569,7 +1577,7 @@ module Spec::Entities::Associations::AssociationsExamples
         end # it
 
         wrap_context 'when the attribute has been defined' do
-          let(:expected_value) { attributes.fetch attribute_name }
+          let(:expected_value) { initial_attributes.fetch attribute_name }
           let(:updated_value)  { Bronze::Entities::Ulid.generate }
 
           include_examples 'should define attribute',
@@ -1605,6 +1613,8 @@ module Spec::Entities::Associations::AssociationsExamples
 
         options = { :base_class => Spec::ExampleEntity }
         example_class 'Spec::Chapter', options do |klass|
+          klass.attribute :title, String
+
           klass.references_one(
             :book,
             :class_name => 'Spec::Book',
@@ -1746,8 +1756,8 @@ module Spec::Entities::Associations::AssociationsExamples
           include_examples 'should define has_one association', :cover
 
           context 'when the reader method is overwritten' do
-            let(:cover)      { Spec::Cover.new }
-            let(:attributes) { super().merge :cover => cover }
+            let(:cover)              { Spec::Cover.new }
+            let(:initial_attributes) { super().merge :cover => cover }
 
             before(:example) do
               described_class.send :define_method,
@@ -1835,8 +1845,8 @@ module Spec::Entities::Associations::AssociationsExamples
           include_examples 'should define references_one association', :author
 
           context 'when the reader method is overwritten' do
-            let(:author)     { Spec::Author.new }
-            let(:attributes) { super().merge :author => author }
+            let(:author)             { Spec::Author.new }
+            let(:initial_attributes) { super().merge :author => author }
 
             before(:example) do
               described_class.send :define_method,
@@ -1902,10 +1912,14 @@ module Spec::Entities::Associations::AssociationsExamples
     end # describe
 
     describe '#assign' do
-      it 'should not update the attributes' do
-        expect { instance.assign(:malicious => :value) }.
-          not_to change(instance, :attributes)
-      end # it
+      describe 'with an invalid attribute' do
+        let(:error_message) { 'invalid attribute :malicious' }
+
+        it 'should raise an error' do
+          expect { instance.assign(:malicious => :value) }
+            .to raise_error ArgumentError, error_message
+        end
+      end
 
       wrap_context 'when associations are defined for the class' do
         let(:author) { Spec::Author.new }

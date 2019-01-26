@@ -9,7 +9,9 @@ module Spec::Entities
     shared_examples 'should implement the Uniqueness methods' do
       shared_context 'when the entity defines a uniqueness constraint' do
         before(:example) do
-          entity_class.attribute :title, String
+          entity_class.attribute :title,  String
+          entity_class.attribute :author, String
+          entity_class.attribute :series, String
 
           entity_class.unique :title
         end # before example
@@ -19,6 +21,7 @@ module Spec::Entities
         before(:example) do
           entity_class.attribute :title,  String
           entity_class.attribute :author, String
+          entity_class.attribute :series, String
 
           entity_class.unique :title, :author
         end # before example
@@ -147,13 +150,13 @@ module Spec::Entities
           include_examples 'should return true and an empty errors object'
 
           context 'when the collection includes the entity' do
-            let(:attributes) { data.first }
+            let(:initial_attributes) { data.first }
 
             include_examples 'should return true and an empty errors object'
           end # context
 
           context 'when the collection includes a matching entity' do
-            let(:attributes) { data.first.merge :id => '3' }
+            let(:initial_attributes) { data.first.merge :id => '3' }
 
             include_examples 'should return false and the errors object'
           end # context
@@ -163,13 +166,13 @@ module Spec::Entities
           include_examples 'should return true and an empty errors object'
 
           context 'when the collection includes the entity' do
-            let(:attributes) { data.first }
+            let(:initial_attributes) { data.first }
 
             include_examples 'should return true and an empty errors object'
           end # context
 
           context 'when the collection includes a partially matching entity' do
-            let(:attributes) do
+            let(:initial_attributes) do
               data.first.merge :author => 'John Ronald Reuel Tolkien'
             end # let
 
@@ -177,7 +180,7 @@ module Spec::Entities
           end # context
 
           context 'when the collection includes a matching entity' do
-            let(:attributes) { data.first.merge :id => '3' }
+            let(:initial_attributes) { data.first.merge :id => '3' }
             let(:matching) do
               {
                 :title  => 'The Fellowship of the Ring',

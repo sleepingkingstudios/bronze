@@ -24,7 +24,7 @@ module Spec::Entities::Normalization
       end # shared_context
 
       shared_context 'when the entity has attribute values' do
-        let(:attributes) do
+        let(:initial_attributes) do
           {
             :name         => 'Fierce Dragon Serpent',
             :level        => 50,
@@ -34,21 +34,21 @@ module Spec::Entities::Normalization
           } # end attributes
         end # let
         let(:normalized) do
-          attributes.merge(
-            :happiness   => attributes[:happiness].to_s,
-            :captured_at => attributes[:captured_at].strftime('%FT%T%z')
+          initial_attributes.merge(
+            :happiness   => initial_attributes[:happiness].to_s,
+            :captured_at => initial_attributes[:captured_at].strftime('%FT%T%z')
           ) # end normalized
         end # let
       end # shared_context
 
       describe '::denormalize' do
         let(:entity) { described_class.denormalize normalized }
-        let(:normalized) { attributes }
+        let(:normalized) { initial_attributes }
         let(:expected) do
           hsh = {}
 
           described_class.attributes.each do |attr_name, _metadata|
-            hsh[attr_name] = be == attributes[attr_name]
+            hsh[attr_name] = be == initial_attributes[attr_name]
           end # each
 
           hsh[:id] = be_a(String) if instance.respond_to?(:id)
@@ -146,7 +146,7 @@ module Spec::Entities::Normalization
 
             describe 'with :permit => Class' do
               let(:expected) do
-                super().merge :happiness => attributes[:happiness]
+                super().merge :happiness => initial_attributes[:happiness]
               end # let
 
               it 'should normalize the values' do
@@ -159,8 +159,8 @@ module Spec::Entities::Normalization
             describe 'with :permit => [Class, Class]' do
               let(:expected) do
                 super().merge(
-                  :happiness   => attributes[:happiness],
-                  :captured_at => attributes[:captured_at]
+                  :happiness   => initial_attributes[:happiness],
+                  :captured_at => initial_attributes[:captured_at]
                 ) # end expected
               end # let
 
