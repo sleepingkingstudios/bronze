@@ -24,4 +24,8 @@ Adds the Bronze::Entities::PrimaryKeys::Uuid module, which defines a UUID primar
 
 ### Transforms
 
-Adds the Bronze::Transform class, which provides an abstract base class for mono- or bi-directional data transformations. Adds normalization transforms for the BigDecimal, DateTime, Date, Symbol and Time classes.
+Adds the Bronze::Transform class, which provides an abstract base class for mono- or bi-directional data transformations.
+
+Adds normalization transforms for the BigDecimal, DateTime, Date, Symbol and Time classes.
+
+Adds normalization transform for entities.
