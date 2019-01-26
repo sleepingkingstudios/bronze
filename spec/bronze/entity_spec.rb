@@ -16,11 +16,7 @@ RSpec.describe Bronze::Entity do
   let(:described_class)    { Spec::ExampleEntity }
   let(:entity_class)       { described_class }
   let(:initial_attributes) { {} }
-  let(:default_attributes) do
-    entity_class.each_attribute.reduce({}) do |hsh, (key, metadata)|
-      hsh.merge(key => metadata.default)
-    end
-  end
+  let(:default_attributes) { {} }
   let(:expected_attributes) do
     default_attributes.merge(initial_attributes)
   end

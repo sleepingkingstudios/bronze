@@ -28,6 +28,12 @@ module Support::Examples::Entities
           { default: primary_key_default }
         ]
       end
+      let(:default_attributes) do
+        super().merge(primary_key_name => primary_key_value)
+      end
+      let(:expected_attributes) do
+        super().merge(primary_key_name => an_instance_of(primary_key_type))
+      end
 
       before(:example) do
         described_class.define_primary_key(*primary_key_args)

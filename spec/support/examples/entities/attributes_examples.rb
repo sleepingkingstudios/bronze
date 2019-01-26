@@ -9,6 +9,14 @@ module Support::Examples::Entities
     extend RSpec::SleepingKingStudios::Concerns::SharedExampleGroup
 
     shared_context 'when the entity class has many attributes' do
+      let(:default_attributes) do
+        super().merge(
+          title:            nil,
+          page_count:       nil,
+          publication_date: nil
+        )
+      end
+
       before(:example) do
         described_class.attribute :title,            String
         described_class.attribute :page_count,       Integer
@@ -19,6 +27,12 @@ module Support::Examples::Entities
     shared_context 'when the entity class has an attribute with default block' \
     do
       let(:series_counter) { Struct.new(:index).new(0) }
+      let(:default_attributes) do
+        super().merge(series_index: series_counter.index)
+      end
+      let(:expected_attributes) do
+        super().merge(series_index: an_instance_of(Integer))
+      end
 
       before(:example) do
         described_class.attribute :series_index,
@@ -33,6 +47,9 @@ module Support::Examples::Entities
         'There was a storm in the city that night, pouring rain like a ' \
         'biblical deluge, the tears of angels sent down from Heaven to ' \
         'wash away the sins of Man.'
+      end
+      let(:default_attributes) do
+        super().merge(introduction: default_introduction)
       end
 
       before(:example) do
@@ -355,6 +372,14 @@ module Support::Examples::Entities
           end
 
           context 'when the subclass has many attributes' do
+            let(:default_attributes) do
+              super().merge(
+                imprint:  nil,
+                preface:  nil,
+                subtitle: nil
+              )
+            end
+
             before(:example) do
               described_class.attribute :imprint,  String
               described_class.attribute :preface,  String
@@ -400,6 +425,14 @@ module Support::Examples::Entities
             end
 
             context 'when the subclass has many attributes' do
+              let(:default_attributes) do
+                super().merge(
+                  imprint:  nil,
+                  preface:  nil,
+                  subtitle: nil
+                )
+              end
+
               before(:example) do
                 described_class.attribute :imprint,  String
                 described_class.attribute :preface,  String
@@ -1204,10 +1237,6 @@ module Support::Examples::Entities
         wrap_context \
           'when the entity class has an attribute with default block' \
         do
-          let(:expected_attributes) do
-            super().merge(series_index: an_instance_of(Integer))
-          end
-
           it 'should return the attributes' do
             expect(entity.attributes).to match_attributes expected_attributes
           end
@@ -1216,10 +1245,6 @@ module Support::Examples::Entities
         wrap_context \
           'when the entity class has an attribute with default value' \
         do
-          let(:expected_attributes) do
-            super().merge(introduction: default_introduction)
-          end
-
           it 'should return the attributes' do
             expect(entity.attributes).to match_attributes expected_attributes
           end
@@ -1227,6 +1252,9 @@ module Support::Examples::Entities
           context 'when the attribute is initialized with nil' do
             let(:initial_attributes) do
               super().merge(introduction: nil)
+            end
+            let(:expected_attributes) do
+              super().merge(introduction: default_introduction)
             end
 
             it 'should return the attributes' do

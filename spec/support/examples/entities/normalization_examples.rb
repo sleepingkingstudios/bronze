@@ -11,6 +11,10 @@ module Support::Examples::Entities
     shared_context 'when the entity class has an attribute with a custom ' \
                    'transform' \
     do
+      let(:default_attributes) do
+        super().merge(coordinates: nil)
+      end
+
       example_class 'Spec::Point', Struct.new(:x, :y)
 
       example_class 'Spec::PointTransform', Bronze::Transform do |klass|
