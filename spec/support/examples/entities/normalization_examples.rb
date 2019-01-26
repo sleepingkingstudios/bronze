@@ -11,8 +11,6 @@ module Support::Examples::Entities
     shared_context 'when the entity class has an attribute with a custom ' \
                    'transform' \
     do
-      let(:defined_attributes) { defined?(super()) ? super() : [] }
-
       example_class 'Spec::Point', Struct.new(:x, :y)
 
       example_class 'Spec::PointTransform', Bronze::Transform do |klass|
@@ -33,8 +31,6 @@ module Support::Examples::Entities
         described_class.attribute :coordinates,
           Spec::Point,
           transform: Spec::PointTransform
-
-        defined_attributes << :coordinates
       end
     end
 
@@ -236,19 +232,17 @@ module Support::Examples::Entities
       end
 
       describe '#normalize' do
-        let(:defined_attributes) { defined?(super()) ? super() : [] }
+        let(:tools) { SleepingKingStudios::Tools::Toolbelt.instance }
         let(:expected) do
-          defined_attributes.each.with_object({}) do |attribute, hsh|
-            hsh[attribute.to_s] = entity.send(attribute)
-          end
+          tools.hash.convert_keys_to_strings(expected_attributes)
         end
 
         it { expect(entity).to respond_to(:normalize).with(0).arguments }
 
-        it { expect(entity.normalize).to be == expected }
+        it { expect(entity.normalize).to match_attributes expected }
 
         wrap_context 'when the entity class has many attributes' do
-          it { expect(entity.normalize).to be == expected }
+          it { expect(entity.normalize).to match_attributes expected }
 
           context 'when the entity is initialized with attributes' do
             let(:initial_attributes) do
@@ -265,14 +259,14 @@ module Support::Examples::Entities
               super().merge('publication_date' => date)
             end
 
-            it { expect(entity.normalize).to be == expected }
+            it { expect(entity.normalize).to match_attributes expected }
           end
         end
 
         wrap_context 'when the entity class has an attribute with a custom ' \
                      'transform' \
         do
-          it { expect(entity.normalize).to be == expected }
+          it { expect(entity.normalize).to match_attributes expected }
 
           context 'when the entity is initialized with attributes' do
             let(:coordinates) { Spec::Point.new(3, 4) }
@@ -283,7 +277,7 @@ module Support::Examples::Entities
               super().merge('coordinates' => [3, 4])
             end
 
-            it { expect(entity.normalize).to be == expected }
+            it { expect(entity.normalize).to match_attributes expected }
           end
         end
       end

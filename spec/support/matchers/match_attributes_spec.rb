@@ -20,6 +20,8 @@ RSpec.describe RSpec::SleepingKingStudios::Matchers::Macros do
     it { expect(matcher).to be_a RSpec::Matchers::AliasedMatcher }
 
     it { expect(matcher.base_matcher).to be_a matcher_class }
+
+    it { expect(matcher.description).to be == "match #{expected.inspect}" }
   end
 end
 # rubocop:enable RSpec/FilePath

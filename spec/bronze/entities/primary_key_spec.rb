@@ -15,6 +15,14 @@ RSpec.describe Bronze::Entities::PrimaryKey do
   let(:described_class)    { Spec::EntityWithPrimaryKey }
   let(:entity_class)       { described_class }
   let(:initial_attributes) { {} }
+  let(:default_attributes) do
+    entity_class.each_attribute.reduce({}) do |hsh, (key, metadata)|
+      hsh.merge(key => metadata.default)
+    end
+  end
+  let(:expected_attributes) do
+    default_attributes.merge(initial_attributes)
+  end
 
   # rubocop:disable RSpec/DescribedClass
   example_class 'Spec::EntityWithPrimaryKey' do |klass|
@@ -29,5 +37,11 @@ RSpec.describe Bronze::Entities::PrimaryKey do
 
   wrap_context 'when the entity class has many attributes' do
     include_examples 'should implement the PrimaryKey methods'
+  end
+
+  wrap_context 'when the entity class has a primary key' do
+    let(:expected_attributes) { super().merge(id: an_instance_of(Integer)) }
+
+    include_examples 'should implement the Attributes methods'
   end
 end

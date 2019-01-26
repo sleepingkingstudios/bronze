@@ -10,6 +10,7 @@ require 'rspec/sleeping_king_studios/all'
 require 'byebug'
 
 require 'support/matchers/match_attributes'
+require 'support/matchers/not_yield_control'
 
 # See http://rubydoc.info/gems/rspec-core/RSpec/Core/Configuration
 RSpec.configure do |config|

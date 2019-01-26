@@ -18,6 +18,14 @@ RSpec.describe Bronze::Entities::Normalization do
   let(:described_class)    { Spec::EntityWithNormalization }
   let(:entity_class)       { described_class }
   let(:initial_attributes) { {} }
+  let(:default_attributes) do
+    entity_class.each_attribute.reduce({}) do |hsh, (key, metadata)|
+      hsh.merge(key => metadata.default)
+    end
+  end
+  let(:expected_attributes) do
+    default_attributes.merge(initial_attributes)
+  end
 
   # rubocop:disable RSpec/DescribedClass
   example_class 'Spec::EntityWithNormalization' do |klass|
@@ -30,6 +38,9 @@ RSpec.describe Bronze::Entities::Normalization do
 
   wrap_context 'when the entity class has a primary key' do
     let(:described_class) { Spec::EntityWithPrimaryKey }
+    let(:expected_attributes) do
+      super().merge(id: an_instance_of(Integer))
+    end
 
     # rubocop:disable RSpec/DescribedClass
     example_class 'Spec::EntityWithPrimaryKey' do |klass|

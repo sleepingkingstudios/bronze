@@ -9,7 +9,6 @@ module Support::Examples::Entities
     extend RSpec::SleepingKingStudios::Concerns::SharedExampleGroup
 
     shared_context 'when the entity class has a primary key' do
-      let(:defined_attributes)  { defined?(super()) ? super() : [] }
       let(:primary_key_name)    { defined?(super()) ? super() : :id }
       let(:primary_key_type)    { defined?(super()) ? super() : Integer }
       let(:primary_key_value)   { defined?(super()) ? super() : 15_151 }
@@ -32,8 +31,6 @@ module Support::Examples::Entities
 
       before(:example) do
         described_class.define_primary_key(*primary_key_args)
-
-        defined_attributes << primary_key_name
       end
     end
 
