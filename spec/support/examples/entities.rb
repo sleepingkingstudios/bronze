@@ -2,6 +2,6 @@
 
 require 'support/examples'
 
-module Support::Examples
+module Spec::Support::Examples
   module Entities; end
 end

@@ -5,7 +5,7 @@ require 'bronze/entities/attributes'
 require 'support/examples/entities/attributes_examples'
 
 RSpec.describe Bronze::Entities::Attributes do
-  include Support::Examples::Entities::AttributesExamples
+  include Spec::Support::Examples::Entities::AttributesExamples
 
   subject(:entity) { entity_class.new(initial_attributes) }
 

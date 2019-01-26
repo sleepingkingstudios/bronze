@@ -9,9 +9,9 @@ require 'support/examples/entities/normalization_examples'
 require 'support/examples/entities/primary_key_examples'
 
 RSpec.describe Bronze::Entities::Normalization do
-  include Support::Examples::Entities::AttributesExamples
-  include Support::Examples::Entities::NormalizationExamples
-  include Support::Examples::Entities::PrimaryKeyExamples
+  include Spec::Support::Examples::Entities::AttributesExamples
+  include Spec::Support::Examples::Entities::NormalizationExamples
+  include Spec::Support::Examples::Entities::PrimaryKeyExamples
 
   subject(:entity) { entity_class.new(initial_attributes) }
 

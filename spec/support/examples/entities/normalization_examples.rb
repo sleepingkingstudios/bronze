@@ -4,7 +4,7 @@ require 'rspec/sleeping_king_studios/concerns/shared_example_group'
 
 require 'support/examples/entities'
 
-module Support::Examples::Entities
+module Spec::Support::Examples::Entities
   module NormalizationExamples
     extend RSpec::SleepingKingStudios::Concerns::SharedExampleGroup
 
