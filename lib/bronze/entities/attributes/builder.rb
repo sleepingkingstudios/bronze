@@ -16,6 +16,7 @@ module Bronze::Entities::Attributes
     VALID_OPTIONS = %w[
       allow_nil
       default
+      default_transform
       foreign_key
       primary_key
       read_only
@@ -109,11 +110,18 @@ module Bronze::Entities::Attributes
     #   attribute will be set to the default. If the default is a Proc, the
     #   Proc will be called each time and the attribute set to the return value.
     #   Otherwise, the attribute will be set to the default value.
+    # @option attribute_options [Boolean] :default_transform If a transform is
+    #   set, marks the transform as a default transform, which can be overriden
+    #   when normalizing the attribute.
     # @option attribute_options [Boolean] :foreign_key Marks the attribute as a
     #   foreign key. Will be set to true by association builders, and generally
     #   should not be set manually. Defaults to false.
     # @option attribute_options [Boolean] :read_only If true, the writer method
     #   for the attribute will be set as private. Defaults to false.
+    # @option attribute_options [Class, Bronze::Transform] :transform If set,
+    #   the attribute will be normalized using this transform. By default,
+    #   certain attribute types will be transformed - BigDecimal, Date,
+    #   DateTime, Symbol, and Time.
     #
     # @return [Attributes::Metadata] The generated metadata for the
     #   attribute.
@@ -189,7 +197,12 @@ module Bronze::Entities::Attributes
         hsh[key.intern] = value
       end
 
-      options[:transform] = normalize_transform(options[:transform], type: type)
+      unless options.key?(:default_transform)
+        options[:default_transform] = !options[:transform]
+      end
+
+      options[:transform] =
+        normalize_transform(options[:transform], type: type)
 
       options
     end

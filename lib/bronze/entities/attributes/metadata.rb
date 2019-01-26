@@ -51,6 +51,12 @@ module Bronze::Entities::Attributes
       !@options[:default].nil?
     end
 
+    # @return [Boolean] true if the attribute does not have a custom transform,
+    #   or if the transform is flagged as a default transform; otherwise false.
+    def default_transform?
+      !!@options[:default_transform] || !transform?
+    end
+
     # @return [Boolean] true if the attribute is a foreign key, otherwise false.
     def foreign_key?
       !!@options[:foreign_key]
