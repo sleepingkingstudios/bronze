@@ -81,6 +81,25 @@ RSpec.describe Bronze::Entities::Attributes::Metadata do
     end
   end
 
+  describe '#default_transform?' do
+    include_examples 'should have predicate', :default_transform?, true
+
+    context 'when the transform is set' do
+      let(:transform) { Bronze::Transform.new }
+      let(:options)   { super().merge(transform: transform) }
+
+      it { expect(metadata.default_transform?).to be false }
+
+      # rubocop:disable RSpec/NestedGroups
+      context 'when the default transform flag is set to true' do
+        let(:options) { { default_transform: true } }
+
+        it { expect(metadata.default_transform?).to be true }
+      end
+      # rubocop:enable RSpec/NestedGroups
+    end
+  end
+
   describe '#foreign_key?' do
     include_examples 'should have predicate', :foreign_key?, false
 
