@@ -18,7 +18,7 @@ module Bronze::Entities::Normalization
         options = {} unless options.is_a?(Hash)
         options = keywords.merge(options)
 
-        hsh[name] = normalize_association(name, options)
+        hsh[name.to_s] = normalize_association(name, options)
       end
 
       hsh

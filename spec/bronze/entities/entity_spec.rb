@@ -5,22 +5,22 @@ require 'bronze/entities/entity'
 require 'bronze/entities/associations/associations_examples'
 require 'bronze/entities/attributes/dirty_tracking_examples'
 require 'bronze/entities/normalization/associations_examples'
-require 'bronze/entities/normalization/normalization_examples'
 require 'bronze/entities/persistence_examples'
 require 'bronze/entities/primary_key_examples'
 require 'bronze/entities/uniqueness_examples'
 
 require 'support/examples/entities/attributes_examples'
+require 'support/examples/entities/normalization_examples'
 
 RSpec.describe Bronze::Entities::Entity do
   include Spec::Entities::Associations::AssociationsExamples
   include Spec::Entities::Attributes::DirtyTrackingExamples
   include Spec::Entities::Normalization::AssociationsExamples
-  include Spec::Entities::Normalization::NormalizationExamples
   include Spec::Entities::PersistenceExamples
   include Spec::Entities::PrimaryKeyExamples
   include Spec::Entities::UniquenessExamples
   include Spec::Support::Examples::Entities::AttributesExamples
+  include Spec::Support::Examples::Entities::NormalizationExamples
 
   shared_context 'when an entity class is defined' do
     let(:described_class) { Class.new(super()) }

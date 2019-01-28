@@ -20,10 +20,17 @@ module Bronze::Collections::Reference
       class MatchCriterion < Bronze::Collections::Criteria::MatchCriterion
         # (see Bronze::Collections::Criteria::Criterion#call)
         def call data
-          filter = Bronze::Utilities::HashFilter.new(selector)
+          selector = tools.hash.convert_keys_to_strings(self.selector)
+          filter   = Bronze::Utilities::HashFilter.new(selector)
 
           data.select { |hsh| filter.matches?(hsh) }
         end # method call
+
+        private
+
+        def tools
+          SleepingKingStudios::Tools::Toolbelt.instance
+        end
       end # class
     end # module
 

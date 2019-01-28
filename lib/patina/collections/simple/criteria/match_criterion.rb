@@ -14,7 +14,7 @@ module Patina::Collections::Simple
       # (see Bronze::Collections::Criteria::Criterion#call)
       def call data
         hash_tools = SleepingKingStudios::Tools::HashTools
-        selector   = hash_tools.convert_keys_to_symbols(self.selector)
+        selector   = hash_tools.convert_keys_to_strings(self.selector)
         filter     = Bronze::Utilities::HashFilter.new(selector)
 
         data.select { |hsh| filter.matches?(hsh) }

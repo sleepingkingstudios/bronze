@@ -8,34 +8,34 @@ module Spec::Collections
       let(:raw_data) do
         [
           {
-            :id     => '1',
-            :title  => 'The Fellowship of the Ring',
-            :author => 'J.R.R. Tolkien'
+            'id'     => '1',
+            'title'  => 'The Fellowship of the Ring',
+            'author' => 'J.R.R. Tolkien'
           }, # end hash
           {
-            :id     => '2',
-            :title  => 'The Two Towers',
-            :author => 'J.R.R. Tolkien'
+            'id'     => '2',
+            'title'  => 'The Two Towers',
+            'author' => 'J.R.R. Tolkien'
           }, # end hash
           {
-            :id     => '3',
-            :title  => 'The Return of the King',
-            :author => 'J.R.R. Tolkien'
+            'id'     => '3',
+            'title'  => 'The Return of the King',
+            'author' => 'J.R.R. Tolkien'
           }, # end hash
           {
-            :id     => '4',
-            :title  => 'A Princess of Mars',
-            :author => 'Edgar Rice Burroughs'
+            'id'     => '4',
+            'title'  => 'A Princess of Mars',
+            'author' => 'Edgar Rice Burroughs'
           }, # end hash
           {
-            :id     => '5',
-            :title  => 'The Gods of Mars',
-            :author => 'Edgar Rice Burroughs'
+            'id'     => '5',
+            'title'  => 'The Gods of Mars',
+            'author' => 'Edgar Rice Burroughs'
           }, # end hash
           {
-            :id     => '6',
-            :title  => 'The Warlord of Mars',
-            :author => 'Edgar Rice Burroughs'
+            'id'     => '6',
+            'title'  => 'The Warlord of Mars',
+            'author' => 'Edgar Rice Burroughs'
           }, # end hash
         ] # end array
       end # let
@@ -58,7 +58,7 @@ module Spec::Collections
           results =
             query.to_a.map do |obj|
               if obj.is_a?(Hash)
-                hash_tools.convert_keys_to_symbols(obj)
+                hash_tools.convert_keys_to_strings(obj)
               else
                 obj
               end # if-else
@@ -176,7 +176,7 @@ module Spec::Collections
       end # describe
 
       describe '#matching' do
-        let(:selector) { { :id => '0' } }
+        let(:selector) { { 'id' => '0' } }
         let(:expected) do
           raw_data.select { |hsh| hsh >= selector }
         end # let
@@ -191,13 +191,13 @@ module Spec::Collections
           desc = 'should filter the results using the given selector'
           shared_examples desc do
             describe 'with an id selector that does not match an item' do
-              let(:selector) { { :id => '0' } }
+              let(:selector) { { 'id' => '0' } }
 
               include_examples 'should return the items matching the selector'
             end # describe
 
             describe 'with an id selector that matches an item' do
-              let(:selector) { { :id => '1' } }
+              let(:selector) { { 'id' => '1' } }
 
               include_examples 'should return the items matching the selector'
             end # describe
@@ -205,19 +205,19 @@ module Spec::Collections
             # rubocop:disable Metrics/LineLength
             describe 'with an attributes selector that does not match any items' do
               # rubocop:enable Metrics/LineLength
-              let(:selector) { { :author => 'C.S. Lewis' } }
+              let(:selector) { { 'author' => 'C.S. Lewis' } }
 
               include_examples 'should return the items matching the selector'
             end # describe
 
             describe 'with an attributes selector that matches one item' do
-              let(:selector) { { :title => 'The Two Towers' } }
+              let(:selector) { { 'title' => 'The Two Towers' } }
 
               include_examples 'should return the items matching the selector'
             end # describe
 
             describe 'with an attributes selector that matches many items' do
-              let(:selector) { { :author => 'J.R.R. Tolkien' } }
+              let(:selector) { { 'author' => 'J.R.R. Tolkien' } }
 
               include_examples 'should return the items matching the selector'
             end # describe
@@ -225,8 +225,8 @@ module Spec::Collections
             describe 'with a multi-attribute selector' do
               let(:selector) do
                 {
-                  :title  => 'A Princess of Mars',
-                  :author => 'Edgar Rice Burroughs'
+                  'title'  => 'A Princess of Mars',
+                  'author' => 'Edgar Rice Burroughs'
                 } # end hash
               end # let
 
@@ -238,10 +238,10 @@ module Spec::Collections
 
           describe 'with a chained selector' do
             let(:first_selector) do
-              { :title  => 'The Warlord of Mars' }
+              { 'title'  => 'The Warlord of Mars' }
             end # let
             let(:second_selector) do
-              { :author => 'Edgar Rice Burroughs' }
+              { 'author' => 'Edgar Rice Burroughs' }
             end # let
             let(:expected) do
               raw_data.
@@ -250,15 +250,11 @@ module Spec::Collections
             end # let
 
             it 'should return the items matching the selector' do
-              query      = instance.matching(first_selector)
-              query      = query.matching(second_selector)
-              hash_tools = SleepingKingStudios::Tools::HashTools
-
-              results =
-                query.to_a.map { |hsh| hash_tools.convert_keys_to_symbols(hsh) }
+              query = instance.matching(first_selector)
+              query = query.matching(second_selector)
 
               expect(query.count).to be expected.count
-              expect(results).to be == expected
+              expect(query.to_a).to be == expected
             end # it
           end # describe
 
@@ -273,10 +269,10 @@ module Spec::Collections
 
             describe 'with a chained selector' do
               let(:first_selector) do
-                { :title  => 'The Warlord of Mars' }
+                { 'title'  => 'The Warlord of Mars' }
               end # let
               let(:second_selector) do
-                { :author => 'Edgar Rice Burroughs' }
+                { 'author' => 'Edgar Rice Burroughs' }
               end # let
               let(:expected) do
                 raw_data.
@@ -298,7 +294,7 @@ module Spec::Collections
       end # describe
 
       describe '#matching $eq' do
-        let(:expected_attribute) { :title }
+        let(:expected_attribute) { 'title' }
         let(:expected_value)     { 'A Warlord of Mars' }
         let(:selector) do
           { expected_attribute => { :__eq => expected_value } }
@@ -328,7 +324,7 @@ module Spec::Collections
 
           describe 'with a selector that matches many of the items' do
             let(:expected_value)     { 'Edgar Rice Burroughs' }
-            let(:expected_attribute) { :author }
+            let(:expected_attribute) { 'author' }
 
             include_examples 'should return the items matching the selector'
           end # describe
@@ -338,7 +334,7 @@ module Spec::Collections
               { expected_attribute => { :__eq => expected_value } }
             end # let
             let(:second_selector) do
-              { :author => 'Edgar Rice Burroughs' }
+              { 'author' => 'Edgar Rice Burroughs' }
             end # let
             let(:expected) do
               raw_data.
@@ -347,15 +343,11 @@ module Spec::Collections
             end # let
 
             it 'should return the items matching the selector' do
-              query      = instance.matching(first_selector)
-              query      = query.matching(second_selector)
-              hash_tools = SleepingKingStudios::Tools::HashTools
-
-              results =
-                query.to_a.map { |hsh| hash_tools.convert_keys_to_symbols(hsh) }
+              query = instance.matching(first_selector)
+              query = query.matching(second_selector)
 
               expect(query.count).to be expected.count
-              expect(results).to be == expected
+              expect(query.to_a).to be == expected
             end # it
           end # describe
         end # wrap_context
@@ -369,9 +361,9 @@ module Spec::Collections
             'The Warlord of Mars'
           ] # end titles
         end # let
-        let(:selector) { { :title => { :__in => expected_titles } } }
+        let(:selector) { { 'title' => { :__in => expected_titles } } }
         let(:expected) do
-          raw_data.select { |hsh| expected_titles.include?(hsh[:title]) }
+          raw_data.select { |hsh| expected_titles.include?(hsh['title']) }
         end # let
 
         include_examples 'should return a query' do
@@ -425,34 +417,30 @@ module Spec::Collections
 
           describe 'with a chained selector' do
             let(:first_selector) do
-              { :title => { :__in => expected_titles } }
+              { 'title' => { :__in => expected_titles } }
             end # let
             let(:second_selector) do
-              { :author => 'Edgar Rice Burroughs' }
+              { 'author' => 'Edgar Rice Burroughs' }
             end # let
             let(:expected) do
               raw_data.
-                select { |hsh| expected_titles.include?(hsh[:title]) }.
+                select { |hsh| expected_titles.include?(hsh['title']) }.
                 select { |hsh| hsh >= second_selector }
             end # let
 
             it 'should return the items matching the selector' do
-              query      = instance.matching(first_selector)
-              query      = query.matching(second_selector)
-              hash_tools = SleepingKingStudios::Tools::HashTools
-
-              results =
-                query.to_a.map { |hsh| hash_tools.convert_keys_to_symbols(hsh) }
+              query = instance.matching(first_selector)
+              query = query.matching(second_selector)
 
               expect(query.count).to be expected.count
-              expect(results).to be == expected
+              expect(query.to_a).to be == expected
             end # it
           end # describe
         end # wrap_context
       end # describe
 
       describe '#matching $ne' do
-        let(:expected_attribute) { :title }
+        let(:expected_attribute) { 'title' }
         let(:expected_value)     { 'The Gods of Mars' }
         let(:selector) do
           { expected_attribute => { :__ne => expected_value } }
@@ -485,7 +473,7 @@ module Spec::Collections
               { expected_attribute => { :__ne => expected_value } }
             end # let
             let(:second_selector) do
-              { :author => 'Edgar Rice Burroughs' }
+              { 'author' => 'Edgar Rice Burroughs' }
             end # let
             let(:expected) do
               raw_data.
@@ -494,15 +482,11 @@ module Spec::Collections
             end # let
 
             it 'should return the items matching the selector' do
-              query      = instance.matching(first_selector)
-              query      = query.matching(second_selector)
-              hash_tools = SleepingKingStudios::Tools::HashTools
-
-              results =
-                query.to_a.map { |hsh| hash_tools.convert_keys_to_symbols(hsh) }
+              query = instance.matching(first_selector)
+              query = query.matching(second_selector)
 
               expect(query.count).to be expected.count
-              expect(results).to be == expected
+              expect(query.to_a).to be == expected
             end # it
           end # describe
         end # wrap_context
@@ -623,21 +607,14 @@ module Spec::Collections
       describe 'chaining criteria' do
         shared_examples 'should return the items matching the criteria' do
           it 'should return the items matching the criteria' do
-            hash_tools = SleepingKingStudios::Tools::HashTools
-
-            results =
-              query.to_a.map do |obj|
-                hash_tools.convert_keys_to_symbols(obj)
-              end # map
-
             expect(query.count).to be expected.count
             expect(query.exists?).to be(expected.count > 0)
-            expect(results).to be == expected
+            expect(query.to_a).to be == expected
           end # it
         end # shared_examples
 
         describe 'with a :limit followed by a :matching' do
-          let(:selector) { { :author => 'Edgar Rice Burroughs' } }
+          let(:selector) { { 'author' => 'Edgar Rice Burroughs' } }
           let(:count)    { 2 }
           let(:query)    { instance.limit(count).matching(selector) }
           let(:expected) do
@@ -652,7 +629,7 @@ module Spec::Collections
         end # describe
 
         describe 'with a :matching followed by a :limit' do
-          let(:selector) { { :author => 'Edgar Rice Burroughs' } }
+          let(:selector) { { 'author' => 'Edgar Rice Burroughs' } }
           let(:count)    { 2 }
           let(:query)    { instance.matching(selector).limit(count) }
           let(:expected) do

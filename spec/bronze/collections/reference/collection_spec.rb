@@ -19,7 +19,7 @@ RSpec.describe Bronze::Collections::Reference::Collection do
     if items.empty?
       nil
     elsif items.first.is_a?(Hash)
-      items.find { |hsh| hsh[:id] == id }
+      items.find { |hsh| hsh['id'] == id }
     else
       items.find { |obj| obj.id == id }
     end # if-elsif-else
