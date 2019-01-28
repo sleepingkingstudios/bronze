@@ -27,21 +27,6 @@ RSpec.describe Patina::Transforms::ResourceTransform do
   end # describe
 
   describe '#denormalize' do
-    shared_examples 'should forward the options to the entity class' do
-      context 'when options are set for the transform' do
-        let(:options) { { :permit => Symbol } }
-
-        it 'should forward the options to the entity' do
-          expect(entity_class).
-            to receive(:denormalize).
-            with(attributes, options).
-            and_call_original
-
-          instance.denormalize attributes
-        end # it
-      end # context
-    end # shared_examples
-
     let(:expected) do
       entity = entity_class.new
 
@@ -88,8 +73,6 @@ RSpec.describe Patina::Transforms::ResourceTransform do
         expect(entity.attributes_changed?).to be false
         expect(entity.persisted?).to be true
       end # it
-
-      include_examples 'should forward the options to the entity class'
     end # describe
 
     describe 'with an attributes hash' do
@@ -105,8 +88,6 @@ RSpec.describe Patina::Transforms::ResourceTransform do
         expect(entity.attributes_changed?).to be false
         expect(entity.persisted?).to be true
       end # it
-
-      include_examples 'should forward the options to the entity class'
     end # describe
   end # describe
 
@@ -133,7 +114,7 @@ RSpec.describe Patina::Transforms::ResourceTransform do
 
     let(:expected) do
       entity_class.attributes.each_key.with_object({}) do |attr_name, hsh|
-        hsh[attr_name] = entity.send(attr_name)
+        hsh[attr_name.to_s] = entity.send(attr_name)
       end # each
     end # let
 

@@ -21,8 +21,8 @@ module Spec::Entities::Normalization
           end
           let(:container_properties) do
             {
-              id:    container.id,
-              shape: container.shape
+              'id'    => container.id,
+              'shape' => container.shape
             }
           end
 
@@ -48,22 +48,24 @@ module Spec::Entities::Normalization
           end
           let(:alloyed_properties) do
             {
-              id:      alloyed_material.id,
-              book_id: instance.id,
-              metal:   alloyed_material.metal
+              'id'      => alloyed_material.id,
+              'book_id' => instance.id,
+              'metal'   => alloyed_material.metal
             }
           end
           let(:element_properties) do
-            alloyed_material.elements.map(&:attributes)
+            alloyed_material.elements.map do |element|
+              tools.hash.convert_keys_to_strings(element.attributes)
+            end
           end
           let(:pure_material) do
             Spec::Material.new(metal: 'iron')
           end
           let(:pure_properties) do
             {
-              id:      pure_material.id,
-              book_id: instance.id,
-              metal:   pure_material.metal
+              'id'      => pure_material.id,
+              'book_id' => instance.id,
+              'metal'   => pure_material.metal
             }
           end
 
@@ -105,7 +107,9 @@ module Spec::Entities::Normalization
             ]
           end
           let(:variant_properties) do
-            instance.variants.map(&:attributes)
+            instance.variants.map do |variant|
+              tools.hash.convert_keys_to_strings(variant.attributes)
+            end
           end
 
           example_class 'Spec::Variant', Bronze::Entities::Entity do |klass|
@@ -123,7 +127,10 @@ module Spec::Entities::Normalization
           end
         end
 
-        let(:expected) { instance.attributes }
+        let(:tools) { SleepingKingStudios::Tools::Toolbelt.instance }
+        let(:expected) do
+          tools.hash.convert_keys_to_strings(instance.attributes)
+        end
 
         it 'should define the method' do
           expect(instance).
@@ -135,12 +142,12 @@ module Spec::Entities::Normalization
         it { expect(instance.normalize).to be == expected }
 
         wrap_context 'when the entity class has a references_one association' do
-          let(:expected) { super().merge(container_id: nil) }
+          let(:expected) { super().merge('container_id' => nil) }
 
           it { expect(instance.normalize).to be == expected }
 
           describe 'with associations: { container: true }' do
-            let(:expected) { super().merge(container: nil) }
+            let(:expected) { super().merge('container' => nil) }
 
             it 'should normalize the association' do
               expect(instance.normalize(associations: { container: true }))
@@ -149,14 +156,16 @@ module Spec::Entities::Normalization
           end
 
           context 'when the entity has a container' do
-            let(:expected) { super().merge(container_id: container.id) }
+            let(:expected) { super().merge('container_id' => container.id) }
 
             before(:example) { instance.container = container }
 
             it { expect(instance.normalize).to be == expected }
 
             describe 'with associations: { container: true }' do
-              let(:expected) { super().merge(container: container_properties) }
+              let(:expected) do
+                super().merge('container' => container_properties)
+              end
 
               it 'should normalize the association' do
                 expect(instance.normalize(associations: { container: true }))
@@ -170,7 +179,7 @@ module Spec::Entities::Normalization
           it { expect(instance.normalize).to be == expected }
 
           describe 'with associations: { material: true }' do
-            let(:expected) { super().merge(material: nil) }
+            let(:expected) { super().merge('material' => nil) }
 
             it 'should normalize the association' do
               expect(instance.normalize(associations: { material: true }))
@@ -184,7 +193,7 @@ module Spec::Entities::Normalization
             it { expect(instance.normalize).to be == expected }
 
             describe 'with associations: { material: true }' do
-              let(:expected) { super().merge(material: pure_properties) }
+              let(:expected) { super().merge('material' => pure_properties) }
 
               it 'should normalize the association' do
                 expect(instance.normalize(associations: { material: true }))
@@ -199,7 +208,7 @@ module Spec::Entities::Normalization
             it { expect(instance.normalize).to be == expected }
 
             describe 'with associations: { material: true }' do
-              let(:expected) { super().merge(material: alloyed_properties) }
+              let(:expected) { super().merge('material' => alloyed_properties) }
 
               it 'should normalize the association' do
                 expect(instance.normalize(associations: { material: true }))
@@ -210,8 +219,8 @@ module Spec::Entities::Normalization
             describe 'with associations: { material: { elements } }' do
               let(:expected) do
                 super().merge(
-                  material:
-                    alloyed_properties.merge(elements: element_properties)
+                  'material' =>
+                    alloyed_properties.merge('elements' => element_properties)
                 )
               end
 
@@ -234,7 +243,7 @@ module Spec::Entities::Normalization
           it { expect(instance.normalize).to be == expected }
 
           describe 'with associations: { variants: true }' do
-            let(:expected) { super().merge(variants: []) }
+            let(:expected) { super().merge('variants' => []) }
 
             it 'should normalize the association' do
               expect(instance.normalize(associations: { variants: true }))
@@ -248,7 +257,7 @@ module Spec::Entities::Normalization
             it { expect(instance.normalize).to be == expected }
 
             describe 'with associations: { variants: true }' do
-              let(:expected) { super().merge(variants: variant_properties) }
+              let(:expected) { super().merge('variants' => variant_properties) }
 
               it 'should normalize the association' do
                 expect(instance.normalize(associations: { variants: true }))
@@ -267,7 +276,7 @@ module Spec::Entities::Normalization
           let(:title)  { 'The Aeneid' }
           let(:author) { 'Virgil' }
           let(:expected) do
-            super().merge(container_id: nil)
+            super().merge('container_id' => nil)
           end
 
           before(:example) do
@@ -283,9 +292,9 @@ module Spec::Entities::Normalization
           describe 'with associations: { container, material, variants }' do
             let(:expected) do
               super().merge(
-                container: nil,
-                material:  nil,
-                variants:  []
+                'container' => nil,
+                'material'  => nil,
+                'variants'  => []
               )
             end
 
@@ -305,7 +314,7 @@ module Spec::Entities::Normalization
           end
 
           context 'when the entity has many associations' do
-            let(:expected) { super().merge(container_id: container.id) }
+            let(:expected) { super().merge('container_id' => container.id) }
 
             before(:example) do
               instance.container = container
@@ -316,7 +325,9 @@ module Spec::Entities::Normalization
             it { expect(instance.normalize).to be == expected }
 
             describe 'with associations: { container: true }' do
-              let(:expected) { super().merge(container: container_properties) }
+              let(:expected) do
+                super().merge('container' => container_properties)
+              end
 
               it 'should normalize the association' do
                 expect(instance.normalize(associations: { container: true }))
@@ -325,7 +336,7 @@ module Spec::Entities::Normalization
             end
 
             describe 'with associations: { material: true }' do
-              let(:expected) { super().merge(material: alloyed_properties) }
+              let(:expected) { super().merge('material' => alloyed_properties) }
 
               it 'should normalize the association' do
                 expect(instance.normalize(associations: { material: true }))
@@ -336,8 +347,8 @@ module Spec::Entities::Normalization
             describe 'with associations: { material: { elements } }' do
               let(:expected) do
                 super().merge(
-                  material:
-                    alloyed_properties.merge(elements: element_properties)
+                  'material' =>
+                    alloyed_properties.merge('elements' => element_properties)
                 )
               end
 
@@ -355,7 +366,7 @@ module Spec::Entities::Normalization
             end
 
             describe 'with associations: { variants: true }' do
-              let(:expected) { super().merge(variants: variant_properties) }
+              let(:expected) { super().merge('variants' => variant_properties) }
 
               it 'should normalize the association' do
                 expect(instance.normalize(associations: { variants: true }))
@@ -366,10 +377,10 @@ module Spec::Entities::Normalization
             describe 'with associations: { container, material, variants }' do
               let(:expected) do
                 super().merge(
-                  container: container_properties,
-                  material:
-                    alloyed_properties.merge(elements: element_properties),
-                  variants:  variant_properties
+                  'container' => container_properties,
+                  'material'  =>
+                    alloyed_properties.merge('elements' => element_properties),
+                  'variants'  => variant_properties
                 )
               end
 

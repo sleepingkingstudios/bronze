@@ -29,7 +29,7 @@ module Bronze::Collections::Reference
     end # method clear_collection
 
     def delete_one id
-      index = @data.index { |hsh| hsh[:id] == id }
+      index = @data.index { |hsh| hsh['id'] == id }
 
       @data.slice!(index)
 
@@ -43,7 +43,7 @@ module Bronze::Collections::Reference
     end # method insert_one
 
     def update_one id, attributes
-      item = @data.find { |hsh| hsh[:id] == id }
+      item = @data.find { |hsh| hsh['id'] == id }
 
       item.update(attributes)
 

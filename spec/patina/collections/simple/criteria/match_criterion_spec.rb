@@ -15,34 +15,34 @@ RSpec.describe Patina::Collections::Simple::Criteria::MatchCriterion do
       let(:data) do
         [
           {
-            :id     => '1',
-            :title  => 'The Fellowship of the Ring',
-            :author => 'J.R.R. Tolkien'
+            'id'     => '1',
+            'title'  => 'The Fellowship of the Ring',
+            'author' => 'J.R.R. Tolkien'
           }, # end hash
           {
-            :id     => '2',
-            :title  => 'The Two Towers',
-            :author => 'J.R.R. Tolkien'
+            'id'     => '2',
+            'title'  => 'The Two Towers',
+            'author' => 'J.R.R. Tolkien'
           }, # end hash
           {
-            :id     => '3',
-            :title  => 'The Return of the King',
-            :author => 'J.R.R. Tolkien'
+            'id'     => '3',
+            'title'  => 'The Return of the King',
+            'author' => 'J.R.R. Tolkien'
           }, # end hash
           {
-            :id     => '4',
-            :title  => 'A Princess of Mars',
-            :author => 'Edgar Rice Burroughs'
+            'id'     => '4',
+            'title'  => 'A Princess of Mars',
+            'author' => 'Edgar Rice Burroughs'
           }, # end hash
           {
-            :id     => '5',
-            :title  => 'The Gods of Mars',
-            :author => 'Edgar Rice Burroughs'
+            'id'     => '5',
+            'title'  => 'The Gods of Mars',
+            'author' => 'Edgar Rice Burroughs'
           }, # end hash
           {
-            :id     => '6',
-            :title  => 'The Warlord of Mars',
-            :author => 'Edgar Rice Burroughs'
+            'id'     => '6',
+            'title'  => 'The Warlord of Mars',
+            'author' => 'Edgar Rice Burroughs'
           }, # end hash
         ] # end array
       end # let
@@ -60,26 +60,29 @@ RSpec.describe Patina::Collections::Simple::Criteria::MatchCriterion do
       end # let
 
       describe 'with a selector that does not match any items' do
-        let(:selector) { { :id => '0' } }
+        let(:selector) { { 'id' => '0' } }
 
         it { expect(instance.call data).to be == [] }
       end # describe
 
       describe 'with a selector that matches one item' do
-        let(:selector) { { :id => '1' } }
+        let(:selector) { { 'id' => '1' } }
 
         it { expect(instance.call data).to be == expected }
       end # describe
 
       describe 'with a selector that matches many items' do
-        let(:selector) { { :author => 'J.R.R. Tolkien' } }
+        let(:selector) { { 'author' => 'J.R.R. Tolkien' } }
 
         it { expect(instance.call data).to be == expected }
       end # describe
 
       describe 'with a multi-attribute selector' do
         let(:selector) do
-          { :title => 'A Princess of Mars', :author => 'Edgar Rice Burroughs' }
+          {
+            'title'  => 'A Princess of Mars',
+            'author' => 'Edgar Rice Burroughs'
+          }
         end # let
 
         it { expect(instance.call data).to be == expected }

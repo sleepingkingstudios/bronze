@@ -15,22 +15,22 @@ RSpec.describe Bronze::Entities::Constraints::UniquenessConstraint do
   let(:data) do
     [
       {
-        :id     => '0',
-        :title  => 'The Fellowship of the Ring',
-        :author => 'J.R.R. Tolkien',
-        :series => 'The Lord of the Rings'
+        'id'     => '0',
+        'title'  => 'The Fellowship of the Ring',
+        'author' => 'J.R.R. Tolkien',
+        'series' => 'The Lord of the Rings'
       }, # end hash
       {
-        :id     => '1',
-        :title  => 'The Two Towers',
-        :author => 'J.R.R. Tolkien',
-        :series => 'The Lord of the Rings'
+        'id'     => '1',
+        'title'  => 'The Two Towers',
+        'author' => 'J.R.R. Tolkien',
+        'series' => 'The Lord of the Rings'
       }, # end hash
       {
-        :id     => '2',
-        :title  => 'The Return of the King',
-        :author => 'J.R.R. Tolkien',
-        :series => 'The Lord of the Rings'
+        'id'     => '2',
+        'title'  => 'The Return of the King',
+        'author' => 'J.R.R. Tolkien',
+        'series' => 'The Lord of the Rings'
       } # end hash
     ] # end array
   end # let

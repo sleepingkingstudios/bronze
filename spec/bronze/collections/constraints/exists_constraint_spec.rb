@@ -14,19 +14,19 @@ RSpec.describe Bronze::Collections::Constraints::ExistsConstraint do
   let(:data) do
     [
       {
-        :title  => 'The Fellowship of the Ring',
-        :author => 'J.R.R. Tolkien',
-        :series => 'The Lord of the Rings'
+        'title'  => 'The Fellowship of the Ring',
+        'author' => 'J.R.R. Tolkien',
+        'series' => 'The Lord of the Rings'
       }, # end hash
       {
-        :title  => 'The Two Towers',
-        :author => 'J.R.R. Tolkien',
-        :series => 'The Lord of the Rings'
+        'title'  => 'The Two Towers',
+        'author' => 'J.R.R. Tolkien',
+        'series' => 'The Lord of the Rings'
       }, # end hash
       {
-        :title  => 'The Return of the King',
-        :author => 'J.R.R. Tolkien',
-        :series => 'The Lord of the Rings'
+        'title'  => 'The Return of the King',
+        'author' => 'J.R.R. Tolkien',
+        'series' => 'The Lord of the Rings'
       } # end hash
     ] # end array
   end # let

@@ -37,34 +37,34 @@ module Spec::Collections
       let(:raw_data) do
         [
           {
-            :id     => '1',
-            :title  => 'The Fellowship of the Ring',
-            :author => 'J.R.R. Tolkien'
+            'id'     => '1',
+            'title'  => 'The Fellowship of the Ring',
+            'author' => 'J.R.R. Tolkien'
           }, # end hash
           {
-            :id     => '2',
-            :title  => 'The Two Towers',
-            :author => 'J.R.R. Tolkien'
+            'id'     => '2',
+            'title'  => 'The Two Towers',
+            'author' => 'J.R.R. Tolkien'
           }, # end hash
           {
-            :id     => '3',
-            :title  => 'The Return of the King',
-            :author => 'J.R.R. Tolkien'
+            'id'     => '3',
+            'title'  => 'The Return of the King',
+            'author' => 'J.R.R. Tolkien'
           }, # end hash
           {
-            :id     => '4',
-            :title  => 'A Princess of Mars',
-            :author => 'Edgar Rice Burroughs'
+            'id'     => '4',
+            'title'  => 'A Princess of Mars',
+            'author' => 'Edgar Rice Burroughs'
           }, # end hash
           {
-            :id     => '5',
-            :title  => 'The Gods of Mars',
-            :author => 'Edgar Rice Burroughs'
+            'id'     => '5',
+            'title'  => 'The Gods of Mars',
+            'author' => 'Edgar Rice Burroughs'
           }, # end hash
           {
-            :id     => '6',
-            :title  => 'The Warlord of Mars',
-            :author => 'Edgar Rice Burroughs'
+            'id'     => '6',
+            'title'  => 'The Warlord of Mars',
+            'author' => 'Edgar Rice Burroughs'
           }, # end hash
         ] # end array
       end # let
@@ -245,6 +245,7 @@ module Spec::Collections
 
     shared_examples 'should update the item' do
       it 'should update the item' do
+        tools  = SleepingKingStudios::Tools::Toolbelt.instance
         result = nil
         errors = nil
 
@@ -256,6 +257,7 @@ module Spec::Collections
 
         item = find_item(id)
         hsh  = item.is_a?(Hash) ? item : item.attributes
+        hsh  = tools.hash.convert_keys_to_strings(hsh)
 
         attributes.each do |key, value|
           expect(hsh[key]).to be == value
@@ -441,17 +443,17 @@ module Spec::Collections
         wrap_context 'when the collection contains many items' do
           describe 'with a valid id and a valid attributes hash' do
             let(:id)         { '3' }
-            let(:attributes) { { :title => 'The Revenge of the Sith' } }
+            let(:attributes) { { 'title' => 'The Revenge of the Sith' } }
 
             include_examples 'should update the item'
           end # describe
 
           wrap_context 'when a transform is set' do
-            let(:entity) { entity_class.new(attributes.merge(:id => id)) }
+            let(:entity) { entity_class.new(attributes.merge('id' => id)) }
 
             describe 'with a valid id and a valid attributes hash' do
               let(:id)         { '3' }
-              let(:attributes) { { :title => 'The Revenge of the Sith' } }
+              let(:attributes) { { 'title' => 'The Revenge of the Sith' } }
 
               include_examples 'should update the item'
             end # describe

@@ -32,7 +32,7 @@ module Bronze::Entities::Transforms
     #
     # @see #entity_class.
     def denormalize attributes
-      entity_class.denormalize(attributes || {}, options)
+      entity_class.denormalize(attributes || {})
     end # method denormalize
 
     # Converts the entity into a data hash, with the keys being the defined
