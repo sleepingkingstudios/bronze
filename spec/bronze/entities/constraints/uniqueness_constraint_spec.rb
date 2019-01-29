@@ -4,6 +4,7 @@ require 'bronze/collections/reference/collection'
 require 'bronze/constraints/constraint_examples'
 require 'bronze/entities/constraints/uniqueness_constraint'
 require 'bronze/entities/entity'
+require 'bronze/entities/primary_keys/uuid'
 
 RSpec.describe Bronze::Entities::Constraints::UniquenessConstraint do
   include Spec::Constraints::ConstraintExamples
@@ -38,7 +39,11 @@ RSpec.describe Bronze::Entities::Constraints::UniquenessConstraint do
   let(:attributes) { %w[title] }
   let(:instance)   { described_class.new(*attributes) }
 
-  example_class 'Spec::Book', :base_class => Bronze::Entities::Entity do |klass|
+  example_class 'Spec::Book', Bronze::Entities::Entity do |klass|
+    klass.send :include, Bronze::Entities::PrimaryKeys::Uuid
+
+    klass.define_primary_key :id
+
     klass.attribute :title,  String
     klass.attribute :author, String
     klass.attribute :series, String

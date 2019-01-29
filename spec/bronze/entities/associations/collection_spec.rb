@@ -3,6 +3,7 @@
 require 'bronze/entities/associations/associations_examples'
 require 'bronze/entities/associations/collection'
 require 'bronze/entities/associations/metadata/has_many_metadata'
+require 'bronze/entities/primary_keys/uuid'
 require 'support/example_entity'
 
 RSpec.describe Bronze::Entities::Associations::Collection do
@@ -259,8 +260,16 @@ RSpec.describe Bronze::Entities::Associations::Collection do
     end # wrap_context
   end # shared_examples
 
-  example_class 'Spec::Author', :base_class => Spec::ExampleEntity
+  example_class 'Spec::Author', Spec::ExampleEntity do |klass|
+    klass.send :include, Bronze::Entities::PrimaryKeys::Uuid
+
+    klass.define_primary_key :id
+  end
   example_class 'Spec::Book',   :base_class => Spec::ExampleEntity do |klass|
+    klass.send :include, Bronze::Entities::PrimaryKeys::Uuid
+
+    klass.define_primary_key :id
+
     klass.references_one :author, :class_name => 'Spec::Author'
   end # example_class
 

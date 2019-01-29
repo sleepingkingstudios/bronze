@@ -5,6 +5,7 @@ require 'sleeping_king_studios/tools/toolbox/mixin'
 require 'bronze/collections/null_query'
 require 'bronze/collections/querying_examples'
 require 'bronze/entities/entity'
+require 'bronze/entities/primary_keys/uuid'
 require 'bronze/errors'
 require 'bronze/transforms/attributes_transform'
 require 'bronze/transforms/copy_transform'
@@ -268,6 +269,10 @@ module Spec::Collections
     shared_examples 'should implement the Collection methods' do
       let(:entity_class) do
         Class.new(Bronze::Entities::Entity) do
+          include Bronze::Entities::PrimaryKeys::Uuid
+
+          define_primary_key :id
+
           attribute :title,  String
           attribute :author, String
         end # class

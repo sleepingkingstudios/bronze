@@ -3,6 +3,7 @@
 require 'sleeping_king_studios/tools/toolbelt'
 
 require 'bronze/entities/attributes/attributes_examples'
+require 'bronze/entities/primary_keys/uuid'
 require 'support/example_entity'
 
 module Spec::Entities
@@ -15,7 +16,11 @@ module Spec::Entities::Associations::AssociationsExamples
   include Spec::Entities::Attributes::AttributesExamples
 
   shared_context 'when associations are defined for the class' do
-    example_class 'Spec::Author', :base_class => Bronze::Entities::Entity
+    example_class 'Spec::Author', Bronze::Entities::Entity do |klass|
+      klass.send :include, Bronze::Entities::PrimaryKeys::Uuid
+
+      klass.define_primary_key :id
+    end
 
     let(:described_class) do
       Class.new(super()) do
@@ -1555,7 +1560,7 @@ module Spec::Entities::Associations::AssociationsExamples
 
       describe 'with a valid attribute name' do
         let(:attribute_name) { :association_id }
-        let(:attribute_type) { described_class::KEY_TYPE }
+        let(:attribute_type) { String }
         let(:initial_attributes) do
           super().merge :association_id => Bronze::Entities::Ulid.generate
         end # let
@@ -1823,7 +1828,11 @@ module Spec::Entities::Associations::AssociationsExamples
         let(:association_opts)  { { :class_name => 'Spec::Author' } }
         let(:association_class) { Spec::Author }
 
-        example_class 'Spec::Author', :base_class => Bronze::Entities::Entity
+        example_class 'Spec::Author', Bronze::Entities::Entity do |klass|
+          klass.send :include, Bronze::Entities::PrimaryKeys::Uuid
+
+          klass.define_primary_key :id
+        end
 
         it 'should set and return the metadata' do
           metadata = described_class.references_one(

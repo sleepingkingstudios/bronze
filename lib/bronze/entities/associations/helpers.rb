@@ -31,7 +31,7 @@ module Bronze::Entities
         return if allow_nil && value.nil?
 
         return if allow_primary_key &&
-                  value.is_a?(metadata.association_class::KEY_TYPE)
+                  value.is_a?(metadata.association_class.primary_key.type)
 
         return if value.is_a?(metadata.association_class)
 

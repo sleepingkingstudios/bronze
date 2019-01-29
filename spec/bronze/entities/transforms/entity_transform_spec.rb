@@ -1,11 +1,16 @@
 # spec/bronze/entities/transforms/entity_transform_spec.rb
 
 require 'bronze/entities/entity'
+require 'bronze/entities/primary_keys/uuid'
 require 'bronze/entities/transforms/entity_transform'
 
 RSpec.describe Bronze::Entities::Transforms::EntityTransform do
   let(:entity_class) do
     Class.new(Bronze::Entities::Entity) do
+      include Bronze::Entities::PrimaryKeys::Uuid
+
+      define_primary_key :id
+
       attribute :title,   String
       attribute :author,  String
       attribute :preface, String
