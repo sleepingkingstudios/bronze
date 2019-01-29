@@ -358,6 +358,10 @@ Most attributes do not require a transform, and are unchanged during normalizati
     point = Point.new(3, 4)
     map   = Map.new(point: point)
 
+##### :default_transform Option
+
+The `:default_transform` option flags the transform as a default. Default transforms can be skipped when normalizing the entity (see [Normalization](#label-Normalization), below).
+
 ### Normalization
 
     require 'bronze/entities/normalization'
@@ -448,7 +452,7 @@ When an attribute has a defined transform (either from an [attribute transform](
     attributes = {
       title: 'Triskadecaphobia Today',
       issue: 13,
-      date:  #<DateTime: 2013-10-03T13:13:13+13:00>
+      date:  DateTime.new(2013, 10, 3, 13, 13, 13, '+13:00')
     }
     periodical = Periodical.new(attributes)
     hash       = periodical.normalize
@@ -456,6 +460,24 @@ When an attribute has a defined transform (either from an [attribute transform](
     hash['title'] #=> 'Triskadecaphobia Today'
     hash['issue'] #=> 13
     hash['date']  #=> '2013-10-03T13:13:13+1300'
+
+##### :permit Option
+
+If the `:permit` option is set, then the given class or classes are normalized as-is, rather than by applying a transform. This can be useful when the destination has native support for certain data types, such as an ORM for a SQL database natively converting date and time objects.
+
+    attributes = {
+      title: 'Triskadecaphobia Today',
+      issue: 13,
+      date:  DateTime.new(2013, 10, 3, 13, 13, 13, '+13:00')
+    }
+    periodical = Periodical.new(attributes)
+    hash       = periodical.normalize(permit: DateTime)
+    hash.class    #=> Hash
+    hash['title'] #=> 'Triskadecaphobia Today'
+    hash['issue'] #=> 13
+    hash['date']  #=> #<DateTime: 2013-10-03T13:13:13+13:00>
+
+Only default transforms can be skipped, i.e. the built-in default transforms for `BigDecimal`, `Date`, `DateTime`, `Symbol`, and `Time`, or any attributes with the `:default_transform` option set.
 
 ### Primary Keys
 
@@ -745,3 +767,51 @@ Converts a Time to an integer representation.
     #=> 1982
     time.hour
     #=> 0
+
+### Entity Transforms
+
+The following transforms can be used to serialize or map entity objects.
+
+#### Normalize Transform
+
+    require 'bronze/transforms/entities/normalize_transform'
+
+Converts an entity to a normal representation and vice versa. See [Normalization](#label-Normalization), above.
+
+    class Periodical
+      attribute :title, String
+      attribute :issue, Integer
+      attribute :date,  DateTime
+    end
+    attributes = {
+      title: 'Triskadecaphobia Today',
+      issue: 13,
+      date:  DateTime.new(2013, 10, 3, 13, 13, 13, '+13:00')
+    }
+    transform  =
+      Bronze::Transforms::Entities::NormalizeTransform.new(Periodical)
+    periodical = Periodical.new(attributes)
+    hash       = transform.normalize(periodical)
+    hash.class    #=> Hash
+    hash['title'] #=> 'Triskadecaphobia Today'
+    hash['issue'] #=> 13
+    hash['date']  #=> '2013-10-03T13:13:13+1300'
+
+    periodical = transform.denormalize(attributes)
+    #=> an instance of Periodical
+    periodical.title #=> 'Triskadecaphobia Today'
+    periodical.issue #=> 13
+    periodical.date  #=> #<DateTime: 2013-10-03T13:13:13+13:00>
+
+The constructor also accepts an array of permitted types.
+
+    transform  =
+      Bronze::Transforms::Entities::NormalizeTransform.new(
+        Periodical,
+        permit: [DateTime]
+      )
+    hash       = transform.normalize(periodical)
+    hash.class    #=> Hash
+    hash['title'] #=> 'Triskadecaphobia Today'
+    hash['issue'] #=> 13
+    hash['date']  #=> #<DateTime: 2013-10-03T13:13:13+13:00>

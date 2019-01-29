@@ -35,6 +35,7 @@ RSpec.describe Bronze::Entities::Attributes::Builder do
       %w[
         allow_nil
         default
+        default_transform
         foreign_key
         primary_key
         read_only
@@ -138,8 +139,14 @@ RSpec.describe Bronze::Entities::Attributes::Builder do
       it { expect(metadata.transform).to be_expected_transform }
 
       if options[:transform]
+        let(:default_transform) { !!options[:default_transform] }
+
+        it { expect(metadata.default_transform?).to be default_transform }
+
         it { expect(metadata.transform?).to be true }
       else
+        it { expect(metadata.default_transform?).to be true }
+
         it { expect(metadata.transform?).to be !!defined?(expected_transform) }
       end
 
@@ -358,6 +365,16 @@ RSpec.describe Bronze::Entities::Attributes::Builder do
       example_class 'Spec::ExampleTransform', Bronze::Transform
 
       include_examples 'should define the attribute', transform: true
+
+      # rubocop:disable RSpec/NestedGroups
+      describe 'with default_transform: true' do
+        let(:attribute_opts) { super().merge default_transform: true }
+
+        include_examples 'should define the attribute',
+          default_transform: true,
+          transform:         true
+      end
+      # rubocop:enable RSpec/NestedGroups
 
       # rubocop:disable RSpec/NestedGroups
       context 'when the attribute transform class defines ::instance' do
