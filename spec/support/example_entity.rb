@@ -1,9 +1,14 @@
 # spec/support/example_entity.rb
 
 require 'bronze/entities/entity'
+require 'bronze/entities/primary_keys/uuid'
 
 module Spec
   class ExampleEntity < Bronze::Entities::Entity
+    include Bronze::Entities::PrimaryKeys::Uuid
+
+    define_primary_key :id
+
     attribute :name, String
 
     def inspect

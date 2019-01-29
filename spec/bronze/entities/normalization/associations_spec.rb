@@ -6,6 +6,7 @@ require 'bronze/entities/normalization'
 require 'bronze/entities/normalization/associations'
 require 'bronze/entities/normalization/associations_examples'
 require 'bronze/entities/primary_key'
+require 'bronze/entities/primary_keys/uuid'
 require 'support/examples/entities/attributes_examples'
 require 'support/examples/entities/normalization_examples'
 
@@ -33,6 +34,9 @@ RSpec.describe Bronze::Entities::Normalization::Associations do
     klass.send :include, Bronze::Entities::Normalization
     klass.send :include, Bronze::Entities::Normalization::Associations
     klass.send :include, Bronze::Entities::PrimaryKey
+    klass.send :include, Bronze::Entities::PrimaryKeys::Uuid
+
+    klass.define_primary_key :id
   end
 
   include_examples 'should implement the Normalization methods'

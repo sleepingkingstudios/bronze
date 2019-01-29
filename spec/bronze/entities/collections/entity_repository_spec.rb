@@ -2,6 +2,7 @@
 
 require 'bronze/collections/reference/repository'
 require 'bronze/entities/collections/entity_repository'
+require 'bronze/entities/primary_keys/uuid'
 require 'bronze/transforms/identity_transform'
 
 RSpec.describe Bronze::Entities::Collections::EntityRepository do
@@ -66,7 +67,11 @@ RSpec.describe Bronze::Entities::Collections::EntityRepository do
     describe 'with an entity class' do
       options = { :base_class => Bronze::Entities::Entity }
       example_class 'Spec::RareBook', options do |klass|
-        klass.send :attribute, :title, String
+        klass.send :include, Bronze::Entities::PrimaryKeys::Uuid
+
+        klass.define_primary_key :id
+
+        klass.attribute :title, String
       end # example_class
 
       let(:collection_type) { Spec::RareBook }

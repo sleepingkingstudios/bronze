@@ -1,5 +1,6 @@
 require 'bronze/contracts/contract'
 require 'bronze/entities/entity'
+require 'bronze/entities/primary_keys/uuid'
 require 'bronze/transforms/identity_transform'
 
 require 'patina/collections/simple/repository'
@@ -11,8 +12,11 @@ module Spec::Support::Examples
     extend RSpec::SleepingKingStudios::Concerns::SharedExampleGroup
 
     shared_context 'when the entity class is defined' do
-      options = { :base_class => Bronze::Entities::Entity }
-      example_class 'Spec::Periodical', options do |klass|
+      example_class 'Spec::Periodical', Bronze::Entities::Entity do |klass|
+        klass.send :include, Bronze::Entities::PrimaryKeys::Uuid
+
+        klass.define_primary_key :id
+
         klass.attribute :title,  String
         klass.attribute :volume, Integer
       end

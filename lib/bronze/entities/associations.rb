@@ -37,7 +37,7 @@ module Bronze::Entities
       def foreign_key attribute_name
         metadata = build_attribute(
           attribute_name,
-          Bronze::Entities::PrimaryKey::KEY_TYPE,
+          primary_key&.type || String,
           :allow_nil   => true,
           :foreign_key => true,
           :read_only   => true

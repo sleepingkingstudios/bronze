@@ -1,5 +1,6 @@
 # spec/patina/collections/simple/repository_spec.rb
 
+require 'bronze/entities/primary_keys/uuid'
 require 'bronze/entities/transforms/entity_transform'
 require 'bronze/transforms/copy_transform'
 require 'bronze/transforms/identity_transform'
@@ -66,9 +67,12 @@ RSpec.describe Patina::Collections::Simple::Repository do
     end # describe
 
     describe 'with an entity class' do
-      example_class 'Spec::RareBook', :base_class => Bronze::Entities::Entity \
-      do |klass|
-        klass.send :attribute, :title, String
+      example_class 'Spec::RareBook', Bronze::Entities::Entity do |klass|
+        klass.send :include, Bronze::Entities::PrimaryKeys::Uuid
+
+        klass.define_primary_key :id
+
+        klass.attribute :title, String
       end # example_class
 
       let(:collection_type) { Spec::RareBook }

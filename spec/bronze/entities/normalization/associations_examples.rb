@@ -1,6 +1,7 @@
 # spec/bronze/entities/normalization/associations_examples.rb
 
 require 'bronze/entities/entity'
+require 'bronze/entities/primary_keys/uuid'
 
 module Spec::Entities
   module Normalization; end
@@ -27,6 +28,10 @@ module Spec::Entities::Normalization
           end
 
           example_class 'Spec::Container', Bronze::Entities::Entity do |klass|
+            klass.send :include, Bronze::Entities::PrimaryKeys::Uuid
+
+            klass.define_primary_key :id
+
             klass.attribute :shape, String
           end
 
@@ -71,6 +76,10 @@ module Spec::Entities::Normalization
 
           example_class 'Spec::Element', Bronze::Entities::Entity \
           do |klass|
+            klass.send :include, Bronze::Entities::PrimaryKeys::Uuid
+
+            klass.define_primary_key :id
+
             klass.attribute :metal, String
 
             klass.references_one :material,
@@ -80,6 +89,10 @@ module Spec::Entities::Normalization
 
           example_class 'Spec::Material', Bronze::Entities::Entity \
           do |klass|
+            klass.send :include, Bronze::Entities::PrimaryKeys::Uuid
+
+            klass.define_primary_key :id
+
             klass.attribute :metal, String
 
             klass.references_one :book,
