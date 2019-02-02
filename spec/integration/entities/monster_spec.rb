@@ -1,8 +1,11 @@
 # frozen_string_literal: true
 
 require 'support/entities/monster'
+require 'support/examples/entity_examples'
 
 RSpec.describe Spec::Monster do
+  include Spec::Support::Examples::EntityExamples
+
   subject(:monster) { described_class.new(initial_attributes) }
 
   let(:default_attributes) do
@@ -14,7 +17,8 @@ RSpec.describe Spec::Monster do
       level:        nil,
       release_date: nil,
       stats:        nil,
-      type:         nil
+      type:         nil,
+      uuid:         nil
     }
   end
   let(:initial_attributes) do
@@ -25,260 +29,40 @@ RSpec.describe Spec::Monster do
       release_date: Date.new(2005, 4, 26)
     }
   end
+  let(:expected_attributes) do
+    default_attributes
+      .merge(initial_attributes)
+      .merge(uuid: be_a_uuid)
+  end
 
   describe '::new' do
     it { expect(described_class).to be_constructible.with(0..1).arguments }
   end
 
+  include_examples 'should define UUID primary key', :uuid
+
+  include_examples 'should define attribute', :capture_date, DateTime
+
+  include_examples 'should define attribute', :capture_odds, BigDecimal
+
+  include_examples 'should define attribute', :design_time, Time
+
+  include_examples 'should define attribute', :level, Integer
+
+  include_examples 'should define attribute', :name, String
+
+  include_examples 'should define attribute', :release_date, Date
+
+  include_examples 'should define attribute',
+    :stats,
+    described_class::Stats,
+    transform: described_class::StatsTransform
+
+  include_examples 'should define attribute', :type, Symbol
+
   describe '::attributes' do
     describe 'with :army' do
       it { expect(described_class.attributes[:army]).to be nil }
-    end
-
-    describe 'with :capture_date' do
-      let(:metadata) { described_class.attributes[:capture_date] }
-
-      it { expect(metadata).to be_a Bronze::Entities::Attributes::Metadata }
-
-      it { expect(metadata.name).to be :capture_date }
-
-      it { expect(metadata.type).to be DateTime }
-
-      it { expect(metadata.allow_nil?).to be false }
-
-      it { expect(metadata.default?).to be false }
-
-      it { expect(metadata.default).to be nil }
-
-      it { expect(metadata.foreign_key?).to be false }
-
-      it { expect(metadata.primary_key?).to be false }
-
-      it { expect(metadata.read_only?).to be false }
-
-      it 'should return the transform' do
-        expect(metadata.transform)
-          .to be_a Bronze::Transforms::Attributes::DateTimeTransform
-      end
-
-      it { expect(metadata.transform?).to be true }
-    end
-
-    describe 'with :capture_odds' do
-      let(:metadata) { described_class.attributes[:capture_odds] }
-
-      it { expect(metadata).to be_a Bronze::Entities::Attributes::Metadata }
-
-      it { expect(metadata.name).to be :capture_odds }
-
-      it { expect(metadata.type).to be BigDecimal }
-
-      it { expect(metadata.allow_nil?).to be false }
-
-      it { expect(metadata.default?).to be false }
-
-      it { expect(metadata.default).to be nil }
-
-      it { expect(metadata.foreign_key?).to be false }
-
-      it { expect(metadata.primary_key?).to be false }
-
-      it { expect(metadata.read_only?).to be false }
-
-      it 'should return the transform' do
-        expect(metadata.transform)
-          .to be_a Bronze::Transforms::Attributes::BigDecimalTransform
-      end
-
-      it { expect(metadata.transform?).to be true }
-    end
-
-    describe 'with :design_time' do
-      let(:metadata) { described_class.attributes[:design_time] }
-
-      it { expect(metadata).to be_a Bronze::Entities::Attributes::Metadata }
-
-      it { expect(metadata.name).to be :design_time }
-
-      it { expect(metadata.type).to be Time }
-
-      it { expect(metadata.allow_nil?).to be false }
-
-      it { expect(metadata.default?).to be false }
-
-      it { expect(metadata.default).to be nil }
-
-      it { expect(metadata.foreign_key?).to be false }
-
-      it { expect(metadata.primary_key?).to be false }
-
-      it { expect(metadata.read_only?).to be false }
-
-      it 'should return the transform' do
-        expect(metadata.transform)
-          .to be_a Bronze::Transforms::Attributes::TimeTransform
-      end
-
-      it { expect(metadata.transform?).to be true }
-    end
-
-    describe 'with :level' do
-      let(:metadata) { described_class.attributes[:level] }
-
-      it { expect(metadata).to be_a Bronze::Entities::Attributes::Metadata }
-
-      it { expect(metadata.name).to be :level }
-
-      it { expect(metadata.type).to be Integer }
-
-      it { expect(metadata.allow_nil?).to be false }
-
-      it { expect(metadata.default?).to be false }
-
-      it { expect(metadata.default).to be nil }
-
-      it { expect(metadata.foreign_key?).to be false }
-
-      it { expect(metadata.primary_key?).to be false }
-
-      it { expect(metadata.read_only?).to be false }
-
-      it { expect(metadata.transform?).to be false }
-    end
-
-    describe 'with :name' do
-      let(:metadata) { described_class.attributes[:name] }
-
-      it { expect(metadata).to be_a Bronze::Entities::Attributes::Metadata }
-
-      it { expect(metadata.name).to be :name }
-
-      it { expect(metadata.type).to be String }
-
-      it { expect(metadata.allow_nil?).to be false }
-
-      it { expect(metadata.default?).to be false }
-
-      it { expect(metadata.default).to be nil }
-
-      it { expect(metadata.foreign_key?).to be false }
-
-      it { expect(metadata.primary_key?).to be false }
-
-      it { expect(metadata.read_only?).to be false }
-
-      it { expect(metadata.transform?).to be false }
-    end
-
-    describe 'with :release_date' do
-      let(:metadata) { described_class.attributes[:release_date] }
-
-      it { expect(metadata).to be_a Bronze::Entities::Attributes::Metadata }
-
-      it { expect(metadata.name).to be :release_date }
-
-      it { expect(metadata.type).to be Date }
-
-      it { expect(metadata.allow_nil?).to be false }
-
-      it { expect(metadata.default?).to be false }
-
-      it { expect(metadata.default).to be nil }
-
-      it { expect(metadata.foreign_key?).to be false }
-
-      it { expect(metadata.primary_key?).to be false }
-
-      it { expect(metadata.read_only?).to be false }
-
-      it 'should return the transform' do
-        expect(metadata.transform)
-          .to be_a Bronze::Transforms::Attributes::DateTransform
-      end
-
-      it { expect(metadata.transform?).to be true }
-    end
-
-    describe 'with :stats' do
-      let(:metadata) { described_class.attributes[:stats] }
-
-      it { expect(metadata).to be_a Bronze::Entities::Attributes::Metadata }
-
-      it { expect(metadata.name).to be :stats }
-
-      it { expect(metadata.type).to be described_class::Stats }
-
-      it { expect(metadata.allow_nil?).to be false }
-
-      it { expect(metadata.default?).to be false }
-
-      it { expect(metadata.default).to be nil }
-
-      it { expect(metadata.foreign_key?).to be false }
-
-      it { expect(metadata.primary_key?).to be false }
-
-      it { expect(metadata.read_only?).to be false }
-
-      it 'should return the transform' do
-        expect(metadata.transform)
-          .to be_a described_class::StatsTransform
-      end
-
-      it { expect(metadata.transform?).to be true }
-    end
-
-    describe 'with :type' do
-      let(:metadata) { described_class.attributes[:type] }
-
-      it { expect(metadata).to be_a Bronze::Entities::Attributes::Metadata }
-
-      it { expect(metadata.name).to be :type }
-
-      it { expect(metadata.type).to be Symbol }
-
-      it { expect(metadata.allow_nil?).to be false }
-
-      it { expect(metadata.default?).to be false }
-
-      it { expect(metadata.default).to be nil }
-
-      it { expect(metadata.foreign_key?).to be false }
-
-      it { expect(metadata.primary_key?).to be false }
-
-      it { expect(metadata.read_only?).to be false }
-
-      it 'should return the transform' do
-        expect(metadata.transform)
-          .to be_a Bronze::Transforms::Attributes::SymbolTransform
-      end
-
-      it { expect(metadata.transform?).to be true }
-    end
-
-    describe 'with :uuid' do
-      let(:metadata) { described_class.attributes[:uuid] }
-
-      it { expect(metadata).to be_a Bronze::Entities::Attributes::Metadata }
-
-      it { expect(metadata.name).to be :uuid }
-
-      it { expect(metadata.type).to be String }
-
-      it { expect(metadata.allow_nil?).to be false }
-
-      it { expect(metadata.default?).to be true }
-
-      it { expect(metadata.default).to be =~ /\A[0-9a-f\-]{36}\z/ }
-
-      it { expect(metadata.foreign_key?).to be false }
-
-      it { expect(metadata.primary_key?).to be true }
-
-      it { expect(metadata.read_only?).to be true }
-
-      it { expect(metadata.transform?).to be false }
     end
   end
 
@@ -409,12 +193,6 @@ RSpec.describe Spec::Monster do
 
   describe '#attribute?' do
     it { expect(monster.attribute? :army).to be false }
-
-    it { expect(monster.attribute? :level).to be true }
-
-    it { expect(monster.attribute? :name).to be true }
-
-    it { expect(monster.attribute? :uuid).to be true }
   end
 
   describe '#attributes' do
@@ -524,40 +302,6 @@ RSpec.describe Spec::Monster do
     it { expect(monster.inspect).to be == expected }
   end
 
-  describe '#level' do
-    include_examples 'should have reader',
-      :level,
-      -> { be == initial_attributes[:level] }
-  end
-
-  describe '#level=' do
-    include_examples 'should have writer', :level=
-
-    it 'should update the mana cost' do
-      expect { monster.level = 24 }
-        .to change(monster, :level)
-        .to be == 24
-    end
-  end
-
-  describe '#name' do
-    include_examples 'should have reader',
-      :name,
-      -> { be == initial_attributes[:name] }
-  end
-
-  describe '#name=' do
-    let(:name) { 'Dying Nightmare' }
-
-    include_examples 'should have writer', :name=
-
-    it 'should update the name' do
-      expect { monster.name = name }
-        .to change(monster, :name)
-        .to be == name
-    end
-  end
-
   describe '#normalize' do
     let(:expected_capture_date) do
       transform = Bronze::Transforms::Attributes::DateTimeTransform.instance
@@ -618,15 +362,5 @@ RSpec.describe Spec::Monster do
     end
 
     it { expect(monster.normalize).to be == expected }
-  end
-
-  describe '#uuid' do
-    include_examples 'should have reader',
-      :uuid,
-      -> { be =~ /\A[0-9a-f\-]{36}\z/ }
-  end
-
-  describe '#uuid=' do
-    include_examples 'should have private writer', :uuid=
   end
 end
