@@ -1,8 +1,11 @@
 # frozen_string_literal: true
 
 require 'support/entities/book'
+require 'support/examples/entity_examples'
 
 RSpec.describe Spec::Book do
+  include Spec::Support::Examples::EntityExamples
+
   subject(:book) { described_class.new(initial_attributes) }
 
   let(:default_attributes) do
@@ -24,10 +27,38 @@ RSpec.describe Spec::Book do
       publication_date: Date.new(1937, 9, 21)
     }
   end
+  let(:expected_attributes) do
+    default_attributes
+      .merge(initial_attributes)
+      .merge(id: be_a_uuid)
+  end
 
   describe '::new' do
     it { expect(described_class).to be_constructible.with(0..1).arguments }
   end
+
+  include_examples 'should define UUID primary key', :id
+
+  include_examples 'should define attribute',
+    :introduction,
+    String,
+    default: -> { default_attributes[:introduction] }
+
+  include_examples 'should define attribute',
+    :isbn,
+    String,
+    read_only: true
+
+  include_examples 'should define attribute', :page_count, Integer
+
+  include_examples 'should define attribute', :publication_date, Date
+
+  include_examples 'should define attribute',
+    :subtitle,
+    String,
+    allow_nil: true
+
+  include_examples 'should define attribute', :title, String
 
   describe '::attributes' do
     it { expect(described_class).to respond_to(:attributes).with(0).arguments }
@@ -36,171 +67,8 @@ RSpec.describe Spec::Book do
       it { expect(described_class.attributes[:banned_date]).to be nil }
     end
 
-    describe 'with :id' do
-      let(:metadata) { described_class.attributes[:id] }
-
-      it { expect(metadata).to be_a Bronze::Entities::Attributes::Metadata }
-
-      it { expect(metadata.name).to be :id }
-
-      it { expect(metadata.type).to be String }
-
-      it { expect(metadata.allow_nil?).to be false }
-
-      it { expect(metadata.default?).to be true }
-
-      it { expect(metadata.default).to be_a String }
-
-      it { expect(metadata.foreign_key?).to be false }
-
-      it { expect(metadata.primary_key?).to be true }
-
-      it { expect(metadata.read_only?).to be true }
-
-      it { expect(metadata.transform?).to be false }
-    end
-
-    describe 'with :introduction' do
-      let(:metadata) { described_class.attributes[:introduction] }
-
-      it { expect(metadata).to be_a Bronze::Entities::Attributes::Metadata }
-
-      it { expect(metadata.name).to be :introduction }
-
-      it { expect(metadata.type).to be String }
-
-      it { expect(metadata.allow_nil?).to be false }
-
-      it { expect(metadata.default?).to be true }
-
-      it { expect(metadata.default).to be == default_attributes[:introduction] }
-
-      it { expect(metadata.foreign_key?).to be false }
-
-      it { expect(metadata.primary_key?).to be false }
-
-      it { expect(metadata.read_only?).to be false }
-
-      it { expect(metadata.transform?).to be false }
-    end
-
-    describe 'with :isbn' do
-      let(:metadata) { described_class.attributes[:isbn] }
-
-      it { expect(metadata).to be_a Bronze::Entities::Attributes::Metadata }
-
-      it { expect(metadata.name).to be :isbn }
-
-      it { expect(metadata.type).to be String }
-
-      it { expect(metadata.allow_nil?).to be false }
-
-      it { expect(metadata.default?).to be false }
-
-      it { expect(metadata.foreign_key?).to be false }
-
-      it { expect(metadata.primary_key?).to be false }
-
-      it { expect(metadata.read_only?).to be true }
-
-      it { expect(metadata.transform?).to be false }
-    end
-
-    describe 'with :page_count' do
-      let(:metadata) { described_class.attributes[:page_count] }
-
-      it { expect(metadata).to be_a Bronze::Entities::Attributes::Metadata }
-
-      it { expect(metadata.name).to be :page_count }
-
-      it { expect(metadata.type).to be Integer }
-
-      it { expect(metadata.allow_nil?).to be false }
-
-      it { expect(metadata.default?).to be false }
-
-      it { expect(metadata.foreign_key?).to be false }
-
-      it { expect(metadata.primary_key?).to be false }
-
-      it { expect(metadata.read_only?).to be false }
-
-      it { expect(metadata.transform?).to be false }
-    end
-
-    describe 'with :publication_date' do
-      let(:metadata) { described_class.attributes[:publication_date] }
-
-      it { expect(metadata).to be_a Bronze::Entities::Attributes::Metadata }
-
-      it { expect(metadata.name).to be :publication_date }
-
-      it { expect(metadata.type).to be Date }
-
-      it { expect(metadata.allow_nil?).to be false }
-
-      it { expect(metadata.default?).to be false }
-
-      it { expect(metadata.foreign_key?).to be false }
-
-      it { expect(metadata.primary_key?).to be false }
-
-      it { expect(metadata.read_only?).to be false }
-
-      it 'should return the transform' do
-        expect(metadata.transform)
-          .to be_a Bronze::Transforms::Attributes::DateTransform
-      end
-
-      it { expect(metadata.transform?).to be true }
-    end
-
     describe 'with :rarity' do
-      it { expect(described_class.attributes[:banned_date]).to be nil }
-    end
-
-    describe 'with :subtitle' do
-      let(:metadata) { described_class.attributes[:subtitle] }
-
-      it { expect(metadata).to be_a Bronze::Entities::Attributes::Metadata }
-
-      it { expect(metadata.name).to be :subtitle }
-
-      it { expect(metadata.type).to be String }
-
-      it { expect(metadata.allow_nil?).to be true }
-
-      it { expect(metadata.default?).to be false }
-
-      it { expect(metadata.foreign_key?).to be false }
-
-      it { expect(metadata.primary_key?).to be false }
-
-      it { expect(metadata.read_only?).to be false }
-
-      it { expect(metadata.transform?).to be false }
-    end
-
-    describe 'with :title' do
-      let(:metadata) { described_class.attributes[:title] }
-
-      it { expect(metadata).to be_a Bronze::Entities::Attributes::Metadata }
-
-      it { expect(metadata.name).to be :title }
-
-      it { expect(metadata.type).to be String }
-
-      it { expect(metadata.allow_nil?).to be false }
-
-      it { expect(metadata.default?).to be false }
-
-      it { expect(metadata.foreign_key?).to be false }
-
-      it { expect(metadata.primary_key?).to be false }
-
-      it { expect(metadata.read_only?).to be false }
-
-      it { expect(metadata.transform?).to be false }
+      it { expect(described_class.attributes[:rarity]).to be nil }
     end
   end
 
@@ -552,19 +420,7 @@ RSpec.describe Spec::Book do
 
     it { expect(book.attribute? :banned_date).to be false }
 
-    it { expect(book.attribute? :introduction).to be true }
-
-    it { expect(book.attribute? :isbn).to be true }
-
-    it { expect(book.attribute? :page_count).to be true }
-
-    it { expect(book.attribute? :publication_date).to be true }
-
     it { expect(book.attribute? :rarity).to be false }
-
-    it { expect(book.attribute? :subtitle).to be true }
-
-    it { expect(book.attribute? :title).to be true }
   end
 
   describe '#attributes' do
@@ -756,56 +612,6 @@ RSpec.describe Spec::Book do
     it { expect(book.inspect).to be == expected }
   end
 
-  describe '#id' do
-    include_examples 'should have reader',
-      :id,
-      -> { be_a String }
-  end
-
-  describe '#id=' do
-    include_examples 'should have private writer', :id=
-  end
-
-  describe '#introduction' do
-    include_examples 'should have reader',
-      :introduction,
-      -> { be == described_class.attributes[:introduction].default }
-
-    context 'when the book is initialized with an introduction' do
-      let(:initial_attributes) do
-        super().merge(
-          introduction: 'It was the best of times, it was the worst of times'
-        )
-      end
-
-      it 'should return the introduction' do
-        expect(book.introduction).to be == initial_attributes[:introduction]
-      end
-    end
-  end
-
-  describe '#introduction=' do
-    let(:introduction) { 'It was the best of times, it was the worst of times' }
-
-    include_examples 'should have writer', :introduction=
-
-    it 'should update the introduction' do
-      expect { book.introduction = introduction }
-        .to change(book, :introduction)
-        .to be == introduction
-    end
-  end
-
-  describe '#isbn' do
-    include_examples 'should have reader',
-      :isbn,
-      -> { be == initial_attributes[:isbn] }
-  end
-
-  describe '#isbn=' do
-    include_examples 'should have private writer', :isbn=
-  end
-
   describe '#normalize' do
     let(:expected_date) do
       transform = Bronze::Transforms::Attributes::DateTransform.instance
@@ -828,42 +634,6 @@ RSpec.describe Spec::Book do
     it { expect(book.normalize).to be == expected }
   end
 
-  describe '#page_count' do
-    include_examples 'should have reader',
-      :page_count,
-      -> { be == initial_attributes[:page_count] }
-  end
-
-  describe '#page_count=' do
-    let(:page_count) { 300 }
-
-    include_examples 'should have writer', :page_count=
-
-    it 'should update the page count' do
-      expect { book.page_count = page_count }
-        .to change(book, :page_count)
-        .to be == page_count
-    end
-  end
-
-  describe '#publication_date' do
-    include_examples 'should have reader',
-      :publication_date,
-      -> { be == initial_attributes[:publication_date] }
-  end
-
-  describe '#publication_date=' do
-    let(:publication_date) { Date.new(1977, 9, 15) }
-
-    include_examples 'should have writer', :publication_date=
-
-    it 'should update the publication date' do
-      expect { book.publication_date = publication_date }
-        .to change(book, :publication_date)
-        .to be == publication_date
-    end
-  end
-
   describe '#set_attribute' do
     it { expect(book).to respond_to(:set_attribute).with(2).arguments }
 
@@ -884,42 +654,6 @@ RSpec.describe Spec::Book do
           .to change { book.get_attribute(:title) }
           .to be == title
       end
-    end
-  end
-
-  describe '#subtitle' do
-    include_examples 'should have reader',
-      :subtitle,
-      -> { be == initial_attributes[:subtitle] }
-  end
-
-  describe '#subtitle=' do
-    let(:subtitle) { 'There And Back Again' }
-
-    include_examples 'should have writer', :subtitle=
-
-    it 'should update the subtitle' do
-      expect { book.subtitle = subtitle }
-        .to change(book, :subtitle)
-        .to be == subtitle
-    end
-  end
-
-  describe '#title' do
-    include_examples 'should have reader',
-      :title,
-      -> { be == initial_attributes[:title] }
-  end
-
-  describe '#title=' do
-    let(:title) { 'The Silmarillion' }
-
-    include_examples 'should have writer', :title=
-
-    it 'should update the title' do
-      expect { book.title = title }
-        .to change(book, :title)
-        .to be == title
     end
   end
 end

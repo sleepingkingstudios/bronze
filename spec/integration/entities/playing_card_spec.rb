@@ -1,8 +1,11 @@
 # frozen_string_literal: true
 
 require 'support/entities/playing_card'
+require 'support/examples/entity_examples'
 
 RSpec.describe Spec::PlayingCard do
+  include Spec::Support::Examples::EntityExamples
+
   subject(:playing_card) { described_class.new(initial_attributes) }
 
   let(:default_attributes) do
@@ -17,64 +20,23 @@ RSpec.describe Spec::PlayingCard do
       value: 1
     }
   end
+  let(:expected_attributes) do
+    default_attributes.merge(initial_attributes)
+  end
 
   describe '::new' do
     it { expect(described_class).to be_constructible.with(0..1).arguments }
   end
+
+  include_examples 'should define attribute', :suit, String, read_only: true
+
+  include_examples 'should define attribute', :value, Integer, read_only: true
 
   describe '::attributes' do
     it { expect(described_class).to respond_to(:attributes).with(0).arguments }
 
     describe 'with :arcana' do
       it { expect(described_class.attributes[:arcana]).to be nil }
-    end
-
-    describe 'with :suit' do
-      let(:metadata) { described_class.attributes[:suit] }
-
-      it { expect(metadata).to be_a Bronze::Entities::Attributes::Metadata }
-
-      it { expect(metadata.name).to be :suit }
-
-      it { expect(metadata.type).to be String }
-
-      it { expect(metadata.allow_nil?).to be false }
-
-      it { expect(metadata.default?).to be false }
-
-      it { expect(metadata.default).to be nil }
-
-      it { expect(metadata.foreign_key?).to be false }
-
-      it { expect(metadata.primary_key?).to be false }
-
-      it { expect(metadata.read_only?).to be true }
-
-      it { expect(metadata.transform?).to be false }
-    end
-
-    describe 'with :value' do
-      let(:metadata) { described_class.attributes[:value] }
-
-      it { expect(metadata).to be_a Bronze::Entities::Attributes::Metadata }
-
-      it { expect(metadata.name).to be :value }
-
-      it { expect(metadata.type).to be Integer }
-
-      it { expect(metadata.allow_nil?).to be false }
-
-      it { expect(metadata.default?).to be false }
-
-      it { expect(metadata.default).to be nil }
-
-      it { expect(metadata.foreign_key?).to be false }
-
-      it { expect(metadata.primary_key?).to be false }
-
-      it { expect(metadata.read_only?).to be true }
-
-      it { expect(metadata.transform?).to be false }
     end
   end
 
@@ -117,16 +79,12 @@ RSpec.describe Spec::PlayingCard do
 
   describe '#attribute?' do
     it { expect(playing_card.attribute? :arcana).to be false }
-
-    it { expect(playing_card.attribute? :suit).to be true }
-
-    it { expect(playing_card.attribute? :value).to be true }
   end
 
   describe '#attributes' do
-    let(:expected) { default_attributes.merge(initial_attributes) }
-
-    it { expect(playing_card.attributes).to be == expected }
+    it 'should return the attributes' do
+      expect(playing_card.attributes).to match_attributes expected_attributes
+    end
   end
 
   describe '#attributes=' do
@@ -196,25 +154,5 @@ RSpec.describe Spec::PlayingCard do
     end
 
     it { expect(playing_card.inspect).to be == expected }
-  end
-
-  describe '#suit' do
-    include_examples 'should have reader',
-      :suit,
-      -> { be == initial_attributes[:suit] }
-  end
-
-  describe '#suit=' do
-    include_examples 'should have private writer', :suit=
-  end
-
-  describe '#value' do
-    include_examples 'should have reader',
-      :value,
-      -> { be == initial_attributes[:value] }
-  end
-
-  describe '#value=' do
-    include_examples 'should have private writer', :value=
   end
 end
