@@ -6,9 +6,13 @@ require 'bronze/collections/simple'
 module Bronze::Collections::Simple
   # Query class that filters in-memory data in an Array of Hashes format.
   class Query < Bronze::Collections::Query
+    UNDEFINED = Object.new
+    private_constant :UNDEFINED
+
     # @param [Array<Hash>] data The data to query against.
     def initialize(data)
-      @data = data
+      @data    = data
+      @filters = []
     end
 
     # (see Bronze::Collections::Query#count)
@@ -23,13 +27,67 @@ module Bronze::Collections::Simple
       matching_data { |item| yield item }
     end
 
+    # (see Bronze::Collections::Query#matching)
+    def matching(selector)
+      dup.with_filters(selector)
+    end
+    alias_method :where, :matching
+
+    protected
+
+    attr_writer :filters
+
+    def with_filters(selector)
+      parse_selector(selector, [])
+
+      self
+    end
+
     private
 
     attr_reader :data
 
+    attr_reader :filters
+
+    def filter_equals(actual, expected)
+      actual == expected
+    end
+
+    def indifferent_dig(hsh, keys)
+      keys.reduce(hsh) do |obj, key|
+        return UNDEFINED unless obj.respond_to?(:[])
+
+        if key.is_a?(String)
+          obj[key] || obj[key.intern]
+        elsif key.is_a?(Symbol)
+          obj[key] || obj[key.to_s]
+        else
+          obj[key]
+        end
+      end
+    end
+
+    def matches?(hsh)
+      filters.all? do |(filter_name, keys, expected)|
+        actual = indifferent_dig(hsh, keys)
+
+        send("filter_#{filter_name}", actual, expected)
+      end
+    end
+
     def matching_data
       data.each do |item|
-        yield item
+        yield item if matches?(item)
+      end
+    end
+
+    def parse_selector(hsh, keys)
+      hsh.each do |key, value|
+        nested = [*keys, key]
+
+        next filters << [:equals, nested, value] unless value.is_a?(Hash)
+
+        parse_selector(value, nested)
       end
     end
   end

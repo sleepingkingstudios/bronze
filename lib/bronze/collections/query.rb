@@ -26,6 +26,20 @@ module Bronze::Collections
       raise Bronze::NotImplementedError.new(self, :each)
     end
 
+    # @overload matching(selector)
+    #   Returns a query that filters the data using the given selector. The
+    #   existing query is unchanged.
+    #
+    #   @param selector [Hash] The criteria used to filter the data.
+    #
+    #   @return [Query] the generated Query.
+    #
+    #   @raise Bronze::NotImplementedError unless overriden by a Query subclass.
+    def matching(_selector)
+      raise Bronze::NotImplementedError.new(self, :matching)
+    end
+    alias_method :where, :matching
+
     # @return [Array] the matching data as an Array.
     #
     # @raise Bronze::NotImplementedError unless overriden by a Query subclass.
