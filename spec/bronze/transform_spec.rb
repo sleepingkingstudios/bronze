@@ -11,27 +11,27 @@ RSpec.describe Bronze::Transform do
 
   describe '#denormalize' do
     let(:error_message) do
-      "#{described_class.name} does not implement :denormalize"
+      "#{described_class.name}#denormalize is not implemented"
     end
 
     it { expect(transform).to respond_to(:denormalize).with(1).argument }
 
     it 'should raise an error' do
       expect { transform.denormalize Object.new }
-        .to raise_error NotImplementedError, error_message
+        .to raise_error Bronze::NotImplementedError, error_message
     end
   end
 
   describe '#normalize' do
     let(:error_message) do
-      "#{described_class.name} does not implement :normalize"
+      "#{described_class.name}#normalize is not implemented"
     end
 
     it { expect(transform).to respond_to(:normalize).with(1).argument }
 
     it 'should raise an error' do
       expect { transform.normalize Object.new }
-        .to raise_error NotImplementedError, error_message
+        .to raise_error Bronze::NotImplementedError, error_message
     end
   end
 end
