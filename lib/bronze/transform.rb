@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
-require 'bronze'
+require 'bronze/not_implemented_error'
+require 'bronze/transforms'
 
 module Bronze
   # Abstract class for converting an object to and from a normalized form. This
@@ -13,8 +14,7 @@ module Bronze
     #
     # @return [Object] The converted object.
     def denormalize(_object)
-      raise NotImplementedError,
-        "#{self.class.name} does not implement :denormalize"
+      raise Bronze::NotImplementedError.new(self, :denormalize)
     end
 
     # Converts an object to its normalized form.
@@ -23,8 +23,7 @@ module Bronze
     #
     # @return [Object] The converted object.
     def normalize(_object)
-      raise NotImplementedError,
-        "#{self.class.name} does not implement :normalize"
+      raise Bronze::NotImplementedError.new(self, :normalize)
     end
   end
 end
