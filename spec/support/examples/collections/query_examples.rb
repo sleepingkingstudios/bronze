@@ -49,6 +49,11 @@ module Spec::Support::Examples::Collections
       end
     end
 
+    shared_context 'when the query has a non-matching filter' do
+      let(:query)         { super().matching('author' => 'C. S. Lewis') }
+      let(:expected_data) { [] }
+    end
+
     shared_context 'when the query has a matching filter' do
       let(:query) { super().matching('series' => 'Barsoom') }
       let(:expected_data) do
@@ -63,6 +68,14 @@ module Spec::Support::Examples::Collections
 
       describe '#each' do
         it { expect(query).to respond_to(:each).with(0).arguments }
+      end
+
+      describe '#exists?' do
+        it { expect(query).to respond_to(:exists?).with(0).arguments }
+      end
+
+      describe '#limit' do
+        it { expect(query).to respond_to(:limit).with(1).argument }
       end
 
       describe '#matching' do
@@ -149,6 +162,185 @@ module Spec::Support::Examples::Collections
               expect { |block| query.each(&block) }
                 .to yield_successive_args(*expected_data)
             end
+          end
+        end
+      end
+
+      describe '#exists?' do
+        it { expect(query.exists?).to be false }
+
+        wrap_context 'when the data has many items' do
+          it { expect(query.exists?).to be true }
+        end
+
+        wrap_context 'when the query has a non-matching filter' do
+          include_context 'when the data has many items'
+
+          it { expect(query.exists?).to be false }
+        end
+
+        wrap_context 'when the query has a matching filter' do
+          include_context 'when the data has many items'
+
+          it { expect(query.exists?).to be true }
+        end
+      end
+
+      describe '#limit' do
+        let(:count)    { 3 }
+        let(:subquery) { query.limit(count) }
+
+        it { expect(query.limit 3).not_to be query }
+
+        it { expect(query.limit 3).to be_a described_class }
+
+        describe 'with zero' do
+          let(:count) { 0 }
+
+          it { expect(query.count).to be 0 }
+
+          it { expect(query.to_a).to be == [] }
+
+          it { expect(subquery.count).to be 0 }
+
+          it { expect(subquery.to_a).to be == [] }
+        end
+
+        describe 'with one' do
+          let(:count) { 1 }
+
+          it { expect(query.count).to be 0 }
+
+          it { expect(query.to_a).to be == [] }
+
+          it { expect(subquery.count).to be 0 }
+
+          it { expect(subquery.to_a).to be == [] }
+        end
+
+        describe 'with a larger number' do
+          let(:count) { 3 }
+
+          it { expect(query.count).to be 0 }
+
+          it { expect(query.to_a).to be == [] }
+
+          it { expect(subquery.count).to be 0 }
+
+          it { expect(subquery.to_a).to be == [] }
+        end
+
+        wrap_context 'when the data has many items' do
+          describe 'with zero' do
+            let(:count) { 0 }
+
+            it { expect(query.count).to be raw_data.count }
+
+            it { expect(query.to_a).to be == raw_data }
+
+            it { expect(subquery.count).to be 0 }
+
+            it { expect(subquery.to_a).to be == [] }
+          end
+
+          describe 'with one' do
+            let(:count) { 1 }
+
+            it { expect(query.count).to be raw_data.count }
+
+            it { expect(query.to_a).to be == raw_data }
+
+            it { expect(subquery.count).to be count }
+
+            it { expect(subquery.to_a).to be == raw_data[0...count] }
+          end
+
+          describe 'with three' do
+            let(:count) { 3 }
+
+            it { expect(query.count).to be raw_data.count }
+
+            it { expect(query.to_a).to be == raw_data }
+
+            it { expect(subquery.count).to be count }
+
+            it { expect(subquery.to_a).to be == raw_data[0...count] }
+          end
+
+          describe 'with the number of items' do
+            let(:count) { raw_data.count }
+
+            it { expect(query.count).to be raw_data.count }
+
+            it { expect(query.to_a).to be == raw_data }
+
+            it { expect(subquery.count).to be count }
+
+            it { expect(subquery.to_a).to be == raw_data[0...count] }
+          end
+
+          describe 'with greater than the number of items' do
+            let(:count) { raw_data.count + 3 }
+
+            it { expect(query.count).to be raw_data.count }
+
+            it { expect(query.to_a).to be == raw_data }
+
+            it { expect(subquery.count).to be raw_data.count }
+
+            it { expect(subquery.to_a).to be == raw_data }
+          end
+        end
+
+        wrap_context 'when the query has a matching filter' do
+          include_context 'when the data has many items'
+
+          describe 'with zero' do
+            let(:count) { 0 }
+
+            it { expect(query.count).to be expected_data.count }
+
+            it { expect(query.to_a).to be == expected_data }
+
+            it { expect(subquery.count).to be 0 }
+
+            it { expect(subquery.to_a).to be == [] }
+          end
+
+          describe 'with one' do
+            let(:count) { 1 }
+
+            it { expect(query.count).to be expected_data.count }
+
+            it { expect(query.to_a).to be == expected_data }
+
+            it { expect(subquery.count).to be count }
+
+            it { expect(subquery.to_a).to be == expected_data[0...count] }
+          end
+
+          describe 'with the number of items' do
+            let(:count) { expected_data.count }
+
+            it { expect(query.count).to be expected_data.count }
+
+            it { expect(query.to_a).to be == expected_data }
+
+            it { expect(subquery.count).to be count }
+
+            it { expect(subquery.to_a).to be == expected_data[0...count] }
+          end
+
+          describe 'with greater than the number of items' do
+            let(:count) { expected_data.count + 3 }
+
+            it { expect(query.count).to be expected_data.count }
+
+            it { expect(query.to_a).to be == expected_data }
+
+            it { expect(subquery.count).to be expected_data.count }
+
+            it { expect(subquery.to_a).to be == expected_data }
           end
         end
       end

@@ -26,6 +26,24 @@ module Bronze::Collections
       raise Bronze::NotImplementedError.new(self, :each)
     end
 
+    # @return [Boolean] true if any data matches the query; otherwise false.
+    def exists?
+      !limit(1).count.zero?
+    end
+
+    # @overload limit(_count)
+    #   Returns a query that returns at most the specified number of results.
+    #   The existing query is unchanged.
+    #
+    #   @param count [Index] The maximum number of items to return.
+    #
+    #   @return [Query] the generated Query.
+    #
+    #   @raise Bronze::NotImplementedError unless overriden by a Query subclass.
+    def limit(_count)
+      raise Bronze::NotImplementedError.new(self, :limit)
+    end
+
     # @overload matching(selector)
     #   Returns a query that filters the data using the given selector. The
     #   existing query is unchanged.

@@ -11,8 +11,9 @@ module Bronze::Collections::Simple
 
     # @param [Array<Hash>] data The data to query against.
     def initialize(data)
-      @data    = data
-      @filters = []
+      @data        = data
+      @filters     = []
+      @max_results = nil
     end
 
     # (see Bronze::Collections::Query#count)
@@ -27,6 +28,11 @@ module Bronze::Collections::Simple
       matching_data { |item| yield item }
     end
 
+    # (see Bronze::Collections::Query#limit)
+    def limit(count)
+      dup.with_limit(count)
+    end
+
     # (see Bronze::Collections::Query#matching)
     def matching(selector)
       dup.with_filters(selector)
@@ -36,6 +42,12 @@ module Bronze::Collections::Simple
     protected
 
     attr_writer :filters
+
+    def with_limit(count)
+      @max_results = count
+
+      self
+    end
 
     def with_filters(selector)
       parse_selector(selector, [])
@@ -48,6 +60,8 @@ module Bronze::Collections::Simple
     attr_reader :data
 
     attr_reader :filters
+
+    attr_reader :max_results
 
     def filter_equals(actual, expected)
       actual == expected
@@ -76,7 +90,9 @@ module Bronze::Collections::Simple
     end
 
     def matching_data
-      data.each do |item|
+      data.each.with_index do |item, index|
+        break if max_results && max_results <= index
+
         yield item if matches?(item)
       end
     end

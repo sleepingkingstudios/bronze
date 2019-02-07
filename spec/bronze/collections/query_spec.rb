@@ -40,6 +40,28 @@ RSpec.describe Bronze::Collections::Query do
     end
   end
 
+  describe '#exists?' do
+    let(:error_message) do
+      'Bronze::Collections::Query#limit is not implemented'
+    end
+
+    it 'should raise an error' do
+      expect { query.exists? }
+        .to raise_error Bronze::NotImplementedError, error_message
+    end
+  end
+
+  describe '#limit' do
+    let(:error_message) do
+      'Bronze::Collections::Query#limit is not implemented'
+    end
+
+    it 'should raise an error' do
+      expect { query.limit(3) }
+        .to raise_error Bronze::NotImplementedError, error_message
+    end
+  end
+
   describe '#matching' do
     let(:error_message) do
       'Bronze::Collections::Query#matching is not implemented'
