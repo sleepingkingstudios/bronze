@@ -111,7 +111,6 @@ RSpec.describe Spec::Monster do
           .to be_a String
       end
 
-      # rubocop:disable RSpec/NestedGroups
       context 'when the attributes include a primary key' do
         let(:monster_uuid) { 'b87dcd42-f027-4f9b-a0e4-20ed207737dc' }
         let(:attributes)   { super().merge('uuid' => monster_uuid) }
@@ -122,7 +121,6 @@ RSpec.describe Spec::Monster do
             .to be >= expected
         end
       end
-      # rubocop:enable RSpec/NestedGroups
     end
   end
 

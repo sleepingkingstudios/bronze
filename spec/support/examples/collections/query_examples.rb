@@ -428,6 +428,21 @@ module Spec::Support::Examples::Collections
 
             it { expect(subquery.to_a).to be == raw_data }
           end
+
+          describe 'with a value selector with symbol keys' do
+            let(:selector) { { series: 'Barsoom' } }
+            let(:expected) do
+              raw_data.select { |item| item['series'] == 'Barsoom' }
+            end
+
+            it { expect(query.count).to be raw_data.size }
+
+            it { expect(query.to_a).to be == raw_data }
+
+            it { expect(subquery.count).to be expected.size }
+
+            it { expect(subquery.to_a).to be == expected }
+          end
         end
 
         wrap_context 'when the query has a matching filter' do

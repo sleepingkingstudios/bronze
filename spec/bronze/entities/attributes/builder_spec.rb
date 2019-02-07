@@ -366,7 +366,6 @@ RSpec.describe Bronze::Entities::Attributes::Builder do
 
       include_examples 'should define the attribute', transform: true
 
-      # rubocop:disable RSpec/NestedGroups
       describe 'with default_transform: true' do
         let(:attribute_opts) { super().merge default_transform: true }
 
@@ -374,9 +373,7 @@ RSpec.describe Bronze::Entities::Attributes::Builder do
           default_transform: true,
           transform:         true
       end
-      # rubocop:enable RSpec/NestedGroups
 
-      # rubocop:disable RSpec/NestedGroups
       context 'when the attribute transform class defines ::instance' do
         let(:transform)          { Spec::InstancedTransform }
         let(:expected_transform) { Spec::InstancedTransform.instance }
@@ -389,7 +386,6 @@ RSpec.describe Bronze::Entities::Attributes::Builder do
 
         include_examples 'should define the attribute', transform: true
       end
-      # rubocop:enable RSpec/NestedGroups
     end
 
     describe 'with transform: value' do
@@ -433,7 +429,6 @@ RSpec.describe Bronze::Entities::Attributes::Builder do
 
         include_examples 'should define the attribute'
 
-        # rubocop:disable RSpec/NestedGroups
         context 'when the subclass has its own attribute transform' do
           let(:expected_transform) { Spec::PolarPointTransform }
 
@@ -449,7 +444,6 @@ RSpec.describe Bronze::Entities::Attributes::Builder do
 
           include_examples 'should define the attribute'
         end
-        # rubocop:enable RSpec/NestedGroups
       end
 
       describe 'with transform: value' do
