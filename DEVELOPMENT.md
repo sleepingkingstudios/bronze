@@ -1,5 +1,19 @@
 # Development
 
+## Collections
+
+### Advanced Querying
+
+- Mongo-style selectors - query.matching(year: { $gt: 1986 })
+
+### Transforms
+
+Collection#transform
+
+- configurable - Collection.new(definition, adapter:, transform:)
+- defaults to nil
+- if definition is an Entity class, transform defaults to NormalizeTransform
+
 ## Entities
 
 ### Attributes
