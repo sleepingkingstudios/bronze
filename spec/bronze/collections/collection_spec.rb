@@ -5,8 +5,11 @@ require 'bronze/collections/collection'
 require 'bronze/collections/query'
 
 RSpec.describe Bronze::Collections::Collection do
-  subject(:collection) { described_class.new(definition, adapter: adapter) }
+  subject(:collection) do
+    described_class.new(definition, adapter: adapter, **options)
+  end
 
+  let(:options)    { {} }
   let(:definition) { 'books' }
   let(:adapter) do
     instance_double(Bronze::Collections::Adapter, query: query)
@@ -26,7 +29,31 @@ RSpec.describe Bronze::Collections::Collection do
       expect(described_class)
         .to be_constructible
         .with(1).argument
-        .and_keywords(:adapter)
+        .and_keywords(:adapter, :name)
+    end
+
+    describe 'with nil' do
+      let(:error_message) do
+        'expected definition to be a collection name or a class, but was nil'
+      end
+
+      it 'should raise an error' do
+        expect { described_class.new(nil, adapter: adapter) }
+          .to raise_error ArgumentError, error_message
+      end
+    end
+
+    describe 'with an Object' do
+      let(:object) { Object.new }
+      let(:error_message) do
+        'expected definition to be a collection name or a class, but was ' \
+        "#{object.inspect}"
+      end
+
+      it 'should raise an error' do
+        expect { described_class.new(object, adapter: adapter) }
+          .to raise_error ArgumentError, error_message
+      end
     end
   end
 
@@ -83,6 +110,12 @@ RSpec.describe Bronze::Collections::Collection do
       let(:definition) { :periodicals }
 
       it { expect(collection.name).to be == 'periodicals' }
+
+      context 'when options[:name] is set' do
+        let(:options) { { name: 'magazines' } }
+
+        it { expect(collection.name).to be == 'magazines' }
+      end
     end
 
     context 'when the definition is a Module' do
@@ -91,6 +124,12 @@ RSpec.describe Bronze::Collections::Collection do
       example_class 'Spec::ArchivedPeriodical'
 
       it { expect(collection.name).to be == 'spec__archived_periodicals' }
+
+      context 'when options[:name] is set' do
+        let(:options) { { name: 'magazines' } }
+
+        it { expect(collection.name).to be == 'magazines' }
+      end
     end
 
     context 'when the definition is a Module that defines ::collection_name' do
@@ -103,6 +142,12 @@ RSpec.describe Bronze::Collections::Collection do
       end
 
       it { expect(collection.name).to be == 'translated_books' }
+
+      context 'when options[:name] is set' do
+        let(:options) { { name: 'books' } }
+
+        it { expect(collection.name).to be == 'books' }
+      end
     end
   end
 

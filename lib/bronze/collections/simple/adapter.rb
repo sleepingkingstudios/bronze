@@ -17,7 +17,7 @@ module Bronze::Collections::Simple
 
     # (see Bronze::Collections::Adapter#query)
     def query(collection_name)
-      Bronze::Collections::Simple::Query.new(data.fetch(collection_name, []))
+      Bronze::Collections::Simple::Query.new(data[collection_name] ||= [])
     end
   end
 end

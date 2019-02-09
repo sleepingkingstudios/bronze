@@ -10,13 +10,21 @@ module Bronze::Collections
   class Collection
     extend Forwardable
 
-    # @param definition [Class, String] The name of the data set, used to pull
-    #   the data from the data store.
+    # @param definition [Class, String] An object defining the data to access.
+    #   Can be a String (the name of the data set) or a Class (the objects
+    #   represented by the data set).
     # @param adapter [Bronze::Collections::Adapter] The adapter used to access
     #   the data store.
-    def initialize(definition, adapter:)
+    # @param name [String, Symbol] The name of the data set, used to pull
+    #   the data from the data store. Unless specified, defaults to the
+    #   definition (if a String) or the name of the definition class.
+    #
+    # @raise ArgumentError if the definition is not a name or a Class.
+    def initialize(definition, adapter:, name: nil)
       @adapter = adapter
-      @name    = parse_name(definition)
+      @name    = name.nil? ? nil : name.to_s
+
+      parse_definition(definition)
     end
 
     def_delegators :query,
@@ -49,15 +57,30 @@ module Bronze::Collections
       [*ary[0...(ary.size - 1)], tools.string.pluralize(ary.last)].join('__')
     end
 
-    def parse_name(definition)
-      return definition.to_s unless definition.is_a?(Module)
+    def parse_definition(definition)
+      return parse_module_definition(definition) if definition.is_a?(Module)
 
-      if definition.respond_to?(:collection_name)
-        return definition.collection_name
+      if definition.is_a?(String) || definition.is_a?(Symbol)
+        @name ||= definition.to_s
+
+        return
       end
 
-      collection_name_for(definition)
+      raise ArgumentError,
+        'expected definition to be a collection name or a class, but was ' \
+        "#{definition.inspect}"
     end
+
+    # rubocop:disable Naming/MemoizedInstanceVariableName
+    def parse_module_definition(mod)
+      @name ||=
+        if mod.respond_to?(:collection_name)
+          mod.collection_name.to_s
+        else
+          collection_name_for(mod)
+        end
+    end
+    # rubocop:enable Naming/MemoizedInstanceVariableName
 
     def tools
       SleepingKingStudios::Tools::Toolbelt.instance
