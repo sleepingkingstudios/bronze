@@ -15,6 +15,11 @@ module Bronze::Collections::Simple
     # [Hash<String, Array<Hash>>] the stored data.
     attr_reader :data
 
+    # (see Bronze::Collections::Adapter#collection_names)
+    def collection_names
+      data.keys.sort
+    end
+
     # (see Bronze::Collections::Adapter#query)
     def query(collection_name)
       Bronze::Collections::Simple::Query.new(data[collection_name] ||= [])

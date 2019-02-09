@@ -28,6 +28,61 @@ RSpec.describe Bronze::Collections::Simple::Adapter do
     it { expect(described_class).to be_constructible.with(1).argument }
   end
 
+  describe '#collection_name_for' do
+    it { expect(adapter).to respond_to(:collection_name_for).with(1).argument }
+
+    describe 'with nil' do
+      it 'should raise an error' do
+        expect { adapter.collection_name_for nil }.to raise_error NameError
+      end
+    end
+
+    describe 'with an Object' do
+      it 'should raise an error' do
+        expect { adapter.collection_name_for Object.new }
+          .to raise_error NameError
+      end
+    end
+
+    describe 'with a Class' do
+      example_class 'Spec::ExampleClass'
+
+      it 'should format the class name' do
+        expect(adapter.collection_name_for Spec::ExampleClass)
+          .to be == 'spec__example_classes'
+      end
+    end
+
+    describe 'with a Module' do
+      example_constant 'Spec::ExampleModule' do
+        Module.new
+      end
+
+      it 'should format the module name' do
+        expect(adapter.collection_name_for Spec::ExampleModule)
+          .to be == 'spec__example_modules'
+      end
+    end
+  end
+
+  describe '#collection_names' do
+    include_examples 'should have reader',
+      :collection_names,
+      -> { contain_exactly(*raw_data.keys) }
+
+    context 'when the data has many collections' do
+      let(:raw_data) do
+        super().merge(
+          'authors'    => [],
+          'magazines'  => [],
+          'publishers' => []
+        )
+      end
+
+      it { expect(adapter.collection_names).to be == raw_data.keys.sort }
+    end
+  end
+
   describe '#data' do
     include_examples 'should have reader', :data, -> { be == raw_data }
   end

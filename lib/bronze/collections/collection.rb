@@ -51,12 +51,6 @@ module Bronze::Collections
 
     private
 
-    def collection_name_for(definition)
-      ary = tools.string.underscore(definition.name).split('::')
-
-      [*ary[0...(ary.size - 1)], tools.string.pluralize(ary.last)].join('__')
-    end
-
     def parse_definition(definition)
       return parse_module_definition(definition) if definition.is_a?(Module)
 
@@ -77,13 +71,9 @@ module Bronze::Collections
         if mod.respond_to?(:collection_name)
           mod.collection_name.to_s
         else
-          collection_name_for(mod)
+          adapter.collection_name_for(mod)
         end
     end
     # rubocop:enable Naming/MemoizedInstanceVariableName
-
-    def tools
-      SleepingKingStudios::Tools::Toolbelt.instance
-    end
   end
 end

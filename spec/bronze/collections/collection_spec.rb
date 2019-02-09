@@ -12,7 +12,11 @@ RSpec.describe Bronze::Collections::Collection do
   let(:options)    { {} }
   let(:definition) { 'books' }
   let(:adapter) do
-    instance_double(Bronze::Collections::Adapter, query: query)
+    instance_double(
+      Bronze::Collections::Adapter,
+      collection_name_for: '',
+      query:               query
+    )
   end
   let(:query) do
     instance_double(
@@ -122,6 +126,13 @@ RSpec.describe Bronze::Collections::Collection do
       let(:definition) { Spec::ArchivedPeriodical }
 
       example_class 'Spec::ArchivedPeriodical'
+
+      before(:example) do
+        allow(adapter)
+          .to receive(:collection_name_for)
+          .with(definition)
+          .and_return('spec__archived_periodicals')
+      end
 
       it { expect(collection.name).to be == 'spec__archived_periodicals' }
 
