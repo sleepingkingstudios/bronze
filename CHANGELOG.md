@@ -12,11 +12,11 @@ Adds the Bronze::Entities::Attributes module, which can be included in any class
 
 Adds the Bronze::Entity class, which serves as an abstract base class for defining application entities. Includes the Attributes and PrimaryKey modules.
 
-### Normalization
+#### Normalization
 
 Adds the Bronze::Entities::Normalization module, which can be included in any entity class to define normalization methods, which transform an entity class to a hash of data values and vice versa.
 
-### Primary Keys
+#### Primary Keys
 
 Adds the Bronze::Entities::PrimaryKey module, which can be included in any entity class to define a primary key for the entity class.
 

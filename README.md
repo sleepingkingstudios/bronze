@@ -5,6 +5,7 @@ A composable application toolkit, providing data entities and collections, trans
 Bronze defines the following components:
 
 - [Entities](#label-Entities) - Data structures with defined attributes.
+- [Transforms](#label-Transforms) - Map values or objects to and from a normal form.
 
 ## About
 
