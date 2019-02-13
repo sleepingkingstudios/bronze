@@ -24,7 +24,7 @@ module Bronze
     #
     # @return [Boolean]
     def ==(other)
-      return false unless other.is_a?(Bronze::Errors)
+      return false unless other.is_a?(Enumerable)
 
       compare_errors(other)
     end
