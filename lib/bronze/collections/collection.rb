@@ -41,6 +41,16 @@ module Bronze::Collections
     # @return [String] the name of the data set.
     attr_reader :name
 
+    # Inserts the data hash into the collection.
+    #
+    # @param data [Hash] The data hash to insert.
+    #
+    # @return [Array<Boolean, Hash, Array>] in order, the OK status of the
+    #   insert (true or false), the data hash to insert, and an errors array.
+    def insert_one(data)
+      adapter.insert_one(name, data)
+    end
+
     # Returns a query against the data set.
     #
     # @return [Bronze::Collections::Query] the query instance.

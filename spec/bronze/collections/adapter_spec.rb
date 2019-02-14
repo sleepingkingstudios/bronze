@@ -59,6 +59,21 @@ RSpec.describe Bronze::Collections::Adapter do
     end
   end
 
+  describe '#insert_one' do
+    let(:collection_name) { 'books' }
+    let(:object)          { { 'title' => 'The Ramayana' } }
+    let(:error_message) do
+      'Bronze::Collections::Adapter#insert_one is not implemented'
+    end
+
+    it { expect(adapter).to respond_to(:insert_one).with(2).arguments }
+
+    it 'should raise an error' do
+      expect { adapter.insert_one(collection_name, object) }
+        .to raise_error Bronze::NotImplementedError, error_message
+    end
+  end
+
   describe '#query' do
     let(:error_message) do
       'Bronze::Collections::Adapter#query is not implemented'

@@ -3,6 +3,7 @@
 require 'bronze/collections/adapter'
 require 'bronze/collections/collection'
 require 'bronze/collections/query'
+require 'bronze/errors'
 
 RSpec.describe Bronze::Collections::Collection do
   subject(:collection) do
@@ -15,6 +16,7 @@ RSpec.describe Bronze::Collections::Collection do
     instance_double(
       Bronze::Collections::Adapter,
       collection_name_for: '',
+      insert_one:          [],
       query:               query
     )
   end
@@ -87,6 +89,36 @@ RSpec.describe Bronze::Collections::Collection do
     end
 
     it { expect(collection.each).to be query.each }
+  end
+
+  describe '#insert_one' do
+    let(:data) do
+      {
+        'title'  => 'Romance of the Three Kingdoms',
+        'author' => 'Luo Guanzhong'
+      }
+    end
+    let(:result) do
+      [
+        true,
+        data,
+        Bronze::Errors.new
+      ]
+    end
+
+    it { expect(collection).to respond_to(:insert_one).with(1).argument }
+
+    it 'should delegate to the adapter' do
+      collection.insert_one(data)
+
+      expect(adapter).to have_received(:insert_one).with(collection.name, data)
+    end
+
+    it 'should return the result from the adapter' do
+      allow(adapter).to receive(:insert_one).and_return(result)
+
+      expect(collection.insert_one(data)).to be result
+    end
   end
 
   describe '#matching' do

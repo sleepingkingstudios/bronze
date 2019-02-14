@@ -96,13 +96,6 @@ RSpec.describe Bronze::Collections::Simple do
         'issue'    => 3,
         'headline' => 'Charting The Influence of Uranus',
         'date'     => Date.new(1970, 4, 1)
-      },
-      {
-        'id'       => 13,
-        'title'    => 'Triskadecaphobia Today',
-        'issue'    => 13,
-        'headline' => '13 Reasons To Fear The Number Thirteen',
-        'date'     => Date.new(2013, 1, 3)
       }
     ]
   end
@@ -136,6 +129,35 @@ RSpec.describe Bronze::Collections::Simple do
       it { expect(collection.name).to be == 'periodicals' }
 
       it { expect(collection.count).to be periodicals.size }
+    end
+  end
+
+  describe 'inserting data into the collection' do
+    let(:collection) { repository.collection('periodicals') }
+
+    describe 'with a valid data hash' do
+      let(:data) do
+        {
+          'id'       => 13,
+          'title'    => 'Triskadecaphobia Today',
+          'issue'    => 13,
+          'headline' => '13 Reasons To Fear The Number Thirteen',
+          'date'     => Date.new(2013, 1, 3)
+        }
+      end
+      let(:result) { collection.insert_one(data) }
+
+      it { expect(result).to be_a Array }
+
+      it { expect(result.size).to be 3 }
+
+      it { expect(result[0]).to be true }
+
+      it { expect(result[1]).to be == data }
+
+      it { expect(result[2]).to be_a Bronze::Errors }
+
+      it { expect(result[2]).to be_empty }
     end
   end
 

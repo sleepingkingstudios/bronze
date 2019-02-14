@@ -30,8 +30,26 @@ module Bronze::Collections
       raise Bronze::NotImplementedError.new(self, :collection_names)
     end
 
+    # @overload(collection_name, data)
+    #   Inserts the data hash into the specified collection.
+    #
+    #   @param collection_name [String] The collection to insert.
+    #   @param data [Hash] The data hash to insert.
+    #
+    #   @return [Array<Boolean, Hash, Array>] in order, the OK status of the
+    #     insert (true or false), the data hash to insert, and an errors array.
+    #
+    #   @raise Bronze::NotImplementedError unless overriden by an Adapter
+    #     subclass.
+    def insert_one(_collection_name, _data)
+      raise Bronze::NotImplementedError.new(self, :insert_one)
+    end
+
     # @overload(collection_name)
-    #   @return [Bronze::Collections::Query] a query against the data store.
+    #   @param collection_name [String] The collection to query.
+    #
+    #   @return [Bronze::Collections::Query] a query against the specified
+    #     collection.
     #
     #   @raise Bronze::NotImplementedError unless overriden by an Adapter
     #     subclass.

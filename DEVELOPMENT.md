@@ -12,6 +12,7 @@
 - default to :id
 - autodetect if definition is an entity class
 - allows query.find()
+- allows collection.find(id), collection.update(id, data), collection.delete(id)
 
 ### Transforms
 
@@ -93,6 +94,10 @@ Collection#transform
     - do not include in #attributes
     - make getter, setter private
     - do include in normalize-denormalize
+
+## Errors
+
+- messages -> I18N?
 
 ## Transforms
 
