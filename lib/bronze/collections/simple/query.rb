@@ -35,6 +35,10 @@ module Bronze::Collections::Simple
 
     # (see Bronze::Collections::Query#matching)
     def matching(selector)
+      unless selector.is_a?(Hash)
+        raise ArgumentError, "invalid selector - #{selector.inspect}"
+      end
+
       dup.with_filters(selector)
     end
     alias_method :where, :matching

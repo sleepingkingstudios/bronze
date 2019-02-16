@@ -17,7 +17,8 @@ RSpec.describe Bronze::Collections::Collection do
       Bronze::Collections::Adapter,
       collection_name_for: '',
       insert_one:          [],
-      query:               query
+      query:               query,
+      update_matching:     []
     )
   end
   let(:query) do
@@ -206,5 +207,44 @@ RSpec.describe Bronze::Collections::Collection do
     end
 
     it { expect(collection.query).to be query }
+  end
+
+  describe '#update_matching' do
+    let(:selector) { { author: 'Luo Guanzhong' } }
+    let(:data)     { { 'language' => 'Chinese' } }
+    let(:expected) do
+      {
+        'title'    => 'Romance of the Three Kingdoms',
+        'author'   => 'Luo Guanzhong',
+        'language' => 'Chinese'
+      }
+    end
+    let(:result) do
+      [
+        true,
+        [expected],
+        Bronze::Errors.new
+      ]
+    end
+
+    it 'should define the method' do
+      expect(collection).to respond_to(:update_matching)
+        .with(1).arguments
+        .with_keywords(:with)
+    end
+
+    it 'should delegate to the adapter' do
+      collection.update_matching(selector, with: data)
+
+      expect(adapter)
+        .to have_received(:update_matching)
+        .with(collection.name, selector, data)
+    end
+
+    it 'should return the result from the adapter' do
+      allow(adapter).to receive(:update_matching).and_return(result)
+
+      expect(collection.update_matching(selector, with: data)).to be result
+    end
   end
 end

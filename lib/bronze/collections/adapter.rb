@@ -30,7 +30,7 @@ module Bronze::Collections
       raise Bronze::NotImplementedError.new(self, :collection_names)
     end
 
-    # @overload(collection_name, data)
+    # @overload insert_one(collection_name, data)
     #   Inserts the data hash into the specified collection.
     #
     #   @param collection_name [String] The collection to insert.
@@ -45,7 +45,7 @@ module Bronze::Collections
       raise Bronze::NotImplementedError.new(self, :insert_one)
     end
 
-    # @overload(collection_name)
+    # @overload query(collection_name)
     #   @param collection_name [String] The collection to query.
     #
     #   @return [Bronze::Collections::Query] a query against the specified
@@ -55,6 +55,23 @@ module Bronze::Collections
     #     subclass.
     def query(_collection_name)
       raise Bronze::NotImplementedError.new(self, :query)
+    end
+
+    # @overload update_matching(collection_name, selector, data)
+    #   Updates each item in the collection matching the given selector with the
+    #   specified data.
+    #
+    #   @param collection_name [String] The collection to insert.
+    #   @param selector [Hash] The criteria used to filter the data.
+    #   @param data [Hash] The keys and values to update in the matching items.
+    #
+    #   @return [Array<Boolean, Hash, Array>] in order, the OK status of the
+    #     update (true or false), the updated items, and an errors array.
+    #
+    #   @raise Bronze::NotImplementedError unless overriden by an Adapter
+    #     subclass.
+    def update_matching(_collection_name, _selector, _data)
+      raise Bronze::NotImplementedError.new(self, :update_matching)
     end
 
     private

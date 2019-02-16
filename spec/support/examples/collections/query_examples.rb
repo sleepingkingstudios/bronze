@@ -353,6 +353,29 @@ module Spec::Support::Examples::Collections
 
         it { expect(query.matching(selector)).to be_a described_class }
 
+        describe 'with nil' do
+          let(:error_message) do
+            'invalid selector - nil'
+          end
+
+          it 'should raise an error' do
+            expect { query.matching(nil) }
+              .to raise_error ArgumentError, error_message
+          end
+        end
+
+        describe 'with an Object' do
+          let(:object) { Object.new }
+          let(:error_message) do
+            "invalid selector - #{object.inspect}"
+          end
+
+          it 'should raise an error' do
+            expect { query.matching(object) }
+              .to raise_error ArgumentError, error_message
+          end
+        end
+
         describe 'with an empty selector' do
           let(:selector) { {} }
 

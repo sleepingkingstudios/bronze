@@ -9,16 +9,22 @@ RSpec.describe Bronze::Collections::Simple::Adapter do
     {
       'books' => [
         {
+          'uuid'   => 'ff0ea8fc-05b2-4f1f-b661-4d6e543ce86e',
           'title'  => 'The Time Machine',
-          'author' => 'H. G. Wells'
+          'author' => 'H. G. Wells',
+          'genre'  => 'Science Fiction'
         },
         {
+          'uuid'   => 'f2559333-b4e8-46b4-a9ca-a61fcd5f6a80',
           'title'  => 'War of the Worlds',
-          'author' => 'H. G. Wells'
+          'author' => 'H. G. Wells',
+          'genre'  => 'Science Fiction'
         },
         {
+          'uuid'   => '530dc317-63e9-4d6b-b3fc-47f7be70afab',
           'title'  => 'Journey to the Center of the Earth',
-          'author' => 'Jules Verne'
+          'author' => 'Jules Verne',
+          'genre'  => 'Science Fiction'
         }
       ]
     }
@@ -118,7 +124,7 @@ RSpec.describe Bronze::Collections::Simple::Adapter do
       let(:expected_error) do
         {
           type:   Bronze::Collections::Errors::DATA_INVALID,
-          params: {}
+          params: { data: object }
         }
       end
       let(:object) { Object.new }
@@ -253,8 +259,10 @@ RSpec.describe Bronze::Collections::Simple::Adapter do
       describe 'with a data object with String keys' do
         let(:book) do
           {
+            'uuid'   => 'ea550526-8743-4683-a58b-99bf2aa207f5',
             'title'  => 'The Island of Dr. Moreau',
-            'author' => 'H. G. Wells'
+            'author' => 'H. G. Wells',
+            'genre'  => 'Science Fiction'
           }
         end
         let(:result) { adapter.insert_one(collection_name, book) }
@@ -290,14 +298,18 @@ RSpec.describe Bronze::Collections::Simple::Adapter do
       describe 'with a data object with Symbol keys' do
         let(:book) do
           {
+            uuid:   'ea550526-8743-4683-a58b-99bf2aa207f5',
             title:  'The Island of Dr. Moreau',
-            author: 'H. G. Wells'
+            author: 'H. G. Wells',
+            genre:  'Science Fiction'
           }
         end
         let(:expected) do
           {
+            'uuid'   => 'ea550526-8743-4683-a58b-99bf2aa207f5',
             'title'  => 'The Island of Dr. Moreau',
-            'author' => 'H. G. Wells'
+            'author' => 'H. G. Wells',
+            'genre'  => 'Science Fiction'
           }
         end
         let(:result) { adapter.insert_one(collection_name, book) }
@@ -341,5 +353,298 @@ RSpec.describe Bronze::Collections::Simple::Adapter do
     it { expect(adapter.query('books')).to be_a query_class }
 
     it { expect(query.send(:data)).to be == raw_data['books'] }
+  end
+
+  describe '#update_matching' do
+    shared_examples 'should update the items' do
+      describe 'with a data hash with String keys' do
+        let(:data) { { 'published' => true } }
+        let(:result) do
+          adapter.update_matching(collection_name, selector, data)
+        end
+
+        def find_book(uuid)
+          adapter.query(collection_name).matching(uuid: uuid).to_a.first
+        end
+
+        it 'should update each matching item' do
+          adapter.update_matching(collection_name, selector, data)
+
+          expected.each do |expected_item|
+            actual = find_book(expected_item['uuid'])
+
+            expect(actual).to be == expected_item
+          end
+        end
+
+        it 'should not update the non-matching items' do
+          adapter.update_matching(collection_name, selector, data)
+
+          unaffected_items.each do |unaffected_item|
+            actual = find_book(unaffected_item['uuid'])
+
+            expect(actual).to be == unaffected_item
+          end
+        end
+
+        it { expect(result).to be_a Array }
+
+        it { expect(result.size).to be 3 }
+
+        it { expect(result[0]).to be true }
+
+        it { expect(result[1]).to be == expected }
+
+        it { expect(result[2].count).to be 0 }
+      end
+
+      describe 'with a data hash with Symbol keys' do
+        let(:data) { { published: true } }
+        let(:result) do
+          adapter.update_matching(collection_name, selector, data)
+        end
+
+        def find_book(uuid)
+          adapter.query(collection_name).matching(uuid: uuid).to_a.first
+        end
+
+        it 'should update each matching item' do
+          adapter.update_matching(collection_name, selector, data)
+
+          expected.each do |expected_item|
+            actual = find_book(expected_item['uuid'])
+
+            expect(actual).to be == expected_item
+          end
+        end
+
+        it 'should not update the non-matching items' do
+          adapter.update_matching(collection_name, selector, data)
+
+          unaffected_items.each do |unaffected_item|
+            actual = find_book(unaffected_item['uuid'])
+
+            expect(actual).to be == unaffected_item
+          end
+        end
+
+        it { expect(result).to be_a Array }
+
+        it { expect(result.size).to be 3 }
+
+        it { expect(result[0]).to be true }
+
+        it { expect(result[1]).to be == expected }
+
+        it { expect(result[2].count).to be 0 }
+      end
+    end
+
+    let(:collection_name) { 'books' }
+    let(:selector)        { {} }
+    let(:data)            { {} }
+    let(:affected_items) do
+      raw_data['books']
+    end
+    let(:unaffected_items) do
+      raw_data['books'] - affected_items
+    end
+    let(:expected) do
+      affected_items.map do |book|
+        book.merge(tools.hash.convert_keys_to_strings(data))
+      end
+    end
+
+    def tools
+      SleepingKingStudios::Tools::Toolbelt.instance
+    end
+
+    describe 'with a nil selector' do
+      let(:result) do
+        adapter.update_matching(collection_name, nil, data)
+      end
+      let(:expected_error) do
+        {
+          type:   Bronze::Collections::Errors::SELECTOR_MISSING,
+          params: {}
+        }
+      end
+
+      it 'should not change the data' do
+        expect { adapter.update_matching(collection_name, nil, data) }
+          .not_to change(adapter.query(collection_name), :to_a)
+      end
+
+      it { expect(result).to be_a Array }
+
+      it { expect(result.size).to be 3 }
+
+      it { expect(result[0]).to be false }
+
+      it { expect(result[1]).to be == [] }
+
+      it { expect(result[2].count).to be 1 }
+
+      it { expect(result[2]).to include expected_error }
+    end
+
+    describe 'with a non-hash selector' do
+      let(:selector) { Object.new }
+      let(:result) do
+        adapter.update_matching(collection_name, selector, data)
+      end
+      let(:expected_error) do
+        {
+          type:   Bronze::Collections::Errors::SELECTOR_INVALID,
+          params: { selector: selector }
+        }
+      end
+
+      it 'should not change the data' do
+        expect { adapter.update_matching(collection_name, selector, data) }
+          .not_to change(adapter.query(collection_name), :to_a)
+      end
+
+      it { expect(result).to be_a Array }
+
+      it { expect(result.size).to be 3 }
+
+      it { expect(result[0]).to be false }
+
+      it { expect(result[1]).to be == [] }
+
+      it { expect(result[2].count).to be 1 }
+
+      it { expect(result[2]).to include expected_error }
+    end
+
+    describe 'with a nil data hash' do
+      let(:result) do
+        adapter.update_matching(collection_name, selector, nil)
+      end
+      let(:expected_error) do
+        {
+          type:   Bronze::Collections::Errors::DATA_MISSING,
+          params: {}
+        }
+      end
+
+      it 'should not change the data' do
+        expect { adapter.update_matching(collection_name, selector, nil) }
+          .not_to change(adapter.query(collection_name), :to_a)
+      end
+
+      it { expect(result).to be_a Array }
+
+      it { expect(result.size).to be 3 }
+
+      it { expect(result[0]).to be false }
+
+      it { expect(result[1]).to be == [] }
+
+      it { expect(result[2].count).to be 1 }
+
+      it { expect(result[2]).to include expected_error }
+    end
+
+    describe 'with a non-hash data object' do
+      let(:data) { Object.new }
+      let(:result) do
+        adapter.update_matching(collection_name, selector, data)
+      end
+      let(:expected_error) do
+        {
+          type:   Bronze::Collections::Errors::DATA_INVALID,
+          params: { data: data }
+        }
+      end
+
+      it 'should not change the data' do
+        expect { adapter.update_matching(collection_name, selector, data) }
+          .not_to change(adapter.query(collection_name), :to_a)
+      end
+
+      it { expect(result).to be_a Array }
+
+      it { expect(result.size).to be 3 }
+
+      it { expect(result[0]).to be false }
+
+      it { expect(result[1]).to be == [] }
+
+      it { expect(result[2].count).to be 1 }
+
+      it { expect(result[2]).to include expected_error }
+    end
+
+    describe 'with an empty data hash' do
+      let(:result) do
+        adapter.update_matching(collection_name, selector, {})
+      end
+      let(:expected_error) do
+        {
+          type:   Bronze::Collections::Errors::DATA_EMPTY,
+          params: {}
+        }
+      end
+
+      it 'should not change the data' do
+        expect { adapter.update_matching(collection_name, selector, {}) }
+          .not_to change(adapter.query(collection_name), :to_a)
+      end
+
+      it { expect(result).to be_a Array }
+
+      it { expect(result.size).to be 3 }
+
+      it { expect(result[0]).to be false }
+
+      it { expect(result[1]).to be == [] }
+
+      it { expect(result[2].count).to be 1 }
+
+      it { expect(result[2]).to include expected_error }
+    end
+
+    describe 'with an empty selector' do
+      let(:selector) { {} }
+
+      include_examples 'should update the items'
+    end
+
+    describe 'with a selector that does not match any items' do
+      let(:selector)       { { genre: 'Noir' } }
+      let(:affected_items) { [] }
+
+      include_examples 'should update the items'
+    end
+
+    describe 'with a selector that matches one item' do
+      let(:selector) { { title: 'Journey to the Center of the Earth' } }
+      let(:affected_items) do
+        super().select do |book|
+          book['title'] == 'Journey to the Center of the Earth'
+        end
+      end
+
+      include_examples 'should update the items'
+    end
+
+    describe 'with a selector that matches some items' do
+      let(:selector) { { author: 'H. G. Wells' } }
+      let(:affected_items) do
+        super().select do |book|
+          book['author'] == 'H. G. Wells'
+        end
+      end
+
+      include_examples 'should update the items'
+    end
+
+    describe 'with a selector that matches all items' do
+      let(:selector) { { genre: 'Science Fiction' } }
+
+      include_examples 'should update the items'
+    end
   end
 end

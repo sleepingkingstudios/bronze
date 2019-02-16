@@ -44,6 +44,24 @@ module Bronze::Collections::Simple
       Bronze::Collections::Simple::Query.new(collection(collection_name))
     end
 
+    # (see Bronze::Collections::Adapter#update_matching)
+    def update_matching(collection_name, selector, data)
+      errors = build_errors
+
+      validate_selector(selector, errors: errors) &&
+        validate_attributes(data, errors: errors)
+
+      return [false, [], errors] unless errors.empty?
+
+      data  = tools.hash.convert_keys_to_strings(data)
+      items =
+        query(collection_name).matching(selector).each.map do |item|
+          item.update(data)
+        end
+
+      [true, items, errors]
+    end
+
     private
 
     def build_errors
@@ -87,7 +105,28 @@ module Bronze::Collections::Simple
     def validate_attributes_type(attributes, errors:)
       return true if attributes.is_a?(Hash)
 
-      errors.add(Errors.data_invalid)
+      errors.add(Errors.data_invalid, data: attributes)
+
+      false
+    end
+
+    def validate_selector(selector, errors:)
+      validate_selector_not_nil(selector, errors: errors) &&
+        validate_selector_type(selector, errors: errors)
+    end
+
+    def validate_selector_not_nil(selector, errors:)
+      return true unless selector.nil?
+
+      errors.add(Errors.selector_missing)
+
+      false
+    end
+
+    def validate_selector_type(selector, errors:)
+      return true if selector.is_a?(Hash)
+
+      errors.add(Errors.selector_invalid, selector: selector)
 
       false
     end

@@ -86,4 +86,20 @@ RSpec.describe Bronze::Collections::Adapter do
         .to raise_error Bronze::NotImplementedError, error_message
     end
   end
+
+  describe '#update_matching' do
+    let(:collection_name) { 'books' }
+    let(:selector)        { { 'title'  => 'The Ramayana' } }
+    let(:data)            { { 'author' => 'Valmiki' } }
+    let(:error_message) do
+      'Bronze::Collections::Adapter#update_matching is not implemented'
+    end
+
+    it { expect(adapter).to respond_to(:update_matching).with(3).arguments }
+
+    it 'should raise an error' do
+      expect { adapter.update_matching(collection_name, selector, data) }
+        .to raise_error Bronze::NotImplementedError, error_message
+    end
+  end
 end

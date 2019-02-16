@@ -59,6 +59,18 @@ module Bronze::Collections
     end
     alias_method :all, :query
 
+    # Updates each item in the collection matching the given selector with the
+    # specified data.
+    #
+    # @param selector [Hash] The criteria used to filter the data.
+    # @param with [Hash] The keys and values to update in the matching items.
+    #
+    # @return [Array<Boolean, Hash, Array>] in order, the OK status of the
+    #   update (true or false), the updated items, and an errors array.
+    def update_matching(selector, with:)
+      adapter.update_matching(name, selector, with)
+    end
+
     private
 
     def parse_definition(definition)
