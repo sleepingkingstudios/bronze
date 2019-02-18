@@ -1,11 +1,11 @@
 # frozen_string_literal: true
 
+require 'bronze/collection'
 require 'bronze/collections/adapter'
-require 'bronze/collections/collection'
 require 'bronze/collections/query'
 require 'bronze/errors'
 
-RSpec.describe Bronze::Collections::Collection do
+RSpec.describe Bronze::Collection do
   subject(:collection) do
     described_class.new(definition, adapter: adapter, **options)
   end

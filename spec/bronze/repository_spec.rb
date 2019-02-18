@@ -1,9 +1,9 @@
 # frozen_string_literal: true
 
 require 'bronze/collections/adapter'
-require 'bronze/collections/repository'
+require 'bronze/repository'
 
-RSpec.describe Bronze::Collections::Repository do
+RSpec.describe Bronze::Repository do
   subject(:repository) { described_class.new(adapter: adapter) }
 
   let(:adapter) do
@@ -66,7 +66,7 @@ RSpec.describe Bronze::Collections::Repository do
         repository.collection(collection_name, **options)
       end
 
-      it { expect(collection).to be_a Bronze::Collections::Collection }
+      it { expect(collection).to be_a Bronze::Collection }
 
       it { expect(collection.adapter).to be adapter }
 
@@ -95,7 +95,7 @@ RSpec.describe Bronze::Collections::Repository do
           .and_return('spec__widgets')
       end
 
-      it { expect(collection).to be_a Bronze::Collections::Collection }
+      it { expect(collection).to be_a Bronze::Collection }
 
       it { expect(collection.adapter).to be adapter }
 

@@ -2,10 +2,9 @@
 
 require 'forwardable'
 
-require 'bronze/collections'
-require 'bronze/collections/collection'
+require 'bronze/collection'
 
-module Bronze::Collections
+module Bronze
   # A repository represents a data store, such as a SQL database, a MongoDB
   # datastore, or a set of in-memory objects. Each repository is divided into
   # collections, which correspond to the tables, collections or data series of
@@ -36,9 +35,9 @@ module Bronze::Collections
     #   @param name [String, Symbol] The name of the data set. Defaults to the
     #     name of the entity class, formatted as underscore-separated lowercase.
     #
-    # @return [Bronze::Collections::Collection] the requested collection.
+    # @return [Bronze::Collection] the requested collection.
     def collection(definition, name: nil)
-      Bronze::Collections::Collection.new(
+      Bronze::Collection.new(
         definition,
         adapter: adapter,
         name:    name

@@ -2,9 +2,9 @@
 
 require 'forwardable'
 
-require 'bronze/collections'
+require 'bronze'
 
-module Bronze::Collections
+module Bronze
   # A collection represents a data set, providing a consistent interface to
   # query and manage data from different sources.
   class Collection

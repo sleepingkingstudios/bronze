@@ -2,8 +2,8 @@
 
 require 'date'
 
-require 'bronze/collections/repository'
 require 'bronze/collections/simple/adapter'
+require 'bronze/repository'
 
 RSpec.describe Bronze::Collections::Simple do
   let(:periodicals) do
@@ -103,14 +103,14 @@ RSpec.describe Bronze::Collections::Simple do
     Bronze::Collections::Simple::Adapter.new('periodicals' => periodicals)
   end
   let(:repository) do
-    Bronze::Collections::Repository.new(adapter: adapter)
+    Bronze::Repository.new(adapter: adapter)
   end
 
   describe 'accessing a collection' do
     describe 'with an invalid collection name' do
       let(:collection) { repository.collection('books') }
 
-      it { expect(collection).to be_a Bronze::Collections::Collection }
+      it { expect(collection).to be_a Bronze::Collection }
 
       it { expect(collection.adapter).to be adapter }
 
@@ -122,7 +122,7 @@ RSpec.describe Bronze::Collections::Simple do
     describe 'with a valid collection name' do
       let(:collection) { repository.collection('periodicals') }
 
-      it { expect(collection).to be_a Bronze::Collections::Collection }
+      it { expect(collection).to be_a Bronze::Collection }
 
       it { expect(collection.adapter).to be adapter }
 
