@@ -90,13 +90,11 @@ RSpec.describe Bronze::Entities::Attributes::Metadata do
 
       it { expect(metadata.default_transform?).to be false }
 
-      # rubocop:disable RSpec/NestedGroups
       context 'when the default transform flag is set to true' do
         let(:options) { { default_transform: true } }
 
         it { expect(metadata.default_transform?).to be true }
       end
-      # rubocop:enable RSpec/NestedGroups
     end
   end
 

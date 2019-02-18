@@ -1,5 +1,31 @@
 # Development
 
+## Collections
+
+- convert collection methods to return Cuprum::Result instead of result arrays
+- extract adapter specs to shared examples
+- refactor to Bronze::Collection and Bronze::Repository
+
+### Advanced Querying
+
+- Mongo-style selectors - query.matching(year: { $gt: 1986 })
+
+### Primary Keys
+
+- configurable - repository.collection(definition, primary_key:)
+- default to :id
+- autodetect if definition is an entity class
+- allows query.find()
+- allows collection.find(id), collection.update(id, data), collection.delete(id)
+
+### Transforms
+
+Collection#transform
+
+- configurable - repository.collection(definition, transform:)
+- defaults to nil
+- if definition is an Entity class, transform defaults to NormalizeTransform
+
 ## Entities
 
 ### Attributes
@@ -72,6 +98,10 @@
     - do not include in #attributes
     - make getter, setter private
     - do include in normalize-denormalize
+
+## Errors
+
+- messages -> I18N?
 
 ## Transforms
 

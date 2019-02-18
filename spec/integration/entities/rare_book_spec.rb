@@ -168,7 +168,6 @@ RSpec.describe Spec::RareBook do
           .to be_a String
       end
 
-      # rubocop:disable RSpec/NestedGroups
       context 'when the attributes include a primary key' do
         let(:book_uuid)  { 'a6abad76-b312-435a-a0b4-133a5dd080f9' }
         let(:attributes) { super().merge('id' => book_uuid) }
@@ -179,7 +178,6 @@ RSpec.describe Spec::RareBook do
             .to be >= expected
         end
       end
-      # rubocop:enable RSpec/NestedGroups
     end
 
     describe 'with a hash with valid symbol keys' do
@@ -214,7 +212,6 @@ RSpec.describe Spec::RareBook do
           .to be_a String
       end
 
-      # rubocop:disable RSpec/NestedGroups
       context 'when the attributes include a primary key' do
         let(:book_uuid)  { 'a6abad76-b312-435a-a0b4-133a5dd080f9' }
         let(:attributes) { super().merge(id: book_uuid) }
@@ -225,7 +222,6 @@ RSpec.describe Spec::RareBook do
             .to be >= expected
         end
       end
-      # rubocop:enable RSpec/NestedGroups
     end
   end
 

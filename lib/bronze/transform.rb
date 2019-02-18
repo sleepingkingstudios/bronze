@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
+require 'bronze'
 require 'bronze/not_implemented_error'
-require 'bronze/transforms'
 
 module Bronze
   # Abstract class for converting an object to and from a normalized form. This

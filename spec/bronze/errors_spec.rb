@@ -131,21 +131,33 @@ RSpec.describe Bronze::Errors do
       # rubocop:enable Style/NilComparison
     end
 
+    describe 'with an empty array' do
+      it { expect(errors == []).to be true }
+    end
+
     describe 'with an empty errors object' do
       it { expect(errors == other).to be true }
+
+      it { expect(errors == other.to_a).to be true }
     end
 
     wrap_context 'with an errors object with many errors' do
       it { expect(errors == other).to be false }
+
+      it { expect(errors == other.to_a).to be false }
     end
 
     wrap_context 'with an errors object with many nested errors' do
       it { expect(errors == other).to be false }
+
+      it { expect(errors == other.to_a).to be false }
     end
 
     wrap_context 'when there are many errors' do
       describe 'with an empty errors object' do
         it { expect(errors == other).to be false }
+
+        it { expect(errors == other.to_a).to be false }
       end
 
       describe 'with an errors object with unordered errors' do
@@ -158,28 +170,40 @@ RSpec.describe Bronze::Errors do
         end
 
         it { expect(errors == other).to be true }
+
+        it { expect(errors == other.to_a).to be true }
       end
 
       wrap_context 'with an errors object with many errors' do
         it { expect(errors == other).to be true }
+
+        it { expect(errors == other.to_a).to be true }
       end
 
       wrap_context 'with an errors object with many nested errors' do
         it { expect(errors == other).to be false }
+
+        it { expect(errors == other.to_a).to be false }
       end
     end
 
     wrap_context 'when there are many nested errors' do
       describe 'with an empty errors object' do
         it { expect(errors == other).to be false }
+
+        it { expect(errors == other.to_a).to be false }
       end
 
       wrap_context 'with an errors object with many errors' do
         it { expect(errors == other).to be false }
+
+        it { expect(errors == other.to_a).to be false }
       end
 
       wrap_context 'with an errors object with many nested errors' do
         it { expect(errors == other).to be true }
+
+        it { expect(errors == other.to_a).to be true }
       end
     end
   end
