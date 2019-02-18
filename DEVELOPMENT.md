@@ -2,6 +2,10 @@
 
 ## Collections
 
+- convert collection methods to return Cuprum::Result instead of result arrays
+- extract adapter specs to shared examples
+- refactor to Bronze::Collection and Bronze::Repository
+
 ### Advanced Querying
 
 - Mongo-style selectors - query.matching(year: { $gt: 1986 })

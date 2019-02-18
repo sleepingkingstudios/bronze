@@ -132,6 +132,139 @@ RSpec.describe Bronze::Collections::Simple do
     end
   end
 
+  describe 'deleting data matching a selector' do
+    let(:collection) { repository.collection('periodicals') }
+    let!(:matching) do
+      periodicals.select do |item|
+        item >= tools.hash.convert_keys_to_strings(selector)
+      end
+    end
+    let(:nonmatching) do
+      periodicals - matching
+    end
+
+    def find_periodical(id)
+      collection.matching(id: id).to_a.first
+    end
+
+    def tools
+      SleepingKingStudios::Tools::Toolbelt.instance
+    end
+
+    describe 'with a selector that does not match any items' do
+      let(:selector) { { title: 'Triskadecaphobia Today' } }
+      let(:result)   { collection.delete_matching(selector) }
+
+      it { expect(result).to be_a Array }
+
+      it { expect(result.size).to be 3 }
+
+      it { expect(result[0]).to be true }
+
+      it { expect(result[1]).to be == [] }
+
+      it { expect(result[2]).to be_a Bronze::Errors }
+
+      it { expect(result[2]).to be_empty }
+
+      it 'should not change the collection count' do
+        expect { collection.delete_matching(selector) }
+          .not_to change(collection, :count)
+      end
+
+      it 'should not change the collection data' do
+        expect { collection.delete_matching(selector) }
+          .not_to change(collection.query, :to_a)
+      end
+    end
+
+    describe 'with a selector that matches one item' do
+      let(:selector) { { id: 9 } }
+      let(:result)   { collection.delete_matching(selector) }
+
+      it { expect(result).to be_a Array }
+
+      it { expect(result.size).to be 3 }
+
+      it { expect(result[0]).to be true }
+
+      it { expect(result[1]).to be == matching }
+
+      it { expect(result[2]).to be_a Bronze::Errors }
+
+      it { expect(result[2]).to be_empty }
+
+      it 'should change the collection count' do
+        expect { collection.delete_matching(selector) }
+          .to change(collection, :count)
+          .by(-matching.size)
+      end
+
+      it 'should delete the matching items' do
+        collection.delete_matching(selector)
+
+        matching.each do |matching_item|
+          periodical = find_periodical(matching_item['id'])
+
+          expect(periodical).to be nil
+        end
+      end
+
+      it 'should not delete the non-matching items' do
+        collection.delete_matching(selector)
+
+        nonmatching.each do |non_matching_item|
+          periodical = find_periodical(non_matching_item['id'])
+
+          expect(periodical).not_to be nil
+        end
+      end
+    end
+
+    describe 'with a selector that matches many items' do
+      let(:selector) { { title: 'Modern Mentalism' } }
+      let(:result)   { collection.delete_matching(selector) }
+
+      it { expect(result).to be_a Array }
+
+      it { expect(result.size).to be 3 }
+
+      it { expect(result[0]).to be true }
+
+      it { expect(result[1]).to be == matching }
+
+      it { expect(result[2]).to be_a Bronze::Errors }
+
+      it { expect(result[2]).to be_empty }
+
+      it 'should change the collection count' do
+        expect { collection.delete_matching(selector) }
+          .to change(collection, :count)
+          .by(-matching.size)
+      end
+
+      it 'should delete the matching items' do
+        collection.delete_matching(selector)
+
+        matching.each do |matching_item|
+          periodical = find_periodical(matching_item['id'])
+
+          expect(periodical).to be nil
+        end
+      end
+
+      it 'should not delete the non-matching items' do
+        collection.delete_matching(selector)
+
+        nonmatching.each do |non_matching_item|
+          periodical = find_periodical(non_matching_item['id'])
+
+          expect(periodical).not_to be nil
+        end
+      end
+    end
+  end
+
   describe 'inserting data into the collection' do
     let(:collection) { repository.collection('periodicals') }
 

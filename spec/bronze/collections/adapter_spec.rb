@@ -59,6 +59,21 @@ RSpec.describe Bronze::Collections::Adapter do
     end
   end
 
+  describe '#delete_matching' do
+    let(:collection_name) { 'books' }
+    let(:selector)        { { 'title' => 'The Ramayana' } }
+    let(:error_message) do
+      'Bronze::Collections::Adapter#delete_matching is not implemented'
+    end
+
+    it { expect(adapter).to respond_to(:delete_matching).with(2).arguments }
+
+    it 'should raise an error' do
+      expect { adapter.delete_matching(collection_name, selector) }
+        .to raise_error Bronze::NotImplementedError, error_message
+    end
+  end
+
   describe '#insert_one' do
     let(:collection_name) { 'books' }
     let(:object)          { { 'title' => 'The Ramayana' } }
@@ -89,7 +104,7 @@ RSpec.describe Bronze::Collections::Adapter do
 
   describe '#update_matching' do
     let(:collection_name) { 'books' }
-    let(:selector)        { { 'title'  => 'The Ramayana' } }
+    let(:selector)        { { 'title' => 'The Ramayana' } }
     let(:data)            { { 'author' => 'Valmiki' } }
     let(:error_message) do
       'Bronze::Collections::Adapter#update_matching is not implemented'

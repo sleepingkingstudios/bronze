@@ -41,6 +41,17 @@ module Bronze::Collections
     # @return [String] the name of the data set.
     attr_reader :name
 
+    # Deletes each item in the collection matching the given selector, removing
+    # it from the collection.
+    #
+    # @param selector [Hash] The criteria used to filter the data.
+    #
+    # @return [Array<Boolean, Hash, Array>] in order, the OK status of the
+    #   delete (true or false), the deleted items, and an errors array.
+    def delete_matching(selector)
+      adapter.delete_matching(name, selector)
+    end
+
     # Inserts the data hash into the collection.
     #
     # @param data [Hash] The data hash to insert.

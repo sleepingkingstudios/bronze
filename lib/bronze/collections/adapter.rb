@@ -30,6 +30,22 @@ module Bronze::Collections
       raise Bronze::NotImplementedError.new(self, :collection_names)
     end
 
+    # @overload delete_matching(collection_name, selector)
+    #   Deletes each item in the collection matching the given selector,
+    #   removing it from the collection.
+    #
+    #   @param collection_name [String] The collection to delete.
+    #   @param selector [Hash] The criteria used to filter the data.
+    #
+    #   @return [Array<Boolean, Hash, Array>] in order, the OK status of the
+    #     delete (true or false), the deleted items, and an errors array.
+    #
+    #   @raise Bronze::NotImplementedError unless overriden by an Adapter
+    #     subclass.
+    def delete_matching(_collection_name, _selector)
+      raise Bronze::NotImplementedError.new(self, :delete_matching)
+    end
+
     # @overload insert_one(collection_name, data)
     #   Inserts the data hash into the specified collection.
     #
@@ -61,7 +77,7 @@ module Bronze::Collections
     #   Updates each item in the collection matching the given selector with the
     #   specified data.
     #
-    #   @param collection_name [String] The collection to insert.
+    #   @param collection_name [String] The collection to update.
     #   @param selector [Hash] The criteria used to filter the data.
     #   @param data [Hash] The keys and values to update in the matching items.
     #

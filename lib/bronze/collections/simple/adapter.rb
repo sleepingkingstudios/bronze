@@ -24,6 +24,21 @@ module Bronze::Collections::Simple
       data.keys.sort
     end
 
+    # (see Bronze::Collections::Adapter#delete_matching)
+    def delete_matching(collection_name, selector)
+      errors = build_errors
+
+      validate_selector(selector, errors: errors)
+
+      return [false, [], errors] unless errors.empty?
+
+      items = query(collection_name).matching(selector).to_a
+
+      items.each { |item| collection(collection_name).delete(item) }
+
+      [true, items, errors]
+    end
+
     # (see Bronze::Collections::Adapter#insert_one)
     def insert_one(collection_name, data)
       errors = build_errors

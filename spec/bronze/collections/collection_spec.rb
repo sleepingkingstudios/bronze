@@ -16,6 +16,7 @@ RSpec.describe Bronze::Collections::Collection do
     instance_double(
       Bronze::Collections::Adapter,
       collection_name_for: '',
+      delete_matching:     [],
       insert_one:          [],
       query:               query,
       update_matching:     []
@@ -78,6 +79,40 @@ RSpec.describe Bronze::Collections::Collection do
     end
 
     it { expect(collection.count).to be query.count }
+  end
+
+  describe '#delete_matching' do
+    let(:selector) { { author: 'Luo Guanzhong' } }
+    let(:expected) do
+      {
+        'title'    => 'Romance of the Three Kingdoms',
+        'author'   => 'Luo Guanzhong',
+        'language' => 'Chinese'
+      }
+    end
+    let(:result) do
+      [
+        true,
+        [expected],
+        Bronze::Errors.new
+      ]
+    end
+
+    it { expect(collection).to respond_to(:delete_matching).with(1).arguments }
+
+    it 'should delegate to the adapter' do
+      collection.delete_matching(selector)
+
+      expect(adapter)
+        .to have_received(:delete_matching)
+        .with(collection.name, selector)
+    end
+
+    it 'should return the result from the adapter' do
+      allow(adapter).to receive(:delete_matching).and_return(result)
+
+      expect(collection.delete_matching(selector)).to be result
+    end
   end
 
   describe '#each' do

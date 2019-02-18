@@ -3,7 +3,13 @@
 require 'bronze/collections/simple/adapter'
 
 RSpec.describe Bronze::Collections::Simple::Adapter do
-  subject(:adapter) { described_class.new(raw_data) }
+  subject(:adapter) do
+    data = raw_data.each.with_object({}) do |(name, collection), hsh|
+      hsh[name] = collection.map { |item| tools.hash.deep_dup(item) }
+    end
+
+    described_class.new(data)
+  end
 
   let(:raw_data) do
     {
@@ -28,6 +34,10 @@ RSpec.describe Bronze::Collections::Simple::Adapter do
         }
       ]
     }
+  end
+
+  def tools
+    SleepingKingStudios::Tools::Toolbelt.instance
   end
 
   describe '::new' do
@@ -91,6 +101,155 @@ RSpec.describe Bronze::Collections::Simple::Adapter do
 
   describe '#data' do
     include_examples 'should have reader', :data, -> { be == raw_data }
+  end
+
+  describe '#delete_matching' do
+    shared_examples 'should delete the items' do
+      let(:result) { adapter.delete_matching(collection_name, selector) }
+
+      def find_book(uuid)
+        adapter.query(collection_name).matching(uuid: uuid).to_a.first
+      end
+
+      it 'should delete each matching item' do
+        adapter.delete_matching(collection_name, selector)
+
+        affected_items.each do |affected_item|
+          actual = find_book(affected_item['uuid'])
+
+          expect(actual).to be nil
+        end
+      end
+
+      it 'should not delete the non-matching items' do
+        adapter.delete_matching(collection_name, selector)
+
+        unaffected_items.each do |unaffected_item|
+          actual = find_book(unaffected_item['uuid'])
+
+          expect(actual).to be == unaffected_item
+        end
+      end
+
+      it { expect(result).to be_a Array }
+
+      it { expect(result.size).to be 3 }
+
+      it { expect(result[0]).to be true }
+
+      it { expect(result[1]).to be == affected_items }
+
+      it { expect(result[2].count).to be 0 }
+    end
+
+    let(:collection_name) { 'books' }
+    let(:selector)        { {} }
+    let(:affected_items) do
+      raw_data['books']
+    end
+    let(:unaffected_items) do
+      raw_data['books'] - affected_items
+    end
+
+    describe 'with a nil selector' do
+      let(:result) do
+        adapter.delete_matching(collection_name, nil)
+      end
+      let(:expected_error) do
+        {
+          type:   Bronze::Collections::Errors::SELECTOR_MISSING,
+          params: {}
+        }
+      end
+
+      it 'should not change the data' do
+        expect { adapter.delete_matching(collection_name, nil) }
+          .not_to change(adapter.query(collection_name), :to_a)
+      end
+
+      it { expect(result).to be_a Array }
+
+      it { expect(result.size).to be 3 }
+
+      it { expect(result[0]).to be false }
+
+      it { expect(result[1]).to be == [] }
+
+      it { expect(result[2].count).to be 1 }
+
+      it { expect(result[2]).to include expected_error }
+    end
+
+    describe 'with a non-hash selector' do
+      let(:selector) { Object.new }
+      let(:result) do
+        adapter.delete_matching(collection_name, selector)
+      end
+      let(:expected_error) do
+        {
+          type:   Bronze::Collections::Errors::SELECTOR_INVALID,
+          params: { selector: selector }
+        }
+      end
+
+      it 'should not change the data' do
+        expect { adapter.delete_matching(collection_name, selector) }
+          .not_to change(adapter.query(collection_name), :to_a)
+      end
+
+      it { expect(result).to be_a Array }
+
+      it { expect(result.size).to be 3 }
+
+      it { expect(result[0]).to be false }
+
+      it { expect(result[1]).to be == [] }
+
+      it { expect(result[2].count).to be 1 }
+
+      it { expect(result[2]).to include expected_error }
+    end
+
+    describe 'with an empty selector' do
+      let(:selector) { {} }
+
+      include_examples 'should delete the items'
+    end
+
+    describe 'with a selector that does not match any items' do
+      let(:selector)       { { genre: 'Noir' } }
+      let(:affected_items) { [] }
+
+      include_examples 'should delete the items'
+    end
+
+    describe 'with a selector that matches one item' do
+      let(:selector) { { title: 'Journey to the Center of the Earth' } }
+      let(:affected_items) do
+        super().select do |book|
+          book['title'] == 'Journey to the Center of the Earth'
+        end
+      end
+
+      include_examples 'should delete the items'
+    end
+
+    describe 'with a selector that matches some items' do
+      let(:selector) { { author: 'H. G. Wells' } }
+      let(:affected_items) do
+        super().select do |book|
+          book['author'] == 'H. G. Wells'
+        end
+      end
+
+      include_examples 'should delete the items'
+    end
+
+    describe 'with a selector that matches all items' do
+      let(:selector) { { genre: 'Science Fiction' } }
+
+      include_examples 'should delete the items'
+    end
   end
 
   describe '#insert_one' do
@@ -197,13 +356,13 @@ RSpec.describe Bronze::Collections::Simple::Adapter do
 
         it 'should change the collection count' do
           expect { adapter.insert_one(collection_name, magazine) }
-            .to change { raw_data.fetch(collection_name, []).count }
+            .to change(adapter.query(collection_name), :count)
             .by(1)
         end
 
         it 'should insert the object into the collection' do
           expect { adapter.insert_one(collection_name, magazine) }
-            .to change { raw_data[collection_name] }
+            .to change(adapter.query(collection_name), :to_a)
             .to include(magazine)
         end
       end
@@ -241,13 +400,13 @@ RSpec.describe Bronze::Collections::Simple::Adapter do
 
         it 'should change the collection count' do
           expect { adapter.insert_one(collection_name, magazine) }
-            .to change { raw_data.fetch(collection_name, []).count }
+            .to change(adapter.query(collection_name), :count)
             .by(1)
         end
 
         it 'should insert the object into the collection' do
           expect { adapter.insert_one(collection_name, magazine) }
-            .to change { raw_data[collection_name] }
+            .to change(adapter.query(collection_name), :to_a)
             .to include(expected)
         end
       end
@@ -284,13 +443,13 @@ RSpec.describe Bronze::Collections::Simple::Adapter do
 
         it 'should change the collection count' do
           expect { adapter.insert_one(collection_name, book) }
-            .to change(raw_data[collection_name], :count)
+            .to change(adapter.query(collection_name), :count)
             .by(1)
         end
 
         it 'should insert the object into the collection' do
           expect { adapter.insert_one(collection_name, book) }
-            .to change { raw_data[collection_name] }
+            .to change(adapter.query(collection_name), :to_a)
             .to include(book)
         end
       end
@@ -331,13 +490,13 @@ RSpec.describe Bronze::Collections::Simple::Adapter do
 
         it 'should change the collection count' do
           expect { adapter.insert_one(collection_name, book) }
-            .to change(raw_data[collection_name], :count)
+            .to change(adapter.query(collection_name), :count)
             .by(1)
         end
 
         it 'should insert the object into the collection' do
           expect { adapter.insert_one(collection_name, book) }
-            .to change { raw_data[collection_name] }
+            .to change(adapter.query(collection_name), :to_a)
             .to include(expected)
         end
       end
@@ -453,10 +612,6 @@ RSpec.describe Bronze::Collections::Simple::Adapter do
       affected_items.map do |book|
         book.merge(tools.hash.convert_keys_to_strings(data))
       end
-    end
-
-    def tools
-      SleepingKingStudios::Tools::Toolbelt.instance
     end
 
     describe 'with a nil selector' do
