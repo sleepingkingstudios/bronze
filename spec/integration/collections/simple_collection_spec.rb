@@ -155,18 +155,6 @@ RSpec.describe Bronze::Collections::Simple do
       let(:selector) { { title: 'Triskadecaphobia Today' } }
       let(:result)   { collection.delete_matching(selector) }
 
-      it { expect(result).to be_a Array }
-
-      it { expect(result.size).to be 3 }
-
-      it { expect(result[0]).to be true }
-
-      it { expect(result[1]).to be == [] }
-
-      it { expect(result[2]).to be_a Bronze::Errors }
-
-      it { expect(result[2]).to be_empty }
-
       it 'should not change the collection count' do
         expect { collection.delete_matching(selector) }
           .not_to change(collection, :count)
@@ -176,23 +164,15 @@ RSpec.describe Bronze::Collections::Simple do
         expect { collection.delete_matching(selector) }
           .not_to change(collection.query, :to_a)
       end
+
+      it 'should return a result' do
+        expect(result).to be_a_passing_result.with_value(matching)
+      end
     end
 
     describe 'with a selector that matches one item' do
       let(:selector) { { id: 9 } }
       let(:result)   { collection.delete_matching(selector) }
-
-      it { expect(result).to be_a Array }
-
-      it { expect(result.size).to be 3 }
-
-      it { expect(result[0]).to be true }
-
-      it { expect(result[1]).to be == matching }
-
-      it { expect(result[2]).to be_a Bronze::Errors }
-
-      it { expect(result[2]).to be_empty }
 
       it 'should change the collection count' do
         expect { collection.delete_matching(selector) }
@@ -218,6 +198,10 @@ RSpec.describe Bronze::Collections::Simple do
 
           expect(periodical).not_to be nil
         end
+      end
+
+      it 'should return a result' do
+        expect(result).to be_a_passing_result.with_value(matching)
       end
     end
 
@@ -225,18 +209,6 @@ RSpec.describe Bronze::Collections::Simple do
       let(:selector) { { title: 'Modern Mentalism' } }
       let(:result)   { collection.delete_matching(selector) }
 
-      it { expect(result).to be_a Array }
-
-      it { expect(result.size).to be 3 }
-
-      it { expect(result[0]).to be true }
-
-      it { expect(result[1]).to be == matching }
-
-      it { expect(result[2]).to be_a Bronze::Errors }
-
-      it { expect(result[2]).to be_empty }
-
       it 'should change the collection count' do
         expect { collection.delete_matching(selector) }
           .to change(collection, :count)
@@ -261,6 +233,10 @@ RSpec.describe Bronze::Collections::Simple do
 
           expect(periodical).not_to be nil
         end
+      end
+
+      it 'should return a result' do
+        expect(result).to be_a_passing_result.with_value(matching)
       end
     end
   end
@@ -280,17 +256,7 @@ RSpec.describe Bronze::Collections::Simple do
       end
       let(:result) { collection.insert_one(data) }
 
-      it { expect(result).to be_a Array }
-
-      it { expect(result.size).to be 3 }
-
-      it { expect(result[0]).to be true }
-
-      it { expect(result[1]).to be == data }
-
-      it { expect(result[2]).to be_a Bronze::Errors }
-
-      it { expect(result[2]).to be_empty }
+      it { expect(result).to be_a_passing_result.with_value(data) }
 
       it 'should change the collection count' do
         expect { collection.insert_one(data) }
@@ -357,17 +323,7 @@ RSpec.describe Bronze::Collections::Simple do
       let(:selector) { { title: 'Triskadecaphobia Today' } }
       let(:result)   { collection.update_matching(selector, with: data) }
 
-      it { expect(result).to be_a Array }
-
-      it { expect(result.size).to be 3 }
-
-      it { expect(result[0]).to be true }
-
-      it { expect(result[1]).to be == [] }
-
-      it { expect(result[2]).to be_a Bronze::Errors }
-
-      it { expect(result[2]).to be_empty }
+      it { expect(result).to be_a_passing_result.with_value(expected) }
 
       it 'should not change the collection count' do
         expect { collection.update_matching(selector, with: data) }
@@ -385,17 +341,7 @@ RSpec.describe Bronze::Collections::Simple do
       let(:selector) { { id: 9 } }
       let(:result)   { collection.update_matching(selector, with: data) }
 
-      it { expect(result).to be_a Array }
-
-      it { expect(result.size).to be 3 }
-
-      it { expect(result[0]).to be true }
-
-      it { expect(result[1]).to be == expected }
-
-      it { expect(result[2]).to be_a Bronze::Errors }
-
-      it { expect(result[2]).to be_empty }
+      it { expect(result).to be_a_passing_result.with_value(expected) }
 
       it 'should not change the collection count' do
         expect { collection.update_matching(selector, with: data) }
@@ -428,17 +374,7 @@ RSpec.describe Bronze::Collections::Simple do
       let(:selector) { { title: 'Modern Mentalism' } }
       let(:result)   { collection.update_matching(selector, with: data) }
 
-      it { expect(result).to be_a Array }
-
-      it { expect(result.size).to be 3 }
-
-      it { expect(result[0]).to be true }
-
-      it { expect(result[1]).to be == expected }
-
-      it { expect(result[2]).to be_a Bronze::Errors }
-
-      it { expect(result[2]).to be_empty }
+      it { expect(result).to be_a_passing_result.with_value(expected) }
 
       it 'should not change the collection count' do
         expect { collection.update_matching(selector, with: data) }
