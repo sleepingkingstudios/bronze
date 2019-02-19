@@ -5,6 +5,7 @@ require 'bronze/collections/errors'
 require 'bronze/collections/simple'
 require 'bronze/collections/simple/query'
 require 'bronze/errors'
+require 'bronze/result'
 
 module Bronze::Collections::Simple
   # Adapter class for querying and modifying an in-memory data structure.
@@ -26,32 +27,34 @@ module Bronze::Collections::Simple
 
     # (see Bronze::Collections::Adapter#delete_matching)
     def delete_matching(collection_name, selector)
-      errors = build_errors
+      result = Bronze::Result.new([])
 
-      validate_selector(selector, errors: errors)
+      validate_selector(selector, errors: result.errors)
 
-      return [false, [], errors] unless errors.empty?
+      return result unless result.success?
 
       items = query(collection_name).matching(selector).to_a
 
       items.each { |item| collection(collection_name).delete(item) }
 
-      [true, items, errors]
+      result.value = items
+
+      result
     end
 
     # (see Bronze::Collections::Adapter#insert_one)
     def insert_one(collection_name, data)
-      errors = build_errors
+      result       = Bronze::Result.new
+      result.value = data
 
-      unless validate_attributes(data, errors: errors)
-        return [false, data, errors]
-      end
+      return result unless validate_attributes(data, errors: result.errors)
 
-      data = tools.hash.convert_keys_to_strings(data)
+      data         = tools.hash.convert_keys_to_strings(data)
+      result.value = data
 
       insert_into_collection(collection(collection_name), data)
 
-      [errors.empty?, data, errors]
+      result
     end
 
     # (see Bronze::Collections::Adapter#query)
@@ -61,27 +64,23 @@ module Bronze::Collections::Simple
 
     # (see Bronze::Collections::Adapter#update_matching)
     def update_matching(collection_name, selector, data)
-      errors = build_errors
+      result = Bronze::Result.new([])
 
-      validate_selector(selector, errors: errors) &&
-        validate_attributes(data, errors: errors)
+      validate_selector(selector, errors: result.errors) &&
+        validate_attributes(data, errors: result.errors)
 
-      return [false, [], errors] unless errors.empty?
+      return result unless result.success?
 
-      data  = tools.hash.convert_keys_to_strings(data)
-      items =
+      data         = tools.hash.convert_keys_to_strings(data)
+      result.value =
         query(collection_name).matching(selector).each.map do |item|
           item.update(data)
         end
 
-      [true, items, errors]
+      result
     end
 
     private
-
-    def build_errors
-      Bronze::Errors.new
-    end
 
     def collection(name)
       data[name] ||= []

@@ -131,15 +131,9 @@ RSpec.describe Bronze::Collections::Simple::Adapter do
         end
       end
 
-      it { expect(result).to be_a Array }
-
-      it { expect(result.size).to be 3 }
-
-      it { expect(result[0]).to be true }
-
-      it { expect(result[1]).to be == affected_items }
-
-      it { expect(result[2].count).to be 0 }
+      it 'should return a result' do
+        expect(result).to be_a_passing_result.with_value(affected_items)
+      end
     end
 
     let(:collection_name) { 'books' }
@@ -167,17 +161,9 @@ RSpec.describe Bronze::Collections::Simple::Adapter do
           .not_to change(adapter.query(collection_name), :to_a)
       end
 
-      it { expect(result).to be_a Array }
-
-      it { expect(result.size).to be 3 }
-
-      it { expect(result[0]).to be false }
-
-      it { expect(result[1]).to be == [] }
-
-      it { expect(result[2].count).to be 1 }
-
-      it { expect(result[2]).to include expected_error }
+      it 'should return a result' do
+        expect(result).to be_a_failing_result.with_errors(expected_error)
+      end
     end
 
     describe 'with a non-hash selector' do
@@ -197,17 +183,9 @@ RSpec.describe Bronze::Collections::Simple::Adapter do
           .not_to change(adapter.query(collection_name), :to_a)
       end
 
-      it { expect(result).to be_a Array }
-
-      it { expect(result.size).to be 3 }
-
-      it { expect(result[0]).to be false }
-
-      it { expect(result[1]).to be == [] }
-
-      it { expect(result[2].count).to be 1 }
-
-      it { expect(result[2]).to include expected_error }
+      it 'should return a result' do
+        expect(result).to be_a_failing_result.with_errors(expected_error)
+      end
     end
 
     describe 'with an empty selector' do
@@ -253,6 +231,27 @@ RSpec.describe Bronze::Collections::Simple::Adapter do
   end
 
   describe '#insert_one' do
+    shared_examples 'should insert the item' do
+      let(:result) { adapter.insert_one(collection_name, data) }
+      let(:expected) do
+        tools.hash.convert_keys_to_strings(data)
+      end
+
+      it 'should change the collection count' do
+        expect { adapter.insert_one(collection_name, data) }
+          .to change(adapter.query(collection_name), :count)
+          .by(1)
+      end
+
+      it 'should insert the object into the collection' do
+        expect { adapter.insert_one(collection_name, data) }
+          .to change(adapter.query(collection_name), :to_a)
+          .to include(expected)
+      end
+
+      it { expect(result).to be_a_passing_result.with_value(expected) }
+    end
+
     it { expect(adapter).to respond_to(:insert_one).with(2).arguments }
 
     describe 'with a nil data object' do
@@ -265,17 +264,14 @@ RSpec.describe Bronze::Collections::Simple::Adapter do
       end
       let(:result) { adapter.insert_one(collection_name, nil) }
 
-      it { expect(result).to be_a Array }
+      it 'should not change the data' do
+        expect { adapter.insert_one(collection_name, nil) }
+          .not_to change(adapter.query(collection_name), :to_a)
+      end
 
-      it { expect(result.size).to be 3 }
-
-      it { expect(result[0]).to be false }
-
-      it { expect(result[1]).to be nil }
-
-      it { expect(result[2].count).to be 1 }
-
-      it { expect(result[2]).to include expected_error }
+      it 'should return a result' do
+        expect(result).to be_a_failing_result.with_errors(expected_error)
+      end
     end
 
     describe 'with an Object' do
@@ -289,17 +285,14 @@ RSpec.describe Bronze::Collections::Simple::Adapter do
       let(:object) { Object.new }
       let(:result) { adapter.insert_one(collection_name, object) }
 
-      it { expect(result).to be_a Array }
+      it 'should not change the data' do
+        expect { adapter.insert_one(collection_name, object) }
+          .not_to change(adapter.query(collection_name), :to_a)
+      end
 
-      it { expect(result.size).to be 3 }
-
-      it { expect(result[0]).to be false }
-
-      it { expect(result[1]).to be object }
-
-      it { expect(result[2].count).to be 1 }
-
-      it { expect(result[2]).to include expected_error }
+      it 'should return a result' do
+        expect(result).to be_a_failing_result.with_errors(expected_error)
+      end
     end
 
     describe 'with an empty data object' do
@@ -313,101 +306,50 @@ RSpec.describe Bronze::Collections::Simple::Adapter do
       let(:data)   { {} }
       let(:result) { adapter.insert_one(collection_name, data) }
 
-      it { expect(result).to be_a Array }
+      it 'should not change the data' do
+        expect { adapter.insert_one(collection_name, data) }
+          .not_to change(adapter.query(collection_name), :to_a)
+      end
 
-      it { expect(result.size).to be 3 }
-
-      it { expect(result[0]).to be false }
-
-      it { expect(result[1]).to be data }
-
-      it { expect(result[2].count).to be 1 }
-
-      it { expect(result[2]).to include expected_error }
+      it 'should return a result' do
+        expect(result).to be_a_failing_result.with_errors(expected_error)
+      end
     end
 
     describe 'with the name of a non-existent collection' do
       let(:collection_name) { 'magazines' }
 
       describe 'with a data object with String keys' do
-        let(:magazine) do
+        let(:data) do
           {
             'title'  => 'Roswell Gazette',
             'volume' => 111
           }
         end
-        let(:result) { adapter.insert_one(collection_name, magazine) }
 
-        it { expect(result).to be_a Array }
-
-        it { expect(result.size).to be 3 }
-
-        it { expect(result[0]).to be true }
-
-        it { expect(result[1]).to be == magazine }
-
-        it { expect(result[2]).to be == [] }
+        include_examples 'should insert the item'
 
         it 'should create the collection' do
-          expect { adapter.insert_one(collection_name, magazine) }
+          expect { adapter.insert_one(collection_name, data) }
             .to change(adapter, :collection_names)
             .to include collection_name
         end
-
-        it 'should change the collection count' do
-          expect { adapter.insert_one(collection_name, magazine) }
-            .to change(adapter.query(collection_name), :count)
-            .by(1)
-        end
-
-        it 'should insert the object into the collection' do
-          expect { adapter.insert_one(collection_name, magazine) }
-            .to change(adapter.query(collection_name), :to_a)
-            .to include(magazine)
-        end
       end
 
-      describe 'with a data object with String keys' do
-        let(:magazine) do
+      describe 'with a data object with Symbol keys' do
+        let(:data) do
           {
             title:  'Roswell Gazette',
             volume: 111
           }
         end
-        let(:expected) do
-          {
-            'title'  => 'Roswell Gazette',
-            'volume' => 111
-          }
-        end
-        let(:result) { adapter.insert_one(collection_name, magazine) }
 
-        it { expect(result).to be_a Array }
-
-        it { expect(result.size).to be 3 }
-
-        it { expect(result[0]).to be true }
-
-        it { expect(result[1]).to be == expected }
-
-        it { expect(result[2]).to be == [] }
+        include_examples 'should insert the item'
 
         it 'should create the collection' do
-          expect { adapter.insert_one(collection_name, magazine) }
+          expect { adapter.insert_one(collection_name, data) }
             .to change(adapter, :collection_names)
             .to include collection_name
-        end
-
-        it 'should change the collection count' do
-          expect { adapter.insert_one(collection_name, magazine) }
-            .to change(adapter.query(collection_name), :count)
-            .by(1)
-        end
-
-        it 'should insert the object into the collection' do
-          expect { adapter.insert_one(collection_name, magazine) }
-            .to change(adapter.query(collection_name), :to_a)
-            .to include(expected)
         end
       end
     end
@@ -416,7 +358,7 @@ RSpec.describe Bronze::Collections::Simple::Adapter do
       let(:collection_name) { 'books' }
 
       describe 'with a data object with String keys' do
-        let(:book) do
+        let(:data) do
           {
             'uuid'   => 'ea550526-8743-4683-a58b-99bf2aa207f5',
             'title'  => 'The Island of Dr. Moreau',
@@ -424,38 +366,17 @@ RSpec.describe Bronze::Collections::Simple::Adapter do
             'genre'  => 'Science Fiction'
           }
         end
-        let(:result) { adapter.insert_one(collection_name, book) }
 
-        it { expect(result).to be_a Array }
-
-        it { expect(result.size).to be 3 }
-
-        it { expect(result[0]).to be true }
-
-        it { expect(result[1]).to be == book }
-
-        it { expect(result[2]).to be == [] }
+        include_examples 'should insert the item'
 
         it 'should not change the collections' do
-          expect { adapter.insert_one(collection_name, book) }
+          expect { adapter.insert_one(collection_name, data) }
             .not_to change(adapter, :collection_names)
-        end
-
-        it 'should change the collection count' do
-          expect { adapter.insert_one(collection_name, book) }
-            .to change(adapter.query(collection_name), :count)
-            .by(1)
-        end
-
-        it 'should insert the object into the collection' do
-          expect { adapter.insert_one(collection_name, book) }
-            .to change(adapter.query(collection_name), :to_a)
-            .to include(book)
         end
       end
 
       describe 'with a data object with Symbol keys' do
-        let(:book) do
+        let(:data) do
           {
             uuid:   'ea550526-8743-4683-a58b-99bf2aa207f5',
             title:  'The Island of Dr. Moreau',
@@ -463,41 +384,12 @@ RSpec.describe Bronze::Collections::Simple::Adapter do
             genre:  'Science Fiction'
           }
         end
-        let(:expected) do
-          {
-            'uuid'   => 'ea550526-8743-4683-a58b-99bf2aa207f5',
-            'title'  => 'The Island of Dr. Moreau',
-            'author' => 'H. G. Wells',
-            'genre'  => 'Science Fiction'
-          }
-        end
-        let(:result) { adapter.insert_one(collection_name, book) }
 
-        it { expect(result).to be_a Array }
-
-        it { expect(result.size).to be 3 }
-
-        it { expect(result[0]).to be true }
-
-        it { expect(result[1]).to be == expected }
-
-        it { expect(result[2]).to be == [] }
+        include_examples 'should insert the item'
 
         it 'should not change the collections' do
-          expect { adapter.insert_one(collection_name, book) }
+          expect { adapter.insert_one(collection_name, data) }
             .not_to change(adapter, :collection_names)
-        end
-
-        it 'should change the collection count' do
-          expect { adapter.insert_one(collection_name, book) }
-            .to change(adapter.query(collection_name), :count)
-            .by(1)
-        end
-
-        it 'should insert the object into the collection' do
-          expect { adapter.insert_one(collection_name, book) }
-            .to change(adapter.query(collection_name), :to_a)
-            .to include(expected)
         end
       end
     end
@@ -546,15 +438,9 @@ RSpec.describe Bronze::Collections::Simple::Adapter do
           end
         end
 
-        it { expect(result).to be_a Array }
-
-        it { expect(result.size).to be 3 }
-
-        it { expect(result[0]).to be true }
-
-        it { expect(result[1]).to be == expected }
-
-        it { expect(result[2].count).to be 0 }
+        it 'should return a result' do
+          expect(result).to be_a_passing_result.with_value(expected)
+        end
       end
 
       describe 'with a data hash with Symbol keys' do
@@ -587,15 +473,9 @@ RSpec.describe Bronze::Collections::Simple::Adapter do
           end
         end
 
-        it { expect(result).to be_a Array }
-
-        it { expect(result.size).to be 3 }
-
-        it { expect(result[0]).to be true }
-
-        it { expect(result[1]).to be == expected }
-
-        it { expect(result[2].count).to be 0 }
+        it 'should return a result' do
+          expect(result).to be_a_passing_result.with_value(expected)
+        end
       end
     end
 
@@ -630,17 +510,9 @@ RSpec.describe Bronze::Collections::Simple::Adapter do
           .not_to change(adapter.query(collection_name), :to_a)
       end
 
-      it { expect(result).to be_a Array }
-
-      it { expect(result.size).to be 3 }
-
-      it { expect(result[0]).to be false }
-
-      it { expect(result[1]).to be == [] }
-
-      it { expect(result[2].count).to be 1 }
-
-      it { expect(result[2]).to include expected_error }
+      it 'should return a result' do
+        expect(result).to be_a_failing_result.with_errors(expected_error)
+      end
     end
 
     describe 'with a non-hash selector' do
@@ -660,17 +532,9 @@ RSpec.describe Bronze::Collections::Simple::Adapter do
           .not_to change(adapter.query(collection_name), :to_a)
       end
 
-      it { expect(result).to be_a Array }
-
-      it { expect(result.size).to be 3 }
-
-      it { expect(result[0]).to be false }
-
-      it { expect(result[1]).to be == [] }
-
-      it { expect(result[2].count).to be 1 }
-
-      it { expect(result[2]).to include expected_error }
+      it 'should return a result' do
+        expect(result).to be_a_failing_result.with_errors(expected_error)
+      end
     end
 
     describe 'with a nil data hash' do
@@ -689,17 +553,9 @@ RSpec.describe Bronze::Collections::Simple::Adapter do
           .not_to change(adapter.query(collection_name), :to_a)
       end
 
-      it { expect(result).to be_a Array }
-
-      it { expect(result.size).to be 3 }
-
-      it { expect(result[0]).to be false }
-
-      it { expect(result[1]).to be == [] }
-
-      it { expect(result[2].count).to be 1 }
-
-      it { expect(result[2]).to include expected_error }
+      it 'should return a result' do
+        expect(result).to be_a_failing_result.with_errors(expected_error)
+      end
     end
 
     describe 'with a non-hash data object' do
@@ -719,17 +575,9 @@ RSpec.describe Bronze::Collections::Simple::Adapter do
           .not_to change(adapter.query(collection_name), :to_a)
       end
 
-      it { expect(result).to be_a Array }
-
-      it { expect(result.size).to be 3 }
-
-      it { expect(result[0]).to be false }
-
-      it { expect(result[1]).to be == [] }
-
-      it { expect(result[2].count).to be 1 }
-
-      it { expect(result[2]).to include expected_error }
+      it 'should return a result' do
+        expect(result).to be_a_failing_result.with_errors(expected_error)
+      end
     end
 
     describe 'with an empty data hash' do
@@ -748,17 +596,9 @@ RSpec.describe Bronze::Collections::Simple::Adapter do
           .not_to change(adapter.query(collection_name), :to_a)
       end
 
-      it { expect(result).to be_a Array }
-
-      it { expect(result.size).to be 3 }
-
-      it { expect(result[0]).to be false }
-
-      it { expect(result[1]).to be == [] }
-
-      it { expect(result[2].count).to be 1 }
-
-      it { expect(result[2]).to include expected_error }
+      it 'should return a result' do
+        expect(result).to be_a_failing_result.with_errors(expected_error)
+      end
     end
 
     describe 'with an empty selector' do
