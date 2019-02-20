@@ -8,9 +8,18 @@ end
 
 require 'rspec/sleeping_king_studios/all'
 require 'byebug'
+require 'mongo'
 
 # Isolated namespace for defining spec-only or transient objects.
-module Spec; end
+module Spec
+  def self.mongo_client
+    # TODO: Should be a thread-local variable.
+    @mongo_client ||=
+      ::Mongo::Client.new(['127.0.0.1:27017'], database: 'bronze-test')
+  end
+end
+
+Mongo::Logger.logger.level = Logger::WARN
 
 require 'cuprum/rspec/be_a_result'
 require 'support/matchers/match_attributes'
