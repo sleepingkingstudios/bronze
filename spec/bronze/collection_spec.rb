@@ -5,13 +5,126 @@ require 'bronze/collections/adapter'
 require 'bronze/collections/query'
 require 'bronze/entities/primary_key'
 require 'bronze/entity'
-require 'bronze/errors'
 
 RSpec.describe Bronze::Collection do
   shared_context 'when the definition is an entity class' do
     let(:definition) { Spec::ColoringBook }
 
     example_class 'Spec::ColoringBook', Bronze::Entity
+  end
+
+  shared_examples 'should validate the data object' do
+    describe 'with a nil data object' do
+      let(:data) { nil }
+      let(:expected_error) do
+        {
+          type:   Bronze::Collections::Errors::DATA_MISSING,
+          params: {}
+        }
+      end
+
+      it 'should not delegate to the adapter' do
+        call_operation
+
+        expect(adapter).not_to have_received(method_name)
+      end
+
+      it 'should return a result' do
+        expect(call_operation)
+          .to be_a_failing_result
+          .with_errors(expected_error)
+      end
+    end
+
+    describe 'with a non-Hash data object' do
+      let(:data) { Object.new }
+      let(:expected_error) do
+        {
+          type:   Bronze::Collections::Errors::DATA_INVALID,
+          params: { data: data }
+        }
+      end
+
+      it 'should not delegate to the adapter' do
+        call_operation
+
+        expect(adapter).not_to have_received(method_name)
+      end
+
+      it 'should return a result' do
+        expect(call_operation)
+          .to be_a_failing_result
+          .with_errors(expected_error)
+      end
+    end
+
+    describe 'with an empty data object' do
+      let(:data) { {} }
+      let(:expected_error) do
+        {
+          type:   Bronze::Collections::Errors::DATA_EMPTY,
+          params: { data: data }
+        }
+      end
+
+      it 'should not delegate to the adapter' do
+        call_operation
+
+        expect(adapter).not_to have_received(method_name)
+      end
+
+      it 'should return a result' do
+        expect(call_operation)
+          .to be_a_failing_result
+          .with_errors(expected_error)
+      end
+    end
+  end
+
+  shared_examples 'should validate the selector' do
+    describe 'with a nil selector' do
+      let(:selector) { nil }
+      let(:expected_error) do
+        {
+          type:   Bronze::Collections::Errors::SELECTOR_MISSING,
+          params: {}
+        }
+      end
+
+      it 'should not delegate to the adapter' do
+        call_operation
+
+        expect(adapter).not_to have_received(method_name)
+      end
+
+      it 'should return a result' do
+        expect(call_operation)
+          .to be_a_failing_result
+          .with_errors(expected_error)
+      end
+    end
+
+    describe 'with a non-Hash selector' do
+      let(:selector) { Object.new }
+      let(:expected_error) do
+        {
+          type:   Bronze::Collections::Errors::SELECTOR_INVALID,
+          params: { selector: selector }
+        }
+      end
+
+      it 'should not delegate to the adapter' do
+        call_operation
+
+        expect(adapter).not_to have_received(method_name)
+      end
+
+      it 'should return a result' do
+        expect(call_operation)
+          .to be_a_failing_result
+          .with_errors(expected_error)
+      end
+    end
   end
 
   subject(:collection) do
@@ -24,10 +137,10 @@ RSpec.describe Bronze::Collection do
     instance_double(
       Bronze::Collections::Adapter,
       collection_name_for: '',
-      delete_matching:     [],
-      insert_one:          [],
+      delete_matching:     Bronze::Result.new,
+      insert_one:          Bronze::Result.new,
       query:               query,
-      update_matching:     []
+      update_matching:     Bronze::Result.new
     )
   end
   let(:query) do
@@ -90,36 +203,67 @@ RSpec.describe Bronze::Collection do
   end
 
   describe '#delete_matching' do
-    let(:selector) { { author: 'Luo Guanzhong' } }
-    let(:expected) do
-      {
-        'title'    => 'Romance of the Three Kingdoms',
-        'author'   => 'Luo Guanzhong',
-        'language' => 'Chinese'
-      }
-    end
-    let(:result) do
-      [
-        true,
-        [expected],
-        Bronze::Errors.new
-      ]
+    let(:method_name) { :delete_matching }
+    let(:selector)    { nil }
+
+    def call_operation
+      collection.delete_matching(selector)
     end
 
     it { expect(collection).to respond_to(:delete_matching).with(1).arguments }
 
-    it 'should delegate to the adapter' do
-      collection.delete_matching(selector)
+    include_examples 'should validate the selector'
 
-      expect(adapter)
-        .to have_received(:delete_matching)
-        .with(collection.name, selector)
+    describe 'with an empty Hash selector' do
+      let(:selector) { {} }
+      let(:expected) do
+        {
+          'title'    => 'Romance of the Three Kingdoms',
+          'author'   => 'Luo Guanzhong',
+          'language' => 'Chinese'
+        }
+      end
+      let(:result) { Bronze::Result.new(expected) }
+
+      it 'should delegate to the adapter' do
+        collection.delete_matching(selector)
+
+        expect(adapter)
+          .to have_received(:delete_matching)
+          .with(collection.name, selector)
+      end
+
+      it 'should return the result from the adapter' do
+        allow(adapter).to receive(:delete_matching).and_return(result)
+
+        expect(collection.delete_matching(selector)).to be result
+      end
     end
 
-    it 'should return the result from the adapter' do
-      allow(adapter).to receive(:delete_matching).and_return(result)
+    describe 'with a non-empty Hash selector' do
+      let(:selector) { { author: 'Luo Guanzhong' } }
+      let(:expected) do
+        {
+          'title'    => 'Romance of the Three Kingdoms',
+          'author'   => 'Luo Guanzhong',
+          'language' => 'Chinese'
+        }
+      end
+      let(:result) { Bronze::Result.new(expected) }
 
-      expect(collection.delete_matching(selector)).to be result
+      it 'should delegate to the adapter' do
+        collection.delete_matching(selector)
+
+        expect(adapter)
+          .to have_received(:delete_matching)
+          .with(collection.name, selector)
+      end
+
+      it 'should return the result from the adapter' do
+        allow(adapter).to receive(:delete_matching).and_return(result)
+
+        expect(collection.delete_matching(selector)).to be result
+      end
     end
   end
 
@@ -136,32 +280,39 @@ RSpec.describe Bronze::Collection do
   end
 
   describe '#insert_one' do
-    let(:data) do
-      {
-        'title'  => 'Romance of the Three Kingdoms',
-        'author' => 'Luo Guanzhong'
-      }
-    end
-    let(:result) do
-      [
-        true,
-        data,
-        Bronze::Errors.new
-      ]
+    let(:method_name) { :insert_one }
+    let(:data)        { nil }
+
+    def call_operation
+      collection.insert_one(data)
     end
 
     it { expect(collection).to respond_to(:insert_one).with(1).argument }
 
-    it 'should delegate to the adapter' do
-      collection.insert_one(data)
+    include_examples 'should validate the data object'
 
-      expect(adapter).to have_received(:insert_one).with(collection.name, data)
-    end
+    describe 'with a valid data object' do
+      let(:data) do
+        {
+          'title'  => 'Romance of the Three Kingdoms',
+          'author' => 'Luo Guanzhong'
+        }
+      end
+      let(:result) { Bronze::Result.new(data) }
 
-    it 'should return the result from the adapter' do
-      allow(adapter).to receive(:insert_one).and_return(result)
+      it 'should delegate to the adapter' do
+        collection.insert_one(data)
 
-      expect(collection.insert_one(data)).to be result
+        expect(adapter)
+          .to have_received(:insert_one)
+          .with(collection.name, data)
+      end
+
+      it 'should return the result from the adapter' do
+        allow(adapter).to receive(:insert_one).and_return(result)
+
+        expect(collection.insert_one(data)).to be result
+      end
     end
   end
 
@@ -357,21 +508,12 @@ RSpec.describe Bronze::Collection do
   end
 
   describe '#update_matching' do
-    let(:selector) { { author: 'Luo Guanzhong' } }
-    let(:data)     { { 'language' => 'Chinese' } }
-    let(:expected) do
-      {
-        'title'    => 'Romance of the Three Kingdoms',
-        'author'   => 'Luo Guanzhong',
-        'language' => 'Chinese'
-      }
-    end
-    let(:result) do
-      [
-        true,
-        [expected],
-        Bronze::Errors.new
-      ]
+    let(:method_name) { :update_matching }
+    let(:selector)    { { key: 'value' } }
+    let(:data)        { nil }
+
+    def call_operation
+      collection.update_matching(selector, with: data)
     end
 
     it 'should define the method' do
@@ -380,18 +522,35 @@ RSpec.describe Bronze::Collection do
         .with_keywords(:with)
     end
 
-    it 'should delegate to the adapter' do
-      collection.update_matching(selector, with: data)
+    include_examples 'should validate the data object'
 
-      expect(adapter)
-        .to have_received(:update_matching)
-        .with(collection.name, selector, data)
-    end
+    include_examples 'should validate the selector'
 
-    it 'should return the result from the adapter' do
-      allow(adapter).to receive(:update_matching).and_return(result)
+    describe 'with a valid selector and data object' do
+      let(:selector) { { author: 'Luo Guanzhong' } }
+      let(:data)     { { 'language' => 'Chinese' } }
+      let(:expected) do
+        {
+          'title'    => 'Romance of the Three Kingdoms',
+          'author'   => 'Luo Guanzhong',
+          'language' => 'Chinese'
+        }
+      end
+      let(:result) { Bronze::Result.new(expected) }
 
-      expect(collection.update_matching(selector, with: data)).to be result
+      it 'should delegate to the adapter' do
+        collection.update_matching(selector, with: data)
+
+        expect(adapter)
+          .to have_received(:update_matching)
+          .with(collection.name, selector, data)
+      end
+
+      it 'should return the result from the adapter' do
+        allow(adapter).to receive(:update_matching).and_return(result)
+
+        expect(collection.update_matching(selector, with: data)).to be result
+      end
     end
   end
 end

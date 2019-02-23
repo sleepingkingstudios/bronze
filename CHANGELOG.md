@@ -10,7 +10,7 @@ Adds the Bronze::Entities::Attributes module, which can be included in any class
 
 ### Entities
 
-Adds the Bronze::Entity class, which serves as an abstract base class for defining application entities. Includes the Attributes and PrimaryKey modules.
+Adds the Bronze::Entity class, which serves as an abstract base class for defining application entities. Includes the Attributes, Normalization, and PrimaryKey modules.
 
 #### Normalization
 

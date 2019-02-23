@@ -3,12 +3,16 @@
 require 'forwardable'
 
 require 'bronze'
+require 'bronze/collections/validation'
+require 'bronze/result'
 
 module Bronze
   # A collection represents a data set, providing a consistent interface to
   # query and manage data from different sources.
   class Collection
     extend Forwardable
+
+    include Bronze::Collections::Validation
 
     # @param definition [Class, String] An object defining the data to access.
     #   Can be a String (the name of the data set) or a Class (the objects
@@ -56,6 +60,10 @@ module Bronze
     # @return [Array<Boolean, Hash, Array>] in order, the OK status of the
     #   delete (true or false), the deleted items, and an errors array.
     def delete_matching(selector)
+      errors = errors_for_selector(selector)
+
+      return Bronze::Result.new(nil, errors: errors) if errors
+
       adapter.delete_matching(name, selector)
     end
 
@@ -66,6 +74,10 @@ module Bronze
     # @return [Array<Boolean, Hash, Array>] in order, the OK status of the
     #   insert (true or false), the data hash to insert, and an errors array.
     def insert_one(data)
+      errors = errors_for_data(data)
+
+      return Bronze::Result.new(nil, errors: errors) if errors
+
       adapter.insert_one(name, data)
     end
 
@@ -86,6 +98,10 @@ module Bronze
     # @return [Array<Boolean, Hash, Array>] in order, the OK status of the
     #   update (true or false), the updated items, and an errors array.
     def update_matching(selector, with:)
+      errors = errors_for_selector(selector) || errors_for_data(with)
+
+      return Bronze::Result.new(nil, errors: errors) if errors
+
       adapter.update_matching(name, selector, with)
     end
 
