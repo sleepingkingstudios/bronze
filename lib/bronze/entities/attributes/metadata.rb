@@ -17,7 +17,7 @@ module Bronze::Entities::Attributes
       @writer_name = "#{name}=".intern
     end
 
-    # @return [String, Symbol] the name of the attribute.
+    # @return [Symbol] the name of the attribute.
     attr_reader :name
 
     # @return [Hash] additional options for the attribute.

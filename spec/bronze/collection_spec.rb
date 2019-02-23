@@ -3,9 +3,17 @@
 require 'bronze/collection'
 require 'bronze/collections/adapter'
 require 'bronze/collections/query'
+require 'bronze/entities/primary_key'
+require 'bronze/entity'
 require 'bronze/errors'
 
 RSpec.describe Bronze::Collection do
+  shared_context 'when the definition is an entity class' do
+    let(:definition) { Spec::ColoringBook }
+
+    example_class 'Spec::ColoringBook', Bronze::Entity
+  end
+
   subject(:collection) do
     described_class.new(definition, adapter: adapter, **options)
   end
@@ -37,7 +45,7 @@ RSpec.describe Bronze::Collection do
       expect(described_class)
         .to be_constructible
         .with(1).argument
-        .and_keywords(:adapter, :name)
+        .and_keywords(:adapter, :name, :primary_key)
     end
 
     describe 'with nil' do
@@ -226,6 +234,110 @@ RSpec.describe Bronze::Collection do
         let(:options) { { name: 'books' } }
 
         it { expect(collection.name).to be == 'books' }
+      end
+    end
+
+    wrap_context 'when the definition is an entity class' do
+      before(:example) do
+        allow(adapter)
+          .to receive(:collection_name_for)
+          .with(definition)
+          .and_return('spec__coloring_books')
+      end
+
+      it { expect(collection.name).to be == 'spec__coloring_books' }
+
+      context 'when options[:name] is set' do
+        let(:options) { { name: 'magazines' } }
+
+        it { expect(collection.name).to be == 'magazines' }
+      end
+    end
+  end
+
+  describe '#primary_key' do
+    include_examples 'should have reader', :primary_key, :id
+
+    context 'when options[:primary_key] is false' do
+      let(:options) { super().merge primary_key: false }
+
+      it { expect(collection.primary_key).to be false }
+    end
+
+    context 'when options[:primary_key] is a String' do
+      let(:options) { super().merge primary_key: 'uuid' }
+
+      it { expect(collection.primary_key).to be :uuid }
+    end
+
+    context 'when options[:primary_key] is a Symbol' do
+      let(:options) { super().merge primary_key: :uuid }
+
+      it { expect(collection.primary_key).to be :uuid }
+    end
+
+    wrap_context 'when the definition is an entity class' do
+      it { expect(collection.primary_key).to be :id }
+
+      context 'when options[:primary_key] is false' do
+        let(:options) { super().merge primary_key: false }
+
+        it { expect(collection.primary_key).to be false }
+      end
+
+      context 'when options[:primary_key] is set' do
+        let(:options) { super().merge primary_key: 'uuid' }
+
+        it { expect(collection.primary_key).to be :uuid }
+      end
+    end
+
+    context 'when the definition is an entity class with a primary key' do
+      include_context 'when the definition is an entity class'
+
+      before(:example) do
+        Spec::ColoringBook.send :include, Bronze::Entities::PrimaryKey
+
+        Spec::ColoringBook.define_primary_key :id, Integer, default: -> { 0 }
+      end
+
+      it { expect(collection.primary_key).to be :id }
+
+      context 'when options[:primary_key] is false' do
+        let(:options) { super().merge primary_key: false }
+
+        it { expect(collection.primary_key).to be false }
+      end
+
+      context 'when options[:primary_key] is set' do
+        let(:options) { super().merge primary_key: 'uuid' }
+
+        it { expect(collection.primary_key).to be :uuid }
+      end
+    end
+
+    context 'when the definition is an entity class with a custom primary key' \
+    do
+      include_context 'when the definition is an entity class'
+
+      before(:example) do
+        Spec::ColoringBook.send :include, Bronze::Entities::PrimaryKey
+
+        Spec::ColoringBook.define_primary_key :hex, String, default: -> { 'ff' }
+      end
+
+      it { expect(collection.primary_key).to be :hex }
+
+      context 'when options[:primary_key] is false' do
+        let(:options) { super().merge primary_key: false }
+
+        it { expect(collection.primary_key).to be false }
+      end
+
+      context 'when options[:primary_key] is set' do
+        let(:options) { super().merge primary_key: 'uuid' }
+
+        it { expect(collection.primary_key).to be :uuid }
       end
     end
   end

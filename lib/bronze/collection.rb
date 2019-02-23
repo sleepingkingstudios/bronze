@@ -18,11 +18,15 @@ module Bronze
     # @param name [String, Symbol] The name of the data set, used to pull
     #   the data from the data store. Unless specified, defaults to the
     #   definition (if a String) or the name of the definition class.
+    # @param primary_key [String, Symbol, false] The name of the primary key for
+    #   the data set. If no value is given, defaults to 'id'. A value of false
+    #   indicates that the data set does not have a primary key.
     #
     # @raise ArgumentError if the definition is not a name or a Class.
-    def initialize(definition, adapter:, name: nil)
-      @adapter = adapter
-      @name    = name.nil? ? nil : name.to_s
+    def initialize(definition, adapter:, name: nil, primary_key: nil)
+      @adapter     = adapter
+      @name        = name.nil? ? nil : name.to_s
+      @primary_key = normalize_primary_key(primary_key, definition: definition)
 
       parse_definition(definition)
     end
@@ -40,6 +44,9 @@ module Bronze
 
     # @return [String] the name of the data set.
     attr_reader :name
+
+    # @return [String, false] the name of the primary key for the data set.
+    attr_reader :primary_key
 
     # Deletes each item in the collection matching the given selector, removing
     # it from the collection.
@@ -84,6 +91,18 @@ module Bronze
 
     private
 
+    def normalize_primary_key(value, definition:)
+      return false if value == false
+
+      return value if value.is_a?(Symbol)
+
+      return value.intern if value.is_a?(String)
+
+      return primary_key_for(definition) if definition.is_a?(Module)
+
+      :id
+    end
+
     def parse_definition(definition)
       return parse_module_definition(definition) if definition.is_a?(Module)
 
@@ -108,5 +127,11 @@ module Bronze
         end
     end
     # rubocop:enable Naming/MemoizedInstanceVariableName
+
+    def primary_key_for(definition)
+      return :id unless definition.respond_to?(:primary_key)
+
+      definition.primary_key&.name || :id
+    end
   end
 end
