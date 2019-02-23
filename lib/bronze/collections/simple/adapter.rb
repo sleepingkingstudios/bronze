@@ -28,12 +28,7 @@ module Bronze::Collections::Simple
     # (see Bronze::Collections::Adapter#delete_matching)
     def delete_matching(collection_name, selector)
       result = Bronze::Result.new([])
-
-      validate_selector(selector, errors: result.errors)
-
-      return result unless result.success?
-
-      items = query(collection_name).matching(selector).to_a
+      items  = query(collection_name).matching(selector).to_a
 
       items.each { |item| collection(collection_name).delete(item) }
 
@@ -45,10 +40,6 @@ module Bronze::Collections::Simple
     # (see Bronze::Collections::Adapter#insert_one)
     def insert_one(collection_name, data)
       result       = Bronze::Result.new
-      result.value = data
-
-      return result unless validate_attributes(data, errors: result.errors)
-
       data         = tools.hash.convert_keys_to_strings(data)
       result.value = data
 
@@ -64,13 +55,7 @@ module Bronze::Collections::Simple
 
     # (see Bronze::Collections::Adapter#update_matching)
     def update_matching(collection_name, selector, data)
-      result = Bronze::Result.new([])
-
-      validate_selector(selector, errors: result.errors) &&
-        validate_attributes(data, errors: result.errors)
-
-      return result unless result.success?
-
+      result       = Bronze::Result.new([])
       data         = tools.hash.convert_keys_to_strings(data)
       result.value =
         query(collection_name).matching(selector).each.map do |item|
@@ -92,57 +77,6 @@ module Bronze::Collections::Simple
 
     def tools
       SleepingKingStudios::Tools::Toolbelt.instance
-    end
-
-    def validate_attributes(attributes, errors:)
-      validate_attributes_not_nil(attributes, errors: errors) &&
-        validate_attributes_type(attributes, errors: errors) &&
-        validate_attributes_not_empty(attributes, errors: errors)
-    end
-
-    def validate_attributes_not_empty(attributes, errors:)
-      return true unless attributes.empty?
-
-      errors.add(Errors.data_empty)
-
-      false
-    end
-
-    def validate_attributes_not_nil(attributes, errors:)
-      return true unless attributes.nil?
-
-      errors.add(Errors.data_missing)
-
-      false
-    end
-
-    def validate_attributes_type(attributes, errors:)
-      return true if attributes.is_a?(Hash)
-
-      errors.add(Errors.data_invalid, data: attributes)
-
-      false
-    end
-
-    def validate_selector(selector, errors:)
-      validate_selector_not_nil(selector, errors: errors) &&
-        validate_selector_type(selector, errors: errors)
-    end
-
-    def validate_selector_not_nil(selector, errors:)
-      return true unless selector.nil?
-
-      errors.add(Errors.selector_missing)
-
-      false
-    end
-
-    def validate_selector_type(selector, errors:)
-      return true if selector.is_a?(Hash)
-
-      errors.add(Errors.selector_invalid, selector: selector)
-
-      false
     end
   end
 end
