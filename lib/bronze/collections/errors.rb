@@ -15,6 +15,10 @@ module Bronze::Collections
     # Error message when trying to insert nil into a collection.
     DATA_MISSING = 'bronze.collections.errors.data_missing'
 
+    # Error message when trying to bulk update a primary key.
+    PRIMARY_KEY_BULK_UPDATE =
+      'bronze.collections.errors.primary_key_bulk_update'
+
     # Error message when the primary key is an empty value.
     PRIMARY_KEY_EMPTY = 'bronze.collections.errors.primary_key_empty'
 
@@ -48,6 +52,12 @@ module Bronze::Collections
       #   collection.
       def data_missing
         DATA_MISSING
+      end
+
+      # @return [String] the error message when trying to bulk update a primary
+      #   key.
+      def primary_key_bulk_update
+        PRIMARY_KEY_BULK_UPDATE
       end
 
       # @return [String] the error message when the primary key is an empty

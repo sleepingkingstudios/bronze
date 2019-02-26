@@ -105,6 +105,145 @@ RSpec.describe Bronze::Collection do
     end
   end
 
+  shared_examples 'should validate the primary key for bulk updates' do
+    describe 'with a data object that includes the primary key' do
+      describe 'with String keys' do
+        let(:data) { { primary_key.to_s => primary_key_value } }
+        let(:expected_error) do
+          {
+            type:   Bronze::Collections::Errors::PRIMARY_KEY_BULK_UPDATE,
+            params: { value: primary_key_value },
+            path:   [primary_key]
+          }
+        end
+
+        it 'should not delegate to the adapter' do
+          call_operation
+
+          expect(adapter).not_to have_received(method_name)
+        end
+
+        it 'should return a result' do
+          expect(call_operation)
+            .to be_a_failing_result
+            .with_errors(expected_error)
+        end
+      end
+
+      describe 'with Symbol keys' do
+        let(:data) { { primary_key => primary_key_value } }
+        let(:expected_error) do
+          {
+            type:   Bronze::Collections::Errors::PRIMARY_KEY_BULK_UPDATE,
+            params: { value: primary_key_value },
+            path:   [primary_key]
+          }
+        end
+
+        it 'should not delegate to the adapter' do
+          call_operation
+
+          expect(adapter).not_to have_received(method_name)
+        end
+
+        it 'should return a result' do
+          expect(call_operation)
+            .to be_a_failing_result
+            .with_errors(expected_error)
+        end
+      end
+    end
+
+    context 'when options[:primary_key] is false' do
+      let(:options) { super().merge primary_key: false }
+
+      describe 'with String keys' do
+        let(:data) { { primary_key.to_s => primary_key_value } }
+
+        it 'should delegate to the adapter' do
+          call_operation
+
+          expect(adapter).to have_received(method_name)
+        end
+
+        it 'should return a passing result' do
+          expect(call_operation).to be_a_passing_result
+        end
+      end
+
+      describe 'with Symbol keys' do
+        let(:data) { { primary_key => primary_key_value } }
+
+        it 'should delegate to the adapter' do
+          call_operation
+
+          expect(adapter).to have_received(method_name)
+        end
+
+        it 'should return a passing result' do
+          expect(call_operation).to be_a_passing_result
+        end
+      end
+    end
+
+    context 'when options[:primary_key] is set' do
+      let(:primary_key)       { :uuid }
+      let(:primary_key_type)  { String }
+      let(:primary_key_value) { '' }
+      let(:options) do
+        super().merge primary_key: :uuid, primary_key_type: String
+      end
+
+      describe 'with a data object that includes the primary key' do
+        describe 'with String keys' do
+          let(:data) { { primary_key.to_s => primary_key_value } }
+          let(:expected_error) do
+            {
+              type:   Bronze::Collections::Errors::PRIMARY_KEY_BULK_UPDATE,
+              params: { value: primary_key_value },
+              path:   [primary_key]
+            }
+          end
+
+          it 'should not delegate to the adapter' do
+            call_operation
+
+            expect(adapter).not_to have_received(method_name)
+          end
+
+          it 'should return a result' do
+            expect(call_operation)
+              .to be_a_failing_result
+              .with_errors(expected_error)
+          end
+        end
+
+        describe 'with Symbol keys' do
+          let(:data) { { primary_key => primary_key_value } }
+          let(:expected_error) do
+            {
+              type:   Bronze::Collections::Errors::PRIMARY_KEY_BULK_UPDATE,
+              params: { value: primary_key_value },
+              path:   [primary_key]
+            }
+          end
+
+          it 'should not delegate to the adapter' do
+            call_operation
+
+            expect(adapter).not_to have_received(method_name)
+          end
+
+          it 'should return a result' do
+            expect(call_operation)
+              .to be_a_failing_result
+              .with_errors(expected_error)
+          end
+        end
+      end
+    end
+  end
+
   shared_examples 'should validate the primary key for insertion' do
     describe 'with a nil primary key' do
       let(:data) { super().tap { |hsh| hsh.delete primary_key.to_s } }
@@ -915,9 +1054,12 @@ RSpec.describe Bronze::Collection do
   end
 
   describe '#update_matching' do
-    let(:method_name) { :update_matching }
-    let(:selector)    { { key: 'value' } }
-    let(:data)        { nil }
+    let(:primary_key)       { :id }
+    let(:primary_key_type)  { Integer }
+    let(:primary_key_value) { 0 }
+    let(:method_name)       { :update_matching }
+    let(:selector)          { { key: 'value' } }
+    let(:data)              { nil }
 
     def call_operation
       collection.update_matching(selector, with: data)
@@ -931,11 +1073,40 @@ RSpec.describe Bronze::Collection do
 
     include_examples 'should validate the data object'
 
+    include_examples 'should validate the primary key for bulk updates'
+
     include_examples 'should validate the selector'
 
-    describe 'with a valid selector and data object' do
+    describe 'with a valid selector and data object with String keys' do
       let(:selector) { { author: 'Luo Guanzhong' } }
       let(:data)     { { 'language' => 'Chinese' } }
+      let(:expected) do
+        {
+          'title'    => 'Romance of the Three Kingdoms',
+          'author'   => 'Luo Guanzhong',
+          'language' => 'Chinese'
+        }
+      end
+      let(:result) { Bronze::Result.new(expected) }
+
+      it 'should delegate to the adapter' do
+        collection.update_matching(selector, with: data)
+
+        expect(adapter)
+          .to have_received(:update_matching)
+          .with(collection.name, selector, data)
+      end
+
+      it 'should return the result from the adapter' do
+        allow(adapter).to receive(:update_matching).and_return(result)
+
+        expect(collection.update_matching(selector, with: data)).to be result
+      end
+    end
+
+    describe 'with a valid selector and data object with Symbol keys' do
+      let(:selector) { { author: 'Luo Guanzhong' } }
+      let(:data)     { { language: 'Chinese' } }
       let(:expected) do
         {
           'title'    => 'Romance of the Three Kingdoms',
