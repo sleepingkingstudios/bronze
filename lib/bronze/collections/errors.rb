@@ -15,6 +15,15 @@ module Bronze::Collections
     # Error message when trying to insert nil into a collection.
     DATA_MISSING = 'bronze.collections.errors.data_missing'
 
+    # Error message when the primary key is an empty value.
+    PRIMARY_KEY_EMPTY = 'bronze.collections.errors.primary_key_empty'
+
+    # Error message when the primary key is an invalid type.
+    PRIMARY_KEY_INVALID = 'bronze.collections.errors.primary_key_invalid'
+
+    # Error message when the data is missing an expected primary key.
+    PRIMARY_KEY_MISSING = 'bronze.collections.errors.primary_key_missing'
+
     # Error message when trying to create a query with an invalid selector, such
     # as a non-Hash object.
     SELECTOR_INVALID = 'bronze.collections.errors.selector_invalid'
@@ -39,6 +48,24 @@ module Bronze::Collections
       #   collection.
       def data_missing
         DATA_MISSING
+      end
+
+      # @return [String] the error message when the primary key is an empty
+      #   value.
+      def primary_key_empty
+        PRIMARY_KEY_EMPTY
+      end
+
+      # @return [String] the error message when the primary key is an invalid
+      #   type.
+      def primary_key_invalid
+        PRIMARY_KEY_INVALID
+      end
+
+      # @return [String] the error message when the data is missing an expected
+      #   primary key.
+      def primary_key_missing
+        PRIMARY_KEY_MISSING
       end
 
       # @return [String] the error message when trying to create a query with an

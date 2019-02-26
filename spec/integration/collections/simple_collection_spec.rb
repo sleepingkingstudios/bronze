@@ -105,6 +105,13 @@ RSpec.describe Bronze::Collections::Simple do
   let(:repository) do
     Bronze::Repository.new(adapter: adapter)
   end
+  let(:collection) do
+    repository.collection(
+      'periodicals',
+      primary_key:      :id,
+      primary_key_type: Integer
+    )
+  end
 
   describe 'accessing a collection' do
     describe 'with an invalid collection name' do
@@ -133,7 +140,6 @@ RSpec.describe Bronze::Collections::Simple do
   end
 
   describe 'deleting data matching a selector' do
-    let(:collection) { repository.collection('periodicals') }
     let!(:matching) do
       periodicals.select do |item|
         item >= tools.hash.convert_keys_to_strings(selector)
@@ -242,8 +248,6 @@ RSpec.describe Bronze::Collections::Simple do
   end
 
   describe 'inserting data into the collection' do
-    let(:collection) { repository.collection('periodicals') }
-
     describe 'with a valid data hash' do
       let(:data) do
         {
@@ -272,8 +276,6 @@ RSpec.describe Bronze::Collections::Simple do
   end
 
   describe 'querying the data' do
-    let(:collection) { repository.collection('periodicals') }
-
     it { expect(collection.all.count).to be periodicals.size }
 
     it { expect(collection.all.to_a).to be == periodicals }
@@ -299,8 +301,7 @@ RSpec.describe Bronze::Collections::Simple do
   end
 
   describe 'updating data matching a selector' do
-    let(:collection) { repository.collection('periodicals') }
-    let(:expected)   { matching.map { |item| item.merge(data) } }
+    let(:expected) { matching.map { |item| item.merge(data) } }
     let(:matching) do
       periodicals.select do |item|
         item >= tools.hash.convert_keys_to_strings(selector)

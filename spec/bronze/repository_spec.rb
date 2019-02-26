@@ -32,7 +32,7 @@ RSpec.describe Bronze::Repository do
       expect(repository)
         .to respond_to(:collection)
         .with(1).argument
-        .and_keywords(:name)
+        .and_keywords(:name, :primary_key, :primary_key_type)
     end
 
     describe 'with nil' do

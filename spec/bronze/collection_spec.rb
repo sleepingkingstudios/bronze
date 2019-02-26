@@ -13,6 +13,30 @@ RSpec.describe Bronze::Collection do
     example_class 'Spec::ColoringBook', Bronze::Entity
   end
 
+  shared_context 'when the entity class has a primary key' do
+    let(:primary_key)       { :id }
+    let(:primary_key_type)  { Integer }
+    let(:primary_key_value) { 0 }
+
+    before(:example) do
+      Spec::ColoringBook.send :include, Bronze::Entities::PrimaryKey
+
+      Spec::ColoringBook.define_primary_key :id, Integer, default: -> { 0 }
+    end
+  end
+
+  shared_context 'when the entity class has a custom primary key' do
+    let(:primary_key)       { :hex }
+    let(:primary_key_type)  { String }
+    let(:primary_key_value) { 'ff' }
+
+    before(:example) do
+      Spec::ColoringBook.send :include, Bronze::Entities::PrimaryKey
+
+      Spec::ColoringBook.define_primary_key :hex, String, default: -> { 'ff' }
+    end
+  end
+
   shared_examples 'should validate the data object' do
     describe 'with a nil data object' do
       let(:data) { nil }
@@ -77,6 +101,226 @@ RSpec.describe Bronze::Collection do
         expect(call_operation)
           .to be_a_failing_result
           .with_errors(expected_error)
+      end
+    end
+  end
+
+  shared_examples 'should validate the primary key for insertion' do
+    describe 'with a nil primary key' do
+      let(:data) { super().tap { |hsh| hsh.delete primary_key.to_s } }
+      let(:expected_error) do
+        {
+          type:   Bronze::Collections::Errors::PRIMARY_KEY_MISSING,
+          params: {},
+          path:   [primary_key]
+        }
+      end
+
+      it 'should not delegate to the adapter' do
+        call_operation
+
+        expect(adapter).not_to have_received(method_name)
+      end
+
+      it 'should return a result' do
+        expect(call_operation)
+          .to be_a_failing_result
+          .with_errors(expected_error)
+      end
+    end
+
+    describe 'with a primary key with invalid type' do
+      let(:primary_key_value) { Object.new }
+      let(:data) do
+        super().merge(primary_key => primary_key_value)
+      end
+      let(:expected_error) do
+        {
+          type:   Bronze::Collections::Errors::PRIMARY_KEY_INVALID,
+          params: {
+            type:  primary_key_type.name,
+            value: primary_key_value.to_s
+          },
+          path:   [primary_key]
+        }
+      end
+
+      it 'should not delegate to the adapter' do
+        call_operation
+
+        expect(adapter).not_to have_received(method_name)
+      end
+
+      it 'should return a result' do
+        expect(call_operation)
+          .to be_a_failing_result
+          .with_errors(expected_error)
+      end
+    end
+
+    describe 'with an empty primary key' do
+      let(:primary_key_type)  { String }
+      let(:primary_key_value) { '' }
+      let(:data) do
+        super().merge(primary_key => primary_key_value)
+      end
+      let(:expected_error) do
+        {
+          type:   Bronze::Collections::Errors::PRIMARY_KEY_EMPTY,
+          params: { value: primary_key_value.to_s },
+          path:   [primary_key]
+        }
+      end
+
+      it 'should not delegate to the adapter' do
+        call_operation
+
+        expect(adapter).not_to have_received(method_name)
+      end
+
+      it 'should return a result' do
+        expect(call_operation)
+          .to be_a_failing_result
+          .with_errors(expected_error)
+      end
+    end
+
+    context 'when options[:primary_key] is false' do
+      let(:options) { super().merge primary_key: false }
+
+      describe 'with a nil primary key' do
+        let(:data) { super().tap { |hsh| hsh.delete primary_key.to_s } }
+
+        it 'should delegate to the adapter' do
+          call_operation
+
+          expect(adapter).to have_received(method_name)
+        end
+
+        it 'should return a passing result' do
+          expect(call_operation).to be_a_passing_result
+        end
+      end
+
+      describe 'with a primary key with invalid type' do
+        let(:primary_key_value) { Object.new }
+        let(:data) do
+          super().merge(primary_key => primary_key_value)
+        end
+
+        it 'should delegate to the adapter' do
+          call_operation
+
+          expect(adapter).to have_received(method_name)
+        end
+
+        it 'should return a passing result' do
+          expect(call_operation).to be_a_passing_result
+        end
+      end
+
+      describe 'with an empty primary key' do
+        let(:primary_key_type)  { String }
+        let(:primary_key_value) { '' }
+        let(:data) do
+          super().merge(primary_key => primary_key_value)
+        end
+
+        it 'should delegate to the adapter' do
+          call_operation
+
+          expect(adapter).to have_received(method_name)
+        end
+
+        it 'should return a passing result' do
+          expect(call_operation).to be_a_passing_result
+        end
+      end
+    end
+
+    context 'when options[:primary_key] is set' do
+      let(:primary_key)       { :uuid }
+      let(:primary_key_type)  { String }
+      let(:primary_key_value) { '' }
+      let(:options) do
+        super().merge primary_key: :uuid, primary_key_type: String
+      end
+
+      describe 'with a nil primary key' do
+        let(:data) { super().tap { |hsh| hsh.delete primary_key.to_s } }
+        let(:expected_error) do
+          {
+            type:   Bronze::Collections::Errors::PRIMARY_KEY_MISSING,
+            params: {},
+            path:   [primary_key]
+          }
+        end
+
+        it 'should not delegate to the adapter' do
+          call_operation
+
+          expect(adapter).not_to have_received(method_name)
+        end
+
+        it 'should return a result' do
+          expect(call_operation)
+            .to be_a_failing_result
+            .with_errors(expected_error)
+        end
+      end
+
+      describe 'with a primary key with invalid type' do
+        let(:primary_key_value) { Object.new }
+        let(:data) do
+          super().merge(primary_key => primary_key_value)
+        end
+        let(:expected_error) do
+          {
+            type:   Bronze::Collections::Errors::PRIMARY_KEY_INVALID,
+            params: {
+              type:  primary_key_type.name,
+              value: primary_key_value.to_s
+            },
+            path:   [primary_key]
+          }
+        end
+
+        it 'should not delegate to the adapter' do
+          call_operation
+
+          expect(adapter).not_to have_received(method_name)
+        end
+
+        it 'should return a result' do
+          expect(call_operation)
+            .to be_a_failing_result
+            .with_errors(expected_error)
+        end
+      end
+
+      describe 'with an empty primary key' do
+        let(:data) do
+          super().merge(primary_key => primary_key_value)
+        end
+        let(:expected_error) do
+          {
+            type:   Bronze::Collections::Errors::PRIMARY_KEY_EMPTY,
+            params: { value: primary_key_value.to_s },
+            path:   [primary_key]
+          }
+        end
+
+        it 'should not delegate to the adapter' do
+          call_operation
+
+          expect(adapter).not_to have_received(method_name)
+        end
+
+        it 'should return a result' do
+          expect(call_operation)
+            .to be_a_failing_result
+            .with_errors(expected_error)
+        end
       end
     end
   end
@@ -153,12 +397,16 @@ RSpec.describe Bronze::Collection do
   end
   let(:subquery) { instance_double(Bronze::Collections::Query) }
 
+  def tools
+    SleepingKingStudios::Tools::Toolbelt.instance
+  end
+
   describe '::new' do
     it 'should define the constructor' do
       expect(described_class)
         .to be_constructible
         .with(1).argument
-        .and_keywords(:adapter, :name, :primary_key)
+        .and_keywords(:adapter, :name, :primary_key, :primary_key_type)
     end
 
     describe 'with nil' do
@@ -181,6 +429,25 @@ RSpec.describe Bronze::Collection do
 
       it 'should raise an error' do
         expect { described_class.new(object, adapter: adapter) }
+          .to raise_error ArgumentError, error_message
+      end
+    end
+
+    describe 'with an invalid :primary_key option' do
+      let(:primary_key) { Object.new }
+      let(:options) do
+        {
+          adapter:     adapter,
+          primary_key: primary_key
+        }
+      end
+      let(:error_message) do
+        'expected primary key to be a String, a Symbol or false, but was ' \
+        "#{primary_key.inspect}"
+      end
+
+      it 'should raise an error' do
+        expect { described_class.new('books', **options) }
           .to raise_error ArgumentError, error_message
       end
     end
@@ -280,8 +547,18 @@ RSpec.describe Bronze::Collection do
   end
 
   describe '#insert_one' do
-    let(:method_name) { :insert_one }
-    let(:data)        { nil }
+    let(:primary_key)       { :id }
+    let(:primary_key_type)  { Integer }
+    let(:primary_key_value) { 0 }
+    let(:method_name)       { :insert_one }
+    let(:data) do
+      {
+        'id'     => 0,
+        'title'  => 'Romance of the Three Kingdoms',
+        'author' => 'Luo Guanzhong'
+      }
+    end
+    let(:options) { super().merge primary_key_type: primary_key_type }
 
     def call_operation
       collection.insert_one(data)
@@ -291,14 +568,33 @@ RSpec.describe Bronze::Collection do
 
     include_examples 'should validate the data object'
 
-    describe 'with a valid data object' do
-      let(:data) do
-        {
-          'title'  => 'Romance of the Three Kingdoms',
-          'author' => 'Luo Guanzhong'
-        }
-      end
+    include_examples 'should validate the primary key for insertion'
+
+    describe 'with a valid data object with String keys' do
       let(:result) { Bronze::Result.new(data) }
+
+      it 'should delegate to the adapter' do
+        collection.insert_one(data)
+
+        expect(adapter)
+          .to have_received(:insert_one)
+          .with(collection.name, data)
+      end
+
+      it 'should return the result from the adapter' do
+        allow(adapter).to receive(:insert_one).and_return(result)
+
+        expect(collection.insert_one(data)).to be result
+      end
+    end
+
+    describe 'with a valid data object with Symbol keys' do
+      let(:data) do
+        tools.hash.convert_keys_to_symbols(super())
+      end
+      let(:result) do
+        Bronze::Result.new.tap { |obj| obj.value = data }
+      end
 
       it 'should delegate to the adapter' do
         collection.insert_one(data)
@@ -441,54 +737,165 @@ RSpec.describe Bronze::Collection do
 
         it { expect(collection.primary_key).to be :uuid }
       end
-    end
 
-    context 'when the definition is an entity class with a primary key' do
-      include_context 'when the definition is an entity class'
+      wrap_context 'when the entity class has a primary key' do
+        it { expect(collection.primary_key).to be :id }
 
-      before(:example) do
-        Spec::ColoringBook.send :include, Bronze::Entities::PrimaryKey
+        context 'when options[:primary_key] is false' do
+          let(:options) { super().merge primary_key: false }
 
-        Spec::ColoringBook.define_primary_key :id, Integer, default: -> { 0 }
+          it { expect(collection.primary_key).to be false }
+        end
+
+        context 'when options[:primary_key] is set' do
+          let(:options) { super().merge primary_key: 'uuid' }
+
+          it { expect(collection.primary_key).to be :uuid }
+        end
       end
 
-      it { expect(collection.primary_key).to be :id }
+      wrap_context 'when the entity class has a custom primary key' do
+        it { expect(collection.primary_key).to be :hex }
+
+        context 'when options[:primary_key] is false' do
+          let(:options) { super().merge primary_key: false }
+
+          it { expect(collection.primary_key).to be false }
+        end
+
+        context 'when options[:primary_key] is set' do
+          let(:options) { super().merge primary_key: 'uuid' }
+
+          it { expect(collection.primary_key).to be :uuid }
+        end
+      end
+    end
+  end
+
+  describe '#primary_key?' do
+    include_examples 'should have predicate', :primary_key?, true
+
+    context 'when options[:primary_key] is false' do
+      let(:options) { super().merge primary_key: false }
+
+      it { expect(collection.primary_key?).to be false }
+    end
+
+    context 'when options[:primary_key] is set' do
+      let(:options) { super().merge primary_key: 'uuid' }
+
+      it { expect(collection.primary_key?).to be true }
+    end
+
+    wrap_context 'when the definition is an entity class' do
+      it { expect(collection.primary_key?).to be true }
 
       context 'when options[:primary_key] is false' do
         let(:options) { super().merge primary_key: false }
 
-        it { expect(collection.primary_key).to be false }
+        it { expect(collection.primary_key?).to be false }
       end
 
       context 'when options[:primary_key] is set' do
         let(:options) { super().merge primary_key: 'uuid' }
 
-        it { expect(collection.primary_key).to be :uuid }
+        it { expect(collection.primary_key?).to be true }
+      end
+
+      wrap_context 'when the entity class has a primary key' do
+        it { expect(collection.primary_key?).to be true }
+
+        context 'when options[:primary_key] is false' do
+          let(:options) { super().merge primary_key: false }
+
+          it { expect(collection.primary_key?).to be false }
+        end
+
+        context 'when options[:primary_key] is set' do
+          let(:options) { super().merge primary_key: 'uuid' }
+
+          it { expect(collection.primary_key?).to be true }
+        end
+      end
+
+      wrap_context 'when the entity class has a custom primary key' do
+        it { expect(collection.primary_key?).to be true }
+
+        context 'when options[:primary_key] is false' do
+          let(:options) { super().merge primary_key: false }
+
+          it { expect(collection.primary_key?).to be false }
+        end
+
+        context 'when options[:primary_key] is set' do
+          let(:options) { super().merge primary_key: 'uuid' }
+
+          it { expect(collection.primary_key?).to be true }
+        end
       end
     end
+  end
 
-    context 'when the definition is an entity class with a custom primary key' \
-    do
-      include_context 'when the definition is an entity class'
+  describe '#primary_key_type' do
+    include_examples 'should have reader', :primary_key_type, String
 
-      before(:example) do
-        Spec::ColoringBook.send :include, Bronze::Entities::PrimaryKey
+    context 'when options[:primary_key] is a Class' do
+      let(:options) { super().merge primary_key_type: Symbol }
 
-        Spec::ColoringBook.define_primary_key :hex, String, default: -> { 'ff' }
+      it { expect(collection.primary_key_type).to be Symbol }
+    end
+
+    context 'when options[:primary_key] is a class name' do
+      let(:options) { super().merge primary_key_type: 'Symbol' }
+
+      it { expect(collection.primary_key_type).to be Symbol }
+    end
+
+    wrap_context 'when the definition is an entity class' do
+      it { expect(collection.primary_key_type).to be String }
+
+      context 'when options[:primary_key] is a Class' do
+        let(:options) { super().merge primary_key_type: Symbol }
+
+        it { expect(collection.primary_key_type).to be Symbol }
       end
 
-      it { expect(collection.primary_key).to be :hex }
+      context 'when options[:primary_key] is a class name' do
+        let(:options) { super().merge primary_key_type: 'Symbol' }
 
-      context 'when options[:primary_key] is false' do
-        let(:options) { super().merge primary_key: false }
-
-        it { expect(collection.primary_key).to be false }
+        it { expect(collection.primary_key_type).to be Symbol }
       end
 
-      context 'when options[:primary_key] is set' do
-        let(:options) { super().merge primary_key: 'uuid' }
+      wrap_context 'when the entity class has a primary key' do
+        it { expect(collection.primary_key_type).to be Integer }
 
-        it { expect(collection.primary_key).to be :uuid }
+        context 'when options[:primary_key] is a Class' do
+          let(:options) { super().merge primary_key_type: Symbol }
+
+          it { expect(collection.primary_key_type).to be Symbol }
+        end
+
+        context 'when options[:primary_key] is a class name' do
+          let(:options) { super().merge primary_key_type: 'Symbol' }
+
+          it { expect(collection.primary_key_type).to be Symbol }
+        end
+      end
+
+      wrap_context 'when the entity class has a custom primary key' do
+        it { expect(collection.primary_key_type).to be String }
+
+        context 'when options[:primary_key] is a Class' do
+          let(:options) { super().merge primary_key_type: Symbol }
+
+          it { expect(collection.primary_key_type).to be Symbol }
+        end
+
+        context 'when options[:primary_key] is a class name' do
+          let(:options) { super().merge primary_key_type: 'Symbol' }
+
+          it { expect(collection.primary_key_type).to be Symbol }
+        end
       end
     end
   end

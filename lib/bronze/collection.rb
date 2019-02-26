@@ -25,14 +25,24 @@ module Bronze
     # @param primary_key [String, Symbol, false] The name of the primary key for
     #   the data set. If no value is given, defaults to 'id'. A value of false
     #   indicates that the data set does not have a primary key.
+    # @param primary_key_type [Class, String] The type of the primary key for
+    #   the data set. If no value is given, defaults to String.
     #
     # @raise ArgumentError if the definition is not a name or a Class.
-    def initialize(definition, adapter:, name: nil, primary_key: nil)
-      @adapter     = adapter
-      @name        = name.nil? ? nil : name.to_s
-      @primary_key = normalize_primary_key(primary_key, definition: definition)
+    def initialize(
+      definition,
+      adapter:,
+      name:             nil,
+      primary_key:      nil,
+      primary_key_type: nil
+    )
+      @adapter = adapter
 
       parse_definition(definition)
+
+      @name             = name.to_s unless name.nil?
+      @primary_key      = normalize_primary_key(primary_key)
+      @primary_key_type = normalize_primary_key_type(primary_key_type)
     end
 
     def_delegators :query,
@@ -51,6 +61,9 @@ module Bronze
 
     # @return [String, false] the name of the primary key for the data set.
     attr_reader :primary_key
+
+    # @return [Class] the type of the primary key for the data set.
+    attr_reader :primary_key_type
 
     # Deletes each item in the collection matching the given selector, removing
     # it from the collection.
@@ -74,11 +87,17 @@ module Bronze
     # @return [Array<Boolean, Hash, Array>] in order, the OK status of the
     #   insert (true or false), the data hash to insert, and an errors array.
     def insert_one(data)
-      errors = errors_for_data(data)
+      errors = errors_for_data(data) || errors_for_primary_key_insert(data)
 
       return Bronze::Result.new(nil, errors: errors) if errors
 
       adapter.insert_one(name, data)
+    end
+
+    # @return [Boolean] true if the collection has a primary key, otherwise
+    #   false.
+    def primary_key?
+      !!@primary_key
     end
 
     # Returns a query against the data set.
@@ -107,23 +126,41 @@ module Bronze
 
     private
 
-    def normalize_primary_key(value, definition:)
+    def default_primary_key
+      :id
+    end
+
+    def default_primary_key_type
+      String
+    end
+
+    def normalize_primary_key(value)
+      return @primary_key || default_primary_key if value.nil?
+
       return false if value == false
 
       return value if value.is_a?(Symbol)
 
       return value.intern if value.is_a?(String)
 
-      return primary_key_for(definition) if definition.is_a?(Module)
+      raise ArgumentError,
+        'expected primary key to be a String, a Symbol or false, but was ' \
+        "#{value.inspect}"
+    end
 
-      :id
+    def normalize_primary_key_type(type)
+      return @primary_key_type || default_primary_key_type if type.nil?
+
+      return type if type.is_a?(Class)
+
+      Object.const_get(type)
     end
 
     def parse_definition(definition)
       return parse_module_definition(definition) if definition.is_a?(Module)
 
       if definition.is_a?(String) || definition.is_a?(Symbol)
-        @name ||= definition.to_s
+        @name = definition.to_s
 
         return
       end
@@ -133,21 +170,20 @@ module Bronze
         "#{definition.inspect}"
     end
 
-    # rubocop:disable Naming/MemoizedInstanceVariableName
     def parse_module_definition(mod)
-      @name ||=
+      @name =
         if mod.respond_to?(:collection_name)
           mod.collection_name.to_s
         else
           adapter.collection_name_for(mod)
         end
-    end
-    # rubocop:enable Naming/MemoizedInstanceVariableName
 
-    def primary_key_for(definition)
-      return :id unless definition.respond_to?(:primary_key)
+      return unless mod.respond_to?(:primary_key)
 
-      definition.primary_key&.name || :id
+      metadata = mod.primary_key
+
+      @primary_key      = metadata&.name
+      @primary_key_type = metadata&.type
     end
   end
 end

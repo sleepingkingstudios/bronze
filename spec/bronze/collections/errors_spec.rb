@@ -21,6 +21,24 @@ RSpec.describe Bronze::Collections::Errors do
       'bronze.collections.errors.data_missing'
   end
 
+  describe '::PRIMARY_KEY_EMPTY' do
+    include_examples 'should define immutable constant',
+      :PRIMARY_KEY_EMPTY,
+      'bronze.collections.errors.primary_key_empty'
+  end
+
+  describe '::PRIMARY_KEY_INVALID' do
+    include_examples 'should define immutable constant',
+      :PRIMARY_KEY_INVALID,
+      'bronze.collections.errors.primary_key_invalid'
+  end
+
+  describe '::PRIMARY_KEY_MISSING' do
+    include_examples 'should define immutable constant',
+      :PRIMARY_KEY_MISSING,
+      'bronze.collections.errors.primary_key_missing'
+  end
+
   describe '::SELECTOR_INVALID' do
     include_examples 'should define immutable constant',
       :SELECTOR_INVALID,
@@ -49,6 +67,24 @@ RSpec.describe Bronze::Collections::Errors do
     include_examples 'should define class reader',
       :data_missing,
       'bronze.collections.errors.data_missing'
+  end
+
+  describe '#primary_key_empty' do
+    include_examples 'should define class reader',
+      :primary_key_empty,
+      'bronze.collections.errors.primary_key_empty'
+  end
+
+  describe '#primary_key_invalid' do
+    include_examples 'should define class reader',
+      :primary_key_invalid,
+      'bronze.collections.errors.primary_key_invalid'
+  end
+
+  describe '#primary_key_missing' do
+    include_examples 'should define class reader',
+      :primary_key_missing,
+      'bronze.collections.errors.primary_key_missing'
   end
 
   describe '#selector_invalid' do

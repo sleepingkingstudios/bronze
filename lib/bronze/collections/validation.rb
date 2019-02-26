@@ -25,20 +25,57 @@ module Bronze::Collections
       build_errors.add(Bronze::Collections::Errors.data_invalid, data: data)
     end
 
-    def data_not_nil_error(data)
+    def data_missing_error(data)
       return unless data.nil?
 
       build_errors.add(Bronze::Collections::Errors.data_missing)
     end
 
     def errors_for_data(data)
-      data_not_nil_error(data) ||
+      data_missing_error(data) ||
         data_invalid_error(data) ||
         data_empty_error(data)
     end
 
+    def errors_for_primary_key_insert(data)
+      return unless primary_key?
+
+      value = data[primary_key] || data[primary_key.to_s]
+
+      primary_key_missing_error(value) ||
+        primary_key_invalid_error(value) ||
+        primary_key_empty_error(value)
+    end
+
     def errors_for_selector(selector)
-      selector_not_nil_error(selector) || selector_invalid_error(selector)
+      selector_missing_error(selector) || selector_invalid_error(selector)
+    end
+
+    def primary_key_empty_error(value)
+      return unless value.respond_to?(:empty?) && value.empty?
+
+      build_errors[primary_key].add(
+        Bronze::Collections::Errors.primary_key_empty,
+        value: value.to_s
+      )
+    end
+
+    def primary_key_invalid_error(value)
+      return if value.is_a?(primary_key_type)
+
+      build_errors[primary_key].add(
+        Bronze::Collections::Errors.primary_key_invalid,
+        type:  primary_key_type.to_s,
+        value: value.to_s
+      )
+    end
+
+    def primary_key_missing_error(value)
+      return unless value.nil?
+
+      build_errors[primary_key].add(
+        Bronze::Collections::Errors.primary_key_missing
+      )
     end
 
     def selector_invalid_error(selector)
@@ -48,7 +85,7 @@ module Bronze::Collections
         .add(Bronze::Collections::Errors.selector_invalid, selector: selector)
     end
 
-    def selector_not_nil_error(selector)
+    def selector_missing_error(selector)
       return unless selector.nil?
 
       build_errors.add(Bronze::Collections::Errors.selector_missing)
