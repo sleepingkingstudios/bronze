@@ -53,8 +53,21 @@ module Bronze::Collections
         primary_key_empty_error(value)
     end
 
+    def errors_for_primary_key_query(value)
+      no_primary_key_error ||
+        primary_key_missing_error(value) ||
+        primary_key_invalid_error(value) ||
+        primary_key_empty_error(value)
+    end
+
     def errors_for_selector(selector)
       selector_missing_error(selector) || selector_invalid_error(selector)
+    end
+
+    def no_primary_key_error
+      return if primary_key?
+
+      build_errors.add(Bronze::Collections::Errors.no_primary_key)
     end
 
     def primary_key_bulk_update_error(data)

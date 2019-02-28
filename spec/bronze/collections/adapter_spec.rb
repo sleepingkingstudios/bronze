@@ -74,6 +74,24 @@ RSpec.describe Bronze::Collections::Adapter do
     end
   end
 
+  describe '#find_one' do
+    let(:collection_name) { 'books' }
+    let(:primary_key)     { :id }
+    let(:value)           { 0 }
+    let(:error_message) do
+      'Bronze::Collections::Adapter#find_one is not implemented'
+    end
+
+    it { expect(adapter).to respond_to(:find_one).with(3).arguments }
+
+    it 'should raise an error' do
+      expect do
+        adapter.find_one(collection_name, value, primary_key: primary_key)
+      end
+        .to raise_error Bronze::NotImplementedError, error_message
+    end
+  end
+
   describe '#insert_one' do
     let(:collection_name) { 'books' }
     let(:object)          { { 'title' => 'The Ramayana' } }

@@ -37,6 +37,17 @@ module Bronze::Collections::Simple
       result
     end
 
+    # (see Bronze::Collections::Adapter#find_one)
+    def find_one(collection_name, primary_key, value)
+      items  =
+        query(collection_name).matching(primary_key => value).limit(2).to_a
+      errors = uniqueness_errors(items, primary_key, value)
+
+      return Bronze::Result.new(nil, errors: errors) if errors
+
+      Bronze::Result.new(tools.hash.deep_dup(items.first))
+    end
+
     # (see Bronze::Collections::Adapter#insert_one)
     def insert_one(collection_name, data)
       result       = Bronze::Result.new
@@ -67,8 +78,30 @@ module Bronze::Collections::Simple
 
     private
 
+    def build_errors
+      Bronze::Errors.new
+    end
+
     def collection(name)
       data[name] ||= []
+    end
+
+    def errors_for_not_found_item(items, primary_key, value)
+      return unless items.size.zero?
+
+      build_errors.add(
+        Bronze::Collections::Errors.not_found,
+        selector: { primary_key => value }
+      )
+    end
+
+    def errors_for_not_unique_item(items, primary_key, value)
+      return unless items.size > 1
+
+      build_errors.add(
+        Bronze::Collections::Errors.not_unique,
+        selector: { primary_key => value }
+      )
     end
 
     def insert_into_collection(collection, object)
@@ -77,6 +110,11 @@ module Bronze::Collections::Simple
 
     def tools
       SleepingKingStudios::Tools::Toolbelt.instance
+    end
+
+    def uniqueness_errors(items, primary_key, value)
+      errors_for_not_found_item(items, primary_key, value) ||
+        errors_for_not_unique_item(items, primary_key, value)
     end
   end
 end

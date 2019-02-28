@@ -37,13 +37,28 @@ module Bronze::Collections
     #   @param collection_name [String] The collection to delete.
     #   @param selector [Hash] The criteria used to filter the data.
     #
-    #   @return [Array<Boolean, Hash, Array>] in order, the OK status of the
-    #     delete (true or false), the deleted items, and an errors array.
+    #   @return [Bronze::Result] the result of the delete operation.
     #
     #   @raise Bronze::NotImplementedError unless overriden by an Adapter
     #     subclass.
     def delete_matching(_collection_name, _selector)
       raise Bronze::NotImplementedError.new(self, :delete_matching)
+    end
+
+    # @overload find_one(collection_name, primary_key, value)
+    #   Finds the data object with the given primary key.
+    #
+    #   @param collection_name [String] The collection to query.
+    #   @param primary_key [Symbol] The name of the primary key column or
+    #     attribute.
+    #   @param value [Object] The primary key value to search for.
+    #
+    #   @return [Bronze::Result] the result of the find operation.
+    #
+    #   @raise Bronze::NotImplementedError unless overriden by an Adapter
+    #     subclass.
+    def find_one(_collection_name, _primary_key, _value)
+      raise Bronze::NotImplementedError.new(self, :find_one)
     end
 
     # @overload insert_one(collection_name, data)
@@ -52,8 +67,7 @@ module Bronze::Collections
     #   @param collection_name [String] The collection to insert.
     #   @param data [Hash] The data hash to insert.
     #
-    #   @return [Array<Boolean, Hash, Array>] in order, the OK status of the
-    #     insert (true or false), the data hash to insert, and an errors array.
+    #   @return [Bronze::Result] the result of the insert operation.
     #
     #   @raise Bronze::NotImplementedError unless overriden by an Adapter
     #     subclass.
@@ -81,8 +95,7 @@ module Bronze::Collections
     #   @param selector [Hash] The criteria used to filter the data.
     #   @param data [Hash] The keys and values to update in the matching items.
     #
-    #   @return [Array<Boolean, Hash, Array>] in order, the OK status of the
-    #     update (true or false), the updated items, and an errors array.
+    #   @return [Bronze::Result] the result of the update operation.
     #
     #   @raise Bronze::NotImplementedError unless overriden by an Adapter
     #     subclass.

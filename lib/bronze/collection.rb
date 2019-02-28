@@ -70,8 +70,7 @@ module Bronze
     #
     # @param selector [Hash] The criteria used to filter the data.
     #
-    # @return [Array<Boolean, Hash, Array>] in order, the OK status of the
-    #   delete (true or false), the deleted items, and an errors array.
+    # @return [Bronze::Result] the result of the delete operation.
     def delete_matching(selector)
       errors = errors_for_selector(selector)
 
@@ -80,12 +79,24 @@ module Bronze
       adapter.delete_matching(name, selector)
     end
 
+    # Finds the data object with the given primary key.
+    #
+    # @param [Object] value The primary key value to search for.
+    #
+    # @return [Bronze::Result] the result of the find operation.
+    def find_one(value)
+      errors = errors_for_primary_key_query(value)
+
+      return Bronze::Result.new(nil, errors: errors) if errors
+
+      adapter.find_one(name, primary_key, value)
+    end
+
     # Inserts the data hash into the collection.
     #
     # @param data [Hash] The data hash to insert.
     #
-    # @return [Array<Boolean, Hash, Array>] in order, the OK status of the
-    #   insert (true or false), the data hash to insert, and an errors array.
+    # @return [Bronze::Result] the result of the insert operation.
     def insert_one(data)
       errors = errors_for_data(data) || errors_for_primary_key_insert(data)
 
@@ -114,8 +125,7 @@ module Bronze
     # @param selector [Hash] The criteria used to filter the data.
     # @param with [Hash] The keys and values to update in the matching items.
     #
-    # @return [Array<Boolean, Hash, Array>] in order, the OK status of the
-    #   update (true or false), the updated items, and an errors array.
+    # @return [Bronze::Result] the result of the update operation.
     def update_matching(selector, with:)
       errors =
         errors_for_selector(selector) ||

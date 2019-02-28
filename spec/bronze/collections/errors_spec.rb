@@ -21,6 +21,24 @@ RSpec.describe Bronze::Collections::Errors do
       'bronze.collections.errors.data_missing'
   end
 
+  describe '::NO_PRIMARY_KEY' do
+    include_examples 'should define immutable constant',
+      :NO_PRIMARY_KEY,
+      'bronze.collections.errors.no_primary_key'
+  end
+
+  describe '::NOT_FOUND' do
+    include_examples 'should define immutable constant',
+      :NOT_FOUND,
+      'bronze.collections.errors.not_found'
+  end
+
+  describe '::NOT_UNIQUE' do
+    include_examples 'should define immutable constant',
+      :NOT_UNIQUE,
+      'bronze.collections.errors.not_unique'
+  end
+
   describe '::PRIMARY_KEY_BULK_UPDATE' do
     include_examples 'should define immutable constant',
       :PRIMARY_KEY_BULK_UPDATE,
@@ -73,6 +91,24 @@ RSpec.describe Bronze::Collections::Errors do
     include_examples 'should define class reader',
       :data_missing,
       'bronze.collections.errors.data_missing'
+  end
+
+  describe '#no_primary_key' do
+    include_examples 'should define class reader',
+      :no_primary_key,
+      'bronze.collections.errors.no_primary_key'
+  end
+
+  describe '#not_found' do
+    include_examples 'should define class reader',
+      :not_found,
+      'bronze.collections.errors.not_found'
+  end
+
+  describe '#not_unique' do
+    include_examples 'should define class reader',
+      :not_unique,
+      'bronze.collections.errors.not_unique'
   end
 
   describe '#primary_key_bulk_update' do

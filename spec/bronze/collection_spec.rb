@@ -464,6 +464,234 @@ RSpec.describe Bronze::Collection do
     end
   end
 
+  shared_examples 'should validate the primary key for querying' do
+    describe 'with a nil primary key' do
+      let(:primary_key_value) { nil }
+      let(:expected_error) do
+        {
+          type:   Bronze::Collections::Errors::PRIMARY_KEY_MISSING,
+          params: {},
+          path:   [primary_key]
+        }
+      end
+
+      it 'should not delegate to the adapter' do
+        call_operation
+
+        expect(adapter).not_to have_received(method_name)
+      end
+
+      it 'should return a result' do
+        expect(call_operation)
+          .to be_a_failing_result
+          .with_errors(expected_error)
+      end
+    end
+
+    describe 'with a primary key with invalid type' do
+      let(:primary_key_value) { Object.new }
+      let(:expected_error) do
+        {
+          type:   Bronze::Collections::Errors::PRIMARY_KEY_INVALID,
+          params: {
+            type:  primary_key_type.name,
+            value: primary_key_value.to_s
+          },
+          path:   [primary_key]
+        }
+      end
+
+      it 'should not delegate to the adapter' do
+        call_operation
+
+        expect(adapter).not_to have_received(method_name)
+      end
+
+      it 'should return a result' do
+        expect(call_operation)
+          .to be_a_failing_result
+          .with_errors(expected_error)
+      end
+    end
+
+    describe 'with an empty primary key' do
+      let(:primary_key_type)  { String }
+      let(:primary_key_value) { '' }
+      let(:expected_error) do
+        {
+          type:   Bronze::Collections::Errors::PRIMARY_KEY_EMPTY,
+          params: { value: primary_key_value.to_s },
+          path:   [primary_key]
+        }
+      end
+
+      it 'should not delegate to the adapter' do
+        call_operation
+
+        expect(adapter).not_to have_received(method_name)
+      end
+
+      it 'should return a result' do
+        expect(call_operation)
+          .to be_a_failing_result
+          .with_errors(expected_error)
+      end
+    end
+
+    context 'when options[:primary_key] is false' do
+      let(:options) { super().merge primary_key: false }
+
+      describe 'with a nil primary key' do
+        let(:primary_key_value) { nil }
+        let(:expected_error)    { Bronze::Collections::Errors::NO_PRIMARY_KEY }
+
+        it 'should not delegate to the adapter' do
+          call_operation
+
+          expect(adapter).not_to have_received(method_name)
+        end
+
+        it 'should return a result' do
+          expect(call_operation)
+            .to be_a_failing_result
+            .with_errors(expected_error)
+        end
+      end
+
+      describe 'with a primary key with invalid type' do
+        let(:primary_key_value) { Object.new }
+        let(:expected_error)    { Bronze::Collections::Errors::NO_PRIMARY_KEY }
+
+        it 'should not delegate to the adapter' do
+          call_operation
+
+          expect(adapter).not_to have_received(method_name)
+        end
+
+        it 'should return a result' do
+          expect(call_operation)
+            .to be_a_failing_result
+            .with_errors(expected_error)
+        end
+      end
+
+      describe 'with an empty primary key' do
+        let(:primary_key_type)  { String }
+        let(:primary_key_value) { '' }
+        let(:expected_error)    { Bronze::Collections::Errors::NO_PRIMARY_KEY }
+
+        it 'should not delegate to the adapter' do
+          call_operation
+
+          expect(adapter).not_to have_received(method_name)
+        end
+
+        it 'should return a result' do
+          expect(call_operation)
+            .to be_a_failing_result
+            .with_errors(expected_error)
+        end
+      end
+
+      describe 'with a valid primary key' do
+        let(:expected_error)    { Bronze::Collections::Errors::NO_PRIMARY_KEY }
+
+        it 'should not delegate to the adapter' do
+          call_operation
+
+          expect(adapter).not_to have_received(method_name)
+        end
+
+        it 'should return a result' do
+          expect(call_operation)
+            .to be_a_failing_result
+            .with_errors(expected_error)
+        end
+      end
+    end
+
+    context 'when options[:primary_key] is set' do
+      let(:primary_key)       { :uuid }
+      let(:primary_key_type)  { String }
+      let(:primary_key_value) { '' }
+      let(:options) do
+        super().merge primary_key: :uuid, primary_key_type: String
+      end
+
+      describe 'with a nil primary key' do
+        let(:primary_key_value) { nil }
+        let(:expected_error) do
+          {
+            type:   Bronze::Collections::Errors::PRIMARY_KEY_MISSING,
+            params: {},
+            path:   [primary_key]
+          }
+        end
+
+        it 'should not delegate to the adapter' do
+          call_operation
+
+          expect(adapter).not_to have_received(method_name)
+        end
+
+        it 'should return a result' do
+          expect(call_operation)
+            .to be_a_failing_result
+            .with_errors(expected_error)
+        end
+      end
+
+      describe 'with a primary key with invalid type' do
+        let(:primary_key_value) { Object.new }
+        let(:expected_error) do
+          {
+            type:   Bronze::Collections::Errors::PRIMARY_KEY_INVALID,
+            params: {
+              type:  primary_key_type.name,
+              value: primary_key_value.to_s
+            },
+            path:   [primary_key]
+          }
+        end
+
+        it 'should not delegate to the adapter' do
+          call_operation
+
+          expect(adapter).not_to have_received(method_name)
+        end
+
+        it 'should return a result' do
+          expect(call_operation)
+            .to be_a_failing_result
+            .with_errors(expected_error)
+        end
+      end
+
+      describe 'with an empty primary key' do
+        let(:primary_key_value) { '' }
+        let(:expected_error) do
+          {
+            type:   Bronze::Collections::Errors::PRIMARY_KEY_EMPTY,
+            params: { value: primary_key_value.to_s },
+            path:   [primary_key]
+          }
+        end
+
+        it 'should not delegate to the adapter' do
+          call_operation
+
+          expect(adapter).not_to have_received(method_name)
+        end
+
+        it 'should return a result' do
+          expect(call_operation)
+            .to be_a_failing_result
+            .with_errors(expected_error)
+        end
+      end
+    end
+  end
+
   shared_examples 'should validate the selector' do
     describe 'with a nil selector' do
       let(:selector) { nil }
@@ -521,6 +749,7 @@ RSpec.describe Bronze::Collection do
       Bronze::Collections::Adapter,
       collection_name_for: '',
       delete_matching:     Bronze::Result.new,
+      find_one:            Bronze::Result.new,
       insert_one:          Bronze::Result.new,
       query:               query,
       update_matching:     Bronze::Result.new
@@ -683,6 +912,47 @@ RSpec.describe Bronze::Collection do
     end
 
     it { expect(collection.each).to be query.each }
+  end
+
+  describe '#find_one' do
+    let(:primary_key)       { :id }
+    let(:primary_key_type)  { Integer }
+    let(:primary_key_value) { 0 }
+    let(:method_name)       { :find_one }
+    let(:data) do
+      {
+        'id'     => 0,
+        'title'  => 'Romance of the Three Kingdoms',
+        'author' => 'Luo Guanzhong'
+      }
+    end
+    let(:options) { super().merge primary_key_type: primary_key_type }
+
+    def call_operation
+      collection.find_one(primary_key_value)
+    end
+
+    it { expect(collection).to respond_to(:find_one).with(1).argument }
+
+    include_examples 'should validate the primary key for querying'
+
+    describe 'with a valid primary key' do
+      let(:result) { Bronze::Result.new(data) }
+
+      it 'should delegate to the adapter' do
+        collection.find_one(primary_key_value)
+
+        expect(adapter)
+          .to have_received(:find_one)
+          .with(collection.name, primary_key, primary_key_value)
+      end
+
+      it 'should return the result from the adapter' do
+        allow(adapter).to receive(:find_one).and_return(result)
+
+        expect(collection.find_one(primary_key_value)).to be result
+      end
+    end
   end
 
   describe '#insert_one' do

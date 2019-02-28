@@ -15,6 +15,17 @@ module Bronze::Collections
     # Error message when trying to insert nil into a collection.
     DATA_MISSING = 'bronze.collections.errors.data_missing'
 
+    # Error message when trying to find or modify an item by primary key, but no
+    # primary key is set for the collection.
+    NO_PRIMARY_KEY = 'bronze.collections.errors.no_primary_key'
+
+    # Error message when trying to find an item that is not in the collection.
+    NOT_FOUND = 'bronze.collections.errors.not_found'
+
+    # Error message when trying to find a unique item, but there are multiple
+    #   matching items in the collection.
+    NOT_UNIQUE = 'bronze.collections.errors.not_unique'
+
     # Error message when trying to bulk update a primary key.
     PRIMARY_KEY_BULK_UPDATE =
       'bronze.collections.errors.primary_key_bulk_update'
@@ -52,6 +63,24 @@ module Bronze::Collections
       #   collection.
       def data_missing
         DATA_MISSING
+      end
+
+      # @return [String] the error message when trying to find or modify an item
+      #   by primary key, but no primary key is set for the collection.
+      def no_primary_key
+        NO_PRIMARY_KEY
+      end
+
+      # @return [String] the error message when trying to find an item that is
+      #   not in the collection.
+      def not_found
+        NOT_FOUND
+      end
+
+      # @return [String] the error message when trying to find a unique item,
+      #   but there are multiple matching items in the collection.
+      def not_unique
+        NOT_UNIQUE
       end
 
       # @return [String] the error message when trying to bulk update a primary

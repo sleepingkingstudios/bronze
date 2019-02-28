@@ -2,6 +2,7 @@
 
 require 'date'
 
+require 'bronze/collections/errors'
 require 'bronze/collections/simple/adapter'
 require 'bronze/repository'
 
@@ -279,6 +280,24 @@ RSpec.describe Bronze::Collections::Simple do
     it { expect(collection.all.count).to be periodicals.size }
 
     it { expect(collection.all.to_a).to be == periodicals }
+
+    describe 'with a primary key that does not match an item' do
+      let(:primary_key_value) { 13 }
+      let(:result)            { collection.find_one(primary_key_value) }
+      let(:expected_error)    { Bronze::Collections::Errors.not_found }
+
+      it { expect(result).to be_a_failing_result.with_errors(expected_error) }
+    end
+
+    describe 'with a primary key that matches an item' do
+      let(:primary_key_value) { 3 }
+      let(:result)            { collection.find_one(primary_key_value) }
+      let(:expected_item) do
+        periodicals.find { |item| item['id'] == primary_key_value }
+      end
+
+      it { expect(result).to be_a_passing_result.with_value(expected_item) }
+    end
 
     describe 'with a value matcher that does not match any items' do
       let(:query) { collection.matching('title' => 'Crystal Digest') }

@@ -3,6 +3,62 @@
 require 'bronze/collections/simple/adapter'
 
 RSpec.describe Bronze::Collections::Simple::Adapter do
+  shared_examples 'should validate the primary key' do
+    describe 'with a non-matching primary key' do
+      let(:primary_key_value) { '00000000-0000-0000-0000-000000000000' }
+      let(:expected_error) do
+        {
+          type:   Bronze::Collections::Errors::NOT_FOUND,
+          params: { selector: { primary_key => primary_key_value } }
+        }
+      end
+
+      it 'should not change the data' do
+        expect { call_operation }
+          .not_to(change { adapter.query(collection_name).to_a })
+      end
+
+      it 'should return a failing result' do
+        expect(call_operation)
+          .to be_a_failing_result
+          .with_errors(expected_error)
+      end
+    end
+
+    describe 'with a non-unique primary key' do
+      let(:primary_key_value) { 'ff0ea8fc-05b2-4f1f-b661-4d6e543ce86e' }
+      let(:raw_data) do
+        data = super()
+
+        data['books'] << {
+          'uuid'   => primary_key_value,
+          'title'  => 'Brave New World',
+          'author' => 'Aldous Huxley',
+          'genre'  => 'Science Fiction'
+        }
+
+        data
+      end
+      let(:expected_error) do
+        {
+          type:   Bronze::Collections::Errors::NOT_UNIQUE,
+          params: { selector: { primary_key => primary_key_value } }
+        }
+      end
+
+      it 'should not change the data' do
+        expect { call_operation }
+          .not_to(change { adapter.query(collection_name).to_a })
+      end
+
+      it 'should return a failing result' do
+        expect(call_operation)
+          .to be_a_failing_result
+          .with_errors(expected_error)
+      end
+    end
+  end
+
   subject(:adapter) do
     data = raw_data.each.with_object({}) do |(name, collection), hsh|
       hsh[name] = collection.map { |item| tools.hash.deep_dup(item) }
@@ -184,6 +240,35 @@ RSpec.describe Bronze::Collections::Simple::Adapter do
       let(:selector) { { genre: 'Science Fiction' } }
 
       include_examples 'should delete the items'
+    end
+  end
+
+  describe '#find_one' do
+    let(:collection_name)   { 'books' }
+    let(:primary_key)       { :uuid }
+    let(:primary_key_value) { nil }
+    let(:result)            { call_operation }
+
+    def call_operation
+      adapter.find_one(collection_name, primary_key, primary_key_value)
+    end
+
+    it { expect(adapter).to respond_to(:find_one).with(3).arguments }
+
+    include_examples 'should validate the primary key'
+
+    describe 'with a matching primary key' do
+      let(:primary_key_value) { 'ff0ea8fc-05b2-4f1f-b661-4d6e543ce86e' }
+      let(:expected_item) do
+        raw_data['books'].find { |book| book['uuid'] == primary_key_value }
+      end
+
+      it { expect(result).to be_a_passing_result.with_value(expected_item) }
+
+      it 'should return a copy of the data' do
+        expect { result.value['tags'] = ['time travel'] }
+          .not_to(change { adapter.query(collection_name).to_a })
+      end
     end
   end
 
