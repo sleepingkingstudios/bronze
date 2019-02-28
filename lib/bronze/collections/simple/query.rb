@@ -94,10 +94,16 @@ module Bronze::Collections::Simple
     end
 
     def matching_data
-      data.each.with_index do |item, index|
-        break if max_results && max_results <= index
+      matching_count = -1
 
-        yield item if matches?(item)
+      data.each do |item|
+        next unless matches?(item)
+
+        if max_results
+          break if max_results <= matching_count += 1
+        end
+
+        yield item
       end
     end
 
