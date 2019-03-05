@@ -276,14 +276,11 @@ RSpec.describe Bronze::Collections::Simple do
     end
   end
 
-  describe 'querying the data' do
-    it { expect(collection.all.count).to be periodicals.size }
-
-    it { expect(collection.all.to_a).to be == periodicals }
+  describe 'querying the data by primary key' do
+    let(:result) { collection.find_one(primary_key_value) }
 
     describe 'with a primary key that does not match an item' do
       let(:primary_key_value) { 13 }
-      let(:result)            { collection.find_one(primary_key_value) }
       let(:expected_error)    { Bronze::Collections::Errors.not_found }
 
       it { expect(result).to be_a_failing_result.with_errors(expected_error) }
@@ -291,13 +288,18 @@ RSpec.describe Bronze::Collections::Simple do
 
     describe 'with a primary key that matches an item' do
       let(:primary_key_value) { 3 }
-      let(:result)            { collection.find_one(primary_key_value) }
       let(:expected_item) do
         periodicals.find { |item| item['id'] == primary_key_value }
       end
 
       it { expect(result).to be_a_passing_result.with_value(expected_item) }
     end
+  end
+
+  describe 'querying the data matching a selector' do
+    it { expect(collection.all.count).to be periodicals.size }
+
+    it { expect(collection.all.to_a).to be == periodicals }
 
     describe 'with a value matcher that does not match any items' do
       let(:query) { collection.matching('title' => 'Crystal Digest') }
@@ -419,6 +421,43 @@ RSpec.describe Bronze::Collections::Simple do
 
           expect(periodical).not_to be >= data
         end
+      end
+    end
+  end
+
+  describe 'updating data by primary key' do
+    let(:primary_key) { nil }
+    let(:data)        { { 'publisher' => 'Miskatonic University Press' } }
+    let(:result)      { collection.update_one(primary_key, with: data) }
+
+    def find_periodical(id)
+      collection.matching(id: id).to_a.first
+    end
+
+    describe 'with a primary key that does not match an item' do
+      let(:primary_key)    { 13 }
+      let(:expected_error) { Bronze::Collections::Errors.not_found }
+
+      it { expect(result).to be_a_failing_result.with_errors(expected_error) }
+
+      it 'should not update the collection' do
+        expect { collection.update_one(primary_key, with: data) }
+          .not_to change(collection.query, :to_a)
+      end
+    end
+
+    describe 'with a primary key that matches an item' do
+      let(:primary_key) { 9 }
+      let(:expected) do
+        periodicals.find { |item| item['id'] == primary_key }.merge(data)
+      end
+
+      it { expect(result).to be_a_passing_result.with_value(expected) }
+
+      it 'should update the matching item' do
+        collection.update_one(primary_key, with: data)
+
+        expect(find_periodical(primary_key)).to be == expected
       end
     end
   end

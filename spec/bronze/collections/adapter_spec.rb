@@ -135,4 +135,24 @@ RSpec.describe Bronze::Collections::Adapter do
         .to raise_error Bronze::NotImplementedError, error_message
     end
   end
+
+  describe '#update_one' do
+    let(:collection_name)   { 'books' }
+    let(:primary_key)       { :uuid }
+    let(:primary_key_value) { '00000000-0000-0000-0000-000000000000' }
+    let(:data)              { { 'author' => 'Valmiki' } }
+    let(:error_message) do
+      'Bronze::Collections::Adapter#update_one is not implemented'
+    end
+
+    it { expect(adapter).to respond_to(:update_one).with(4).arguments }
+
+    it 'should raise an error' do
+      expect do
+        adapter
+          .update_one(collection_name, primary_key, primary_key_value, data)
+      end
+        .to raise_error Bronze::NotImplementedError, error_message
+    end
+  end
 end

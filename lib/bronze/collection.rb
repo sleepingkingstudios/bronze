@@ -9,7 +9,7 @@ require 'bronze/result'
 module Bronze
   # A collection represents a data set, providing a consistent interface to
   # query and manage data from different sources.
-  class Collection
+  class Collection # rubocop:disable Metrics/ClassLength
     extend Forwardable
 
     include Bronze::Collections::Validation
@@ -135,6 +135,23 @@ module Bronze
       return Bronze::Result.new(nil, errors: errors) if errors
 
       adapter.update_matching(name, selector, with)
+    end
+
+    # Finds and updates the item in the collection with the given primary key.
+    #
+    # @param value [Object] The primary key value to search for.
+    # @param with [Hash] The keys and values to update in the matching items.
+    #
+    # @return [Bronze::Result] the result of the update operation.
+    def update_one(value, with:)
+      errors =
+        errors_for_primary_key_query(value) ||
+        errors_for_data(with) ||
+        errors_for_primary_key_update(with, value)
+
+      return Bronze::Result.new(nil, errors: errors) if errors
+
+      adapter.update_one(name, primary_key, value, with)
     end
 
     private

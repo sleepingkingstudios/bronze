@@ -103,6 +103,24 @@ module Bronze::Collections
       raise Bronze::NotImplementedError.new(self, :update_matching)
     end
 
+    # @overload update_one(collection_name, primary_key, value, data)
+    #   Updates the item in the collection matching the given primary key with
+    #   the specified data.
+    #
+    #   @param collection_name [String] The collection to update.
+    #   @param primary_key [Symbol] The name of the primary key column or
+    #     attribute.
+    #   @param value [Object] The primary key value to search for.
+    #   @param data [Hash] The keys and values to update in the matching item.
+    #
+    #   @return [Bronze::Result] the result of the update operation.
+    #
+    #   @raise Bronze::NotImplementedError unless overriden by an Adapter
+    #     subclass.
+    def update_one(_collection_name, _primary_key, _value, _data)
+      raise Bronze::NotImplementedError.new(self, :update_one)
+    end
+
     private
 
     def tools

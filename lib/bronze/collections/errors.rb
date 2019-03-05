@@ -30,6 +30,9 @@ module Bronze::Collections
     PRIMARY_KEY_BULK_UPDATE =
       'bronze.collections.errors.primary_key_bulk_update'
 
+    # Error message when trying to change the primary key during an update.
+    PRIMARY_KEY_CHANGED = 'bronze.collections.errors.primary_key_changed'
+
     # Error message when the primary key is an empty value.
     PRIMARY_KEY_EMPTY = 'bronze.collections.errors.primary_key_empty'
 
@@ -87,6 +90,12 @@ module Bronze::Collections
       #   key.
       def primary_key_bulk_update
         PRIMARY_KEY_BULK_UPDATE
+      end
+
+      # @return [String] the error message when trying to change the primary key
+      #   during an update.
+      def primary_key_changed
+        PRIMARY_KEY_CHANGED
       end
 
       # @return [String] the error message when the primary key is an empty

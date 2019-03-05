@@ -60,6 +60,12 @@ module Bronze::Collections
         primary_key_empty_error(value)
     end
 
+    def errors_for_primary_key_update(data, value)
+      return unless primary_key_value?(data)
+
+      primary_key_changed_error(data, value)
+    end
+
     def errors_for_selector(selector)
       selector_missing_error(selector) || selector_invalid_error(selector)
     end
@@ -76,6 +82,17 @@ module Bronze::Collections
       build_errors[primary_key].add(
         Bronze::Collections::Errors.primary_key_bulk_update,
         value: primary_key_value(data)
+      )
+    end
+
+    def primary_key_changed_error(data, value)
+      actual = primary_key_value(data)
+
+      return if actual == value
+
+      build_errors[primary_key].add(
+        Bronze::Collections::Errors.primary_key_changed,
+        value: actual
       )
     end
 
@@ -108,6 +125,10 @@ module Bronze::Collections
 
     def primary_key_value(data)
       data[primary_key] || data[primary_key.to_s]
+    end
+
+    def primary_key_value?(data)
+      data.key?(primary_key) || data.key?(primary_key.to_s)
     end
 
     def selector_invalid_error(selector)

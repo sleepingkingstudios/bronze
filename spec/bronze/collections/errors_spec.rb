@@ -45,6 +45,12 @@ RSpec.describe Bronze::Collections::Errors do
       'bronze.collections.errors.primary_key_bulk_update'
   end
 
+  describe '::PRIMARY_KEY_CHANGED' do
+    include_examples 'should define immutable constant',
+      :PRIMARY_KEY_CHANGED,
+      'bronze.collections.errors.primary_key_changed'
+  end
+
   describe '::PRIMARY_KEY_EMPTY' do
     include_examples 'should define immutable constant',
       :PRIMARY_KEY_EMPTY,
@@ -115,6 +121,12 @@ RSpec.describe Bronze::Collections::Errors do
     include_examples 'should define class reader',
       :primary_key_bulk_update,
       'bronze.collections.errors.primary_key_bulk_update'
+  end
+
+  describe '#primary_key_changed' do
+    include_examples 'should define class reader',
+      :primary_key_changed,
+      'bronze.collections.errors.primary_key_changed'
   end
 
   describe '#primary_key_empty' do

@@ -692,6 +692,207 @@ RSpec.describe Bronze::Collection do
     end
   end
 
+  shared_examples 'should validate the primary key for updates' do
+    describe 'with primary_key: nil' do
+      let(:data) { super().merge(primary_key => nil) }
+      let(:expected_error) do
+        {
+          type:   Bronze::Collections::Errors::PRIMARY_KEY_CHANGED,
+          params: { value: nil },
+          path:   [primary_key]
+        }
+      end
+
+      it 'should not delegate to the adapter' do
+        call_operation
+
+        expect(adapter).not_to have_received(method_name)
+      end
+
+      it 'should return a result' do
+        expect(call_operation)
+          .to be_a_failing_result
+          .with_errors(expected_error)
+      end
+    end
+
+    describe 'with primary_key: different value' do
+      let(:data) { super().merge(primary_key => 13) }
+      let(:expected_error) do
+        {
+          type:   Bronze::Collections::Errors::PRIMARY_KEY_CHANGED,
+          params: { value: 13 },
+          path:   [primary_key]
+        }
+      end
+
+      it 'should not delegate to the adapter' do
+        call_operation
+
+        expect(adapter).not_to have_received(method_name)
+      end
+
+      it 'should return a result' do
+        expect(call_operation)
+          .to be_a_failing_result
+          .with_errors(expected_error)
+      end
+    end
+
+    describe 'with primary_key: same value' do
+      let(:data) { super().merge(primary_key => primary_key_value) }
+
+      it 'should delegate to the adapter' do
+        call_operation
+
+        expect(adapter).to have_received(method_name)
+      end
+
+      it 'should return a passing result' do
+        expect(call_operation).to be_a_passing_result
+      end
+    end
+
+    context 'when options[:primary_key] is false' do
+      let(:options) { super().merge primary_key: false }
+
+      describe 'with primary_key: nil' do
+        let(:data) { super().merge(primary_key => nil) }
+        let(:expected_error) do
+          {
+            type:   Bronze::Collections::Errors::NO_PRIMARY_KEY,
+            params: {}
+          }
+        end
+
+        it 'should not delegate to the adapter' do
+          call_operation
+
+          expect(adapter).not_to have_received(method_name)
+        end
+
+        it 'should return a result' do
+          expect(call_operation)
+            .to be_a_failing_result
+            .with_errors(expected_error)
+        end
+      end
+
+      describe 'with primary_key: different value' do
+        let(:data) { super().merge(primary_key => 13) }
+        let(:expected_error) do
+          {
+            type:   Bronze::Collections::Errors::NO_PRIMARY_KEY,
+            params: {}
+          }
+        end
+
+        it 'should not delegate to the adapter' do
+          call_operation
+
+          expect(adapter).not_to have_received(method_name)
+        end
+
+        it 'should return a result' do
+          expect(call_operation)
+            .to be_a_failing_result
+            .with_errors(expected_error)
+        end
+      end
+
+      describe 'with primary_key: same value' do
+        let(:data) { super().merge(primary_key => primary_key_value) }
+        let(:expected_error) do
+          {
+            type:   Bronze::Collections::Errors::NO_PRIMARY_KEY,
+            params: {}
+          }
+        end
+
+        it 'should not delegate to the adapter' do
+          call_operation
+
+          expect(adapter).not_to have_received(method_name)
+        end
+
+        it 'should return a result' do
+          expect(call_operation)
+            .to be_a_failing_result
+            .with_errors(expected_error)
+        end
+      end
+    end
+
+    context 'when options[:primary_key] is set' do
+      let(:primary_key)       { :uuid }
+      let(:primary_key_type)  { String }
+      let(:primary_key_value) { '00000000-0000-0000-0000-000000000000' }
+      let(:options) do
+        super().merge primary_key: :uuid, primary_key_type: String
+      end
+
+      describe 'with primary_key: nil' do
+        let(:data) { super().merge(primary_key => nil) }
+        let(:expected_error) do
+          {
+            type:   Bronze::Collections::Errors::PRIMARY_KEY_CHANGED,
+            params: { value: nil },
+            path:   [primary_key]
+          }
+        end
+
+        it 'should not delegate to the adapter' do
+          call_operation
+
+          expect(adapter).not_to have_received(method_name)
+        end
+
+        it 'should return a result' do
+          expect(call_operation)
+            .to be_a_failing_result
+            .with_errors(expected_error)
+        end
+      end
+
+      describe 'with primary_key: different value' do
+        let(:data) { super().merge(primary_key => 13) }
+        let(:expected_error) do
+          {
+            type:   Bronze::Collections::Errors::PRIMARY_KEY_CHANGED,
+            params: { value: 13 },
+            path:   [primary_key]
+          }
+        end
+
+        it 'should not delegate to the adapter' do
+          call_operation
+
+          expect(adapter).not_to have_received(method_name)
+        end
+
+        it 'should return a result' do
+          expect(call_operation)
+            .to be_a_failing_result
+            .with_errors(expected_error)
+        end
+      end
+
+      describe 'with primary_key: same value' do
+        let(:data) { super().merge(primary_key => primary_key_value) }
+
+        it 'should delegate to the adapter' do
+          call_operation
+
+          expect(adapter).to have_received(method_name)
+        end
+
+        it 'should return a passing result' do
+          expect(call_operation).to be_a_passing_result
+        end
+      end
+    end
+  end
+
   shared_examples 'should validate the selector' do
     describe 'with a nil selector' do
       let(:selector) { nil }
@@ -752,7 +953,8 @@ RSpec.describe Bronze::Collection do
       find_one:            Bronze::Result.new,
       insert_one:          Bronze::Result.new,
       query:               query,
-      update_matching:     Bronze::Result.new
+      update_matching:     Bronze::Result.new,
+      update_one:          Bronze::Result.new
     )
   end
   let(:query) do
@@ -1398,6 +1600,87 @@ RSpec.describe Bronze::Collection do
         allow(adapter).to receive(:update_matching).and_return(result)
 
         expect(collection.update_matching(selector, with: data)).to be result
+      end
+    end
+  end
+
+  describe '#update_one' do
+    let(:primary_key)       { :id }
+    let(:primary_key_type)  { Integer }
+    let(:primary_key_value) { 0 }
+    let(:method_name)       { :update_one }
+    let(:data)              { { language: 'Chinese' } }
+    let(:options) do
+      super().merge primary_key_type: primary_key_type
+    end
+
+    def call_operation
+      collection.update_one(primary_key_value, with: data)
+    end
+
+    it 'should define the method' do
+      expect(collection).to respond_to(:update_one)
+        .with(1).arguments
+        .with_keywords(:with)
+    end
+
+    include_examples 'should validate the data object'
+
+    include_examples 'should validate the primary key for querying'
+
+    include_examples 'should validate the primary key for updates'
+
+    describe 'with a valid primary key and data object with String keys' do
+      let(:data) { { 'language' => 'Chinese' } }
+      let(:expected) do
+        {
+          'title'    => 'Romance of the Three Kingdoms',
+          'author'   => 'Luo Guanzhong',
+          'language' => 'Chinese'
+        }
+      end
+      let(:result) { Bronze::Result.new(expected) }
+
+      it 'should delegate to the adapter' do
+        collection.update_one(primary_key_value, with: data)
+
+        expect(adapter)
+          .to have_received(:update_one)
+          .with(collection.name, primary_key, primary_key_value, data)
+      end
+
+      it 'should return the result from the adapter' do
+        allow(adapter).to receive(:update_one).and_return(result)
+
+        expect(collection.update_one(primary_key_value, with: data))
+          .to be result
+      end
+    end
+
+    describe 'with a valid primary key and data object with Symbol keys' do
+      let(:data) { { language: 'Chinese' } }
+      let(:expected) do
+        {
+          'title'    => 'Romance of the Three Kingdoms',
+          'author'   => 'Luo Guanzhong',
+          'language' => 'Chinese'
+        }
+      end
+      let(:result) { Bronze::Result.new(expected) }
+
+      it 'should delegate to the adapter' do
+        collection.update_one(primary_key_value, with: data)
+
+        expect(adapter)
+          .to have_received(:update_one)
+          .with(collection.name, primary_key, primary_key_value, data)
+      end
+
+      it 'should return the result from the adapter' do
+        allow(adapter).to receive(:update_one).and_return(result)
+
+        expect(collection.update_one(primary_key_value, with: data))
+          .to be result
       end
     end
   end

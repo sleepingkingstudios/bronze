@@ -76,6 +76,19 @@ module Bronze::Collections::Simple
       result
     end
 
+    # (see Bronze::Collections::Adapter#update_one)
+    def update_one(collection_name, primary_key, value, data)
+      items  =
+        query(collection_name).matching(primary_key => value).limit(2).to_a
+      errors = uniqueness_errors(items, primary_key, value)
+
+      return Bronze::Result.new(nil, errors: errors) if errors
+
+      update_item(items.first, data)
+
+      Bronze::Result.new(tools.hash.deep_dup(items.first))
+    end
+
     private
 
     def build_errors
@@ -115,6 +128,12 @@ module Bronze::Collections::Simple
     def uniqueness_errors(items, primary_key, value)
       errors_for_not_found_item(items, primary_key, value) ||
         errors_for_not_unique_item(items, primary_key, value)
+    end
+
+    def update_item(item, data)
+      data = tools.hash.convert_keys_to_strings(data)
+
+      item.update(data)
     end
   end
 end
