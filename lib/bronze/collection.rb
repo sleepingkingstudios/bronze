@@ -79,6 +79,19 @@ module Bronze
       adapter.delete_matching(name, selector)
     end
 
+    # Deletes the item in the collection matching the given primary key.
+    #
+    # @param [Object] value The primary key value to delete.
+    #
+    # @return [Bronze::Result] the result of the delete operation.
+    def delete_one(value)
+      errors = errors_for_primary_key_query(value)
+
+      return Bronze::Result.new(nil, errors: errors) if errors
+
+      adapter.delete_one(name, primary_key, value)
+    end
+
     # Finds the data object with the given primary key.
     #
     # @param [Object] value The primary key value to search for.

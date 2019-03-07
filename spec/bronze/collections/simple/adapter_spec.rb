@@ -243,6 +243,44 @@ RSpec.describe Bronze::Collections::Simple::Adapter do
     end
   end
 
+  describe '#delete_one' do
+    let(:collection_name)   { 'books' }
+    let(:primary_key)       { :uuid }
+    let(:primary_key_value) { nil }
+    let(:result)            { call_operation }
+
+    def call_operation
+      adapter.delete_one(collection_name, primary_key, primary_key_value)
+    end
+
+    it { expect(adapter).to respond_to(:delete_one).with(3).arguments }
+
+    include_examples 'should validate the primary key'
+
+    describe 'with a matching primary key' do
+      let(:primary_key_value) { 'ff0ea8fc-05b2-4f1f-b661-4d6e543ce86e' }
+      let!(:expected_item)    { find_book(primary_key_value) }
+
+      def find_book(uuid)
+        adapter.query(collection_name).matching(uuid: uuid).to_a.first
+      end
+
+      it { expect(result).to be_a_passing_result.with_value(expected_item) }
+
+      it 'should change the collection count' do
+        expect { call_operation }
+          .to change(adapter.query(collection_name), :count)
+          .by(-1)
+      end
+
+      it 'should delete the item' do
+        call_operation
+
+        expect(find_book primary_key_value).to be nil
+      end
+    end
+  end
+
   describe '#find_one' do
     let(:collection_name)   { 'books' }
     let(:primary_key)       { :uuid }

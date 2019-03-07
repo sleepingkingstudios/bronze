@@ -37,6 +37,19 @@ module Bronze::Collections::Simple
       result
     end
 
+    # (see Bronze::Collections::Adapter#delete_one)
+    def delete_one(collection_name, primary_key, value)
+      items  =
+        query(collection_name).matching(primary_key => value).limit(2).to_a
+      errors = uniqueness_errors(items, primary_key, value)
+
+      return Bronze::Result.new(nil, errors: errors) if errors
+
+      collection(collection_name).delete(items.first)
+
+      Bronze::Result.new(items.first)
+    end
+
     # (see Bronze::Collections::Adapter#find_one)
     def find_one(collection_name, primary_key, value)
       items  =

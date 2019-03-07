@@ -140,6 +140,48 @@ RSpec.describe Bronze::Collections::Simple do
     end
   end
 
+  describe 'deleting data by primary key' do
+    let(:result) { collection.delete_one(primary_key_value) }
+
+    describe 'with a primary key that does not match an item' do
+      let(:primary_key_value) { 13 }
+      let(:expected_error)    { Bronze::Collections::Errors.not_found }
+
+      it { expect(result).to be_a_failing_result.with_errors(expected_error) }
+
+      it 'should not change the collection count' do
+        expect { collection.delete_one(primary_key_value) }
+          .not_to change(collection, :count)
+      end
+
+      it 'should not change the collection data' do
+        expect { collection.delete_one(primary_key_value) }
+          .not_to change(collection.query, :to_a)
+      end
+    end
+
+    describe 'with a primary key that matches an item' do
+      let(:primary_key_value) { 9 }
+      let!(:expected_value) do
+        periodicals.find { |item| item['id'] == primary_key_value }
+      end
+
+      it { expect(result).to be_a_passing_result.with_value(expected_value) }
+
+      it 'should change the collection count' do
+        expect { collection.delete_one(primary_key_value) }
+          .to change(collection, :count)
+          .by(-1)
+      end
+
+      it 'should remove the item from the collection' do
+        expect { collection.delete_one(primary_key_value) }
+          .to change(collection.query, :to_a)
+          .to(satisfy { |ary| !ary.include?(expected_value) })
+      end
+    end
+  end
+
   describe 'deleting data matching a selector' do
     let!(:matching) do
       periodicals.select do |item|
@@ -321,6 +363,43 @@ RSpec.describe Bronze::Collections::Simple do
     end
   end
 
+  describe 'updating data by primary key' do
+    let(:primary_key) { nil }
+    let(:data)        { { 'publisher' => 'Miskatonic University Press' } }
+    let(:result)      { collection.update_one(primary_key, with: data) }
+
+    def find_periodical(id)
+      collection.matching(id: id).to_a.first
+    end
+
+    describe 'with a primary key that does not match an item' do
+      let(:primary_key)    { 13 }
+      let(:expected_error) { Bronze::Collections::Errors.not_found }
+
+      it { expect(result).to be_a_failing_result.with_errors(expected_error) }
+
+      it 'should not update the collection' do
+        expect { collection.update_one(primary_key, with: data) }
+          .not_to change(collection.query, :to_a)
+      end
+    end
+
+    describe 'with a primary key that matches an item' do
+      let(:primary_key) { 9 }
+      let(:expected) do
+        periodicals.find { |item| item['id'] == primary_key }.merge(data)
+      end
+
+      it { expect(result).to be_a_passing_result.with_value(expected) }
+
+      it 'should update the matching item' do
+        collection.update_one(primary_key, with: data)
+
+        expect(find_periodical(primary_key)).to be == expected
+      end
+    end
+  end
+
   describe 'updating data matching a selector' do
     let(:expected) { matching.map { |item| item.merge(data) } }
     let(:matching) do
@@ -421,43 +500,6 @@ RSpec.describe Bronze::Collections::Simple do
 
           expect(periodical).not_to be >= data
         end
-      end
-    end
-  end
-
-  describe 'updating data by primary key' do
-    let(:primary_key) { nil }
-    let(:data)        { { 'publisher' => 'Miskatonic University Press' } }
-    let(:result)      { collection.update_one(primary_key, with: data) }
-
-    def find_periodical(id)
-      collection.matching(id: id).to_a.first
-    end
-
-    describe 'with a primary key that does not match an item' do
-      let(:primary_key)    { 13 }
-      let(:expected_error) { Bronze::Collections::Errors.not_found }
-
-      it { expect(result).to be_a_failing_result.with_errors(expected_error) }
-
-      it 'should not update the collection' do
-        expect { collection.update_one(primary_key, with: data) }
-          .not_to change(collection.query, :to_a)
-      end
-    end
-
-    describe 'with a primary key that matches an item' do
-      let(:primary_key) { 9 }
-      let(:expected) do
-        periodicals.find { |item| item['id'] == primary_key }.merge(data)
-      end
-
-      it { expect(result).to be_a_passing_result.with_value(expected) }
-
-      it 'should update the matching item' do
-        collection.update_one(primary_key, with: data)
-
-        expect(find_periodical(primary_key)).to be == expected
       end
     end
   end

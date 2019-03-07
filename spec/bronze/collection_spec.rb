@@ -950,6 +950,7 @@ RSpec.describe Bronze::Collection do
       Bronze::Collections::Adapter,
       collection_name_for: '',
       delete_matching:     Bronze::Result.new,
+      delete_one:          Bronze::Result.new,
       find_one:            Bronze::Result.new,
       insert_one:          Bronze::Result.new,
       query:               query,
@@ -1100,6 +1101,47 @@ RSpec.describe Bronze::Collection do
         allow(adapter).to receive(:delete_matching).and_return(result)
 
         expect(collection.delete_matching(selector)).to be result
+      end
+    end
+  end
+
+  describe '#delete_one' do
+    let(:primary_key)       { :id }
+    let(:primary_key_type)  { Integer }
+    let(:primary_key_value) { 0 }
+    let(:method_name)       { :delete_one }
+    let(:data) do
+      {
+        'id'     => 0,
+        'title'  => 'Romance of the Three Kingdoms',
+        'author' => 'Luo Guanzhong'
+      }
+    end
+    let(:options) { super().merge primary_key_type: primary_key_type }
+
+    def call_operation
+      collection.delete_one(primary_key_value)
+    end
+
+    it { expect(collection).to respond_to(:delete_one).with(1).argument }
+
+    include_examples 'should validate the primary key for querying'
+
+    describe 'with a valid primary key' do
+      let(:result) { Bronze::Result.new(data) }
+
+      it 'should delegate to the adapter' do
+        collection.delete_one(primary_key_value)
+
+        expect(adapter)
+          .to have_received(:delete_one)
+          .with(collection.name, primary_key, primary_key_value)
+      end
+
+      it 'should return the result from the adapter' do
+        allow(adapter).to receive(:delete_one).and_return(result)
+
+        expect(collection.delete_one(primary_key_value)).to be result
       end
     end
   end
