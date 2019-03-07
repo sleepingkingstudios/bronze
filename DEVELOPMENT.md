@@ -11,14 +11,6 @@
 
 - Mongo-style selectors - query.matching(year: { $gt: 1986 })
 
-### Primary Keys
-
-- configurable - repository.collection(definition, primary_key:)
-- default to :id
-- autodetect if definition is an entity class
-- allows query.find()
-- allows collection.find(id), collection.update(id, data), collection.delete(id)
-
 ### Transforms
 
 Collection#transform

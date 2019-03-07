@@ -3,15 +3,17 @@
 require 'forwardable'
 
 require 'bronze'
+require 'bronze/collections/primary_keys'
 require 'bronze/collections/validation'
 require 'bronze/result'
 
 module Bronze
   # A collection represents a data set, providing a consistent interface to
   # query and manage data from different sources.
-  class Collection # rubocop:disable Metrics/ClassLength
+  class Collection
     extend Forwardable
 
+    include Bronze::Collections::PrimaryKeys
     include Bronze::Collections::Validation
 
     # @param definition [Class, String] An object defining the data to access.
@@ -38,11 +40,15 @@ module Bronze
     )
       @adapter = adapter
 
+      super(
+        definition,
+        primary_key:      primary_key,
+        primary_key_type: primary_key_type
+      )
+
       parse_definition(definition)
 
-      @name             = name.to_s unless name.nil?
-      @primary_key      = normalize_primary_key(primary_key)
-      @primary_key_type = normalize_primary_key_type(primary_key_type)
+      @name = name.to_s unless name.nil?
     end
 
     def_delegators :query,
@@ -58,12 +64,6 @@ module Bronze
 
     # @return [String] the name of the data set.
     attr_reader :name
-
-    # @return [String, false] the name of the primary key for the data set.
-    attr_reader :primary_key
-
-    # @return [Class] the type of the primary key for the data set.
-    attr_reader :primary_key_type
 
     # Deletes each item in the collection matching the given selector, removing
     # it from the collection.
@@ -121,12 +121,6 @@ module Bronze
     end
     alias_method :insert, :insert_one
 
-    # @return [Boolean] true if the collection has a primary key, otherwise
-    #   false.
-    def primary_key?
-      !!@primary_key
-    end
-
     # Returns a query against the data set.
     #
     # @return [Bronze::Collections::Query] the query instance.
@@ -173,40 +167,12 @@ module Bronze
 
     private
 
-    def default_primary_key
-      :id
-    end
-
-    def default_primary_key_type
-      String
-    end
-
-    def normalize_primary_key(value)
-      return @primary_key || default_primary_key if value.nil?
-
-      return false if value == false
-
-      return value if value.is_a?(Symbol)
-
-      return value.intern if value.is_a?(String)
-
-      raise ArgumentError,
-        'expected primary key to be a String, a Symbol or false, but was ' \
-        "#{value.inspect}"
-    end
-
-    def normalize_primary_key_type(type)
-      return @primary_key_type || default_primary_key_type if type.nil?
-
-      return type if type.is_a?(Class)
-
-      Object.const_get(type)
-    end
-
     def parse_definition(definition)
-      return parse_module_definition(definition) if definition.is_a?(Module)
+      if definition.is_a?(Module)
+        @name = parse_module_definition(definition)
 
-      if definition.is_a?(String) || definition.is_a?(Symbol)
+        return
+      elsif definition.is_a?(String) || definition.is_a?(Symbol)
         @name = definition.to_s
 
         return
@@ -218,19 +184,9 @@ module Bronze
     end
 
     def parse_module_definition(mod)
-      @name =
-        if mod.respond_to?(:collection_name)
-          mod.collection_name.to_s
-        else
-          adapter.collection_name_for(mod)
-        end
+      return mod.collection_name.to_s if mod.respond_to?(:collection_name)
 
-      return unless mod.respond_to?(:primary_key)
-
-      metadata = mod.primary_key
-
-      @primary_key      = metadata&.name
-      @primary_key_type = metadata&.type
+      adapter.collection_name_for(mod)
     end
   end
 end
