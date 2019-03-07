@@ -1125,6 +1125,8 @@ RSpec.describe Bronze::Collection do
 
     it { expect(collection).to respond_to(:delete_one).with(1).argument }
 
+    it { expect(collection).to alias_method(:delete_one).as(:delete) }
+
     include_examples 'should validate the primary key for querying'
 
     describe 'with a valid primary key' do
@@ -1178,6 +1180,8 @@ RSpec.describe Bronze::Collection do
 
     it { expect(collection).to respond_to(:find_one).with(1).argument }
 
+    it { expect(collection).to alias_method(:find_one).as(:find) }
+
     include_examples 'should validate the primary key for querying'
 
     describe 'with a valid primary key' do
@@ -1218,6 +1222,8 @@ RSpec.describe Bronze::Collection do
     end
 
     it { expect(collection).to respond_to(:insert_one).with(1).argument }
+
+    it { expect(collection).to alias_method(:insert_one).as(:insert) }
 
     include_examples 'should validate the data object'
 
@@ -1665,6 +1671,8 @@ RSpec.describe Bronze::Collection do
         .with(1).arguments
         .with_keywords(:with)
     end
+
+    it { expect(collection).to alias_method(:update_one).as(:update) }
 
     include_examples 'should validate the data object'
 

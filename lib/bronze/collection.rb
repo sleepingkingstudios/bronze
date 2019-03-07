@@ -91,6 +91,7 @@ module Bronze
 
       adapter.delete_one(name, primary_key, value)
     end
+    alias_method :delete, :delete_one
 
     # Finds the data object with the given primary key.
     #
@@ -104,6 +105,7 @@ module Bronze
 
       adapter.find_one(name, primary_key, value)
     end
+    alias_method :find, :find_one
 
     # Inserts the data hash into the collection.
     #
@@ -117,6 +119,7 @@ module Bronze
 
       adapter.insert_one(name, data)
     end
+    alias_method :insert, :insert_one
 
     # @return [Boolean] true if the collection has a primary key, otherwise
     #   false.
@@ -166,6 +169,7 @@ module Bronze
 
       adapter.update_one(name, primary_key, value, with)
     end
+    alias_method :update, :update_one
 
     private
 
