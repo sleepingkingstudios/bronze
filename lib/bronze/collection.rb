@@ -93,6 +93,19 @@ module Bronze
     end
     alias_method :delete, :delete_one
 
+    # Finds all items in the collection matching the given selector.
+    #
+    # @param selector [Hash] The criteria used to filter the data.
+    #
+    # @return [Bronze::Result] the result of the find operation.
+    def find_matching(selector)
+      errors = errors_for_selector(selector)
+
+      return Bronze::Result.new(nil, errors: errors) if errors
+
+      adapter.find_matching(name, selector)
+    end
+
     # Finds the data object with the given primary key.
     #
     # @param [Object] value The primary key value to search for.

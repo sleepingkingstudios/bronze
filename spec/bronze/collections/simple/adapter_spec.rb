@@ -201,6 +201,8 @@ RSpec.describe Bronze::Collections::Simple::Adapter do
       raw_data['books'] - affected_items
     end
 
+    it { expect(adapter).to respond_to(:delete_matching).with(2).arguments }
+
     describe 'with an empty selector' do
       let(:selector) { {} }
 
@@ -278,6 +280,68 @@ RSpec.describe Bronze::Collections::Simple::Adapter do
 
         expect(find_book primary_key_value).to be nil
       end
+    end
+  end
+
+  describe '#find_matching' do
+    shared_examples 'should find the items' do
+      let(:result) { adapter.find_matching(collection_name, selector) }
+
+      it 'should not change the collection' do
+        expect { adapter.find_matching(collection_name, selector) }
+          .not_to change(adapter.query(collection_name), :to_a)
+      end
+
+      it 'should return a result' do
+        expect(result).to be_a_passing_result.with_value(matching_items)
+      end
+    end
+
+    let(:collection_name) { 'books' }
+    let(:selector)        { {} }
+    let(:matching_items)  { raw_data['books'] }
+
+    it { expect(adapter).to respond_to(:find_matching).with(2).arguments }
+
+    describe 'with an empty selector' do
+      let(:selector) { {} }
+
+      include_examples 'should find the items'
+    end
+
+    describe 'with a selector that does not match any items' do
+      let(:selector)       { { genre: 'Noir' } }
+      let(:matching_items) { [] }
+
+      include_examples 'should find the items'
+    end
+
+    describe 'with a selector that matches one item' do
+      let(:selector) { { title: 'Journey to the Center of the Earth' } }
+      let(:matching_items) do
+        super().select do |book|
+          book['title'] == 'Journey to the Center of the Earth'
+        end
+      end
+
+      include_examples 'should find the items'
+    end
+
+    describe 'with a selector that matches some items' do
+      let(:selector) { { author: 'H. G. Wells' } }
+      let(:matching_items) do
+        super().select do |book|
+          book['author'] == 'H. G. Wells'
+        end
+      end
+
+      include_examples 'should find the items'
+    end
+
+    describe 'with a selector that matches all items' do
+      let(:selector) { { genre: 'Science Fiction' } }
+
+      include_examples 'should find the items'
     end
   end
 

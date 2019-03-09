@@ -60,6 +60,21 @@ RSpec.describe Bronze::Collections::Adapter do
   end
 
   describe '#delete_matching' do
+    let(:collection_name) { 'books' }
+    let(:selector)        { { 'title' => 'The Ramayana' } }
+    let(:error_message) do
+      'Bronze::Collections::Adapter#delete_matching is not implemented'
+    end
+
+    it { expect(adapter).to respond_to(:delete_matching).with(2).arguments }
+
+    it 'should raise an error' do
+      expect { adapter.delete_matching(collection_name, selector) }
+        .to raise_error Bronze::NotImplementedError, error_message
+    end
+  end
+
+  describe '#delete_one' do
     let(:collection_name)   { 'books' }
     let(:primary_key)       { :uuid }
     let(:primary_key_value) { '00000000-0000-0000-0000-000000000000' }
@@ -77,17 +92,17 @@ RSpec.describe Bronze::Collections::Adapter do
     end
   end
 
-  describe '#delete_one' do
+  describe '#find_matching' do
     let(:collection_name) { 'books' }
     let(:selector)        { { 'title' => 'The Ramayana' } }
     let(:error_message) do
-      'Bronze::Collections::Adapter#delete_matching is not implemented'
+      'Bronze::Collections::Adapter#find_matching is not implemented'
     end
 
-    it { expect(adapter).to respond_to(:delete_matching).with(2).arguments }
+    it { expect(adapter).to respond_to(:find_matching).with(2).arguments }
 
     it 'should raise an error' do
-      expect { adapter.delete_matching(collection_name, selector) }
+      expect { adapter.find_matching(collection_name, selector) }
         .to raise_error Bronze::NotImplementedError, error_message
     end
   end

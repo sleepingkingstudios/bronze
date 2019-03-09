@@ -50,6 +50,13 @@ module Bronze::Collections::Simple
       Bronze::Result.new(items.first)
     end
 
+    # (see Bronze::Collections::Adapter#find_matching)
+    def find_matching(collection_name, selector)
+      items = query(collection_name).matching(selector)
+
+      Bronze::Result.new(items.to_a)
+    end
+
     # (see Bronze::Collections::Adapter#find_one)
     def find_one(collection_name, primary_key, value)
       items  =

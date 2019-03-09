@@ -951,6 +951,7 @@ RSpec.describe Bronze::Collection do
       collection_name_for: '',
       delete_matching:     Bronze::Result.new,
       delete_one:          Bronze::Result.new,
+      find_matching:       Bronze::Result.new,
       find_one:            Bronze::Result.new,
       insert_one:          Bronze::Result.new,
       query:               query,
@@ -1158,6 +1159,71 @@ RSpec.describe Bronze::Collection do
     end
 
     it { expect(collection.each).to be query.each }
+  end
+
+  describe '#find_matching' do
+    let(:method_name) { :find_matching }
+    let(:selector)    { nil }
+
+    def call_operation
+      collection.find_matching(selector)
+    end
+
+    it { expect(collection).to respond_to(:find_matching).with(1).arguments }
+
+    include_examples 'should validate the selector'
+
+    describe 'with an empty Hash selector' do
+      let(:selector) { {} }
+      let(:expected) do
+        {
+          'title'    => 'Romance of the Three Kingdoms',
+          'author'   => 'Luo Guanzhong',
+          'language' => 'Chinese'
+        }
+      end
+      let(:result) { Bronze::Result.new(expected) }
+
+      it 'should delegate to the adapter' do
+        collection.find_matching(selector)
+
+        expect(adapter)
+          .to have_received(:find_matching)
+          .with(collection.name, selector)
+      end
+
+      it 'should return the result from the adapter' do
+        allow(adapter).to receive(:find_matching).and_return(result)
+
+        expect(collection.find_matching(selector)).to be result
+      end
+    end
+
+    describe 'with a non-empty Hash selector' do
+      let(:selector) { { author: 'Luo Guanzhong' } }
+      let(:expected) do
+        {
+          'title'    => 'Romance of the Three Kingdoms',
+          'author'   => 'Luo Guanzhong',
+          'language' => 'Chinese'
+        }
+      end
+      let(:result) { Bronze::Result.new(expected) }
+
+      it 'should delegate to the adapter' do
+        collection.find_matching(selector)
+
+        expect(adapter)
+          .to have_received(:find_matching)
+          .with(collection.name, selector)
+      end
+
+      it 'should return the result from the adapter' do
+        allow(adapter).to receive(:find_matching).and_return(result)
+
+        expect(collection.find_matching(selector)).to be result
+      end
+    end
   end
 
   describe '#find_one' do

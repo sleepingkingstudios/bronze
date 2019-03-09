@@ -11,6 +11,12 @@
 
 - Mongo-style selectors - query.matching(year: { $gt: 1986 })
 
+### Query Ordering
+
+- Query#offset (alias #skip)
+- Query#order
+- Collection#find_matching takes #limit, #order, #offset keywords.
+
 ### Transforms
 
 Collection#transform

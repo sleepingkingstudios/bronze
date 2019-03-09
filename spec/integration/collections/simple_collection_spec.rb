@@ -290,6 +290,80 @@ RSpec.describe Bronze::Collections::Simple do
     end
   end
 
+  describe 'finding data by primary key' do
+    let(:result) { collection.find_one(primary_key_value) }
+
+    describe 'with a primary key that does not match an item' do
+      let(:primary_key_value) { 13 }
+      let(:expected_error)    { Bronze::Collections::Errors.not_found }
+
+      it { expect(result).to be_a_failing_result.with_errors(expected_error) }
+    end
+
+    describe 'with a primary key that matches an item' do
+      let(:primary_key_value) { 3 }
+      let(:expected_item) do
+        periodicals.find { |item| item['id'] == primary_key_value }
+      end
+
+      it { expect(result).to be_a_passing_result.with_value(expected_item) }
+    end
+  end
+
+  describe 'finding data matching a selector' do
+    let(:matching) do
+      periodicals.select do |item|
+        item >= tools.hash.convert_keys_to_strings(selector)
+      end
+    end
+
+    def tools
+      SleepingKingStudios::Tools::Toolbelt.instance
+    end
+
+    describe 'with a selector that does not match any items' do
+      let(:selector) { { title: 'Triskadecaphobia Today' } }
+      let(:result)   { collection.find_matching(selector) }
+
+      it 'should not change the collection data' do
+        expect { collection.find_matching(selector) }
+          .not_to change(collection.query, :to_a)
+      end
+
+      it 'should return a result' do
+        expect(result).to be_a_passing_result.with_value(matching)
+      end
+    end
+
+    describe 'with a selector that matches one item' do
+      let(:selector) { { id: 9 } }
+      let(:result)   { collection.find_matching(selector) }
+
+      it 'should not change the collection data' do
+        expect { collection.find_matching(selector) }
+          .not_to change(collection.query, :to_a)
+      end
+
+      it 'should return a result' do
+        expect(result).to be_a_passing_result.with_value(matching)
+      end
+    end
+
+    describe 'with a selector that matches many items' do
+      let(:selector) { { title: 'Modern Mentalism' } }
+      let(:result)   { collection.find_matching(selector) }
+
+      it 'should not change the collection data' do
+        expect { collection.find_matching(selector) }
+          .not_to change(collection.query, :to_a)
+      end
+
+      it 'should return a result' do
+        expect(result).to be_a_passing_result.with_value(matching)
+      end
+    end
+  end
+
   describe 'inserting data into the collection' do
     describe 'with a valid data hash' do
       let(:data) do
@@ -315,26 +389,6 @@ RSpec.describe Bronze::Collections::Simple do
           .to change(collection.query, :to_a)
           .to include(data)
       end
-    end
-  end
-
-  describe 'querying the data by primary key' do
-    let(:result) { collection.find_one(primary_key_value) }
-
-    describe 'with a primary key that does not match an item' do
-      let(:primary_key_value) { 13 }
-      let(:expected_error)    { Bronze::Collections::Errors.not_found }
-
-      it { expect(result).to be_a_failing_result.with_errors(expected_error) }
-    end
-
-    describe 'with a primary key that matches an item' do
-      let(:primary_key_value) { 3 }
-      let(:expected_item) do
-        periodicals.find { |item| item['id'] == primary_key_value }
-      end
-
-      it { expect(result).to be_a_passing_result.with_value(expected_item) }
     end
   end
 

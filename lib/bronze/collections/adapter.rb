@@ -61,6 +61,20 @@ module Bronze::Collections
       raise Bronze::NotImplementedError.new(self, :delete_one)
     end
 
+    # @overload find_matching(collection_name, selector, limit:)
+    #   Finds all items in the collection matching the given selector.
+    #
+    #   @param collection_name [String] The collection to query.
+    #   @param selector [Hash] The criteria used to filter the data.
+    #
+    #   @return [Bronze::Result] the result of the find operation.
+    #
+    #   @raise Bronze::NotImplementedError unless overriden by an Adapter
+    #     subclass.
+    def find_matching(_collection_name, _selector)
+      raise Bronze::NotImplementedError.new(self, :find_matching)
+    end
+
     # @overload find_one(collection_name, primary_key, value)
     #   Finds the data object with the given primary key.
     #
