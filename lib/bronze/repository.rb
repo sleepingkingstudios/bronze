@@ -36,11 +36,18 @@ module Bronze
     #     name of the entity class, formatted as underscore-separated lowercase.
     #
     # @return [Bronze::Collection] the requested collection.
-    def collection(definition, name: nil)
+    def collection(
+      definition,
+      name:             nil,
+      primary_key:      nil,
+      primary_key_type: nil
+    )
       Bronze::Collection.new(
         definition,
-        adapter: adapter,
-        name:    name
+        adapter:          adapter,
+        name:             name,
+        primary_key:      primary_key,
+        primary_key_type: primary_key_type
       )
     end
   end

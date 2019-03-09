@@ -2,6 +2,7 @@
 
 require 'date'
 
+require 'bronze/collections/errors'
 require 'bronze/collections/simple/adapter'
 require 'bronze/repository'
 
@@ -105,6 +106,13 @@ RSpec.describe Bronze::Collections::Simple do
   let(:repository) do
     Bronze::Repository.new(adapter: adapter)
   end
+  let(:collection) do
+    repository.collection(
+      'periodicals',
+      primary_key:      :id,
+      primary_key_type: Integer
+    )
+  end
 
   describe 'accessing a collection' do
     describe 'with an invalid collection name' do
@@ -132,8 +140,49 @@ RSpec.describe Bronze::Collections::Simple do
     end
   end
 
+  describe 'deleting data by primary key' do
+    let(:result) { collection.delete_one(primary_key_value) }
+
+    describe 'with a primary key that does not match an item' do
+      let(:primary_key_value) { 13 }
+      let(:expected_error)    { Bronze::Collections::Errors.not_found }
+
+      it { expect(result).to be_a_failing_result.with_errors(expected_error) }
+
+      it 'should not change the collection count' do
+        expect { collection.delete_one(primary_key_value) }
+          .not_to change(collection, :count)
+      end
+
+      it 'should not change the collection data' do
+        expect { collection.delete_one(primary_key_value) }
+          .not_to change(collection.query, :to_a)
+      end
+    end
+
+    describe 'with a primary key that matches an item' do
+      let(:primary_key_value) { 9 }
+      let!(:expected_value) do
+        periodicals.find { |item| item['id'] == primary_key_value }
+      end
+
+      it { expect(result).to be_a_passing_result.with_value(expected_value) }
+
+      it 'should change the collection count' do
+        expect { collection.delete_one(primary_key_value) }
+          .to change(collection, :count)
+          .by(-1)
+      end
+
+      it 'should remove the item from the collection' do
+        expect { collection.delete_one(primary_key_value) }
+          .to change(collection.query, :to_a)
+          .to(satisfy { |ary| !ary.include?(expected_value) })
+      end
+    end
+  end
+
   describe 'deleting data matching a selector' do
-    let(:collection) { repository.collection('periodicals') }
     let!(:matching) do
       periodicals.select do |item|
         item >= tools.hash.convert_keys_to_strings(selector)
@@ -241,9 +290,81 @@ RSpec.describe Bronze::Collections::Simple do
     end
   end
 
-  describe 'inserting data into the collection' do
-    let(:collection) { repository.collection('periodicals') }
+  describe 'finding data by primary key' do
+    let(:result) { collection.find_one(primary_key_value) }
 
+    describe 'with a primary key that does not match an item' do
+      let(:primary_key_value) { 13 }
+      let(:expected_error)    { Bronze::Collections::Errors.not_found }
+
+      it { expect(result).to be_a_failing_result.with_errors(expected_error) }
+    end
+
+    describe 'with a primary key that matches an item' do
+      let(:primary_key_value) { 3 }
+      let(:expected_item) do
+        periodicals.find { |item| item['id'] == primary_key_value }
+      end
+
+      it { expect(result).to be_a_passing_result.with_value(expected_item) }
+    end
+  end
+
+  describe 'finding data matching a selector' do
+    let(:matching) do
+      periodicals.select do |item|
+        item >= tools.hash.convert_keys_to_strings(selector)
+      end
+    end
+
+    def tools
+      SleepingKingStudios::Tools::Toolbelt.instance
+    end
+
+    describe 'with a selector that does not match any items' do
+      let(:selector) { { title: 'Triskadecaphobia Today' } }
+      let(:result)   { collection.find_matching(selector) }
+
+      it 'should not change the collection data' do
+        expect { collection.find_matching(selector) }
+          .not_to change(collection.query, :to_a)
+      end
+
+      it 'should return a result' do
+        expect(result).to be_a_passing_result.with_value(matching)
+      end
+    end
+
+    describe 'with a selector that matches one item' do
+      let(:selector) { { id: 9 } }
+      let(:result)   { collection.find_matching(selector) }
+
+      it 'should not change the collection data' do
+        expect { collection.find_matching(selector) }
+          .not_to change(collection.query, :to_a)
+      end
+
+      it 'should return a result' do
+        expect(result).to be_a_passing_result.with_value(matching)
+      end
+    end
+
+    describe 'with a selector that matches many items' do
+      let(:selector) { { title: 'Modern Mentalism' } }
+      let(:result)   { collection.find_matching(selector) }
+
+      it 'should not change the collection data' do
+        expect { collection.find_matching(selector) }
+          .not_to change(collection.query, :to_a)
+      end
+
+      it 'should return a result' do
+        expect(result).to be_a_passing_result.with_value(matching)
+      end
+    end
+  end
+
+  describe 'inserting data into the collection' do
     describe 'with a valid data hash' do
       let(:data) do
         {
@@ -271,9 +392,7 @@ RSpec.describe Bronze::Collections::Simple do
     end
   end
 
-  describe 'querying the data' do
-    let(:collection) { repository.collection('periodicals') }
-
+  describe 'querying the data matching a selector' do
     it { expect(collection.all.count).to be periodicals.size }
 
     it { expect(collection.all.to_a).to be == periodicals }
@@ -298,9 +417,45 @@ RSpec.describe Bronze::Collections::Simple do
     end
   end
 
+  describe 'updating data by primary key' do
+    let(:primary_key) { nil }
+    let(:data)        { { 'publisher' => 'Miskatonic University Press' } }
+    let(:result)      { collection.update_one(primary_key, with: data) }
+
+    def find_periodical(id)
+      collection.matching(id: id).to_a.first
+    end
+
+    describe 'with a primary key that does not match an item' do
+      let(:primary_key)    { 13 }
+      let(:expected_error) { Bronze::Collections::Errors.not_found }
+
+      it { expect(result).to be_a_failing_result.with_errors(expected_error) }
+
+      it 'should not update the collection' do
+        expect { collection.update_one(primary_key, with: data) }
+          .not_to change(collection.query, :to_a)
+      end
+    end
+
+    describe 'with a primary key that matches an item' do
+      let(:primary_key) { 9 }
+      let(:expected) do
+        periodicals.find { |item| item['id'] == primary_key }.merge(data)
+      end
+
+      it { expect(result).to be_a_passing_result.with_value(expected) }
+
+      it 'should update the matching item' do
+        collection.update_one(primary_key, with: data)
+
+        expect(find_periodical(primary_key)).to be == expected
+      end
+    end
+  end
+
   describe 'updating data matching a selector' do
-    let(:collection) { repository.collection('periodicals') }
-    let(:expected)   { matching.map { |item| item.merge(data) } }
+    let(:expected) { matching.map { |item| item.merge(data) } }
     let(:matching) do
       periodicals.select do |item|
         item >= tools.hash.convert_keys_to_strings(selector)

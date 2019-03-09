@@ -3,6 +3,62 @@
 require 'bronze/collections/simple/adapter'
 
 RSpec.describe Bronze::Collections::Simple::Adapter do
+  shared_examples 'should validate the primary key' do
+    describe 'with a non-matching primary key' do
+      let(:primary_key_value) { '00000000-0000-0000-0000-000000000000' }
+      let(:expected_error) do
+        {
+          type:   Bronze::Collections::Errors::NOT_FOUND,
+          params: { selector: { primary_key => primary_key_value } }
+        }
+      end
+
+      it 'should not change the data' do
+        expect { call_operation }
+          .not_to(change { adapter.query(collection_name).to_a })
+      end
+
+      it 'should return a failing result' do
+        expect(call_operation)
+          .to be_a_failing_result
+          .with_errors(expected_error)
+      end
+    end
+
+    describe 'with a non-unique primary key' do
+      let(:primary_key_value) { 'ff0ea8fc-05b2-4f1f-b661-4d6e543ce86e' }
+      let(:raw_data) do
+        data = super()
+
+        data['books'] << {
+          'uuid'   => primary_key_value,
+          'title'  => 'Brave New World',
+          'author' => 'Aldous Huxley',
+          'genre'  => 'Science Fiction'
+        }
+
+        data
+      end
+      let(:expected_error) do
+        {
+          type:   Bronze::Collections::Errors::NOT_UNIQUE,
+          params: { selector: { primary_key => primary_key_value } }
+        }
+      end
+
+      it 'should not change the data' do
+        expect { call_operation }
+          .not_to(change { adapter.query(collection_name).to_a })
+      end
+
+      it 'should return a failing result' do
+        expect(call_operation)
+          .to be_a_failing_result
+          .with_errors(expected_error)
+      end
+    end
+  end
+
   subject(:adapter) do
     data = raw_data.each.with_object({}) do |(name, collection), hsh|
       hsh[name] = collection.map { |item| tools.hash.deep_dup(item) }
@@ -145,48 +201,7 @@ RSpec.describe Bronze::Collections::Simple::Adapter do
       raw_data['books'] - affected_items
     end
 
-    describe 'with a nil selector' do
-      let(:result) do
-        adapter.delete_matching(collection_name, nil)
-      end
-      let(:expected_error) do
-        {
-          type:   Bronze::Collections::Errors::SELECTOR_MISSING,
-          params: {}
-        }
-      end
-
-      it 'should not change the data' do
-        expect { adapter.delete_matching(collection_name, nil) }
-          .not_to change(adapter.query(collection_name), :to_a)
-      end
-
-      it 'should return a result' do
-        expect(result).to be_a_failing_result.with_errors(expected_error)
-      end
-    end
-
-    describe 'with a non-hash selector' do
-      let(:selector) { Object.new }
-      let(:result) do
-        adapter.delete_matching(collection_name, selector)
-      end
-      let(:expected_error) do
-        {
-          type:   Bronze::Collections::Errors::SELECTOR_INVALID,
-          params: { selector: selector }
-        }
-      end
-
-      it 'should not change the data' do
-        expect { adapter.delete_matching(collection_name, selector) }
-          .not_to change(adapter.query(collection_name), :to_a)
-      end
-
-      it 'should return a result' do
-        expect(result).to be_a_failing_result.with_errors(expected_error)
-      end
-    end
+    it { expect(adapter).to respond_to(:delete_matching).with(2).arguments }
 
     describe 'with an empty selector' do
       let(:selector) { {} }
@@ -230,6 +245,135 @@ RSpec.describe Bronze::Collections::Simple::Adapter do
     end
   end
 
+  describe '#delete_one' do
+    let(:collection_name)   { 'books' }
+    let(:primary_key)       { :uuid }
+    let(:primary_key_value) { nil }
+    let(:result)            { call_operation }
+
+    def call_operation
+      adapter.delete_one(collection_name, primary_key, primary_key_value)
+    end
+
+    it { expect(adapter).to respond_to(:delete_one).with(3).arguments }
+
+    include_examples 'should validate the primary key'
+
+    describe 'with a matching primary key' do
+      let(:primary_key_value) { 'ff0ea8fc-05b2-4f1f-b661-4d6e543ce86e' }
+      let!(:expected_item)    { find_book(primary_key_value) }
+
+      def find_book(uuid)
+        adapter.query(collection_name).matching(uuid: uuid).to_a.first
+      end
+
+      it { expect(result).to be_a_passing_result.with_value(expected_item) }
+
+      it 'should change the collection count' do
+        expect { call_operation }
+          .to change(adapter.query(collection_name), :count)
+          .by(-1)
+      end
+
+      it 'should delete the item' do
+        call_operation
+
+        expect(find_book primary_key_value).to be nil
+      end
+    end
+  end
+
+  describe '#find_matching' do
+    shared_examples 'should find the items' do
+      let(:result) { adapter.find_matching(collection_name, selector) }
+
+      it 'should not change the collection' do
+        expect { adapter.find_matching(collection_name, selector) }
+          .not_to change(adapter.query(collection_name), :to_a)
+      end
+
+      it 'should return a result' do
+        expect(result).to be_a_passing_result.with_value(matching_items)
+      end
+    end
+
+    let(:collection_name) { 'books' }
+    let(:selector)        { {} }
+    let(:matching_items)  { raw_data['books'] }
+
+    it { expect(adapter).to respond_to(:find_matching).with(2).arguments }
+
+    describe 'with an empty selector' do
+      let(:selector) { {} }
+
+      include_examples 'should find the items'
+    end
+
+    describe 'with a selector that does not match any items' do
+      let(:selector)       { { genre: 'Noir' } }
+      let(:matching_items) { [] }
+
+      include_examples 'should find the items'
+    end
+
+    describe 'with a selector that matches one item' do
+      let(:selector) { { title: 'Journey to the Center of the Earth' } }
+      let(:matching_items) do
+        super().select do |book|
+          book['title'] == 'Journey to the Center of the Earth'
+        end
+      end
+
+      include_examples 'should find the items'
+    end
+
+    describe 'with a selector that matches some items' do
+      let(:selector) { { author: 'H. G. Wells' } }
+      let(:matching_items) do
+        super().select do |book|
+          book['author'] == 'H. G. Wells'
+        end
+      end
+
+      include_examples 'should find the items'
+    end
+
+    describe 'with a selector that matches all items' do
+      let(:selector) { { genre: 'Science Fiction' } }
+
+      include_examples 'should find the items'
+    end
+  end
+
+  describe '#find_one' do
+    let(:collection_name)   { 'books' }
+    let(:primary_key)       { :uuid }
+    let(:primary_key_value) { nil }
+    let(:result)            { call_operation }
+
+    def call_operation
+      adapter.find_one(collection_name, primary_key, primary_key_value)
+    end
+
+    it { expect(adapter).to respond_to(:find_one).with(3).arguments }
+
+    include_examples 'should validate the primary key'
+
+    describe 'with a matching primary key' do
+      let(:primary_key_value) { 'ff0ea8fc-05b2-4f1f-b661-4d6e543ce86e' }
+      let(:expected_item) do
+        raw_data['books'].find { |book| book['uuid'] == primary_key_value }
+      end
+
+      it { expect(result).to be_a_passing_result.with_value(expected_item) }
+
+      it 'should return a copy of the data' do
+        expect { result.value['tags'] = ['time travel'] }
+          .not_to(change { adapter.query(collection_name).to_a })
+      end
+    end
+  end
+
   describe '#insert_one' do
     shared_examples 'should insert the item' do
       let(:result) { adapter.insert_one(collection_name, data) }
@@ -253,68 +397,6 @@ RSpec.describe Bronze::Collections::Simple::Adapter do
     end
 
     it { expect(adapter).to respond_to(:insert_one).with(2).arguments }
-
-    describe 'with a nil data object' do
-      let(:collection_name) { 'books' }
-      let(:expected_error) do
-        {
-          type:   Bronze::Collections::Errors::DATA_MISSING,
-          params: {}
-        }
-      end
-      let(:result) { adapter.insert_one(collection_name, nil) }
-
-      it 'should not change the data' do
-        expect { adapter.insert_one(collection_name, nil) }
-          .not_to change(adapter.query(collection_name), :to_a)
-      end
-
-      it 'should return a result' do
-        expect(result).to be_a_failing_result.with_errors(expected_error)
-      end
-    end
-
-    describe 'with an Object' do
-      let(:collection_name) { 'books' }
-      let(:expected_error) do
-        {
-          type:   Bronze::Collections::Errors::DATA_INVALID,
-          params: { data: object }
-        }
-      end
-      let(:object) { Object.new }
-      let(:result) { adapter.insert_one(collection_name, object) }
-
-      it 'should not change the data' do
-        expect { adapter.insert_one(collection_name, object) }
-          .not_to change(adapter.query(collection_name), :to_a)
-      end
-
-      it 'should return a result' do
-        expect(result).to be_a_failing_result.with_errors(expected_error)
-      end
-    end
-
-    describe 'with an empty data object' do
-      let(:collection_name) { 'books' }
-      let(:expected_error) do
-        {
-          type:   Bronze::Collections::Errors::DATA_EMPTY,
-          params: {}
-        }
-      end
-      let(:data)   { {} }
-      let(:result) { adapter.insert_one(collection_name, data) }
-
-      it 'should not change the data' do
-        expect { adapter.insert_one(collection_name, data) }
-          .not_to change(adapter.query(collection_name), :to_a)
-      end
-
-      it 'should return a result' do
-        expect(result).to be_a_failing_result.with_errors(expected_error)
-      end
-    end
 
     describe 'with the name of a non-existent collection' do
       let(:collection_name) { 'magazines' }
@@ -494,113 +576,6 @@ RSpec.describe Bronze::Collections::Simple::Adapter do
       end
     end
 
-    describe 'with a nil selector' do
-      let(:result) do
-        adapter.update_matching(collection_name, nil, data)
-      end
-      let(:expected_error) do
-        {
-          type:   Bronze::Collections::Errors::SELECTOR_MISSING,
-          params: {}
-        }
-      end
-
-      it 'should not change the data' do
-        expect { adapter.update_matching(collection_name, nil, data) }
-          .not_to change(adapter.query(collection_name), :to_a)
-      end
-
-      it 'should return a result' do
-        expect(result).to be_a_failing_result.with_errors(expected_error)
-      end
-    end
-
-    describe 'with a non-hash selector' do
-      let(:selector) { Object.new }
-      let(:result) do
-        adapter.update_matching(collection_name, selector, data)
-      end
-      let(:expected_error) do
-        {
-          type:   Bronze::Collections::Errors::SELECTOR_INVALID,
-          params: { selector: selector }
-        }
-      end
-
-      it 'should not change the data' do
-        expect { adapter.update_matching(collection_name, selector, data) }
-          .not_to change(adapter.query(collection_name), :to_a)
-      end
-
-      it 'should return a result' do
-        expect(result).to be_a_failing_result.with_errors(expected_error)
-      end
-    end
-
-    describe 'with a nil data hash' do
-      let(:result) do
-        adapter.update_matching(collection_name, selector, nil)
-      end
-      let(:expected_error) do
-        {
-          type:   Bronze::Collections::Errors::DATA_MISSING,
-          params: {}
-        }
-      end
-
-      it 'should not change the data' do
-        expect { adapter.update_matching(collection_name, selector, nil) }
-          .not_to change(adapter.query(collection_name), :to_a)
-      end
-
-      it 'should return a result' do
-        expect(result).to be_a_failing_result.with_errors(expected_error)
-      end
-    end
-
-    describe 'with a non-hash data object' do
-      let(:data) { Object.new }
-      let(:result) do
-        adapter.update_matching(collection_name, selector, data)
-      end
-      let(:expected_error) do
-        {
-          type:   Bronze::Collections::Errors::DATA_INVALID,
-          params: { data: data }
-        }
-      end
-
-      it 'should not change the data' do
-        expect { adapter.update_matching(collection_name, selector, data) }
-          .not_to change(adapter.query(collection_name), :to_a)
-      end
-
-      it 'should return a result' do
-        expect(result).to be_a_failing_result.with_errors(expected_error)
-      end
-    end
-
-    describe 'with an empty data hash' do
-      let(:result) do
-        adapter.update_matching(collection_name, selector, {})
-      end
-      let(:expected_error) do
-        {
-          type:   Bronze::Collections::Errors::DATA_EMPTY,
-          params: {}
-        }
-      end
-
-      it 'should not change the data' do
-        expect { adapter.update_matching(collection_name, selector, {}) }
-          .not_to change(adapter.query(collection_name), :to_a)
-      end
-
-      it 'should return a result' do
-        expect(result).to be_a_failing_result.with_errors(expected_error)
-      end
-    end
-
     describe 'with an empty selector' do
       let(:selector) { {} }
 
@@ -640,6 +615,78 @@ RSpec.describe Bronze::Collections::Simple::Adapter do
       let(:selector) { { genre: 'Science Fiction' } }
 
       include_examples 'should update the items'
+    end
+  end
+
+  describe '#update_one' do
+    let(:collection_name)   { 'books' }
+    let(:primary_key)       { :uuid }
+    let(:primary_key_value) { nil }
+    let(:data)              { {} }
+    let(:result)            { call_operation }
+
+    def call_operation
+      adapter.update_one(collection_name, primary_key, primary_key_value, data)
+    end
+
+    it { expect(adapter).to respond_to(:update_one).with(4).arguments }
+
+    include_examples 'should validate the primary key'
+
+    describe 'with a matching primary key' do
+      let(:primary_key_value) { 'ff0ea8fc-05b2-4f1f-b661-4d6e543ce86e' }
+
+      def find_book(uuid)
+        adapter.query(collection_name).matching(uuid: uuid).to_a.first
+      end
+
+      describe 'with a data hash with String keys' do
+        let(:data) { { 'published' => true } }
+        let(:expected_item) do
+          raw_data['books']
+            .find { |book| book['uuid'] == primary_key_value }
+            .merge(data)
+        end
+
+        it { expect(result).to be_a_passing_result.with_value(expected_item) }
+
+        it 'should update the item' do
+          call_operation
+
+          expect(find_book primary_key_value).to be == expected_item
+        end
+
+        it 'should return a copy of the data' do
+          result = call_operation
+
+          expect { result.value['tags'] = ['time travel'] }
+            .not_to(change { adapter.query(collection_name).to_a })
+        end
+      end
+
+      describe 'with a data hash with Symbol keys' do
+        let(:data) { { published: true } }
+        let(:expected_item) do
+          raw_data['books']
+            .find { |book| book['uuid'] == primary_key_value }
+            .merge(tools.hash.convert_keys_to_strings(data))
+        end
+
+        it { expect(result).to be_a_passing_result.with_value(expected_item) }
+
+        it 'should update the item' do
+          call_operation
+
+          expect(find_book primary_key_value).to be == expected_item
+        end
+
+        it 'should return a copy of the data' do
+          result = call_operation
+
+          expect { result.value['tags'] = ['time travel'] }
+            .not_to(change { adapter.query(collection_name).to_a })
+        end
+      end
     end
   end
 end

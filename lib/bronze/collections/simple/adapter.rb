@@ -28,12 +28,7 @@ module Bronze::Collections::Simple
     # (see Bronze::Collections::Adapter#delete_matching)
     def delete_matching(collection_name, selector)
       result = Bronze::Result.new([])
-
-      validate_selector(selector, errors: result.errors)
-
-      return result unless result.success?
-
-      items = query(collection_name).matching(selector).to_a
+      items  = query(collection_name).matching(selector).to_a
 
       items.each { |item| collection(collection_name).delete(item) }
 
@@ -42,13 +37,40 @@ module Bronze::Collections::Simple
       result
     end
 
+    # (see Bronze::Collections::Adapter#delete_one)
+    def delete_one(collection_name, primary_key, value)
+      items  =
+        query(collection_name).matching(primary_key => value).limit(2).to_a
+      errors = uniqueness_errors(items, primary_key, value)
+
+      return Bronze::Result.new(nil, errors: errors) if errors
+
+      collection(collection_name).delete(items.first)
+
+      Bronze::Result.new(items.first)
+    end
+
+    # (see Bronze::Collections::Adapter#find_matching)
+    def find_matching(collection_name, selector)
+      items = query(collection_name).matching(selector)
+
+      Bronze::Result.new(items.to_a)
+    end
+
+    # (see Bronze::Collections::Adapter#find_one)
+    def find_one(collection_name, primary_key, value)
+      items  =
+        query(collection_name).matching(primary_key => value).limit(2).to_a
+      errors = uniqueness_errors(items, primary_key, value)
+
+      return Bronze::Result.new(nil, errors: errors) if errors
+
+      Bronze::Result.new(tools.hash.deep_dup(items.first))
+    end
+
     # (see Bronze::Collections::Adapter#insert_one)
     def insert_one(collection_name, data)
       result       = Bronze::Result.new
-      result.value = data
-
-      return result unless validate_attributes(data, errors: result.errors)
-
       data         = tools.hash.convert_keys_to_strings(data)
       result.value = data
 
@@ -64,13 +86,7 @@ module Bronze::Collections::Simple
 
     # (see Bronze::Collections::Adapter#update_matching)
     def update_matching(collection_name, selector, data)
-      result = Bronze::Result.new([])
-
-      validate_selector(selector, errors: result.errors) &&
-        validate_attributes(data, errors: result.errors)
-
-      return result unless result.success?
-
+      result       = Bronze::Result.new([])
       data         = tools.hash.convert_keys_to_strings(data)
       result.value =
         query(collection_name).matching(selector).each.map do |item|
@@ -80,10 +96,45 @@ module Bronze::Collections::Simple
       result
     end
 
+    # (see Bronze::Collections::Adapter#update_one)
+    def update_one(collection_name, primary_key, value, data)
+      items  =
+        query(collection_name).matching(primary_key => value).limit(2).to_a
+      errors = uniqueness_errors(items, primary_key, value)
+
+      return Bronze::Result.new(nil, errors: errors) if errors
+
+      update_item(items.first, data)
+
+      Bronze::Result.new(tools.hash.deep_dup(items.first))
+    end
+
     private
+
+    def build_errors
+      Bronze::Errors.new
+    end
 
     def collection(name)
       data[name] ||= []
+    end
+
+    def errors_for_not_found_item(items, primary_key, value)
+      return unless items.size.zero?
+
+      build_errors.add(
+        Bronze::Collections::Errors.not_found,
+        selector: { primary_key => value }
+      )
+    end
+
+    def errors_for_not_unique_item(items, primary_key, value)
+      return unless items.size > 1
+
+      build_errors.add(
+        Bronze::Collections::Errors.not_unique,
+        selector: { primary_key => value }
+      )
     end
 
     def insert_into_collection(collection, object)
@@ -94,55 +145,15 @@ module Bronze::Collections::Simple
       SleepingKingStudios::Tools::Toolbelt.instance
     end
 
-    def validate_attributes(attributes, errors:)
-      validate_attributes_not_nil(attributes, errors: errors) &&
-        validate_attributes_type(attributes, errors: errors) &&
-        validate_attributes_not_empty(attributes, errors: errors)
+    def uniqueness_errors(items, primary_key, value)
+      errors_for_not_found_item(items, primary_key, value) ||
+        errors_for_not_unique_item(items, primary_key, value)
     end
 
-    def validate_attributes_not_empty(attributes, errors:)
-      return true unless attributes.empty?
+    def update_item(item, data)
+      data = tools.hash.convert_keys_to_strings(data)
 
-      errors.add(Errors.data_empty)
-
-      false
-    end
-
-    def validate_attributes_not_nil(attributes, errors:)
-      return true unless attributes.nil?
-
-      errors.add(Errors.data_missing)
-
-      false
-    end
-
-    def validate_attributes_type(attributes, errors:)
-      return true if attributes.is_a?(Hash)
-
-      errors.add(Errors.data_invalid, data: attributes)
-
-      false
-    end
-
-    def validate_selector(selector, errors:)
-      validate_selector_not_nil(selector, errors: errors) &&
-        validate_selector_type(selector, errors: errors)
-    end
-
-    def validate_selector_not_nil(selector, errors:)
-      return true unless selector.nil?
-
-      errors.add(Errors.selector_missing)
-
-      false
-    end
-
-    def validate_selector_type(selector, errors:)
-      return true if selector.is_a?(Hash)
-
-      errors.add(Errors.selector_invalid, selector: selector)
-
-      false
+      item.update(data)
     end
   end
 end

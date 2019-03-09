@@ -12,6 +12,10 @@ module Spec::Support::Examples::Collections
       let(:raw_data) do
         [
           {
+            'title'  => 'The Moon Maid',
+            'author' => 'Edgar Rice Burroughs'
+          },
+          {
             'title'  => 'A Princess of Mars',
             'author' => 'Edgar Rice Burroughs',
             'series' => 'Barsoom',

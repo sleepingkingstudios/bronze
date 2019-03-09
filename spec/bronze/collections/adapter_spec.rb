@@ -74,6 +74,57 @@ RSpec.describe Bronze::Collections::Adapter do
     end
   end
 
+  describe '#delete_one' do
+    let(:collection_name)   { 'books' }
+    let(:primary_key)       { :uuid }
+    let(:primary_key_value) { '00000000-0000-0000-0000-000000000000' }
+    let(:error_message) do
+      'Bronze::Collections::Adapter#delete_one is not implemented'
+    end
+
+    it { expect(adapter).to respond_to(:delete_one).with(3).arguments }
+
+    it 'should raise an error' do
+      expect do
+        adapter.delete_one(collection_name, primary_key, primary_key_value)
+      end
+        .to raise_error Bronze::NotImplementedError, error_message
+    end
+  end
+
+  describe '#find_matching' do
+    let(:collection_name) { 'books' }
+    let(:selector)        { { 'title' => 'The Ramayana' } }
+    let(:error_message) do
+      'Bronze::Collections::Adapter#find_matching is not implemented'
+    end
+
+    it { expect(adapter).to respond_to(:find_matching).with(2).arguments }
+
+    it 'should raise an error' do
+      expect { adapter.find_matching(collection_name, selector) }
+        .to raise_error Bronze::NotImplementedError, error_message
+    end
+  end
+
+  describe '#find_one' do
+    let(:collection_name) { 'books' }
+    let(:primary_key)     { :id }
+    let(:value)           { 0 }
+    let(:error_message) do
+      'Bronze::Collections::Adapter#find_one is not implemented'
+    end
+
+    it { expect(adapter).to respond_to(:find_one).with(3).arguments }
+
+    it 'should raise an error' do
+      expect do
+        adapter.find_one(collection_name, value, primary_key: primary_key)
+      end
+        .to raise_error Bronze::NotImplementedError, error_message
+    end
+  end
+
   describe '#insert_one' do
     let(:collection_name) { 'books' }
     let(:object)          { { 'title' => 'The Ramayana' } }
@@ -114,6 +165,26 @@ RSpec.describe Bronze::Collections::Adapter do
 
     it 'should raise an error' do
       expect { adapter.update_matching(collection_name, selector, data) }
+        .to raise_error Bronze::NotImplementedError, error_message
+    end
+  end
+
+  describe '#update_one' do
+    let(:collection_name)   { 'books' }
+    let(:primary_key)       { :uuid }
+    let(:primary_key_value) { '00000000-0000-0000-0000-000000000000' }
+    let(:data)              { { 'author' => 'Valmiki' } }
+    let(:error_message) do
+      'Bronze::Collections::Adapter#update_one is not implemented'
+    end
+
+    it { expect(adapter).to respond_to(:update_one).with(4).arguments }
+
+    it 'should raise an error' do
+      expect do
+        adapter
+          .update_one(collection_name, primary_key, primary_key_value, data)
+      end
         .to raise_error Bronze::NotImplementedError, error_message
     end
   end

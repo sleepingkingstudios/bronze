@@ -3,18 +3,19 @@
 ## Collections
 
 - extract adapter specs to shared examples
+- find_matching(selector, options)
+  - returns Bronze::Result
+  - takes :limit, :skip, :order options
 
 ### Advanced Querying
 
 - Mongo-style selectors - query.matching(year: { $gt: 1986 })
 
-### Primary Keys
+### Query Ordering
 
-- configurable - repository.collection(definition, primary_key:)
-- default to :id
-- autodetect if definition is an entity class
-- allows query.find()
-- allows collection.find(id), collection.update(id, data), collection.delete(id)
+- Query#offset (alias #skip)
+- Query#order
+- Collection#find_matching takes #limit, #order, #offset keywords.
 
 ### Transforms
 
