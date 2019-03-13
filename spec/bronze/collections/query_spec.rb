@@ -73,6 +73,17 @@ RSpec.describe Bronze::Collections::Query do
     end
   end
 
+  describe '#order' do
+    let(:error_message) do
+      'Bronze::Collections::Query#order is not implemented'
+    end
+
+    it 'should raise an error' do
+      expect { query.order({}) }
+        .to raise_error Bronze::NotImplementedError, error_message
+    end
+  end
+
   describe '#to_a' do
     let(:error_message) do
       'Bronze::Collections::Query#each is not implemented'

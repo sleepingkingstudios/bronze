@@ -88,6 +88,15 @@ module Spec::Support::Examples::Collections
         it { expect(query).to alias_method(:matching).as(:where) }
       end
 
+      describe '#order' do
+        it 'should define the method' do
+          expect(query)
+            .to respond_to(:order)
+            .with(1).argument
+            .and_unlimited_arguments
+        end
+      end
+
       describe '#to_a' do
         it { expect(query).to respond_to(:to_a).with(0).arguments }
       end
@@ -525,6 +534,307 @@ module Spec::Support::Examples::Collections
 
             it { expect(subquery.to_a).to be == expected_data }
           end
+        end
+      end
+
+      describe '#order' do
+        shared_examples 'should sort the data by one attribute' \
+        do |reversed: false|
+          context 'when no items have the attribute' do
+            let(:attribute) { 'attributions' }
+
+            it { expect(query.count).to be expected_data.size }
+
+            it { expect(query.to_a).to be == expected_data }
+
+            it { expect(subquery.count).to be expected_data.size }
+
+            it { expect(subquery.to_a).to be == expected_data }
+          end
+
+          context 'when some items have the attribute' do
+            let(:attribute) { 'series' }
+            let(:items_without_attribute) do
+              expected_data.select { |item| item['series'].nil? }
+            end
+            let(:sorted_ascending) do
+              expected_data
+                .reject { |item| item['series'].nil? }
+                .sort_by { |item| item['series'] } +
+                items_without_attribute
+            end
+            let(:sorted_descending) do
+              items_without_attribute +
+                expected_data
+                .reject { |item| item['series'].nil? }
+                .sort { |u, v| v['series'] <=> u['series'] }
+            end
+            let(:expected) { reversed ? sorted_descending : sorted_ascending }
+
+            it { expect(query.count).to be expected_data.size }
+
+            it { expect(query.to_a).to be == expected_data }
+
+            it { expect(subquery.count).to be expected_data.size }
+
+            it { expect(subquery.to_a).to be == expected }
+          end
+
+          context 'when all items have the attribute' do
+            let(:attribute) { 'title' }
+            let(:sorted)    { expected_data.sort_by { |item| item['title'] } }
+            let(:expected)  { reversed ? sorted.reverse : sorted }
+
+            it { expect(query.count).to be expected_data.size }
+
+            it { expect(query.to_a).to be == expected_data }
+
+            it { expect(subquery.count).to be expected_data.size }
+
+            it { expect(subquery.to_a).to be == expected }
+          end
+        end
+
+        shared_examples 'should sort the data' do
+          describe 'with a String' do
+            let(:subquery) { query.order(attribute.to_s) }
+
+            include_examples 'should sort the data by one attribute'
+          end
+
+          describe 'with a Symbol' do
+            let(:subquery) { query.order(attribute.intern) }
+
+            include_examples 'should sort the data by one attribute'
+          end
+
+          describe 'with a String => :asc' do
+            let(:subquery) { query.order(attribute.to_s => :asc) }
+
+            include_examples 'should sort the data by one attribute'
+          end
+
+          describe 'with a String => :ascending' do
+            let(:subquery) { query.order(attribute.to_s => :ascending) }
+
+            include_examples 'should sort the data by one attribute'
+          end
+
+          describe 'with a String => "asc"' do
+            let(:subquery) { query.order(attribute.to_s => 'asc') }
+
+            include_examples 'should sort the data by one attribute'
+          end
+
+          describe 'with a String => "ascending"' do
+            let(:subquery) { query.order(attribute.to_s => 'asc') }
+
+            include_examples 'should sort the data by one attribute'
+          end
+
+          describe 'with a Symbol => :desc' do
+            let(:subquery) { query.order(attribute.intern => :desc) }
+
+            include_examples 'should sort the data by one attribute',
+              reversed: true
+          end
+
+          describe 'with a Symbol => :descending' do
+            let(:subquery) { query.order(attribute.intern => :desc) }
+
+            include_examples 'should sort the data by one attribute',
+              reversed: true
+          end
+
+          describe 'with a Symbol => "desc"' do
+            let(:subquery) { query.order(attribute.intern => 'desc') }
+
+            include_examples 'should sort the data by one attribute',
+              reversed: true
+          end
+
+          describe 'with a Symbol => "descending"' do
+            let(:subquery) { query.order(attribute.intern => 'desc') }
+
+            include_examples 'should sort the data by one attribute',
+              reversed: true
+          end
+
+          describe 'with multiple valid attributes' do
+            let(:subquery) { query.order(:series, :title) }
+            let(:expected) do
+              expected_data
+                .each.with_index.sort do |(u, ui), (v, vi)|
+                  compare_series(u, v) || compare_title(u, v) || (ui <=> vi)
+                end
+                .map(&:first)
+            end
+
+            def compare_series(first, second)
+              first_series  = first['series']
+              second_series = second['series']
+
+              return if first_series.nil? && second_series.nil?
+
+              return 1 if first_series.nil?
+
+              return -1 if second_series.nil?
+
+              cmp = first_series <=> second_series
+
+              cmp.zero? ? nil : cmp
+            end
+
+            def compare_title(first, second)
+              cmp = first['title'] <=> second['title']
+
+              cmp.zero? ? nil : cmp
+            end
+
+            it { expect(query.count).to be expected_data.size }
+
+            it { expect(query.to_a).to be == expected_data }
+
+            it { expect(subquery.count).to be expected_data.size }
+
+            it { expect(subquery.to_a).to be == expected }
+          end
+
+          describe 'with a Hash with multiple valid key-value pairs' do
+            let(:subquery) { query.order(series: :asc, title: :desc) }
+            let(:expected) do
+              expected_data
+                .each.with_index.sort do |(u, ui), (v, vi)|
+                  compare_series(u, v) || compare_title(u, v) || (ui <=> vi)
+                end
+                .map(&:first)
+            end
+
+            def compare_series(first, second)
+              first_series  = first['series']
+              second_series = second['series']
+
+              return if first_series.nil? && second_series.nil?
+
+              return 1 if first_series.nil?
+
+              return -1 if second_series.nil?
+
+              cmp = first_series <=> second_series
+
+              cmp.zero? ? nil : cmp
+            end
+
+            def compare_title(first, second)
+              cmp = first['title'] <=> second['title']
+
+              cmp.zero? ? nil : -cmp
+            end
+
+            it { expect(query.count).to be expected_data.size }
+
+            it { expect(query.to_a).to be == expected_data }
+
+            it { expect(subquery.count).to be expected_data.size }
+
+            it { expect(subquery.to_a).to be == expected }
+          end
+        end
+
+        let(:attributes)    { %w[title] }
+        let(:subquery)      { query.order(*attributes) }
+        let(:expected_data) { raw_data }
+
+        it { expect(query.order(*attributes)).not_to be query }
+
+        it { expect(query.order(*attributes)).to be_a described_class }
+
+        describe 'with no arguments' do
+          let(:error_message) { "ordering can't be empty" }
+
+          it 'should raise an error' do
+            expect { query.order }
+              .to raise_error ArgumentError, error_message
+          end
+        end
+
+        describe 'with nil' do
+          let(:error_message) { 'invalid ordering - nil' }
+
+          it 'should raise an error' do
+            expect { query.order(nil) }
+              .to raise_error ArgumentError, error_message
+          end
+        end
+
+        describe 'with an Object' do
+          let(:object) { Object.new }
+          let(:error_message) do
+            "invalid selector - #{object.inspect}"
+          end
+
+          it 'should raise an error' do
+            expect { query.matching(object) }
+              .to raise_error ArgumentError, error_message
+          end
+        end
+
+        describe 'with an empty Hash' do
+          let(:error_message) { "ordering can't be empty" }
+
+          it 'should raise an error' do
+            expect { query.order }
+              .to raise_error ArgumentError, error_message
+          end
+        end
+
+        describe 'with a Hash with invalid key' do
+          let(:object) { Object.new }
+          let(:error_message) do
+            "invalid ordering - #{object.inspect}: :asc"
+          end
+
+          it 'should raise an error' do
+            expect { query.order(object => :asc) }
+              .to raise_error ArgumentError, error_message
+          end
+        end
+
+        describe 'with a Hash with Object value' do
+          let(:object) { Object.new }
+          let(:error_message) do
+            "invalid ordering (:title => #{object.inspect}) - sort direction " \
+            'must be "ascending" (or :asc) or "descending" (or :desc)'
+          end
+
+          it 'should raise an error' do
+            expect { query.order(title: object) }
+              .to raise_error ArgumentError, error_message
+          end
+        end
+
+        describe 'with a Hash with invalid Symbol value' do
+          let(:error_message) do
+            'invalid ordering (:title => :random) - sort direction ' \
+            'must be "ascending" (or :asc) or "descending" (or :desc)'
+          end
+
+          it 'should raise an error' do
+            expect { query.order(title: :random) }
+              .to raise_error ArgumentError, error_message
+          end
+        end
+
+        include_examples 'should sort the data'
+
+        wrap_context 'when the data has many items' do
+          include_examples 'should sort the data'
+        end
+
+        wrap_context 'when the query has a matching filter' do
+          include_context 'when the data has many items'
+
+          include_examples 'should sort the data'
         end
       end
 

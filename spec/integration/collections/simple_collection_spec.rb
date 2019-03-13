@@ -414,6 +414,17 @@ RSpec.describe Bronze::Collections::Simple do
       it { expect(query.count).to be expected.size }
 
       it { expect(query.to_a).to be == expected }
+
+      describe 'with an ordering' do
+        let(:query) { super().order(headline: :asc) }
+        let(:expected) do
+          super().sort_by { |hsh| hsh['headline'] }
+        end
+
+        it { expect(query.count).to be expected.size }
+
+        it { expect(query.to_a).to be == expected }
+      end
     end
   end
 

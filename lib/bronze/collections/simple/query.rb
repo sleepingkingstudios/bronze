@@ -2,10 +2,13 @@
 
 require 'bronze/collections/query'
 require 'bronze/collections/simple'
+require 'bronze/collections/simple/ordering'
 
 module Bronze::Collections::Simple
   # Query class that filters in-memory data in an Array of Hashes format.
   class Query < Bronze::Collections::Query
+    include Bronze::Collections::Simple::Ordering
+
     UNDEFINED = Object.new
     private_constant :UNDEFINED
 
@@ -14,6 +17,7 @@ module Bronze::Collections::Simple
       @data        = data
       @filters     = []
       @max_results = nil
+      @ordering    = nil
     end
 
     # (see Bronze::Collections::Query#count)
@@ -43,6 +47,11 @@ module Bronze::Collections::Simple
     end
     alias_method :where, :matching
 
+    # (see bronze::Collections::Query#order)
+    def order(*attributes)
+      dup.with_ordering(attributes)
+    end
+
     protected
 
     attr_writer :filters
@@ -55,6 +64,12 @@ module Bronze::Collections::Simple
 
     def with_filters(selector)
       parse_selector(selector, [])
+
+      self
+    end
+
+    def with_ordering(attributes)
+      @ordering = generate_ordering(attributes)
 
       self
     end
@@ -95,8 +110,9 @@ module Bronze::Collections::Simple
 
     def matching_data
       matching_count = -1
+      items          = ordering? ? ordered_data : data
 
-      data.each do |item|
+      items.each do |item|
         next unless matches?(item)
 
         if max_results
