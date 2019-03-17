@@ -316,6 +316,7 @@ RSpec.describe Bronze::Collections::Simple do
         item >= tools.hash.convert_keys_to_strings(selector)
       end
     end
+    let(:options) { {} }
 
     def tools
       SleepingKingStudios::Tools::Toolbelt.instance
@@ -351,7 +352,7 @@ RSpec.describe Bronze::Collections::Simple do
 
     describe 'with a selector that matches many items' do
       let(:selector) { { title: 'Modern Mentalism' } }
-      let(:result)   { collection.find_matching(selector) }
+      let(:result)   { collection.find_matching(selector, **options) }
 
       it 'should not change the collection data' do
         expect { collection.find_matching(selector) }
@@ -360,6 +361,66 @@ RSpec.describe Bronze::Collections::Simple do
 
       it 'should return a result' do
         expect(result).to be_a_passing_result.with_value(matching)
+      end
+
+      describe 'with limit: 2' do
+        let(:matching) { super()[0...2] }
+        let(:options)  { super().merge limit: 2 }
+
+        it 'should not change the collection data' do
+          expect { collection.find_matching(selector, limit: 2) }
+            .not_to change(collection.query, :to_a)
+        end
+
+        it 'should return a result' do
+          expect(result).to be_a_passing_result.with_value(matching)
+        end
+      end
+
+      describe 'with offset: 1' do
+        let(:matching) { super()[1..-1] }
+        let(:options)  { super().merge offset: 1 }
+
+        it 'should not change the collection data' do
+          expect { collection.find_matching(selector, offset: 1) }
+            .not_to change(collection.query, :to_a)
+        end
+
+        it 'should return a result' do
+          expect(result).to be_a_passing_result.with_value(matching)
+        end
+      end
+
+      describe 'with order: :title' do
+        let(:matching) do
+          Spec::Support::Sorting.sort_hashes(super(), title: :asc)
+        end
+        let(:options) { super().merge order: :title }
+
+        it 'should not change the collection data' do
+          expect { collection.find_matching(selector, offset: 1) }
+            .not_to change(collection.query, :to_a)
+        end
+
+        it 'should return a result' do
+          expect(result).to be_a_passing_result.with_value(matching)
+        end
+      end
+
+      describe 'with multiple options' do
+        let(:matching) do
+          Spec::Support::Sorting.sort_hashes(super(), title: :asc)[1..1]
+        end
+        let(:options) { super().merge limit: 1, offset: 1, order: :title }
+
+        it 'should not change the collection data' do
+          expect { collection.find_matching(selector, offset: 1) }
+            .not_to change(collection.query, :to_a)
+        end
+
+        it 'should return a result' do
+          expect(result).to be_a_passing_result.with_value(matching)
+        end
       end
     end
   end

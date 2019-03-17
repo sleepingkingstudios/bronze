@@ -1162,66 +1162,237 @@ RSpec.describe Bronze::Collection do
   end
 
   describe '#find_matching' do
-    let(:method_name) { :find_matching }
-    let(:selector)    { nil }
+    let(:method_name)    { :find_matching }
+    let(:selector)       { nil }
+    let(:method_options) { {} }
+    let(:delegated_options) do
+      {
+        limit:  nil,
+        offset: nil,
+        order:  nil
+      }.merge(method_options)
+    end
+    let(:expected) do
+      {
+        'title'    => 'Romance of the Three Kingdoms',
+        'author'   => 'Luo Guanzhong',
+        'language' => 'Chinese'
+      }
+    end
+    let(:result) { Bronze::Result.new([expected]) }
 
     def call_operation
       collection.find_matching(selector)
     end
 
-    it { expect(collection).to respond_to(:find_matching).with(1).arguments }
+    it 'should define the method' do
+      expect(collection)
+        .to respond_to(:find_matching)
+        .with(1).argument
+        .and_keywords(:limit, :offset, :order)
+    end
 
     include_examples 'should validate the selector'
 
     describe 'with an empty Hash selector' do
       let(:selector) { {} }
-      let(:expected) do
-        {
-          'title'    => 'Romance of the Three Kingdoms',
-          'author'   => 'Luo Guanzhong',
-          'language' => 'Chinese'
-        }
-      end
-      let(:result) { Bronze::Result.new(expected) }
 
       it 'should delegate to the adapter' do
         collection.find_matching(selector)
 
         expect(adapter)
           .to have_received(:find_matching)
-          .with(collection.name, selector)
+          .with(collection.name, selector, delegated_options)
       end
 
       it 'should return the result from the adapter' do
         allow(adapter).to receive(:find_matching).and_return(result)
 
         expect(collection.find_matching(selector)).to be result
+      end
+
+      describe 'with limit: value' do
+        let(:method_options) { super().merge limit: 3 }
+
+        it 'should delegate to the adapter' do
+          collection.find_matching(selector, limit: 3)
+
+          expect(adapter)
+            .to have_received(:find_matching)
+            .with(collection.name, selector, delegated_options)
+        end
+
+        it 'should return the result from the adapter' do
+          allow(adapter).to receive(:find_matching).and_return(result)
+
+          expect(collection.find_matching(selector, limit: 3)).to be result
+        end
+      end
+
+      describe 'with order: value' do
+        let(:method_options) { super().merge order: :title }
+
+        it 'should delegate to the adapter' do
+          collection.find_matching(selector, order: :title)
+
+          expect(adapter)
+            .to have_received(:find_matching)
+            .with(collection.name, selector, delegated_options)
+        end
+
+        it 'should return the result from the adapter' do
+          allow(adapter).to receive(:find_matching).and_return(result)
+
+          expect(collection.find_matching(selector, order: :title)).to be result
+        end
+      end
+
+      describe 'with offset: value' do
+        let(:method_options) { super().merge offset: 3 }
+
+        it 'should delegate to the adapter' do
+          collection.find_matching(selector, offset: 3)
+
+          expect(adapter)
+            .to have_received(:find_matching)
+            .with(collection.name, selector, delegated_options)
+        end
+
+        it 'should return the result from the adapter' do
+          allow(adapter).to receive(:find_matching).and_return(result)
+
+          expect(collection.find_matching(selector, offset: 3)).to be result
+        end
+      end
+
+      describe 'with multiple options' do
+        let(:method_options) do
+          super().merge limit: 4, offset: 2, order: :title
+        end
+
+        it 'should delegate to the adapter' do
+          collection.find_matching(selector, limit: 4, offset: 2, order: :title)
+
+          expect(adapter)
+            .to have_received(:find_matching)
+            .with(collection.name, selector, delegated_options)
+        end
+
+        # rubocop:disable RSpec/ExampleLength
+        it 'should return the result from the adapter' do
+          allow(adapter).to receive(:find_matching).and_return(result)
+
+          expect(
+            collection.find_matching(
+              selector,
+              limit:  4,
+              offset: 2,
+              order:  :title
+            )
+          ).to be result
+        end
+        # rubocop:enable RSpec/ExampleLength
       end
     end
 
     describe 'with a non-empty Hash selector' do
       let(:selector) { { author: 'Luo Guanzhong' } }
-      let(:expected) do
-        {
-          'title'    => 'Romance of the Three Kingdoms',
-          'author'   => 'Luo Guanzhong',
-          'language' => 'Chinese'
-        }
-      end
-      let(:result) { Bronze::Result.new(expected) }
 
       it 'should delegate to the adapter' do
         collection.find_matching(selector)
 
         expect(adapter)
           .to have_received(:find_matching)
-          .with(collection.name, selector)
+          .with(collection.name, selector, delegated_options)
       end
 
       it 'should return the result from the adapter' do
         allow(adapter).to receive(:find_matching).and_return(result)
 
         expect(collection.find_matching(selector)).to be result
+      end
+
+      describe 'with limit: value' do
+        let(:method_options) { super().merge limit: 3 }
+
+        it 'should delegate to the adapter' do
+          collection.find_matching(selector, limit: 3)
+
+          expect(adapter)
+            .to have_received(:find_matching)
+            .with(collection.name, selector, delegated_options)
+        end
+
+        it 'should return the result from the adapter' do
+          allow(adapter).to receive(:find_matching).and_return(result)
+
+          expect(collection.find_matching(selector, limit: 3)).to be result
+        end
+      end
+
+      describe 'with order: value' do
+        let(:method_options) { super().merge order: :title }
+
+        it 'should delegate to the adapter' do
+          collection.find_matching(selector, order: :title)
+
+          expect(adapter)
+            .to have_received(:find_matching)
+            .with(collection.name, selector, delegated_options)
+        end
+
+        it 'should return the result from the adapter' do
+          allow(adapter).to receive(:find_matching).and_return(result)
+
+          expect(collection.find_matching(selector, order: :title)).to be result
+        end
+      end
+
+      describe 'with offset: value' do
+        let(:method_options) { super().merge offset: 3 }
+
+        it 'should delegate to the adapter' do
+          collection.find_matching(selector, offset: 3)
+
+          expect(adapter)
+            .to have_received(:find_matching)
+            .with(collection.name, selector, delegated_options)
+        end
+
+        it 'should return the result from the adapter' do
+          allow(adapter).to receive(:find_matching).and_return(result)
+
+          expect(collection.find_matching(selector, offset: 3)).to be result
+        end
+      end
+
+      describe 'with multiple options' do
+        let(:method_options) do
+          super().merge limit: 4, offset: 2, order: :title
+        end
+
+        it 'should delegate to the adapter' do
+          collection.find_matching(selector, limit: 4, offset: 2, order: :title)
+
+          expect(adapter)
+            .to have_received(:find_matching)
+            .with(collection.name, selector, delegated_options)
+        end
+
+        # rubocop:disable RSpec/ExampleLength
+        it 'should return the result from the adapter' do
+          allow(adapter).to receive(:find_matching).and_return(result)
+
+          expect(
+            collection.find_matching(
+              selector,
+              limit:  4,
+              offset: 2,
+              order:  :title
+            )
+          ).to be result
+        end
+        # rubocop:enable RSpec/ExampleLength
       end
     end
   end

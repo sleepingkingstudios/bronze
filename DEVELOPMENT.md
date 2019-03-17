@@ -3,9 +3,6 @@
 ## Collections
 
 - extract adapter specs to shared examples
-- find_matching(selector, options)
-  - returns Bronze::Result
-  - takes :limit, :skip, :order options
 
 ### Advanced Querying
 
@@ -13,9 +10,9 @@
 
 ### Query Ordering
 
-- Query#offset (alias #skip)
-- Query#order
-- Collection#find_matching takes #limit, #order, #offset keywords.
+- find_matching(selector, options)
+  - returns Bronze::Result
+  - takes :limit, :skip, :order options
 - restrict #limit to integer > 0
 - restrict #offset to integer >= 0
 

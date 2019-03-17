@@ -67,6 +67,7 @@ RSpec.describe Bronze::Collections::Simple::Adapter do
     described_class.new(data)
   end
 
+  let(:query_class) { Bronze::Collections::Simple::Query }
   let(:raw_data) do
     {
       'books' => [
@@ -284,24 +285,130 @@ RSpec.describe Bronze::Collections::Simple::Adapter do
   end
 
   describe '#find_matching' do
-    shared_examples 'should find the items' do
-      let(:result) { adapter.find_matching(collection_name, selector) }
+    shared_examples 'should delegate to the query' do
+      # rubocop:disable RSpec/ExampleLength
+      # rubocop:disable RSpec/MultipleExpectations
+      it 'should delegate to the query' do
+        adapter.find_matching(collection_name, selector, **options)
 
-      it 'should not change the collection' do
-        expect { adapter.find_matching(collection_name, selector) }
-          .not_to change(adapter.query(collection_name), :to_a)
+        expect(query).to have_received(:matching).with(selector)
+
+        if order
+          expect(query).to have_received(:order).with(*Array(order))
+        else
+          expect(query).not_to have_received(:order)
+        end
+
+        if limit
+          expect(query).to have_received(:limit).with(limit)
+        else
+          expect(query).not_to have_received(:limit)
+        end
+
+        if offset
+          expect(query).to have_received(:offset).with(offset)
+        else
+          expect(query).not_to have_received(:offset)
+        end
+      end
+      # rubocop:enable RSpec/ExampleLength
+      # rubocop:enable RSpec/MultipleExpectations
+
+      it 'should return a passing result' do
+        expect(result).to be_a_passing_result.with_value(matching_items)
+      end
+    end
+
+    shared_examples 'should find the items' do
+      include_examples 'should delegate to the query'
+
+      describe 'with limit: Integer' do
+        let(:limit) { 4 }
+
+        include_examples 'should delegate to the query'
       end
 
-      it 'should return a result' do
-        expect(result).to be_a_passing_result.with_value(matching_items)
+      describe 'with offset: Integer' do
+        let(:offset) { 2 }
+
+        include_examples 'should delegate to the query'
+      end
+
+      describe 'with order: String' do
+        let(:order) { 'title' }
+
+        include_examples 'should delegate to the query'
+      end
+
+      describe 'with order: Symbol' do
+        let(:order) { :title }
+
+        include_examples 'should delegate to the query'
+      end
+
+      describe 'with order: Hash' do
+        let(:order) { { author: :asc, title: :desc } }
+
+        include_examples 'should delegate to the query'
+      end
+
+      describe 'with order: Array' do
+        let(:order) { [:author, { title: :desc }] }
+
+        include_examples 'should delegate to the query'
+      end
+
+      describe 'with multiple options' do
+        let(:limit)  { 4 }
+        let(:offset) { 2 }
+        let(:order)  { :title }
+
+        include_examples 'should delegate to the query'
       end
     end
 
     let(:collection_name) { 'books' }
     let(:selector)        { {} }
+    let(:limit)           { nil }
+    let(:offset)          { nil }
+    let(:order)           { nil }
+    let(:options)         { { limit: limit, offset: offset, order: order } }
     let(:matching_items)  { raw_data['books'] }
+    let(:query) do
+      instance_double(
+        query_class,
+        limit:    nil,
+        matching: nil,
+        offset:   nil,
+        order:    nil,
+        to_a:     nil
+      )
+    end
+    let(:result) do
+      adapter.find_matching(collection_name, selector, **options)
+    end
 
-    it { expect(adapter).to respond_to(:find_matching).with(2).arguments }
+    before(:example) do
+      # rubocop:disable RSpec/SubjectStub
+      allow(adapter)
+        .to receive(:query)
+        .with(collection_name)
+        .and_return(query)
+      # rubocop:enable RSpec/SubjectStub
+
+      %i[matching limit offset order].each do |method_name|
+        allow(query).to receive(method_name).and_return(query)
+      end
+
+      allow(query).to receive(:to_a).and_return(matching_items)
+    end
+
+    it 'should define the method' do
+      expect(adapter)
+        .to respond_to(:find_matching)
+        .with(2).arguments
+        .and_keywords(:limit, :offset, :order)
+    end
 
     describe 'with an empty selector' do
       let(:selector) { {} }
@@ -478,8 +585,7 @@ RSpec.describe Bronze::Collections::Simple::Adapter do
   end
 
   describe '#query' do
-    let(:query_class) { Bronze::Collections::Simple::Query }
-    let(:query)       { adapter.query('books') }
+    let(:query) { adapter.query('books') }
 
     it { expect(adapter).to respond_to(:query).with(1).argument }
 

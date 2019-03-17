@@ -35,7 +35,7 @@ module Bronze::Collections
     #   Returns a query that returns at most the specified number of results.
     #   The existing query is unchanged.
     #
-    #   @param count [Index] The maximum number of items to return.
+    #   @param count [Integer] The maximum number of items to return.
     #
     #   @return [Query] the generated Query.
     #
