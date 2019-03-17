@@ -392,12 +392,60 @@ RSpec.describe Bronze::Collections::Simple do
     end
   end
 
-  describe 'querying the data matching a selector' do
+  describe 'querying all data' do
     it { expect(collection.all.count).to be periodicals.size }
 
     it { expect(collection.all.to_a).to be == periodicals }
 
-    describe 'with a value matcher that does not match any items' do
+    describe 'with a simple ordering' do
+      let(:query) { collection.all.order(:headline) }
+      let(:expected) do
+        Spec::Support::Sorting.sort_hashes(periodicals, 'headline' => :asc)
+      end
+
+      it { expect(query.count).to be expected.size }
+
+      it { expect(query.to_a).to be == expected }
+    end
+
+    describe 'with a complex ordering' do
+      let(:query) { collection.all.order(:issue, headline: :desc) }
+      let(:expected) do
+        Spec::Support::Sorting.sort_hashes(
+          periodicals,
+          'issue'    => :asc,
+          'headline' => :desc
+        )
+      end
+
+      it { expect(query.count).to be expected.size }
+
+      it { expect(query.to_a).to be == expected }
+    end
+
+    describe 'with an ordering with a limit' do
+      let(:query) { collection.all.order(:headline).limit(4).offset(2) }
+      let(:expected) do
+        Spec::Support::Sorting
+          .sort_hashes(periodicals, 'headline' => :asc)[2...6]
+      end
+
+      it { expect(query.count).to be expected.size }
+
+      it { expect(query.to_a).to be == expected }
+    end
+  end
+
+  describe 'querying the data matching a selector' do
+    describe 'with an empty selector' do
+      let(:query) { collection.matching({}) }
+
+      it { expect(query.count).to be periodicals.size }
+
+      it { expect(query.to_a).to be == periodicals }
+    end
+
+    describe 'with a selector that does not match any items' do
       let(:query) { collection.matching('title' => 'Crystal Digest') }
 
       it { expect(query.count).to be 0 }
@@ -405,7 +453,18 @@ RSpec.describe Bronze::Collections::Simple do
       it { expect(query.to_a).to be == [] }
     end
 
-    describe 'with a value matcher that matches some items' do
+    describe 'with a selector that matches one item' do
+      let(:query) { collection.matching(id: 9) }
+      let(:expected) do
+        periodicals.select { |hsh| hsh['id'] == 9 }
+      end
+
+      it { expect(query.count).to be expected.size }
+
+      it { expect(query.to_a).to be == expected }
+    end
+
+    describe 'with a selector that matches some items' do
       let(:query) { collection.matching('title' => 'Modern Mentalism') }
       let(:expected) do
         periodicals.select { |hsh| hsh['title'] == 'Modern Mentalism' }
@@ -415,10 +474,36 @@ RSpec.describe Bronze::Collections::Simple do
 
       it { expect(query.to_a).to be == expected }
 
-      describe 'with an ordering' do
-        let(:query) { super().order(headline: :asc) }
+      describe 'with a simple ordering' do
+        let(:query) { super().order(:headline) }
         let(:expected) do
-          super().sort_by { |hsh| hsh['headline'] }
+          Spec::Support::Sorting.sort_hashes(super(), 'headline' => :asc)
+        end
+
+        it { expect(query.count).to be expected.size }
+
+        it { expect(query.to_a).to be == expected }
+      end
+
+      describe 'with a complex ordering' do
+        let(:query) { super().order(:issue, headline: :desc) }
+        let(:expected) do
+          Spec::Support::Sorting.sort_hashes(
+            super(),
+            'issue'    => :asc,
+            'headline' => :desc
+          )
+        end
+
+        it { expect(query.count).to be expected.size }
+
+        it { expect(query.to_a).to be == expected }
+      end
+
+      describe 'with an ordering with a limit' do
+        let(:query) { super().order(:headline).limit(4).offset(2) }
+        let(:expected) do
+          Spec::Support::Sorting.sort_hashes(super(), 'headline' => :asc)[2...6]
         end
 
         it { expect(query.count).to be expected.size }

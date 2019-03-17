@@ -55,13 +55,62 @@ module Spec::Support::Examples::Collections
 
     shared_context 'when the query has a non-matching filter' do
       let(:query)         { super().matching('author' => 'C. S. Lewis') }
-      let(:expected_data) { [] }
+      let(:filtered_data) { [] }
+      let(:queried_data)  { filtered_data }
+      let(:expected_data) { queried_data }
     end
 
     shared_context 'when the query has a matching filter' do
       let(:query) { super().matching('series' => 'Barsoom') }
-      let(:expected_data) do
+      let(:matching_data) do
         raw_data.select { |item| item['series'] == 'Barsoom' }
+      end
+      let(:queried_data) do
+        raw_data.select { |item| item['series'] == 'Barsoom' }
+      end
+    end
+
+    shared_context 'when the query has a simple ordering' do
+      let(:query)         { super().order(:title) }
+      let(:matching_data) { raw_data }
+      let(:ordered_data)  { matching_data.sort_by { |item| item['title'] } }
+      let(:queried_data)  { raw_data.sort_by { |item| item['title'] } }
+    end
+
+    shared_context 'when the query has a complex ordering' do
+      let(:query)         { super().order(:series, title: :desc) }
+      let(:matching_data) { raw_data }
+      let(:ordered_data) do
+        Spec::Support::Sorting
+          .sort_hashes(matching_data, 'series' => :asc, 'title' => :desc)
+      end
+      let(:queried_data) do
+        Spec::Support::Sorting
+          .sort_hashes(raw_data, 'series' => :asc, 'title' => :desc)
+      end
+    end
+
+    shared_context 'when the query has an ordering and a limit' do
+      let(:limit)         { 4 }
+      let(:offset)        { 2 }
+      let(:query)         { super().order(:title).limit(4).offset(2) }
+      let(:matching_data) { raw_data }
+      let(:ordered_data)  { matching_data.sort_by { |item| item['title'] } }
+      let(:queried_data)  { raw_data.sort_by { |item| item['title'] }[2...6] }
+    end
+
+    shared_examples 'should filter the data' do
+      describe 'should filter the data' do
+        let(:subquery)      { defined?(super()) ? super() : query }
+        let(:limit)         { defined?(super()) ? super() : raw_data.size }
+        let(:offset)        { defined?(super()) ? super() : 0 }
+        let(:matching_data) { defined?(super()) ? super() : raw_data }
+        let(:ordered_data)  { defined?(super()) ? super() : matching_data }
+        let(:filtered_data) { ordered_data[offset...(offset + limit)] || [] }
+
+        it { expect(subquery.count).to be == filtered_data.size }
+
+        it { expect(subquery.to_a).to be == filtered_data }
       end
     end
 
@@ -86,6 +135,12 @@ module Spec::Support::Examples::Collections
         it { expect(query).to respond_to(:matching).with(1).argument }
 
         it { expect(query).to alias_method(:matching).as(:where) }
+      end
+
+      describe '#offset' do
+        it { expect(query).to respond_to(:offset).with(1).argument }
+
+        it { expect(query).to alias_method(:offset).as(:skip) }
       end
 
       describe '#order' do
@@ -113,7 +168,25 @@ module Spec::Support::Examples::Collections
         wrap_context 'when the query has a matching filter' do
           include_context 'when the data has many items'
 
-          it { expect(query.count).to be expected_data.size }
+          it { expect(query.count).to be queried_data.size }
+        end
+
+        wrap_context 'when the query has a simple ordering' do
+          include_context 'when the data has many items'
+
+          it { expect(query.count).to be queried_data.size }
+        end
+
+        wrap_context 'when the query has a complex ordering' do
+          include_context 'when the data has many items'
+
+          it { expect(query.count).to be queried_data.size }
+        end
+
+        wrap_context 'when the query has an ordering and a limit' do
+          include_context 'when the data has many items'
+
+          it { expect(query.count).to be queried_data.size }
         end
       end
 
@@ -133,9 +206,33 @@ module Spec::Support::Examples::Collections
         wrap_context 'when the query has a matching filter' do
           include_context 'when the data has many items'
 
-          it { expect(copied_query.count).to be expected_data.size }
+          it { expect(copied_query.count).to be queried_data.size }
 
-          it { expect(copied_query.to_a).to be == expected_data }
+          it { expect(copied_query.to_a).to be == queried_data }
+        end
+
+        wrap_context 'when the query has a simple ordering' do
+          include_context 'when the data has many items'
+
+          it { expect(copied_query.count).to be queried_data.size }
+
+          it { expect(copied_query.to_a).to be == queried_data }
+        end
+
+        wrap_context 'when the query has a complex ordering' do
+          include_context 'when the data has many items'
+
+          it { expect(copied_query.count).to be queried_data.size }
+
+          it { expect(copied_query.to_a).to be == queried_data }
+        end
+
+        wrap_context 'when the query has an ordering and a limit' do
+          include_context 'when the data has many items'
+
+          it { expect(copied_query.count).to be queried_data.size }
+
+          it { expect(copied_query.to_a).to be == queried_data }
         end
       end
 
@@ -168,12 +265,57 @@ module Spec::Support::Examples::Collections
 
           it { expect(query.each).to be_a Enumerator }
 
-          it { expect(query.each.to_a).to be == expected_data }
+          it { expect(query.each.to_a).to be == queried_data }
 
           describe 'with a block' do
             it 'should yield each item' do
               expect { |block| query.each(&block) }
-                .to yield_successive_args(*expected_data)
+                .to yield_successive_args(*queried_data)
+            end
+          end
+        end
+
+        wrap_context 'when the query has a simple ordering' do
+          include_context 'when the data has many items'
+
+          it { expect(query.each).to be_a Enumerator }
+
+          it { expect(query.each.to_a).to be == queried_data }
+
+          describe 'with a block' do
+            it 'should yield each item' do
+              expect { |block| query.each(&block) }
+                .to yield_successive_args(*queried_data)
+            end
+          end
+        end
+
+        wrap_context 'when the query has a complex ordering' do
+          include_context 'when the data has many items'
+
+          it { expect(query.each).to be_a Enumerator }
+
+          it { expect(query.each.to_a).to be == queried_data }
+
+          describe 'with a block' do
+            it 'should yield each item' do
+              expect { |block| query.each(&block) }
+                .to yield_successive_args(*queried_data)
+            end
+          end
+        end
+
+        wrap_context 'when the query has an ordering and a limit' do
+          include_context 'when the data has many items'
+
+          it { expect(query.each).to be_a Enumerator }
+
+          it { expect(query.each.to_a).to be == queried_data }
+
+          describe 'with a block' do
+            it 'should yield each item' do
+              expect { |block| query.each(&block) }
+                .to yield_successive_args(*queried_data)
             end
           end
         end
@@ -197,111 +339,113 @@ module Spec::Support::Examples::Collections
 
           it { expect(query.exists?).to be true }
         end
+
+        wrap_context 'when the query has a simple ordering' do
+          include_context 'when the data has many items'
+
+          it { expect(query.exists?).to be true }
+        end
+
+        wrap_context 'when the query has a complex ordering' do
+          include_context 'when the data has many items'
+
+          it { expect(query.exists?).to be true }
+        end
+
+        wrap_context 'when the query has an ordering and a limit' do
+          include_context 'when the data has many items'
+
+          it { expect(query.exists?).to be true }
+        end
       end
 
       describe '#limit' do
-        let(:count)    { 3 }
-        let(:subquery) { query.limit(count) }
+        let(:limit)    { 3 }
+        let(:subquery) { query.limit(limit) }
 
         it { expect(query.limit 3).not_to be query }
 
         it { expect(query.limit 3).to be_a described_class }
 
         describe 'with zero' do
-          let(:count) { 0 }
+          let(:limit) { 0 }
 
           it { expect(query.count).to be 0 }
 
           it { expect(query.to_a).to be == [] }
 
-          it { expect(subquery.count).to be 0 }
-
-          it { expect(subquery.to_a).to be == [] }
+          include_examples 'should filter the data'
         end
 
         describe 'with one' do
-          let(:count) { 1 }
+          let(:limit) { 1 }
 
           it { expect(query.count).to be 0 }
 
           it { expect(query.to_a).to be == [] }
 
-          it { expect(subquery.count).to be 0 }
-
-          it { expect(subquery.to_a).to be == [] }
+          include_examples 'should filter the data'
         end
 
         describe 'with a larger number' do
-          let(:count) { 3 }
+          let(:limit) { 3 }
 
           it { expect(query.count).to be 0 }
 
           it { expect(query.to_a).to be == [] }
 
-          it { expect(subquery.count).to be 0 }
-
-          it { expect(subquery.to_a).to be == [] }
+          include_examples 'should filter the data'
         end
 
         wrap_context 'when the data has many items' do
           describe 'with zero' do
-            let(:count) { 0 }
+            let(:limit) { 0 }
 
             it { expect(query.count).to be raw_data.count }
 
             it { expect(query.to_a).to be == raw_data }
 
-            it { expect(subquery.count).to be 0 }
-
-            it { expect(subquery.to_a).to be == [] }
+            include_examples 'should filter the data'
           end
 
           describe 'with one' do
-            let(:count) { 1 }
+            let(:limit) { 1 }
 
             it { expect(query.count).to be raw_data.count }
 
             it { expect(query.to_a).to be == raw_data }
 
-            it { expect(subquery.count).to be count }
-
-            it { expect(subquery.to_a).to be == raw_data[0...count] }
+            include_examples 'should filter the data'
           end
 
           describe 'with three' do
-            let(:count) { 3 }
+            let(:limit) { 3 }
 
             it { expect(query.count).to be raw_data.count }
 
             it { expect(query.to_a).to be == raw_data }
 
-            it { expect(subquery.count).to be count }
-
-            it { expect(subquery.to_a).to be == raw_data[0...count] }
+            include_examples 'should filter the data'
           end
 
           describe 'with the number of items' do
-            let(:count) { raw_data.count }
+            let(:limit) { raw_data.count }
 
             it { expect(query.count).to be raw_data.count }
 
             it { expect(query.to_a).to be == raw_data }
 
-            it { expect(subquery.count).to be count }
-
-            it { expect(subquery.to_a).to be == raw_data[0...count] }
+            include_examples 'should filter the data'
           end
 
           describe 'with greater than the number of items' do
-            let(:count) { raw_data.count + 3 }
+            let(:limit) { raw_data.count + 3 }
 
             it { expect(query.count).to be raw_data.count }
 
             it { expect(query.to_a).to be == raw_data }
 
-            it { expect(subquery.count).to be raw_data.count }
-
-            it { expect(subquery.to_a).to be == raw_data }
+            include_examples 'should filter the data'
           end
         end
 
@@ -309,51 +453,205 @@ module Spec::Support::Examples::Collections
           include_context 'when the data has many items'
 
           describe 'with zero' do
-            let(:count) { 0 }
+            let(:limit) { 0 }
 
-            it { expect(query.count).to be expected_data.count }
+            it { expect(query.count).to be queried_data.count }
 
-            it { expect(query.to_a).to be == expected_data }
+            it { expect(query.to_a).to be == queried_data }
 
-            it { expect(subquery.count).to be 0 }
-
-            it { expect(subquery.to_a).to be == [] }
+            include_examples 'should filter the data'
           end
 
           describe 'with one' do
-            let(:count) { 1 }
+            let(:limit) { 1 }
 
-            it { expect(query.count).to be expected_data.count }
+            it { expect(query.count).to be queried_data.count }
 
-            it { expect(query.to_a).to be == expected_data }
+            it { expect(query.to_a).to be == queried_data }
 
-            it { expect(subquery.count).to be count }
-
-            it { expect(subquery.to_a).to be == expected_data[0...count] }
+            include_examples 'should filter the data'
           end
 
           describe 'with the number of items' do
-            let(:count) { expected_data.count }
+            let(:limit) { queried_data.count }
 
-            it { expect(query.count).to be expected_data.count }
+            it { expect(query.count).to be queried_data.count }
 
-            it { expect(query.to_a).to be == expected_data }
+            it { expect(query.to_a).to be == queried_data }
 
-            it { expect(subquery.count).to be count }
-
-            it { expect(subquery.to_a).to be == expected_data[0...count] }
+            include_examples 'should filter the data'
           end
 
           describe 'with greater than the number of items' do
-            let(:count) { expected_data.count + 3 }
+            let(:limit) { queried_data.count + 3 }
 
-            it { expect(query.count).to be expected_data.count }
+            it { expect(query.count).to be queried_data.count }
 
-            it { expect(query.to_a).to be == expected_data }
+            it { expect(query.to_a).to be == queried_data }
 
-            it { expect(subquery.count).to be expected_data.count }
+            include_examples 'should filter the data'
+          end
+        end
 
-            it { expect(subquery.to_a).to be == expected_data }
+        wrap_context 'when the query has a simple ordering' do
+          include_context 'when the data has many items'
+
+          describe 'with zero' do
+            let(:limit) { 0 }
+
+            it { expect(query.count).to be queried_data.count }
+
+            it { expect(query.to_a).to be == queried_data }
+
+            include_examples 'should filter the data'
+          end
+
+          describe 'with one' do
+            let(:limit) { 1 }
+
+            it { expect(query.count).to be queried_data.count }
+
+            it { expect(query.to_a).to be == queried_data }
+
+            include_examples 'should filter the data'
+          end
+
+          describe 'with three' do
+            let(:limit) { 3 }
+
+            it { expect(query.count).to be queried_data.count }
+
+            it { expect(query.to_a).to be == queried_data }
+
+            include_examples 'should filter the data'
+          end
+
+          describe 'with the number of items' do
+            let(:limit) { queried_data.count }
+
+            it { expect(query.count).to be queried_data.count }
+
+            it { expect(query.to_a).to be == queried_data }
+
+            include_examples 'should filter the data'
+          end
+
+          describe 'with greater than the number of items' do
+            let(:limit) { queried_data.count + 3 }
+
+            it { expect(query.count).to be queried_data.count }
+
+            it { expect(query.to_a).to be == queried_data }
+
+            include_examples 'should filter the data'
+          end
+        end
+
+        wrap_context 'when the query has a complex ordering' do
+          include_context 'when the data has many items'
+
+          describe 'with zero' do
+            let(:limit) { 0 }
+
+            it { expect(query.count).to be queried_data.count }
+
+            it { expect(query.to_a).to be == queried_data }
+
+            include_examples 'should filter the data'
+          end
+
+          describe 'with one' do
+            let(:limit) { 1 }
+
+            it { expect(query.count).to be queried_data.count }
+
+            it { expect(query.to_a).to be == queried_data }
+
+            include_examples 'should filter the data'
+          end
+
+          describe 'with three' do
+            let(:limit) { 3 }
+
+            it { expect(query.count).to be queried_data.count }
+
+            it { expect(query.to_a).to be == queried_data }
+
+            include_examples 'should filter the data'
+          end
+
+          describe 'with the number of items' do
+            let(:limit) { queried_data.count }
+
+            it { expect(query.count).to be queried_data.count }
+
+            it { expect(query.to_a).to be == queried_data }
+
+            include_examples 'should filter the data'
+          end
+
+          describe 'with greater than the number of items' do
+            let(:limit) { queried_data.count + 3 }
+
+            it { expect(query.count).to be queried_data.count }
+
+            it { expect(query.to_a).to be == queried_data }
+
+            include_examples 'should filter the data'
+          end
+        end
+
+        wrap_context 'when the query has an ordering and a limit' do
+          include_context 'when the data has many items'
+
+          describe 'with zero' do
+            let(:limit) { 0 }
+
+            it { expect(query.count).to be queried_data.count }
+
+            it { expect(query.to_a).to be == queried_data }
+
+            include_examples 'should filter the data'
+          end
+
+          describe 'with one' do
+            let(:limit) { 1 }
+
+            it { expect(query.count).to be queried_data.count }
+
+            it { expect(query.to_a).to be == queried_data }
+
+            include_examples 'should filter the data'
+          end
+
+          describe 'with three' do
+            let(:limit) { 3 }
+
+            it { expect(query.count).to be queried_data.count }
+
+            it { expect(query.to_a).to be == queried_data }
+
+            include_examples 'should filter the data'
+          end
+
+          describe 'with the number of items' do
+            let(:limit) { queried_data.count }
+
+            it { expect(query.count).to be queried_data.count }
+
+            it { expect(query.to_a).to be == queried_data }
+
+            include_examples 'should filter the data'
+          end
+
+          describe 'with greater than the number of items' do
+            let(:limit) { queried_data.count + 3 }
+
+            it { expect(query.count).to be queried_data.count }
+
+            it { expect(query.to_a).to be == queried_data }
+
+            include_examples 'should filter the data'
           end
         end
       end
@@ -396,13 +694,330 @@ module Spec::Support::Examples::Collections
 
           it { expect(query.to_a).to be == [] }
 
+          include_examples 'should filter the data'
+        end
+
+        describe 'with a value selector' do
+          let(:selector) { { 'title' => 'Savage Pellucidar' } }
+
+          it { expect(query.count).to be 0 }
+
+          it { expect(query.to_a).to be == [] }
+
+          include_examples 'should filter the data'
+        end
+
+        wrap_context 'when the data has many items' do
+          describe 'with an empty selector' do
+            let(:selector) { {} }
+
+            it { expect(query.count).to be raw_data.size }
+
+            it { expect(query.to_a).to be == raw_data }
+
+            include_examples 'should filter the data'
+          end
+
+          describe 'with a value selector that does not match any items' do
+            let(:selector) { { 'author' => 'C. S. Lewis' } }
+            let(:matching_data) do
+              raw_data.select { |item| item >= selector }
+            end
+
+            it { expect(query.count).to be raw_data.size }
+
+            it { expect(query.to_a).to be == raw_data }
+
+            include_examples 'should filter the data'
+          end
+
+          describe 'with a value selector that matches some items' do
+            let(:selector) { { 'series' => 'Barsoom' } }
+            let(:matching_data) do
+              raw_data.select { |item| item >= selector }
+            end
+
+            it { expect(query.count).to be raw_data.size }
+
+            it { expect(query.to_a).to be == raw_data }
+
+            include_examples 'should filter the data'
+          end
+
+          describe 'with a value selector that matches all items' do
+            let(:selector) { { 'author' => 'Edgar Rice Burroughs' } }
+            let(:matching_data) do
+              raw_data.select { |item| item >= selector }
+            end
+
+            it { expect(query.count).to be raw_data.size }
+
+            it { expect(query.to_a).to be == raw_data }
+
+            include_examples 'should filter the data'
+          end
+
+          describe 'with a value selector with symbol keys' do
+            let(:selector) { { series: 'Barsoom' } }
+            let(:matching_data) do
+              raw_data.select { |item| item['series'] == 'Barsoom' }
+            end
+
+            it { expect(query.count).to be raw_data.size }
+
+            it { expect(query.to_a).to be == raw_data }
+
+            include_examples 'should filter the data'
+          end
+        end
+
+        wrap_context 'when the query has a matching filter' do
+          include_context 'when the data has many items'
+
+          describe 'with an empty selector' do
+            let(:selector) { {} }
+
+            it { expect(query.count).to be queried_data.size }
+
+            it { expect(query.to_a).to be == queried_data }
+
+            include_examples 'should filter the data'
+          end
+
+          describe 'with a value selector that does not match any items' do
+            let(:selector) { { 'author' => 'C. S. Lewis' } }
+            let(:matching_data) do
+              super().select { |item| item >= selector }
+            end
+
+            it { expect(query.count).to be queried_data.size }
+
+            it { expect(query.to_a).to be == queried_data }
+
+            include_examples 'should filter the data'
+          end
+
+          describe 'with a value selector that matches some items' do
+            let(:selector) { { 'index' => 2 } }
+            let(:matching_data) do
+              super().select { |item| item >= selector }
+            end
+
+            it { expect(query.count).to be queried_data.size }
+
+            it { expect(query.to_a).to be == queried_data }
+
+            include_examples 'should filter the data'
+          end
+
+          describe 'with a value selector that matches all items' do
+            let(:selector) { { 'author' => 'Edgar Rice Burroughs' } }
+            let(:matching_data) do
+              super().select { |item| item >= selector }
+            end
+
+            it { expect(query.count).to be queried_data.size }
+
+            it { expect(query.to_a).to be == queried_data }
+
+            include_examples 'should filter the data'
+          end
+        end
+
+        wrap_context 'when the query has a simple ordering' do
+          include_context 'when the data has many items'
+
+          describe 'with an empty selector' do
+            let(:selector) { {} }
+
+            it { expect(query.count).to be queried_data.size }
+
+            it { expect(query.to_a).to be == queried_data }
+
+            include_examples 'should filter the data'
+          end
+
+          describe 'with a value selector that does not match any items' do
+            let(:selector) { { 'author' => 'C. S. Lewis' } }
+            let(:matching_data) do
+              raw_data.select { |item| item >= selector }
+            end
+
+            it { expect(query.count).to be queried_data.size }
+
+            it { expect(query.to_a).to be == queried_data }
+
+            include_examples 'should filter the data'
+          end
+
+          describe 'with a value selector that matches some items' do
+            let(:selector) { { 'index' => 2 } }
+            let(:matching_data) do
+              raw_data.select { |item| item >= selector }
+            end
+
+            it { expect(query.count).to be queried_data.size }
+
+            it { expect(query.to_a).to be == queried_data }
+
+            include_examples 'should filter the data'
+          end
+
+          describe 'with a value selector that matches all items' do
+            let(:selector) { { 'author' => 'Edgar Rice Burroughs' } }
+            let(:matching_data) do
+              raw_data.select { |item| item >= selector }
+            end
+
+            it { expect(query.count).to be queried_data.size }
+
+            it { expect(query.to_a).to be == queried_data }
+
+            include_examples 'should filter the data'
+          end
+        end
+
+        wrap_context 'when the query has a complex ordering' do
+          include_context 'when the data has many items'
+
+          describe 'with an empty selector' do
+            let(:selector) { {} }
+
+            it { expect(query.count).to be queried_data.size }
+
+            it { expect(query.to_a).to be == queried_data }
+
+            include_examples 'should filter the data'
+          end
+
+          describe 'with a value selector that does not match any items' do
+            let(:selector) { { 'author' => 'C. S. Lewis' } }
+            let(:matching_data) do
+              raw_data.select { |item| item >= selector }
+            end
+
+            it { expect(query.count).to be queried_data.size }
+
+            it { expect(query.to_a).to be == queried_data }
+
+            include_examples 'should filter the data'
+          end
+
+          describe 'with a value selector that matches some items' do
+            let(:selector) { { 'index' => 2 } }
+            let(:matching_data) do
+              raw_data.select { |item| item >= selector }
+            end
+
+            it { expect(query.count).to be queried_data.size }
+
+            it { expect(query.to_a).to be == queried_data }
+
+            include_examples 'should filter the data'
+          end
+
+          describe 'with a value selector that matches all items' do
+            let(:selector) { { 'author' => 'Edgar Rice Burroughs' } }
+            let(:matching_data) do
+              raw_data.select { |item| item >= selector }
+            end
+
+            it { expect(query.count).to be queried_data.size }
+
+            it { expect(query.to_a).to be == queried_data }
+
+            include_examples 'should filter the data'
+          end
+        end
+
+        wrap_context 'when the query has an ordering and a limit' do
+          include_context 'when the data has many items'
+
+          describe 'with an empty selector' do
+            let(:selector) { {} }
+
+            it { expect(query.count).to be queried_data.size }
+
+            it { expect(query.to_a).to be == queried_data }
+
+            include_examples 'should filter the data'
+          end
+
+          describe 'with a value selector that does not match any items' do
+            let(:selector) { { 'author' => 'C. S. Lewis' } }
+            let(:matching_data) do
+              raw_data.select { |item| item >= selector }
+            end
+
+            it { expect(query.count).to be queried_data.size }
+
+            it { expect(query.to_a).to be == queried_data }
+
+            include_examples 'should filter the data'
+          end
+
+          describe 'with a value selector that matches some items' do
+            let(:selector) { { 'series' => 'Barsoom' } }
+            let(:matching_data) do
+              raw_data.select { |item| item >= selector }
+            end
+
+            it { expect(query.count).to be queried_data.size }
+
+            it { expect(query.to_a).to be == queried_data }
+
+            include_examples 'should filter the data'
+          end
+
+          describe 'with a value selector that matches all items' do
+            let(:selector) { { 'author' => 'Edgar Rice Burroughs' } }
+            let(:matching_data) do
+              raw_data.select { |item| item >= selector }
+            end
+
+            it { expect(query.count).to be queried_data.size }
+
+            it { expect(query.to_a).to be == queried_data }
+
+            include_examples 'should filter the data'
+          end
+        end
+      end
+
+      describe '#offset' do
+        let(:offset)   { 3 }
+        let(:subquery) { query.offset(offset) }
+
+        it { expect(query.offset 3).not_to be query }
+
+        it { expect(query.offset 3).to be_a described_class }
+
+        describe 'with zero' do
+          let(:offset) { 0 }
+
+          it { expect(query.count).to be 0 }
+
+          it { expect(query.to_a).to be == [] }
+
           it { expect(subquery.count).to be 0 }
 
           it { expect(subquery.to_a).to be == [] }
         end
 
-        describe 'with a value selector' do
-          let(:selector) { { 'title' => 'Savage Pellucidar' } }
+        describe 'with one' do
+          let(:offset) { 1 }
+
+          it { expect(query.count).to be 0 }
+
+          it { expect(query.to_a).to be == [] }
+
+          it { expect(subquery.count).to be 0 }
+
+          it { expect(subquery.to_a).to be == [] }
+        end
+
+        describe 'with a larger number' do
+          let(:offset) { 3 }
 
           it { expect(query.count).to be 0 }
 
@@ -414,125 +1029,260 @@ module Spec::Support::Examples::Collections
         end
 
         wrap_context 'when the data has many items' do
-          describe 'with an empty selector' do
-            let(:selector) { {} }
+          describe 'with zero' do
+            let(:offset) { 0 }
 
-            it { expect(query.count).to be raw_data.size }
+            it { expect(query.count).to be raw_data.count }
 
             it { expect(query.to_a).to be == raw_data }
 
-            it { expect(subquery.count).to be raw_data.size }
-
-            it { expect(subquery.to_a).to be == raw_data }
+            include_examples 'should filter the data'
           end
 
-          describe 'with a value selector that does not match any items' do
-            let(:selector) { { 'author' => 'C. S. Lewis' } }
+          describe 'with one' do
+            let(:offset) { 1 }
 
-            it { expect(query.count).to be raw_data.size }
+            it { expect(query.count).to be raw_data.count }
 
             it { expect(query.to_a).to be == raw_data }
 
-            it { expect(subquery.count).to be 0 }
-
-            it { expect(subquery.to_a).to be == [] }
+            include_examples 'should filter the data'
           end
 
-          describe 'with a value selector that matches some items' do
-            let(:selector) { { 'series' => 'Barsoom' } }
-            let(:expected) do
-              raw_data.select { |item| item['series'] == 'Barsoom' }
-            end
+          describe 'with three' do
+            let(:offset) { 3 }
 
-            it { expect(query.count).to be raw_data.size }
+            it { expect(query.count).to be raw_data.count }
 
             it { expect(query.to_a).to be == raw_data }
 
-            it { expect(subquery.count).to be expected.size }
-
-            it { expect(subquery.to_a).to be == expected }
+            include_examples 'should filter the data'
           end
 
-          describe 'with a value selector that matches all items' do
-            let(:selector) { { 'author' => 'Edgar Rice Burroughs' } }
+          describe 'with the number of items' do
+            let(:offset) { raw_data.count }
 
-            it { expect(query.count).to be raw_data.size }
+            it { expect(query.count).to be raw_data.count }
 
             it { expect(query.to_a).to be == raw_data }
 
-            it { expect(subquery.count).to be raw_data.size }
-
-            it { expect(subquery.to_a).to be == raw_data }
+            include_examples 'should filter the data'
           end
 
-          describe 'with a value selector with symbol keys' do
-            let(:selector) { { series: 'Barsoom' } }
-            let(:expected) do
-              raw_data.select { |item| item['series'] == 'Barsoom' }
-            end
+          describe 'with greater than the number of items' do
+            let(:offset) { raw_data.count + 3 }
 
-            it { expect(query.count).to be raw_data.size }
+            it { expect(query.count).to be raw_data.count }
 
             it { expect(query.to_a).to be == raw_data }
 
-            it { expect(subquery.count).to be expected.size }
-
-            it { expect(subquery.to_a).to be == expected }
+            include_examples 'should filter the data'
           end
         end
 
         wrap_context 'when the query has a matching filter' do
           include_context 'when the data has many items'
 
-          describe 'with an empty selector' do
-            let(:selector) { {} }
+          describe 'with zero' do
+            let(:offset) { 0 }
 
-            it { expect(query.count).to be expected_data.size }
+            it { expect(query.count).to be queried_data.count }
 
-            it { expect(query.to_a).to be == expected_data }
+            it { expect(query.to_a).to be == queried_data }
 
-            it { expect(subquery.count).to be expected_data.size }
-
-            it { expect(subquery.to_a).to be == expected_data }
+            include_examples 'should filter the data'
           end
 
-          describe 'with a value selector that does not match any items' do
-            let(:selector) { { 'author' => 'C. S. Lewis' } }
+          describe 'with one' do
+            let(:offset) { 1 }
 
-            it { expect(query.count).to be expected_data.size }
+            it { expect(query.count).to be queried_data.count }
 
-            it { expect(query.to_a).to be == expected_data }
+            it { expect(query.to_a).to be == queried_data }
 
-            it { expect(subquery.count).to be 0 }
-
-            it { expect(subquery.to_a).to be == [] }
+            include_examples 'should filter the data'
           end
 
-          describe 'with a value selector that matches some items' do
-            let(:selector) { { 'index' => 2 } }
-            let(:expected) do
-              expected_data.select { |item| item['index'] == 2 }
-            end
+          describe 'with the number of items' do
+            let(:offset) { queried_data.count }
 
-            it { expect(query.count).to be expected_data.size }
+            it { expect(query.count).to be queried_data.count }
 
-            it { expect(query.to_a).to be == expected_data }
+            it { expect(query.to_a).to be == queried_data }
 
-            it { expect(subquery.count).to be expected.size }
-
-            it { expect(subquery.to_a).to be == expected }
+            include_examples 'should filter the data'
           end
 
-          describe 'with a value selector that matches all items' do
-            let(:selector) { { 'author' => 'Edgar Rice Burroughs' } }
+          describe 'with greater than the number of items' do
+            let(:offset) { queried_data.count + 3 }
 
-            it { expect(query.count).to be expected_data.size }
+            it { expect(query.count).to be queried_data.count }
 
-            it { expect(query.to_a).to be == expected_data }
+            it { expect(query.to_a).to be == queried_data }
 
-            it { expect(subquery.count).to be expected_data.size }
+            include_examples 'should filter the data'
+          end
+        end
 
-            it { expect(subquery.to_a).to be == expected_data }
+        wrap_context 'when the query has a simple ordering' do
+          include_context 'when the data has many items'
+
+          describe 'with zero' do
+            let(:offset) { 0 }
+
+            it { expect(query.count).to be queried_data.count }
+
+            it { expect(query.to_a).to be == queried_data }
+
+            include_examples 'should filter the data'
+          end
+
+          describe 'with one' do
+            let(:offset) { 1 }
+
+            it { expect(query.count).to be queried_data.count }
+
+            it { expect(query.to_a).to be == queried_data }
+
+            include_examples 'should filter the data'
+          end
+
+          describe 'with three' do
+            let(:offset) { 3 }
+
+            it { expect(query.count).to be queried_data.count }
+
+            it { expect(query.to_a).to be == queried_data }
+
+            include_examples 'should filter the data'
+          end
+
+          describe 'with the number of items' do
+            let(:offset) { queried_data.count }
+
+            it { expect(query.count).to be queried_data.count }
+
+            it { expect(query.to_a).to be == queried_data }
+
+            include_examples 'should filter the data'
+          end
+
+          describe 'with greater than the number of items' do
+            let(:offset) { queried_data.count + 3 }
+
+            it { expect(query.count).to be queried_data.count }
+
+            it { expect(query.to_a).to be == queried_data }
+
+            include_examples 'should filter the data'
+          end
+        end
+
+        wrap_context 'when the query has a complex ordering' do
+          include_context 'when the data has many items'
+
+          describe 'with zero' do
+            let(:offset) { 0 }
+
+            it { expect(query.count).to be queried_data.count }
+
+            it { expect(query.to_a).to be == queried_data }
+
+            include_examples 'should filter the data'
+          end
+
+          describe 'with one' do
+            let(:offset) { 1 }
+
+            it { expect(query.count).to be queried_data.count }
+
+            it { expect(query.to_a).to be == queried_data }
+
+            include_examples 'should filter the data'
+          end
+
+          describe 'with three' do
+            let(:offset) { 3 }
+
+            it { expect(query.count).to be queried_data.count }
+
+            it { expect(query.to_a).to be == queried_data }
+
+            include_examples 'should filter the data'
+          end
+
+          describe 'with the number of items' do
+            let(:offset) { queried_data.count }
+
+            it { expect(query.count).to be queried_data.count }
+
+            it { expect(query.to_a).to be == queried_data }
+
+            include_examples 'should filter the data'
+          end
+
+          describe 'with greater than the number of items' do
+            let(:offset) { queried_data.count + 3 }
+
+            it { expect(query.count).to be queried_data.count }
+
+            it { expect(query.to_a).to be == queried_data }
+
+            include_examples 'should filter the data'
+          end
+        end
+
+        wrap_context 'when the query has an ordering and a limit' do
+          include_context 'when the data has many items'
+
+          describe 'with zero' do
+            let(:offset) { 0 }
+
+            it { expect(query.count).to be queried_data.count }
+
+            it { expect(query.to_a).to be == queried_data }
+
+            include_examples 'should filter the data'
+          end
+
+          describe 'with one' do
+            let(:offset) { 1 }
+
+            it { expect(query.count).to be queried_data.count }
+
+            it { expect(query.to_a).to be == queried_data }
+
+            include_examples 'should filter the data'
+          end
+
+          describe 'with three' do
+            let(:offset) { 3 }
+
+            it { expect(query.count).to be queried_data.count }
+
+            it { expect(query.to_a).to be == queried_data }
+
+            include_examples 'should filter the data'
+          end
+
+          describe 'with the number of items' do
+            let(:offset) { ordered_data.count }
+
+            it { expect(query.count).to be queried_data.count }
+
+            it { expect(query.to_a).to be == queried_data }
+
+            include_examples 'should filter the data'
+          end
+
+          describe 'with greater than the number of items' do
+            let(:offset) { ordered_data.count + 3 }
+
+            it { expect(query.count).to be queried_data.count }
+
+            it { expect(query.to_a).to be == queried_data }
+
+            include_examples 'should filter the data'
           end
         end
       end
@@ -543,55 +1293,53 @@ module Spec::Support::Examples::Collections
           context 'when no items have the attribute' do
             let(:attribute) { 'attributions' }
 
-            it { expect(query.count).to be expected_data.size }
+            it { expect(query.count).to be queried_data.size }
 
-            it { expect(query.to_a).to be == expected_data }
+            it { expect(query.to_a).to be == queried_data }
 
-            it { expect(subquery.count).to be expected_data.size }
-
-            it { expect(subquery.to_a).to be == expected_data }
+            include_examples 'should filter the data'
           end
 
           context 'when some items have the attribute' do
             let(:attribute) { 'series' }
             let(:items_without_attribute) do
-              expected_data.select { |item| item['series'].nil? }
+              matching_data.select { |item| item['series'].nil? }
             end
             let(:sorted_ascending) do
-              expected_data
+              matching_data
                 .reject { |item| item['series'].nil? }
                 .sort_by { |item| item['series'] } +
                 items_without_attribute
             end
             let(:sorted_descending) do
               items_without_attribute +
-                expected_data
+                matching_data
                 .reject { |item| item['series'].nil? }
                 .sort { |u, v| v['series'] <=> u['series'] }
             end
-            let(:expected) { reversed ? sorted_descending : sorted_ascending }
+            let(:ordered_data) do
+              reversed ? sorted_descending : sorted_ascending
+            end
 
-            it { expect(query.count).to be expected_data.size }
+            it { expect(query.count).to be queried_data.size }
 
-            it { expect(query.to_a).to be == expected_data }
+            it { expect(query.to_a).to be == queried_data }
 
-            it { expect(subquery.count).to be expected_data.size }
-
-            it { expect(subquery.to_a).to be == expected }
+            include_examples 'should filter the data'
           end
 
           context 'when all items have the attribute' do
             let(:attribute) { 'title' }
-            let(:sorted)    { expected_data.sort_by { |item| item['title'] } }
-            let(:expected)  { reversed ? sorted.reverse : sorted }
+            let(:sorted) do
+              matching_data.sort_by { |item| item['title'] }
+            end
+            let(:ordered_data) { reversed ? sorted.reverse : sorted }
 
-            it { expect(query.count).to be expected_data.size }
+            it { expect(query.count).to be queried_data.size }
 
-            it { expect(query.to_a).to be == expected_data }
+            it { expect(query.to_a).to be == queried_data }
 
-            it { expect(subquery.count).to be expected_data.size }
-
-            it { expect(subquery.to_a).to be == expected }
+            include_examples 'should filter the data'
           end
         end
 
@@ -662,88 +1410,37 @@ module Spec::Support::Examples::Collections
 
           describe 'with multiple valid attributes' do
             let(:subquery) { query.order(:series, :title) }
-            let(:expected) do
-              expected_data
-                .each.with_index.sort do |(u, ui), (v, vi)|
-                  compare_series(u, v) || compare_title(u, v) || (ui <=> vi)
-                end
-                .map(&:first)
+            let(:ordered_data) do
+              Spec::Support::Sorting
+                .sort_hashes(matching_data, 'series' => :asc, 'title' => :asc)
             end
 
-            def compare_series(first, second)
-              first_series  = first['series']
-              second_series = second['series']
+            it { expect(query.count).to be queried_data.size }
 
-              return if first_series.nil? && second_series.nil?
+            it { expect(query.to_a).to be == queried_data }
 
-              return 1 if first_series.nil?
-
-              return -1 if second_series.nil?
-
-              cmp = first_series <=> second_series
-
-              cmp.zero? ? nil : cmp
-            end
-
-            def compare_title(first, second)
-              cmp = first['title'] <=> second['title']
-
-              cmp.zero? ? nil : cmp
-            end
-
-            it { expect(query.count).to be expected_data.size }
-
-            it { expect(query.to_a).to be == expected_data }
-
-            it { expect(subquery.count).to be expected_data.size }
-
-            it { expect(subquery.to_a).to be == expected }
+            include_examples 'should filter the data'
           end
 
           describe 'with a Hash with multiple valid key-value pairs' do
             let(:subquery) { query.order(series: :asc, title: :desc) }
-            let(:expected) do
-              expected_data
-                .each.with_index.sort do |(u, ui), (v, vi)|
-                  compare_series(u, v) || compare_title(u, v) || (ui <=> vi)
-                end
-                .map(&:first)
+            let(:ordered_data) do
+              Spec::Support::Sorting
+                .sort_hashes(matching_data, 'series' => :asc, 'title' => :desc)
             end
 
-            def compare_series(first, second)
-              first_series  = first['series']
-              second_series = second['series']
+            it { expect(query.count).to be queried_data.size }
 
-              return if first_series.nil? && second_series.nil?
+            it { expect(query.to_a).to be == queried_data }
 
-              return 1 if first_series.nil?
-
-              return -1 if second_series.nil?
-
-              cmp = first_series <=> second_series
-
-              cmp.zero? ? nil : cmp
-            end
-
-            def compare_title(first, second)
-              cmp = first['title'] <=> second['title']
-
-              cmp.zero? ? nil : -cmp
-            end
-
-            it { expect(query.count).to be expected_data.size }
-
-            it { expect(query.to_a).to be == expected_data }
-
-            it { expect(subquery.count).to be expected_data.size }
-
-            it { expect(subquery.to_a).to be == expected }
+            include_examples 'should filter the data'
           end
         end
 
         let(:attributes)    { %w[title] }
         let(:subquery)      { query.order(*attributes) }
-        let(:expected_data) { raw_data }
+        let(:queried_data)  { raw_data }
+        let(:expected_data) { queried_data }
 
         it { expect(query.order(*attributes)).not_to be query }
 
@@ -836,6 +1533,33 @@ module Spec::Support::Examples::Collections
 
           include_examples 'should sort the data'
         end
+
+        wrap_context 'when the query has a simple ordering' do
+          include_context 'when the data has many items'
+
+          # Calling #order overwrites the previous ordering.
+          let(:ordered_data) { raw_data }
+
+          include_examples 'should sort the data'
+        end
+
+        wrap_context 'when the query has a complex ordering' do
+          include_context 'when the data has many items'
+
+          # Calling #order overwrites the previous ordering.
+          let(:ordered_data) { raw_data }
+
+          include_examples 'should sort the data'
+        end
+
+        wrap_context 'when the query has an ordering and a limit' do
+          include_context 'when the data has many items'
+
+          # Calling #order overwrites the previous ordering.
+          let(:ordered_data) { raw_data }
+
+          include_examples 'should sort the data'
+        end
       end
 
       describe '#to_a' do
@@ -848,7 +1572,25 @@ module Spec::Support::Examples::Collections
         wrap_context 'when the query has a matching filter' do
           include_context 'when the data has many items'
 
-          it { expect(query.to_a).to be == expected_data }
+          it { expect(query.to_a).to be == queried_data }
+        end
+
+        wrap_context 'when the query has a simple ordering' do
+          include_context 'when the data has many items'
+
+          it { expect(query.to_a).to be == queried_data }
+        end
+
+        wrap_context 'when the query has a complex ordering' do
+          include_context 'when the data has many items'
+
+          it { expect(query.to_a).to be == queried_data }
+        end
+
+        wrap_context 'when the query has an ordering and a limit' do
+          include_context 'when the data has many items'
+
+          it { expect(query.to_a).to be == queried_data }
         end
       end
     end

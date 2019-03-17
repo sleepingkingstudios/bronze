@@ -16,6 +16,8 @@
 - Query#offset (alias #skip)
 - Query#order
 - Collection#find_matching takes #limit, #order, #offset keywords.
+- restrict #limit to integer > 0
+- restrict #offset to integer >= 0
 
 ### Transforms
 

@@ -15,6 +15,7 @@ module Spec; end
 require 'support/matchers/be_a_result'
 require 'support/matchers/match_attributes'
 require 'support/matchers/not_yield_control'
+require 'support/sorting'
 
 # See http://rubydoc.info/gems/rspec-core/RSpec/Core/Configuration
 RSpec.configure do |config|

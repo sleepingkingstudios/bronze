@@ -14,10 +14,11 @@ module Bronze::Collections::Simple
 
     # @param [Array<Hash>] data The data to query against.
     def initialize(data)
-      @data        = data
-      @filters     = []
-      @max_results = nil
-      @ordering    = nil
+      @data         = data
+      @filters      = []
+      @max_results  = nil
+      @skip_results = nil
+      @ordering     = nil
     end
 
     # (see Bronze::Collections::Query#count)
@@ -47,6 +48,12 @@ module Bronze::Collections::Simple
     end
     alias_method :where, :matching
 
+    # (see Bronze::Collections::Query#offset)
+    def offset(count)
+      dup.with_offset(count)
+    end
+    alias_method :skip, :offset
+
     # (see bronze::Collections::Query#order)
     def order(*attributes)
       dup.with_ordering(attributes)
@@ -68,6 +75,12 @@ module Bronze::Collections::Simple
       self
     end
 
+    def with_offset(count)
+      @skip_results = count
+
+      self
+    end
+
     def with_ordering(attributes)
       @ordering = generate_ordering(attributes)
 
@@ -81,6 +94,8 @@ module Bronze::Collections::Simple
     attr_reader :filters
 
     attr_reader :max_results
+
+    attr_reader :skip_results
 
     def filter_equals(actual, expected)
       actual == expected
@@ -108,16 +123,17 @@ module Bronze::Collections::Simple
       end
     end
 
-    def matching_data
-      matching_count = -1
+    def matching_data # rubocop:disable Metrics/CyclomaticComplexity
+      skipped_count  = 0
+      matching_count = 0
       items          = ordering? ? ordered_data : data
 
       items.each do |item|
         next unless matches?(item)
 
-        if max_results
-          break if max_results <= matching_count += 1
-        end
+        next if skip_results && (skipped_count += 1) <= skip_results
+
+        break if max_results && max_results < (matching_count += 1)
 
         yield item
       end
