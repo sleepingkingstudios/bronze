@@ -367,14 +367,49 @@ module Spec::Support::Examples::Collections
 
         it { expect(query.limit 3).to be_a described_class }
 
+        describe 'with nil' do
+          let(:error_message) do
+            'expected limit to be a positive integer, but was nil'
+          end
+
+          it 'should raise an error' do
+            expect { query.limit nil }
+              .to raise_error ArgumentError, error_message
+          end
+        end
+
+        describe 'with an Object' do
+          let(:object) { Object.new.freeze }
+          let(:error_message) do
+            "expected limit to be a positive integer, but was #{object.inspect}"
+          end
+
+          it 'should raise an error' do
+            expect { query.limit object }
+              .to raise_error ArgumentError, error_message
+          end
+        end
+
+        describe 'with a negative integer' do
+          let(:error_message) do
+            'expected limit to be a positive integer, but was -1'
+          end
+
+          it 'should raise an error' do
+            expect { query.limit(-1) }
+              .to raise_error ArgumentError, error_message
+          end
+        end
+
         describe 'with zero' do
-          let(:limit) { 0 }
+          let(:error_message) do
+            'expected limit to be a positive integer, but was 0'
+          end
 
-          it { expect(query.count).to be 0 }
-
-          it { expect(query.to_a).to be == [] }
-
-          include_examples 'should filter the data'
+          it 'should raise an error' do
+            expect { query.limit(0) }
+              .to raise_error ArgumentError, error_message
+          end
         end
 
         describe 'with one' do
@@ -398,16 +433,6 @@ module Spec::Support::Examples::Collections
         end
 
         wrap_context 'when the data has many items' do
-          describe 'with zero' do
-            let(:limit) { 0 }
-
-            it { expect(query.count).to be raw_data.count }
-
-            it { expect(query.to_a).to be == raw_data }
-
-            include_examples 'should filter the data'
-          end
-
           describe 'with one' do
             let(:limit) { 1 }
 
@@ -452,16 +477,6 @@ module Spec::Support::Examples::Collections
         wrap_context 'when the query has a matching filter' do
           include_context 'when the data has many items'
 
-          describe 'with zero' do
-            let(:limit) { 0 }
-
-            it { expect(query.count).to be queried_data.count }
-
-            it { expect(query.to_a).to be == queried_data }
-
-            include_examples 'should filter the data'
-          end
-
           describe 'with one' do
             let(:limit) { 1 }
 
@@ -495,16 +510,6 @@ module Spec::Support::Examples::Collections
 
         wrap_context 'when the query has a simple ordering' do
           include_context 'when the data has many items'
-
-          describe 'with zero' do
-            let(:limit) { 0 }
-
-            it { expect(query.count).to be queried_data.count }
-
-            it { expect(query.to_a).to be == queried_data }
-
-            include_examples 'should filter the data'
-          end
 
           describe 'with one' do
             let(:limit) { 1 }
@@ -550,16 +555,6 @@ module Spec::Support::Examples::Collections
         wrap_context 'when the query has a complex ordering' do
           include_context 'when the data has many items'
 
-          describe 'with zero' do
-            let(:limit) { 0 }
-
-            it { expect(query.count).to be queried_data.count }
-
-            it { expect(query.to_a).to be == queried_data }
-
-            include_examples 'should filter the data'
-          end
-
           describe 'with one' do
             let(:limit) { 1 }
 
@@ -603,16 +598,6 @@ module Spec::Support::Examples::Collections
 
         wrap_context 'when the query has an ordering and a limit' do
           include_context 'when the data has many items'
-
-          describe 'with zero' do
-            let(:limit) { 0 }
-
-            it { expect(query.count).to be queried_data.count }
-
-            it { expect(query.to_a).to be == queried_data }
-
-            include_examples 'should filter the data'
-          end
 
           describe 'with one' do
             let(:limit) { 1 }
@@ -666,7 +651,7 @@ module Spec::Support::Examples::Collections
 
         describe 'with nil' do
           let(:error_message) do
-            'invalid selector - nil'
+            'expected selector to be a Hash, but was nil'
           end
 
           it 'should raise an error' do
@@ -678,7 +663,7 @@ module Spec::Support::Examples::Collections
         describe 'with an Object' do
           let(:object) { Object.new }
           let(:error_message) do
-            "invalid selector - #{object.inspect}"
+            "expected selector to be a Hash, but was #{object.inspect}"
           end
 
           it 'should raise an error' do
@@ -991,6 +976,43 @@ module Spec::Support::Examples::Collections
         it { expect(query.offset 3).not_to be query }
 
         it { expect(query.offset 3).to be_a described_class }
+
+        describe 'with nil' do
+          let(:error_message) do
+            'expected offset to be an integer greater than or equal to zero, ' \
+            'but was nil'
+          end
+
+          it 'should raise an error' do
+            expect { query.offset nil }
+              .to raise_error ArgumentError, error_message
+          end
+        end
+
+        describe 'with an Object' do
+          let(:object) { Object.new.freeze }
+          let(:error_message) do
+            'expected offset to be an integer greater than or equal to zero, ' \
+            "but was #{object.inspect}"
+          end
+
+          it 'should raise an error' do
+            expect { query.offset object }
+              .to raise_error ArgumentError, error_message
+          end
+        end
+
+        describe 'with a negative integer' do
+          let(:error_message) do
+            'expected offset to be an integer greater than or equal to zero, ' \
+            'but was -1'
+          end
+
+          it 'should raise an error' do
+            expect { query.offset(-1) }
+              .to raise_error ArgumentError, error_message
+          end
+        end
 
         describe 'with zero' do
           let(:offset) { 0 }
@@ -1467,11 +1489,11 @@ module Spec::Support::Examples::Collections
         describe 'with an Object' do
           let(:object) { Object.new }
           let(:error_message) do
-            "invalid selector - #{object.inspect}"
+            "invalid ordering - #{object.inspect}"
           end
 
           it 'should raise an error' do
-            expect { query.matching(object) }
+            expect { query.order(object) }
               .to raise_error ArgumentError, error_message
           end
         end

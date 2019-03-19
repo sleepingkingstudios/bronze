@@ -8,13 +8,9 @@
 
 - Mongo-style selectors - query.matching(year: { $gt: 1986 })
 
-### Query Ordering
+### Null Query
 
-- find_matching(selector, options)
-  - returns Bronze::Result
-  - takes :limit, :skip, :order options
-- restrict #limit to integer > 0
-- restrict #offset to integer >= 0
+- created by Collection#none, Query#none, Query.limit(0) ?
 
 ### Transforms
 

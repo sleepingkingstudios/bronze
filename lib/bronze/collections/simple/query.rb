@@ -1,12 +1,14 @@
 # frozen_string_literal: true
 
 require 'bronze/collections/query'
+require 'bronze/collections/query/validation'
 require 'bronze/collections/simple'
 require 'bronze/collections/simple/ordering'
 
 module Bronze::Collections::Simple
   # Query class that filters in-memory data in an Array of Hashes format.
   class Query < Bronze::Collections::Query
+    include Bronze::Collections::Query::Validation
     include Bronze::Collections::Simple::Ordering
 
     UNDEFINED = Object.new
@@ -35,14 +37,14 @@ module Bronze::Collections::Simple
 
     # (see Bronze::Collections::Query#limit)
     def limit(count)
+      validate_limit(count)
+
       dup.with_limit(count)
     end
 
     # (see Bronze::Collections::Query#matching)
     def matching(selector)
-      unless selector.is_a?(Hash)
-        raise ArgumentError, "invalid selector - #{selector.inspect}"
-      end
+      validate_selector(selector)
 
       dup.with_filters(selector)
     end
@@ -50,6 +52,8 @@ module Bronze::Collections::Simple
 
     # (see Bronze::Collections::Query#offset)
     def offset(count)
+      validate_offset(count)
+
       dup.with_offset(count)
     end
     alias_method :skip, :offset
