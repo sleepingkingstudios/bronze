@@ -3,19 +3,14 @@
 ## Collections
 
 - extract adapter specs to shared examples
-- find_matching(selector, options)
-  - returns Bronze::Result
-  - takes :limit, :skip, :order options
 
 ### Advanced Querying
 
 - Mongo-style selectors - query.matching(year: { $gt: 1986 })
 
-### Query Ordering
+### Null Query
 
-- Query#offset (alias #skip)
-- Query#order
-- Collection#find_matching takes #limit, #order, #offset keywords.
+- created by Collection#none, Query#none, Query.limit(0) ?
 
 ### Transforms
 

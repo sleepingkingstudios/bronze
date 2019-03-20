@@ -98,12 +98,18 @@ module Bronze
     # @param selector [Hash] The criteria used to filter the data.
     #
     # @return [Bronze::Result] the result of the find operation.
-    def find_matching(selector)
+    def find_matching(selector, limit: nil, offset: nil, order: nil)
       errors = errors_for_selector(selector)
 
       return Bronze::Result.new(nil, errors: errors) if errors
 
-      adapter.find_matching(name, selector)
+      adapter.find_matching(
+        name,
+        selector,
+        limit:  limit,
+        offset: offset,
+        order:  order
+      )
     end
 
     # Finds the data object with the given primary key.

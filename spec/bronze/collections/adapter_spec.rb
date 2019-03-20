@@ -99,7 +99,12 @@ RSpec.describe Bronze::Collections::Adapter do
       'Bronze::Collections::Adapter#find_matching is not implemented'
     end
 
-    it { expect(adapter).to respond_to(:find_matching).with(2).arguments }
+    it 'should define the method' do
+      expect(adapter)
+        .to respond_to(:find_matching)
+        .with(2).arguments
+        .and_keywords(:limit, :offset, :order)
+    end
 
     it 'should raise an error' do
       expect { adapter.find_matching(collection_name, selector) }

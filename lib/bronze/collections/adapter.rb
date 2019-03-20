@@ -61,19 +61,34 @@ module Bronze::Collections
       raise Bronze::NotImplementedError.new(self, :delete_one)
     end
 
+    # # rubocop:disable Lint/UnusedMethodArgument
+
     # @overload find_matching(collection_name, selector, limit:)
     #   Finds all items in the collection matching the given selector.
     #
     #   @param collection_name [String] The collection to query.
     #   @param selector [Hash] The criteria used to filter the data.
+    #   @param limit [Integer] The maximum number of items to return. If nil or
+    #     if no value is given, all matching items will be returned. Defaults
+    #     to nil.
+    #   @param offset [Integer] The number of items to skip. If nil or if no
+    #     value is given, all matching items will be returned. Defaults to nil.
+    #   @param order [String, Symbol, Array, Hash] See Query#order.
     #
     #   @return [Bronze::Result] the result of the find operation.
     #
     #   @raise Bronze::NotImplementedError unless overriden by an Adapter
     #     subclass.
-    def find_matching(_collection_name, _selector)
+    def find_matching(
+      _collection_name,
+      _selector,
+      limit: nil,
+      offset: nil,
+      order: nil
+    )
       raise Bronze::NotImplementedError.new(self, :find_matching)
     end
+    # rubocop:enable Lint/UnusedMethodArgument
 
     # @overload find_one(collection_name, primary_key, value)
     #   Finds the data object with the given primary key.

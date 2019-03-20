@@ -35,7 +35,7 @@ module Bronze::Collections
     #   Returns a query that returns at most the specified number of results.
     #   The existing query is unchanged.
     #
-    #   @param count [Index] The maximum number of items to return.
+    #   @param count [Integer] The maximum number of items to return.
     #
     #   @return [Query] the generated Query.
     #
@@ -57,6 +57,43 @@ module Bronze::Collections
       raise Bronze::NotImplementedError.new(self, :matching)
     end
     alias_method :where, :matching
+
+    # @overload offset(_count)
+    #   Returns a query that skips the first specified number of results. The
+    #   existing query is unchanged.
+    #
+    #   @param count [Index] The number of items to skip.
+    #
+    #   @return [Query] the generated Query.
+    #
+    #   @raise Bronze::NotImplementedError unless overriden by a Query subclass.
+    def offset(_count)
+      raise Bronze::NotImplementedError.new(self, :offset)
+    end
+    alias_method :skip, :offset
+
+    # @overload order(*attributes)
+    #   Returns a query that orders the data by the given attributes. The
+    #   existing query is unchanged.
+    #
+    #   @param attributes [Array<String, Symbol>] The names of the attributes
+    #     used to sort the data.
+    #
+    #   @return [Query] the generated Query.
+    #
+    #   @raise Bronze::NotImplementedError unless overriden by a Query subclass.
+    # @overload order(attributes)
+    #   Returns a query that orders the data by the given attributes. The
+    #   existing query is unchanged.
+    #
+    #   @param attributes [Hash] Each hash key is the name of an attribute, and
+    #     the value is the direction to sort the data. The value must be either
+    #     a String or Symbol with a value of "asc" or "desc".
+    #
+    #   @return [Query] the generated Query.
+    def order(*_attributes)
+      raise Bronze::NotImplementedError.new(self, :order)
+    end
 
     # @return [Array] the matching data as an Array.
     #

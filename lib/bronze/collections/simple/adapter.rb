@@ -51,8 +51,12 @@ module Bronze::Collections::Simple
     end
 
     # (see Bronze::Collections::Adapter#find_matching)
-    def find_matching(collection_name, selector)
+    def find_matching(collection_name, selector, limit:, offset:, order:)
       items = query(collection_name).matching(selector)
+
+      items = items.order(*Array(order)) if order
+      items = items.limit(limit)         if limit
+      items = items.offset(offset)       if offset
 
       Bronze::Result.new(items.to_a)
     end
