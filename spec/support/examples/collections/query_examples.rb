@@ -78,14 +78,22 @@ module Spec::Support::Examples::Collections
     end
 
     shared_context 'when the query has a complex ordering' do
+      let(:sort_nils_before_values) do
+        # The default behavior is to sort nil values after non-nil. This is
+        # the expected behavior for Postgres, as well as the built-in Simple
+        # collection.
+        defined?(super()) ? super() : false
+      end
       let(:query)         { super().order(:series, title: :desc) }
       let(:matching_data) { raw_data }
       let(:ordered_data) do
         Spec::Support::Sorting
+          .new(sort_nils_before_values: sort_nils_before_values)
           .sort_hashes(matching_data, 'series' => :asc, 'title' => :desc)
       end
       let(:queried_data) do
         Spec::Support::Sorting
+          .new(sort_nils_before_values: sort_nils_before_values)
           .sort_hashes(raw_data, 'series' => :asc, 'title' => :desc)
       end
     end
@@ -1327,17 +1335,33 @@ module Spec::Support::Examples::Collections
             let(:items_without_attribute) do
               matching_data.select { |item| item['series'].nil? }
             end
-            let(:sorted_ascending) do
+            let(:matching_ascending) do
               matching_data
                 .reject { |item| item['series'].nil? }
-                .sort_by { |item| item['series'] } +
-                items_without_attribute
+                .sort_by { |item| item['series'] }
             end
-            let(:sorted_descending) do
-              items_without_attribute +
-                matching_data
+            let(:sorted_ascending) do
+              if sort_nils_before_values
+                # :nocov:
+                items_without_attribute + matching_ascending
+                # :nocov:
+              else
+                matching_ascending + items_without_attribute
+              end
+            end
+            let(:matching_descending) do
+              matching_data
                 .reject { |item| item['series'].nil? }
                 .sort { |u, v| v['series'] <=> u['series'] }
+            end
+            let(:sorted_descending) do
+              if sort_nils_before_values
+                # :nocov:
+                matching_descending + items_without_attribute
+                # :nocov:
+              else
+                items_without_attribute + matching_descending
+              end
             end
             let(:ordered_data) do
               reversed ? sorted_descending : sorted_ascending
@@ -1434,6 +1458,7 @@ module Spec::Support::Examples::Collections
             let(:subquery) { query.order(:series, :title) }
             let(:ordered_data) do
               Spec::Support::Sorting
+                .new(sort_nils_before_values: sort_nils_before_values)
                 .sort_hashes(matching_data, 'series' => :asc, 'title' => :asc)
             end
 
@@ -1448,6 +1473,7 @@ module Spec::Support::Examples::Collections
             let(:subquery) { query.order(series: :asc, title: :desc) }
             let(:ordered_data) do
               Spec::Support::Sorting
+                .new(sort_nils_before_values: sort_nils_before_values)
                 .sort_hashes(matching_data, 'series' => :asc, 'title' => :desc)
             end
 
@@ -1463,6 +1489,12 @@ module Spec::Support::Examples::Collections
         let(:subquery)      { query.order(*attributes) }
         let(:queried_data)  { raw_data }
         let(:expected_data) { queried_data }
+        let(:sort_nils_before_values) do
+          # The default behavior is to sort nil values after non-nil. This is
+          # the expected behavior for Postgres, as well as the built-in Simple
+          # collection.
+          defined?(super()) ? super() : false
+        end
 
         it { expect(query.order(*attributes)).not_to be query }
 
