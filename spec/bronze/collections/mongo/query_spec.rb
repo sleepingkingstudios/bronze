@@ -11,6 +11,9 @@ RSpec.describe Bronze::Collections::Mongo::Query do
 
   let(:collection) { Spec.mongo_client[:books] }
   let(:raw_data)   { [] }
+  let(:sort_nils_before_values) do
+    true # MongoDB sorts nil values before non-nil
+  end
 
   # rubocop:disable RSpec/BeforeAfterAll
   before(:context) do
