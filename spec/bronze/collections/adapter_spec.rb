@@ -2,16 +2,20 @@
 
 require 'bronze/collections/adapter'
 
+require 'support/examples/collections/adapter_examples'
+
 RSpec.describe Bronze::Collections::Adapter do
+  include Spec::Support::Examples::Collections::AdapterExamples
+
   subject(:adapter) { described_class.new }
 
   describe '::new' do
     it { expect(described_class).to be_constructible.with(0).arguments }
   end
 
-  describe '#collection_name_for' do
-    it { expect(adapter).to respond_to(:collection_name_for).with(1).argument }
+  include_examples 'should implement the Adapter interface'
 
+  describe '#collection_name_for' do
     describe 'with nil' do
       it 'should raise an error' do
         expect { adapter.collection_name_for nil }.to raise_error NameError
@@ -51,8 +55,6 @@ RSpec.describe Bronze::Collections::Adapter do
       'Bronze::Collections::Adapter#collection_names is not implemented'
     end
 
-    it { expect(adapter).to respond_to(:collection_names).with(0).arguments }
-
     it 'should raise an error' do
       expect { adapter.collection_names }
         .to raise_error Bronze::NotImplementedError, error_message
@@ -65,8 +67,6 @@ RSpec.describe Bronze::Collections::Adapter do
     let(:error_message) do
       'Bronze::Collections::Adapter#delete_matching is not implemented'
     end
-
-    it { expect(adapter).to respond_to(:delete_matching).with(2).arguments }
 
     it 'should raise an error' do
       expect { adapter.delete_matching(collection_name, selector) }
@@ -81,8 +81,6 @@ RSpec.describe Bronze::Collections::Adapter do
     let(:error_message) do
       'Bronze::Collections::Adapter#delete_one is not implemented'
     end
-
-    it { expect(adapter).to respond_to(:delete_one).with(3).arguments }
 
     it 'should raise an error' do
       expect do
@@ -99,13 +97,6 @@ RSpec.describe Bronze::Collections::Adapter do
       'Bronze::Collections::Adapter#find_matching is not implemented'
     end
 
-    it 'should define the method' do
-      expect(adapter)
-        .to respond_to(:find_matching)
-        .with(2).arguments
-        .and_keywords(:limit, :offset, :order)
-    end
-
     it 'should raise an error' do
       expect { adapter.find_matching(collection_name, selector) }
         .to raise_error Bronze::NotImplementedError, error_message
@@ -119,8 +110,6 @@ RSpec.describe Bronze::Collections::Adapter do
     let(:error_message) do
       'Bronze::Collections::Adapter#find_one is not implemented'
     end
-
-    it { expect(adapter).to respond_to(:find_one).with(3).arguments }
 
     it 'should raise an error' do
       expect do
@@ -137,8 +126,6 @@ RSpec.describe Bronze::Collections::Adapter do
       'Bronze::Collections::Adapter#insert_one is not implemented'
     end
 
-    it { expect(adapter).to respond_to(:insert_one).with(2).arguments }
-
     it 'should raise an error' do
       expect { adapter.insert_one(collection_name, object) }
         .to raise_error Bronze::NotImplementedError, error_message
@@ -149,8 +136,6 @@ RSpec.describe Bronze::Collections::Adapter do
     let(:error_message) do
       'Bronze::Collections::Adapter#query is not implemented'
     end
-
-    it { expect(adapter).to respond_to(:query).with(1).argument }
 
     it 'should raise an error' do
       expect { adapter.query('books') }
@@ -165,8 +150,6 @@ RSpec.describe Bronze::Collections::Adapter do
     let(:error_message) do
       'Bronze::Collections::Adapter#update_matching is not implemented'
     end
-
-    it { expect(adapter).to respond_to(:update_matching).with(3).arguments }
 
     it 'should raise an error' do
       expect { adapter.update_matching(collection_name, selector, data) }
