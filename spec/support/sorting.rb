@@ -1,43 +1,68 @@
 # frozen_string_literal: true
 
 module Spec::Support
-  module Sorting
-    class << self
-      DESCENDING = [:desc, 'desc'].freeze
+  class Sorting
+    DESCENDING = [:desc, 'desc'].freeze
 
-      def sort_hashes(items, ordering)
-        items
-          .each.with_index.sort do |(u, ui), (v, vi)|
-            ordering.reduce(nil) do |memo, (attribute, direction)|
-              reversed = DESCENDING.include?(direction)
+    def self.sort_hashes(items, ordering)
+      new.sort_hashes(items, ordering)
+    end
 
-              memo || compare_attributes(attribute, u, v, reversed: reversed)
-            end || (ui <=> vi)
-          end
-          .map(&:first)
-      end
+    def initialize(options = {})
+      @options = default_options.merge(options)
+    end
 
-      private
+    def sort_hashes(items, ordering)
+      items
+        .each.with_index.sort do |(u, ui), (v, vi)|
+          ordering.reduce(nil) do |memo, (attribute, direction)|
+            reversed = DESCENDING.include?(direction)
 
-      def compare_attributes(attribute, first, second, reversed:)
-        first_value  = first[attribute]
-        second_value = second[attribute]
+            memo || compare_attributes(attribute, u, v, reversed: reversed)
+          end || (ui <=> vi)
+        end
+        .map(&:first)
+    end
 
-        return nil if first_value.nil? && second_value.nil?
+    private
 
-        comparison = compare_values(first_value, second_value)
+    attr_reader :options
 
-        return nil if comparison.zero?
+    def compare_attributes(attribute, first, second, reversed:)
+      first_value  = first[attribute]
+      second_value = second[attribute]
 
-        reversed ? -comparison : comparison
-      end
+      return nil if first_value.nil? && second_value.nil?
 
-      def compare_values(first, second)
+      comparison = compare_values(first_value, second_value)
+
+      return nil if comparison.zero?
+
+      reversed ? -comparison : comparison
+    end
+
+    def compare_values(first, second)
+      if sort_nils_before_values
+        # :nocov:
+        return -1 if first.nil?
+        return 1  if second.nil?
+        # :nocov:
+      else
         return 1  if first.nil?
         return -1 if second.nil?
-
-        first <=> second
       end
+
+      first <=> second
+    end
+
+    def default_options
+      {
+        sort_nils_before_values: false
+      }
+    end
+
+    def sort_nils_before_values
+      options.fetch(:sort_nils_before_values, false)
     end
   end
 end
