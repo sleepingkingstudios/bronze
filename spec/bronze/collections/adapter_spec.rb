@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'bronze/collections/adapter'
+require 'bronze/collections/null_query'
 
 require 'support/examples/collections/adapter_examples'
 
@@ -130,6 +131,12 @@ RSpec.describe Bronze::Collections::Adapter do
       expect { adapter.insert_one(collection_name, object) }
         .to raise_error Bronze::NotImplementedError, error_message
     end
+  end
+
+  describe '#null_query' do
+    let(:null_query) { adapter.null_query('books') }
+
+    it { expect(null_query).to be_a Bronze::Collections::NullQuery }
   end
 
   describe '#query' do
