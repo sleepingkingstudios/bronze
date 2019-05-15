@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'bronze/collections'
+require 'bronze/collections/null_query'
 require 'bronze/not_implemented_error'
 
 module Bronze::Collections
@@ -118,6 +119,15 @@ module Bronze::Collections
     #     subclass.
     def insert_one(_collection_name, _data)
       raise Bronze::NotImplementedError.new(self, :insert_one)
+    end
+
+    # @overload null_query(collection_name)
+    #   @param collection_name [String] The collection to query.
+    #
+    #   @return [Bronze::Collections::NullQuery] a mock query that acts as a
+    #     query against an empty collection.
+    def null_query(_collection_name)
+      Bronze::Collections::NullQuery.new
     end
 
     # @overload query(collection_name)

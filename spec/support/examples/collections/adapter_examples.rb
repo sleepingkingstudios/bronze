@@ -139,6 +139,10 @@ module Spec::Support::Examples::Collections
         it { expect(adapter).to respond_to(:insert_one).with(2).arguments }
       end
 
+      describe '#null_query' do
+        it { expect(adapter).to respond_to(:null_query).with(1).argument }
+      end
+
       describe '#query' do
         it { expect(adapter).to respond_to(:query).with(1).argument }
       end
@@ -676,6 +680,18 @@ module Spec::Support::Examples::Collections
             end
           end
         end
+      end
+
+      describe '#null_query' do
+        let(:query) { adapter.null_query('books') }
+
+        it { expect(query).to respond_to(:count).with(0).arguments }
+
+        it { expect(query).to respond_to(:to_a).with(0).arguments }
+
+        it { expect(query.count).to be 0 }
+
+        it { expect(query.to_a).to be == [] }
       end
 
       describe '#query' do

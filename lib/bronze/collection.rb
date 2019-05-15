@@ -10,7 +10,7 @@ require 'bronze/result'
 module Bronze
   # A collection represents a data set, providing a consistent interface to
   # query and manage data from different sources.
-  class Collection
+  class Collection # rubocop:disable Metrics/ClassLength
     extend Forwardable
 
     include Bronze::Collections::PrimaryKeys
@@ -139,6 +139,13 @@ module Bronze
       adapter.insert_one(name, data)
     end
     alias_method :insert, :insert_one
+
+    # @return [Bronze::Collections::NullQuery] a mock query that acts as a
+    #     query against an empty collection.
+    def null_query
+      adapter.null_query(name)
+    end
+    alias_method :none, :null_query
 
     # Returns a query against the data set.
     #

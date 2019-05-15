@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+require 'bronze/collections/null_query'
 require 'bronze/collections/simple/adapter'
 
 require 'support/examples/collections/adapter_examples'
@@ -32,6 +33,12 @@ RSpec.describe Bronze::Collections::Simple::Adapter do
 
   describe '#data' do
     include_examples 'should have reader', :data, -> { be == raw_data }
+  end
+
+  describe '#null_query' do
+    let(:null_query) { adapter.null_query('books') }
+
+    it { expect(null_query).to be_a Bronze::Collections::NullQuery }
   end
 
   describe '#query' do

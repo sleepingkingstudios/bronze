@@ -2,6 +2,7 @@
 
 require 'bronze/collection'
 require 'bronze/collections/adapter'
+require 'bronze/collections/null_query'
 require 'bronze/collections/query'
 require 'bronze/entities/primary_key'
 require 'bronze/entity'
@@ -954,10 +955,14 @@ RSpec.describe Bronze::Collection do
       find_matching:       Bronze::Result.new,
       find_one:            Bronze::Result.new,
       insert_one:          Bronze::Result.new,
+      null_query:          null_query,
       query:               query,
       update_matching:     Bronze::Result.new,
       update_one:          Bronze::Result.new
     )
+  end
+  let(:null_query) do
+    instance_double(Bronze::Collections::NullQuery)
   end
   let(:query) do
     instance_double(
@@ -1596,6 +1601,20 @@ RSpec.describe Bronze::Collection do
         it { expect(collection.name).to be == 'magazines' }
       end
     end
+  end
+
+  describe '#null_query' do
+    it { expect(collection).to respond_to(:null_query).with(0).arguments }
+
+    it { expect(collection).to alias_method(:null_query).as(:none) }
+
+    it 'should delegate to the adapter' do
+      collection.null_query
+
+      expect(adapter).to have_received(:null_query).with(collection.name)
+    end
+
+    it { expect(collection.null_query).to be null_query }
   end
 
   describe '#primary_key' do
