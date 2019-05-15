@@ -3,6 +3,7 @@
 require 'forwardable'
 
 require 'bronze/collections/mongo'
+require 'bronze/collections/null_query'
 require 'bronze/collections/query'
 require 'bronze/collections/query/validation'
 require 'bronze/collections/simple/ordering'
@@ -59,6 +60,11 @@ module Bronze::Collections::Mongo
       dup.tap { |query| query.selector = selector.merge(hsh) }
     end
     alias_method :where, :matching
+
+    # (see Bronze::Collections::Query#none)
+    def none
+      Bronze::Collections::NullQuery.new
+    end
 
     # (see Bronze::Collections::Query#offset)
     def offset(count)
