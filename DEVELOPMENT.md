@@ -49,10 +49,6 @@
   { key: { subkey: value } }
   { key: { subkey: { $eq => value } } }
 
-### Null Query
-
-- created by Collection#none, Query#none, Query.limit(0) ?
-
 ### Transforms
 
 Collection#transform
