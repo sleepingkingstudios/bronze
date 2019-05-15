@@ -6,6 +6,8 @@ require 'bronze/collections/null_query'
 require 'bronze/collections/query'
 require 'bronze/entities/primary_key'
 require 'bronze/entity'
+require 'bronze/transforms/entities/normalize_transform'
+require 'bronze/transforms/identity_transform'
 
 RSpec.describe Bronze::Collection do
   shared_context 'when the definition is an entity class' do
@@ -979,11 +981,17 @@ RSpec.describe Bronze::Collection do
   end
 
   describe '::new' do
-    it 'should define the constructor' do
+    it 'should define the constructor' do # rubocop:disable RSpec/ExampleLength
       expect(described_class)
         .to be_constructible
         .with(1).argument
-        .and_keywords(:adapter, :name, :primary_key, :primary_key_type)
+        .and_keywords(
+          :adapter,
+          :name,
+          :primary_key,
+          :primary_key_type,
+          :transform
+        )
     end
 
     describe 'with nil' do
@@ -1848,6 +1856,32 @@ RSpec.describe Bronze::Collection do
     end
 
     it { expect(collection.query).to be query }
+  end
+
+  describe '#transform' do
+    include_examples 'should have reader', :transform, nil
+
+    context 'when options[:transform] is set' do
+      let(:transform) { Bronze::Transforms::IdentityTransform.new }
+      let(:options)   { { transform: transform } }
+
+      it { expect(collection.transform).to be transform }
+    end
+
+    wrap_context 'when the definition is an entity class' do
+      let(:transform_class) { Bronze::Transforms::Entities::NormalizeTransform }
+
+      it { expect(collection.transform).to be_a transform_class }
+
+      it { expect(collection.transform.entity_class).to be definition }
+
+      context 'when options[:transform] is set' do
+        let(:transform) { Bronze::Transforms::IdentityTransform.new }
+        let(:options)   { { transform: transform } }
+
+        it { expect(collection.transform).to be transform }
+      end
+    end
   end
 
   describe '#update_matching' do

@@ -29,6 +29,10 @@ module Bronze
     #   indicates that the data set does not have a primary key.
     # @param primary_key_type [Class, String] The type of the primary key for
     #   the data set. If no value is given, defaults to String.
+    # @param transform [Bronze::Transform] The transform used to convert
+    #   collection data to and from a usable form, such as an entity class.
+    #   Defaults to nil, or a normalize transfomr if the definition is an entity
+    #   class.
     #
     # @raise ArgumentError if the definition is not a name or a Class.
     def initialize(
@@ -36,7 +40,8 @@ module Bronze
       adapter:,
       name:             nil,
       primary_key:      nil,
-      primary_key_type: nil
+      primary_key_type: nil,
+      transform:        nil
     )
       @adapter = adapter
 
@@ -48,7 +53,8 @@ module Bronze
 
       parse_definition(definition)
 
-      @name = name.to_s unless name.nil?
+      @name      = name.to_s unless name.nil?
+      @transform = transform unless transform.nil?
     end
 
     def_delegators :query,
@@ -64,6 +70,10 @@ module Bronze
 
     # @return [String] the name of the data set.
     attr_reader :name
+
+    # @return [Bronze::Transform] the transform used to convert collection data
+    #   to and from a usable form, such as a model class.
+    attr_reader :transform
 
     # Deletes each item in the collection matching the given selector, removing
     # it from the collection.
@@ -211,11 +221,9 @@ module Bronze
     private
 
     def parse_definition(definition)
-      if definition.is_a?(Module)
-        @name = parse_module_definition(definition)
+      return parse_module_definition(definition) if definition.is_a?(Module)
 
-        return
-      elsif definition.is_a?(String) || definition.is_a?(Symbol)
+      if definition.is_a?(String) || definition.is_a?(Symbol)
         @name = definition.to_s
 
         return
@@ -226,10 +234,21 @@ module Bronze
         "#{definition.inspect}"
     end
 
-    def parse_module_definition(mod)
+    def parse_module_definition(definition)
+      @name      = parse_module_name(definition)
+      @transform = parse_module_transform(definition)
+    end
+
+    def parse_module_name(mod)
       return mod.collection_name.to_s if mod.respond_to?(:collection_name)
 
       adapter.collection_name_for(mod)
+    end
+
+    def parse_module_transform(mod)
+      return unless mod < Bronze::Entity
+
+      Bronze::Transforms::Entities::NormalizeTransform.new(mod)
     end
   end
 end

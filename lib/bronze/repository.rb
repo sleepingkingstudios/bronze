@@ -3,6 +3,7 @@
 require 'forwardable'
 
 require 'bronze/collection'
+require 'bronze/entity'
 
 module Bronze
   # A repository represents a data store, such as a SQL database, a MongoDB
