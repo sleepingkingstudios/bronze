@@ -73,6 +73,17 @@ RSpec.describe Bronze::Collections::Query do
     end
   end
 
+  describe '#none' do
+    let(:error_message) do
+      'Bronze::Collections::Query#none is not implemented'
+    end
+
+    it 'should raise an error' do
+      expect { query.none }
+        .to raise_error Bronze::NotImplementedError, error_message
+    end
+  end
+
   describe '#offset' do
     let(:error_message) do
       'Bronze::Collections::Query#offset is not implemented'

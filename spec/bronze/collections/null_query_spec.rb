@@ -65,6 +65,17 @@ RSpec.describe Bronze::Collections::NullQuery do
     it { expect(subquery.to_a).to be == [] }
   end
 
+  describe '#none' do
+    let(:selector) { {} }
+    let(:subquery) { query.none }
+
+    it { expect(query.none).to be query }
+
+    it { expect(subquery.count).to be 0 }
+
+    it { expect(subquery.to_a).to be == [] }
+  end
+
   describe '#offset' do
     let(:offset)   { 3 }
     let(:subquery) { query.offset(offset) }

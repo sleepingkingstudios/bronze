@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+require 'bronze/collections/null_query'
 require 'bronze/collections/query'
 require 'bronze/collections/query/validation'
 require 'bronze/collections/simple'
@@ -49,6 +50,11 @@ module Bronze::Collections::Simple
       dup.with_filters(selector)
     end
     alias_method :where, :matching
+
+    # (see Bronze::Collections::Query#none)
+    def none
+      Bronze::Collections::NullQuery.new
+    end
 
     # (see Bronze::Collections::Query#offset)
     def offset(count)

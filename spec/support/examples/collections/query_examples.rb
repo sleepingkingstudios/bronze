@@ -114,7 +114,11 @@ module Spec::Support::Examples::Collections
         let(:offset)        { defined?(super()) ? super() : 0 }
         let(:matching_data) { defined?(super()) ? super() : raw_data }
         let(:ordered_data)  { defined?(super()) ? super() : matching_data }
-        let(:filtered_data) { ordered_data[offset...(offset + limit)] || [] }
+        let(:filtered_data) do
+          return super() if defined?(super())
+
+          ordered_data[offset...(offset + limit)] || []
+        end
 
         it { expect(subquery.count).to be == filtered_data.size }
 
@@ -143,6 +147,10 @@ module Spec::Support::Examples::Collections
         it { expect(query).to respond_to(:matching).with(1).argument }
 
         it { expect(query).to alias_method(:matching).as(:where) }
+      end
+
+      describe '#none' do
+        it { expect(query).to respond_to(:none).with(0).arguments }
       end
 
       describe '#offset' do
@@ -974,6 +982,69 @@ module Spec::Support::Examples::Collections
 
             include_examples 'should filter the data'
           end
+        end
+      end
+
+      describe '#none' do
+        let(:subquery)      { query.none }
+        let(:filtered_data) { [] }
+
+        it { expect(query.none).not_to be query }
+
+        it { expect(query.none).to be_a Bronze::Collections::Query }
+
+        it { expect(query.count).to be 0 }
+
+        it { expect(query.to_a).to be == [] }
+
+        include_examples 'should filter the data'
+
+        wrap_context 'when the data has many items' do
+          it { expect(query.count).to be raw_data.size }
+
+          it { expect(query.to_a).to be == raw_data }
+
+          include_examples 'should filter the data'
+        end
+
+        wrap_context 'when the query has a matching filter' do
+          include_context 'when the data has many items'
+
+          it { expect(query.count).to be queried_data.size }
+
+          it { expect(query.to_a).to be == queried_data }
+
+          include_examples 'should filter the data'
+        end
+
+        wrap_context 'when the query has a simple ordering' do
+          include_context 'when the data has many items'
+
+          it { expect(query.count).to be queried_data.size }
+
+          it { expect(query.to_a).to be == queried_data }
+
+          include_examples 'should filter the data'
+        end
+
+        wrap_context 'when the query has a complex ordering' do
+          include_context 'when the data has many items'
+
+          it { expect(query.count).to be queried_data.size }
+
+          it { expect(query.to_a).to be == queried_data }
+
+          include_examples 'should filter the data'
+        end
+
+        wrap_context 'when the query has an ordering and a limit' do
+          include_context 'when the data has many items'
+
+          it { expect(query.count).to be queried_data.size }
+
+          it { expect(query.to_a).to be == queried_data }
+
+          include_examples 'should filter the data'
         end
       end
 

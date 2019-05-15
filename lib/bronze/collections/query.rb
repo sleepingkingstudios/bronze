@@ -58,6 +58,15 @@ module Bronze::Collections
     end
     alias_method :where, :matching
 
+    # Returns a query that does not match any data.
+    #
+    # @return [Query] the generated Query.
+    #
+    # @raise Bronze::NotImplementedError unless overriden by a Query subclass.
+    def none
+      raise Bronze::NotImplementedError.new(self, :none)
+    end
+
     # @overload offset(_count)
     #   Returns a query that skips the first specified number of results. The
     #   existing query is unchanged.

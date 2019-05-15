@@ -33,6 +33,11 @@ module Bronze::Collections
     end
     alias_method :where, :matching
 
+    # (see Bronze::Collections::Query#none)
+    def none
+      self
+    end
+
     # (see Bronze::Collections::Query#offset)
     def offset(_count)
       self
