@@ -58,7 +58,7 @@ module Bronze::Collections::Simple
     end
     alias_method :skip, :offset
 
-    # (see bronze::Collections::Query#order)
+    # (see Bronze::Collections::Query#order)
     def order(*attributes)
       dup.with_ordering(attributes)
     end

@@ -2,11 +2,52 @@
 
 ## Collections
 
-- extract adapter specs to shared examples
-
 ### Advanced Querying
 
-- Mongo-style selectors - query.matching(year: { $gt: 1986 })
+- Mongo-style selectors - query.matching(year: { $gt: 1986 }): |
+  see https://docs.mongodb.com/manual/reference/operator/query/
+
+  Comparison:
+    $eq   Matches values that are equal to a specified value.
+    $ne   Matches all values that are not equal to a specified value.
+    $gt   Matches values that are greater than a specified value.
+    $gte  Matches values that are greater than or equal to a specified value.
+    $lt   Matches values that are less than a specified value.
+    $lte  Matches values that are less than or equal to a specified value.
+    $in   Matches any of the values specified in an array.
+    $nin  Matches none of the values specified in an array.
+
+  Element:
+    $exists   Matches documents that have the specified field.
+    $type   Selects documents if a field is of the specified type.
+
+- Additional selectors: |
+  see https://docs.mongodb.com/manual/reference/operator/query/
+
+  Logical:
+    $and  Joins query clauses with a logical AND returns all documents that match the conditions of both clauses.
+    $not  Inverts the effect of a query expression and returns documents that do not match the query expression.
+    $nor  Joins query clauses with a logical NOR returns all documents that fail to match both clauses.
+    $or   Joins query clauses with a logical OR returns all documents that match the conditions of either clause.
+
+  Evaluation:
+    $mod  Performs a modulo operation on the value of a field and selects documents with a specified result.
+    $regex  Selects documents where values match a specified regular expression.
+    $text   Performs text search.
+
+  Array:
+    $all  Matches arrays that contain all elements specified in the query.
+    $size   Selects documents if the array field is a specified size.
+
+  Bitwise:
+    $bitsAllClear   Matches numeric or binary values in which a set of bit positions all have a value of 0.
+    $bitsAllSet   Matches numeric or binary values in which a set of bit positions all have a value of 1.
+    $bitsAnyClear   Matches numeric or binary values in which any bit from a set of bit positions has a value of 0.
+    $bitsAnySet   Matches numeric or binary values in which any bit from a set of bit positions has a value of 1.
+
+- Nested querying:
+  { key: { subkey: value } }
+  { key: { subkey: { $eq => value } } }
 
 ### Null Query
 
