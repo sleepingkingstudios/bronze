@@ -5,6 +5,8 @@ require 'bronze/collections/null_query'
 require 'bronze/not_implemented_error'
 
 module Bronze::Collections
+  # rubocop:disable Lint/UnusedMethodArgument
+
   # Abstract class defining the interface for collection adapters, which
   # allow collections to interact with different underlying data stores.
   class Adapter
@@ -31,93 +33,85 @@ module Bronze::Collections
       raise Bronze::NotImplementedError.new(self, :collection_names)
     end
 
-    # @overload delete_matching(collection_name, selector)
-    #   Deletes each item in the collection matching the given selector,
-    #   removing it from the collection.
+    # Deletes each item in the collection matching the given selector,
+    # removing it from the collection.
     #
-    #   @param collection_name [String] The collection to delete.
-    #   @param selector [Hash] The criteria used to filter the data.
+    # @param collection_name [String] The collection to delete.
+    # @param selector [Hash] The criteria used to filter the data.
     #
-    #   @return [Bronze::Result] the result of the delete operation.
+    # @return [Bronze::Result] the result of the delete operation.
     #
-    #   @raise Bronze::NotImplementedError unless overriden by an Adapter
-    #     subclass.
-    def delete_matching(_collection_name, _selector)
+    # @raise Bronze::NotImplementedError unless overriden by an Adapter
+    #   subclass.
+    def delete_matching(collection_name:, selector:)
       raise Bronze::NotImplementedError.new(self, :delete_matching)
     end
 
-    # @overload delete_one(collection_name, primary_key, value)
-    #   Deletes the item in the collection matching the given primary key.
+    # Deletes the item in the collection matching the given primary key.
     #
-    #   @param collection_name [String] The collection to update.
-    #   @param primary_key [Symbol] The name of the primary key column or
-    #     attribute.
-    #   @param value [Object] The primary key value to search for.
+    # @param collection_name [String] The collection to update.
+    # @param primary_key [Symbol] The name of the primary key column or
+    #   attribute.
+    # @param primary_key_value [Object] The primary key value to search for.
     #
-    #   @return [Bronze::Result] the result of the delete operation.
+    # @return [Bronze::Result] the result of the delete operation.
     #
-    #   @raise Bronze::NotImplementedError unless overriden by an Adapter
-    #     subclass.
-    def delete_one(_collection_name, _primary_key, _value)
+    # @raise Bronze::NotImplementedError unless overriden by an Adapter
+    #   subclass.
+    def delete_one(collection_name:, primary_key:, primary_key_value:)
       raise Bronze::NotImplementedError.new(self, :delete_one)
     end
 
-    # # rubocop:disable Lint/UnusedMethodArgument
-
-    # @overload find_matching(collection_name, selector, limit:)
-    #   Finds all items in the collection matching the given selector.
+    # Finds all items in the collection matching the given selector.
     #
-    #   @param collection_name [String] The collection to query.
-    #   @param selector [Hash] The criteria used to filter the data.
-    #   @param limit [Integer] The maximum number of items to return. If nil or
-    #     if no value is given, all matching items will be returned. Defaults
-    #     to nil.
-    #   @param offset [Integer] The number of items to skip. If nil or if no
-    #     value is given, all matching items will be returned. Defaults to nil.
-    #   @param order [String, Symbol, Array, Hash] See Query#order.
+    # @param collection_name [String] The collection to query.
+    # @param selector [Hash] The criteria used to filter the data.
+    # @param limit [Integer] The maximum number of items to return. If nil or
+    #   if no value is given, all matching items will be returned. Defaults
+    #   to nil.
+    # @param offset [Integer] The number of items to skip. If nil or if no
+    #   value is given, all matching items will be returned. Defaults to nil.
+    # @param order [String, Symbol, Array, Hash] See Query#order.
     #
-    #   @return [Bronze::Result] the result of the find operation.
+    # @return [Bronze::Result] the result of the find operation.
     #
-    #   @raise Bronze::NotImplementedError unless overriden by an Adapter
-    #     subclass.
+    # @raise Bronze::NotImplementedError unless overriden by an Adapter
+    #   subclass.
     def find_matching(
-      _collection_name,
-      _selector,
+      collection_name:,
+      selector:,
       limit: nil,
       offset: nil,
       order: nil
     )
       raise Bronze::NotImplementedError.new(self, :find_matching)
     end
-    # rubocop:enable Lint/UnusedMethodArgument
 
-    # @overload find_one(collection_name, primary_key, value)
-    #   Finds the data object with the given primary key.
+    # Finds the data object with the given primary key.
     #
-    #   @param collection_name [String] The collection to query.
-    #   @param primary_key [Symbol] The name of the primary key column or
-    #     attribute.
-    #   @param value [Object] The primary key value to search for.
+    # @param collection_name [String] The collection to query.
+    # @param primary_key [Symbol] The name of the primary key column or
+    #   attribute.
+    # @param value [Object] The primary key value to search for.
     #
-    #   @return [Bronze::Result] the result of the find operation.
+    # @return [Bronze::Result] the result of the find operation.
     #
-    #   @raise Bronze::NotImplementedError unless overriden by an Adapter
-    #     subclass.
-    def find_one(_collection_name, _primary_key, _value)
+    # @raise Bronze::NotImplementedError unless overriden by an Adapter
+    #   subclass.
+    def find_one(collection_name:, primary_key:, primary_key_value:)
       raise Bronze::NotImplementedError.new(self, :find_one)
     end
 
-    # @overload insert_one(collection_name, data)
-    #   Inserts the data hash into the specified collection.
+    # Inserts the data hash into the specified collection.
     #
-    #   @param collection_name [String] The collection to insert.
-    #   @param data [Hash] The data hash to insert.
+    # @param collection_name [String] The collection to insert.
+    # @param data [Hash] The data hash to insert.
     #
-    #   @return [Bronze::Result] the result of the insert operation.
+    # @return [Bronze::Result] the result of the insert operation.
     #
-    #   @raise Bronze::NotImplementedError unless overriden by an Adapter
-    #     subclass.
-    def insert_one(_collection_name, _data)
+    # @raise Bronze::NotImplementedError unless overriden by an Adapter
+    #   subclass.
+    def insert_one(collection_name:, data:)
       raise Bronze::NotImplementedError.new(self, :insert_one)
     end
 
@@ -142,19 +136,18 @@ module Bronze::Collections
       raise Bronze::NotImplementedError.new(self, :query)
     end
 
-    # @overload update_matching(collection_name, selector, data)
-    #   Updates each item in the collection matching the given selector with the
-    #   specified data.
+    # Updates each item in the collection matching the given selector with the
+    # specified data.
     #
-    #   @param collection_name [String] The collection to update.
-    #   @param selector [Hash] The criteria used to filter the data.
-    #   @param data [Hash] The keys and values to update in the matching items.
+    # @param collection_name [String] The collection to update.
+    # @param selector [Hash] The criteria used to filter the data.
+    # @param data [Hash] The keys and values to update in the matching items.
     #
-    #   @return [Bronze::Result] the result of the update operation.
+    # @return [Bronze::Result] the result of the update operation.
     #
-    #   @raise Bronze::NotImplementedError unless overriden by an Adapter
-    #     subclass.
-    def update_matching(_collection_name, _selector, _data)
+    # @raise Bronze::NotImplementedError unless overriden by an Adapter
+    #   subclass.
+    def update_matching(collection_name:, data:, selector:)
       raise Bronze::NotImplementedError.new(self, :update_matching)
     end
 
@@ -172,7 +165,7 @@ module Bronze::Collections
     #
     #   @raise Bronze::NotImplementedError unless overriden by an Adapter
     #     subclass.
-    def update_one(_collection_name, _primary_key, _value, _data)
+    def update_one(collection_name:, data:, primary_key:, primary_key_value:)
       raise Bronze::NotImplementedError.new(self, :update_one)
     end
 
@@ -182,4 +175,5 @@ module Bronze::Collections
       SleepingKingStudios::Tools::Toolbelt.instance
     end
   end
+  # rubocop:enable Lint/UnusedMethodArgument
 end

@@ -56,12 +56,12 @@ module Spec::Support::Examples::Collections
         end
 
         it 'should not change the data' do
-          expect { call_operation }
+          expect { call_method }
             .not_to(change { adapter.query(collection_name).to_a })
         end
 
         it 'should return a failing result' do
-          expect(call_operation)
+          expect(call_method)
             .to be_a_failing_result
             .with_errors(expected_error)
         end
@@ -89,12 +89,12 @@ module Spec::Support::Examples::Collections
         end
 
         it 'should not change the data' do
-          expect { call_operation }
+          expect { call_method }
             .not_to(change { adapter.query(collection_name).to_a })
         end
 
         it 'should return a failing result' do
-          expect(call_operation)
+          expect(call_method)
             .to be_a_failing_result
             .with_errors(expected_error)
         end
@@ -115,28 +115,48 @@ module Spec::Support::Examples::Collections
       end
 
       describe '#delete_matching' do
-        it { expect(adapter).to respond_to(:delete_matching).with(2).arguments }
+        it 'should define the method' do
+          expect(adapter)
+            .to respond_to(:delete_matching)
+            .with(0).arguments
+            .and_keywords(:collection_name, :selector)
+        end
       end
 
       describe '#delete_one' do
-        it { expect(adapter).to respond_to(:delete_one).with(3).arguments }
+        it 'should define the method' do
+          expect(adapter)
+            .to respond_to(:delete_one)
+            .with(0).arguments
+            .and_keywords(:collection_name, :primary_key, :primary_key_value)
+        end
       end
 
       describe '#find_matching' do
         it 'should define the method' do
           expect(adapter)
             .to respond_to(:find_matching)
-            .with(2).arguments
-            .and_keywords(:limit, :offset, :order)
+            .with(0).arguments
+            .and_keywords(:collection_name, :limit, :offset, :order, :selector)
         end
       end
 
       describe '#find_one' do
-        it { expect(adapter).to respond_to(:find_one).with(3).arguments }
+        it 'should define the method' do
+          expect(adapter)
+            .to respond_to(:find_one)
+            .with(0).arguments
+            .and_keywords(:collection_name, :primary_key, :primary_key_value)
+        end
       end
 
       describe '#insert_one' do
-        it { expect(adapter).to respond_to(:insert_one).with(2).arguments }
+        it 'should define the method' do
+          expect(adapter)
+            .to respond_to(:insert_one)
+            .with(0).arguments
+            .and_keywords(:collection_name, :data)
+        end
       end
 
       describe '#null_query' do
@@ -148,11 +168,25 @@ module Spec::Support::Examples::Collections
       end
 
       describe '#update_matching' do
-        it { expect(adapter).to respond_to(:update_matching).with(3).arguments }
+        it 'should define the method' do
+          expect(adapter)
+            .to respond_to(:update_matching)
+            .with(0).arguments
+            .and_keywords(:collection_name, :data, :selector)
+        end
       end
 
       describe '#update_one' do
-        it { expect(adapter).to respond_to(:update_one).with(4).arguments }
+        let(:expected_keywords) do
+          %i[collection_name data primary_key primary_key_value]
+        end
+
+        it 'should define the method' do
+          expect(adapter)
+            .to respond_to(:update_one)
+            .with(0).arguments
+            .and_keywords(*expected_keywords)
+        end
       end
     end
 
@@ -211,7 +245,7 @@ module Spec::Support::Examples::Collections
       describe '#delete_matching' do
         shared_examples 'should delete the matching items' do
           it 'should delete each matching item' do
-            adapter.delete_matching(collection_name, selector)
+            call_method
 
             affected_items.each do |affected_item|
               actual = find_by_uuid(affected_item['uuid'])
@@ -221,7 +255,7 @@ module Spec::Support::Examples::Collections
           end
 
           it 'should not delete the non-matching items' do
-            adapter.delete_matching(collection_name, selector)
+            call_method
 
             unaffected_items.each do |unaffected_item|
               actual = find_by_uuid(unaffected_item['uuid'])
@@ -242,10 +276,13 @@ module Spec::Support::Examples::Collections
         let(:unaffected_items) do
           raw_data['books'] - affected_items
         end
-        let(:result) { call_operation }
+        let(:result) { call_method }
 
-        def call_operation
-          adapter.delete_matching(collection_name, selector)
+        def call_method
+          adapter.delete_matching(
+            collection_name: collection_name,
+            selector:        selector
+          )
         end
 
         describe 'with a selector that does not match any items' do
@@ -302,10 +339,14 @@ module Spec::Support::Examples::Collections
       describe '#delete_one' do
         let(:primary_key)       { :uuid }
         let(:primary_key_value) { nil }
-        let(:result)            { call_operation }
+        let(:result)            { call_method }
 
-        def call_operation
-          adapter.delete_one(collection_name, primary_key, primary_key_value)
+        def call_method
+          adapter.delete_one(
+            collection_name:   collection_name,
+            primary_key:       primary_key,
+            primary_key_value: primary_key_value
+          )
         end
 
         describe 'with a non-matching primary key' do
@@ -318,12 +359,12 @@ module Spec::Support::Examples::Collections
           end
 
           it 'should not change the data' do
-            expect { call_operation }
+            expect { call_method }
               .not_to(change { adapter.query(collection_name).to_a })
           end
 
           it 'should return a failing result' do
-            expect(call_operation)
+            expect(call_method)
               .to be_a_failing_result
               .with_errors(expected_error)
           end
@@ -341,13 +382,13 @@ module Spec::Support::Examples::Collections
             end
 
             it 'should change the collection count' do
-              expect { call_operation }
+              expect { call_method }
                 .to change(adapter.query(collection_name), :count)
                 .by(-1)
             end
 
             it 'should delete the item' do
-              call_operation
+              call_method
 
               expect(find_by_uuid primary_key_value).to be nil
             end
@@ -359,7 +400,7 @@ module Spec::Support::Examples::Collections
         shared_examples 'should delegate to the query' do
           # rubocop:disable RSpec/ExampleLength
           it 'should delegate to the query', :aggregate_failures do
-            adapter.find_matching(collection_name, selector, **options)
+            call_method
 
             expect(query).to have_received(:matching).with(selector)
 
@@ -452,10 +493,14 @@ module Spec::Support::Examples::Collections
             to_a:     nil
           )
         end
-        let(:result) { call_operation }
+        let(:result) { call_method }
 
-        def call_operation
-          adapter.find_matching(collection_name, selector, **options)
+        def call_method
+          adapter.find_matching(
+            collection_name: collection_name,
+            selector:        selector,
+            **options
+          )
         end
 
         before(:example) do
@@ -531,10 +576,14 @@ module Spec::Support::Examples::Collections
       describe '#find_one' do
         let(:primary_key)       { :uuid }
         let(:primary_key_value) { nil }
-        let(:result)            { call_operation }
+        let(:result)            { call_method }
 
-        def call_operation
-          adapter.find_one(collection_name, primary_key, primary_key_value)
+        def call_method
+          adapter.find_one(
+            collection_name:   collection_name,
+            primary_key:       primary_key,
+            primary_key_value: primary_key_value
+          )
         end
 
         describe 'with a non-matching primary key' do
@@ -547,12 +596,12 @@ module Spec::Support::Examples::Collections
           end
 
           it 'should not change the data' do
-            expect { call_operation }
+            expect { call_method }
               .not_to(change { adapter.query(collection_name).to_a })
           end
 
           it 'should return a failing result' do
-            expect(call_operation)
+            expect(call_method)
               .to be_a_failing_result
               .with_errors(expected_error)
           end
@@ -583,24 +632,31 @@ module Spec::Support::Examples::Collections
 
       describe '#insert_one' do
         shared_examples 'should insert the item' do
-          let(:result) { adapter.insert_one(collection_name, data) }
+          let(:result) { call_method }
           let(:expected) do
             tools.hash.convert_keys_to_strings(data)
           end
 
           it 'should change the collection count' do
-            expect { adapter.insert_one(collection_name, data) }
+            expect { call_method }
               .to change(adapter.query(collection_name), :count)
               .by(1)
           end
 
           it 'should insert the object into the collection' do
-            expect { adapter.insert_one(collection_name, data) }
+            expect { call_method }
               .to change(adapter.query(collection_name), :to_a)
               .to include(expected)
           end
 
           it { expect(result).to be_a_passing_result.with_value(expected) }
+        end
+
+        def call_method
+          adapter.insert_one(
+            collection_name: collection_name,
+            data:            data
+          )
         end
 
         describe 'with the name of a non-existent collection' do
@@ -617,7 +673,7 @@ module Spec::Support::Examples::Collections
             include_examples 'should insert the item'
 
             it 'should create the collection' do
-              expect { adapter.insert_one(collection_name, data) }
+              expect { call_method }
                 .to change(adapter, :collection_names)
                 .to include collection_name
             end
@@ -634,7 +690,7 @@ module Spec::Support::Examples::Collections
             include_examples 'should insert the item'
 
             it 'should create the collection' do
-              expect { adapter.insert_one(collection_name, data) }
+              expect { call_method }
                 .to change(adapter, :collection_names)
                 .to include collection_name
             end
@@ -657,7 +713,7 @@ module Spec::Support::Examples::Collections
             include_examples 'should insert the item'
 
             it 'should not change the collections' do
-              expect { adapter.insert_one(collection_name, data) }
+              expect { call_method }
                 .not_to change(adapter, :collection_names)
             end
           end
@@ -675,7 +731,7 @@ module Spec::Support::Examples::Collections
             include_examples 'should insert the item'
 
             it 'should not change the collections' do
-              expect { adapter.insert_one(collection_name, data) }
+              expect { call_method }
                 .not_to change(adapter, :collection_names)
             end
           end
@@ -704,7 +760,7 @@ module Spec::Support::Examples::Collections
             let(:data) { { 'published' => true } }
 
             it 'should update each matching item' do
-              adapter.update_matching(collection_name, selector, data)
+              call_method
 
               expected.each do |expected_item|
                 actual = find_by_uuid(expected_item['uuid'])
@@ -714,7 +770,7 @@ module Spec::Support::Examples::Collections
             end
 
             it 'should not update the non-matching items' do
-              adapter.update_matching(collection_name, selector, data)
+              call_method
 
               unaffected_items.each do |unaffected_item|
                 actual = find_by_uuid(unaffected_item['uuid'])
@@ -729,13 +785,11 @@ module Spec::Support::Examples::Collections
           end
 
           describe 'with a data hash with Symbol keys' do
-            let(:data) { { published: true } }
-            let(:result) do
-              adapter.update_matching(collection_name, selector, data)
-            end
+            let(:data)   { { published: true } }
+            let(:result) { call_method }
 
             it 'should update each matching item' do
-              adapter.update_matching(collection_name, selector, data)
+              call_method
 
               expected.each do |expected_item|
                 actual = find_by_uuid(expected_item['uuid'])
@@ -745,7 +799,7 @@ module Spec::Support::Examples::Collections
             end
 
             it 'should not update the non-matching items' do
-              adapter.update_matching(collection_name, selector, data)
+              call_method
 
               unaffected_items.each do |unaffected_item|
                 actual = find_by_uuid(unaffected_item['uuid'])
@@ -773,10 +827,14 @@ module Spec::Support::Examples::Collections
             book.merge(tools.hash.convert_keys_to_strings(data))
           end
         end
-        let(:result) { call_operation }
+        let(:result) { call_method }
 
-        def call_operation
-          adapter.update_matching(collection_name, selector, data)
+        def call_method
+          adapter.update_matching(
+            collection_name: collection_name,
+            data:            data,
+            selector:        selector
+          )
         end
 
         describe 'with an empty selector' do
@@ -840,14 +898,14 @@ module Spec::Support::Examples::Collections
         let(:primary_key)       { :uuid }
         let(:primary_key_value) { nil }
         let(:data)              { {} }
-        let(:result)            { call_operation }
+        let(:result)            { call_method }
 
-        def call_operation
+        def call_method
           adapter.update_one(
-            collection_name,
-            primary_key,
-            primary_key_value,
-            data
+            collection_name:   collection_name,
+            data:              data,
+            primary_key:       primary_key,
+            primary_key_value: primary_key_value
           )
         end
 
@@ -861,12 +919,12 @@ module Spec::Support::Examples::Collections
           end
 
           it 'should not change the data' do
-            expect { call_operation }
+            expect { call_method }
               .not_to(change { adapter.query(collection_name).to_a })
           end
 
           it 'should return a failing result' do
-            expect(call_operation)
+            expect(call_method)
               .to be_a_failing_result
               .with_errors(expected_error)
           end
@@ -877,10 +935,6 @@ module Spec::Support::Examples::Collections
 
           describe 'with a matching primary key' do
             let(:primary_key_value) { 'ff0ea8fc-05b2-4f1f-b661-4d6e543ce86e' }
-
-            def find_book(uuid)
-              adapter.query(collection_name).matching(uuid: uuid).to_a.first
-            end
 
             describe 'with a data hash with String keys' do
               let(:data) { { 'published' => true } }
@@ -895,13 +949,13 @@ module Spec::Support::Examples::Collections
               end
 
               it 'should update the item' do
-                call_operation
+                call_method
 
-                expect(find_book primary_key_value).to be == expected_item
+                expect(find_by_uuid primary_key_value).to be == expected_item
               end
 
               it 'should return a copy of the data' do
-                result = call_operation
+                result = call_method
 
                 expect { result.value['tags'] = ['time travel'] }
                   .not_to(change { adapter.query(collection_name).to_a })
@@ -921,13 +975,13 @@ module Spec::Support::Examples::Collections
               end
 
               it 'should update the item' do
-                call_operation
+                call_method
 
-                expect(find_book primary_key_value).to be == expected_item
+                expect(find_by_uuid primary_key_value).to be == expected_item
               end
 
               it 'should return a copy of the data' do
-                result = call_operation
+                result = call_method
 
                 expect { result.value['tags'] = ['time travel'] }
                   .not_to(change { adapter.query(collection_name).to_a })
