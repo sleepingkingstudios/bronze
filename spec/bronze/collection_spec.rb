@@ -49,13 +49,13 @@ RSpec.describe Bronze::Collection do
       end
 
       it 'should not delegate to the adapter' do
-        call_operation
+        call_method
 
         expect(adapter).not_to have_received(method_name)
       end
 
       it 'should return a result' do
-        expect(call_operation)
+        expect(call_method)
           .to be_a_failing_result
           .with_errors(expected_error)
       end
@@ -71,13 +71,13 @@ RSpec.describe Bronze::Collection do
       end
 
       it 'should not delegate to the adapter' do
-        call_operation
+        call_method
 
         expect(adapter).not_to have_received(method_name)
       end
 
       it 'should return a result' do
-        expect(call_operation)
+        expect(call_method)
           .to be_a_failing_result
           .with_errors(expected_error)
       end
@@ -93,13 +93,13 @@ RSpec.describe Bronze::Collection do
       end
 
       it 'should not delegate to the adapter' do
-        call_operation
+        call_method
 
         expect(adapter).not_to have_received(method_name)
       end
 
       it 'should return a result' do
-        expect(call_operation)
+        expect(call_method)
           .to be_a_failing_result
           .with_errors(expected_error)
       end
@@ -119,13 +119,13 @@ RSpec.describe Bronze::Collection do
         end
 
         it 'should not delegate to the adapter' do
-          call_operation
+          call_method
 
           expect(adapter).not_to have_received(method_name)
         end
 
         it 'should return a result' do
-          expect(call_operation)
+          expect(call_method)
             .to be_a_failing_result
             .with_errors(expected_error)
         end
@@ -142,13 +142,13 @@ RSpec.describe Bronze::Collection do
         end
 
         it 'should not delegate to the adapter' do
-          call_operation
+          call_method
 
           expect(adapter).not_to have_received(method_name)
         end
 
         it 'should return a result' do
-          expect(call_operation)
+          expect(call_method)
             .to be_a_failing_result
             .with_errors(expected_error)
         end
@@ -162,13 +162,13 @@ RSpec.describe Bronze::Collection do
         let(:data) { { primary_key.to_s => primary_key_value } }
 
         it 'should delegate to the adapter' do
-          call_operation
+          call_method
 
           expect(adapter).to have_received(method_name)
         end
 
         it 'should return a passing result' do
-          expect(call_operation).to be_a_passing_result
+          expect(call_method).to be_a_passing_result
         end
       end
 
@@ -176,13 +176,13 @@ RSpec.describe Bronze::Collection do
         let(:data) { { primary_key => primary_key_value } }
 
         it 'should delegate to the adapter' do
-          call_operation
+          call_method
 
           expect(adapter).to have_received(method_name)
         end
 
         it 'should return a passing result' do
-          expect(call_operation).to be_a_passing_result
+          expect(call_method).to be_a_passing_result
         end
       end
     end
@@ -207,13 +207,13 @@ RSpec.describe Bronze::Collection do
           end
 
           it 'should not delegate to the adapter' do
-            call_operation
+            call_method
 
             expect(adapter).not_to have_received(method_name)
           end
 
           it 'should return a result' do
-            expect(call_operation)
+            expect(call_method)
               .to be_a_failing_result
               .with_errors(expected_error)
           end
@@ -230,13 +230,13 @@ RSpec.describe Bronze::Collection do
           end
 
           it 'should not delegate to the adapter' do
-            call_operation
+            call_method
 
             expect(adapter).not_to have_received(method_name)
           end
 
           it 'should return a result' do
-            expect(call_operation)
+            expect(call_method)
               .to be_a_failing_result
               .with_errors(expected_error)
           end
@@ -257,13 +257,13 @@ RSpec.describe Bronze::Collection do
       end
 
       it 'should not delegate to the adapter' do
-        call_operation
+        call_method
 
         expect(adapter).not_to have_received(method_name)
       end
 
       it 'should return a result' do
-        expect(call_operation)
+        expect(call_method)
           .to be_a_failing_result
           .with_errors(expected_error)
       end
@@ -286,13 +286,13 @@ RSpec.describe Bronze::Collection do
       end
 
       it 'should not delegate to the adapter' do
-        call_operation
+        call_method
 
         expect(adapter).not_to have_received(method_name)
       end
 
       it 'should return a result' do
-        expect(call_operation)
+        expect(call_method)
           .to be_a_failing_result
           .with_errors(expected_error)
       end
@@ -313,13 +313,13 @@ RSpec.describe Bronze::Collection do
       end
 
       it 'should not delegate to the adapter' do
-        call_operation
+        call_method
 
         expect(adapter).not_to have_received(method_name)
       end
 
       it 'should return a result' do
-        expect(call_operation)
+        expect(call_method)
           .to be_a_failing_result
           .with_errors(expected_error)
       end
@@ -332,13 +332,13 @@ RSpec.describe Bronze::Collection do
         let(:data) { super().tap { |hsh| hsh.delete primary_key.to_s } }
 
         it 'should delegate to the adapter' do
-          call_operation
+          call_method
 
           expect(adapter).to have_received(method_name)
         end
 
         it 'should return a passing result' do
-          expect(call_operation).to be_a_passing_result
+          expect(call_method).to be_a_passing_result
         end
       end
 
@@ -349,13 +349,13 @@ RSpec.describe Bronze::Collection do
         end
 
         it 'should delegate to the adapter' do
-          call_operation
+          call_method
 
           expect(adapter).to have_received(method_name)
         end
 
         it 'should return a passing result' do
-          expect(call_operation).to be_a_passing_result
+          expect(call_method).to be_a_passing_result
         end
       end
 
@@ -367,13 +367,13 @@ RSpec.describe Bronze::Collection do
         end
 
         it 'should delegate to the adapter' do
-          call_operation
+          call_method
 
           expect(adapter).to have_received(method_name)
         end
 
         it 'should return a passing result' do
-          expect(call_operation).to be_a_passing_result
+          expect(call_method).to be_a_passing_result
         end
       end
     end
@@ -397,13 +397,13 @@ RSpec.describe Bronze::Collection do
         end
 
         it 'should not delegate to the adapter' do
-          call_operation
+          call_method
 
           expect(adapter).not_to have_received(method_name)
         end
 
         it 'should return a result' do
-          expect(call_operation)
+          expect(call_method)
             .to be_a_failing_result
             .with_errors(expected_error)
         end
@@ -426,13 +426,13 @@ RSpec.describe Bronze::Collection do
         end
 
         it 'should not delegate to the adapter' do
-          call_operation
+          call_method
 
           expect(adapter).not_to have_received(method_name)
         end
 
         it 'should return a result' do
-          expect(call_operation)
+          expect(call_method)
             .to be_a_failing_result
             .with_errors(expected_error)
         end
@@ -451,13 +451,13 @@ RSpec.describe Bronze::Collection do
         end
 
         it 'should not delegate to the adapter' do
-          call_operation
+          call_method
 
           expect(adapter).not_to have_received(method_name)
         end
 
         it 'should return a result' do
-          expect(call_operation)
+          expect(call_method)
             .to be_a_failing_result
             .with_errors(expected_error)
         end
@@ -477,13 +477,13 @@ RSpec.describe Bronze::Collection do
       end
 
       it 'should not delegate to the adapter' do
-        call_operation
+        call_method
 
         expect(adapter).not_to have_received(method_name)
       end
 
       it 'should return a result' do
-        expect(call_operation)
+        expect(call_method)
           .to be_a_failing_result
           .with_errors(expected_error)
       end
@@ -503,13 +503,13 @@ RSpec.describe Bronze::Collection do
       end
 
       it 'should not delegate to the adapter' do
-        call_operation
+        call_method
 
         expect(adapter).not_to have_received(method_name)
       end
 
       it 'should return a result' do
-        expect(call_operation)
+        expect(call_method)
           .to be_a_failing_result
           .with_errors(expected_error)
       end
@@ -527,13 +527,13 @@ RSpec.describe Bronze::Collection do
       end
 
       it 'should not delegate to the adapter' do
-        call_operation
+        call_method
 
         expect(adapter).not_to have_received(method_name)
       end
 
       it 'should return a result' do
-        expect(call_operation)
+        expect(call_method)
           .to be_a_failing_result
           .with_errors(expected_error)
       end
@@ -547,13 +547,13 @@ RSpec.describe Bronze::Collection do
         let(:expected_error)    { Bronze::Collections::Errors::NO_PRIMARY_KEY }
 
         it 'should not delegate to the adapter' do
-          call_operation
+          call_method
 
           expect(adapter).not_to have_received(method_name)
         end
 
         it 'should return a result' do
-          expect(call_operation)
+          expect(call_method)
             .to be_a_failing_result
             .with_errors(expected_error)
         end
@@ -564,13 +564,13 @@ RSpec.describe Bronze::Collection do
         let(:expected_error)    { Bronze::Collections::Errors::NO_PRIMARY_KEY }
 
         it 'should not delegate to the adapter' do
-          call_operation
+          call_method
 
           expect(adapter).not_to have_received(method_name)
         end
 
         it 'should return a result' do
-          expect(call_operation)
+          expect(call_method)
             .to be_a_failing_result
             .with_errors(expected_error)
         end
@@ -582,13 +582,13 @@ RSpec.describe Bronze::Collection do
         let(:expected_error)    { Bronze::Collections::Errors::NO_PRIMARY_KEY }
 
         it 'should not delegate to the adapter' do
-          call_operation
+          call_method
 
           expect(adapter).not_to have_received(method_name)
         end
 
         it 'should return a result' do
-          expect(call_operation)
+          expect(call_method)
             .to be_a_failing_result
             .with_errors(expected_error)
         end
@@ -598,13 +598,13 @@ RSpec.describe Bronze::Collection do
         let(:expected_error)    { Bronze::Collections::Errors::NO_PRIMARY_KEY }
 
         it 'should not delegate to the adapter' do
-          call_operation
+          call_method
 
           expect(adapter).not_to have_received(method_name)
         end
 
         it 'should return a result' do
-          expect(call_operation)
+          expect(call_method)
             .to be_a_failing_result
             .with_errors(expected_error)
         end
@@ -630,13 +630,13 @@ RSpec.describe Bronze::Collection do
         end
 
         it 'should not delegate to the adapter' do
-          call_operation
+          call_method
 
           expect(adapter).not_to have_received(method_name)
         end
 
         it 'should return a result' do
-          expect(call_operation)
+          expect(call_method)
             .to be_a_failing_result
             .with_errors(expected_error)
         end
@@ -656,13 +656,13 @@ RSpec.describe Bronze::Collection do
         end
 
         it 'should not delegate to the adapter' do
-          call_operation
+          call_method
 
           expect(adapter).not_to have_received(method_name)
         end
 
         it 'should return a result' do
-          expect(call_operation)
+          expect(call_method)
             .to be_a_failing_result
             .with_errors(expected_error)
         end
@@ -679,13 +679,13 @@ RSpec.describe Bronze::Collection do
         end
 
         it 'should not delegate to the adapter' do
-          call_operation
+          call_method
 
           expect(adapter).not_to have_received(method_name)
         end
 
         it 'should return a result' do
-          expect(call_operation)
+          expect(call_method)
             .to be_a_failing_result
             .with_errors(expected_error)
         end
@@ -705,13 +705,13 @@ RSpec.describe Bronze::Collection do
       end
 
       it 'should not delegate to the adapter' do
-        call_operation
+        call_method
 
         expect(adapter).not_to have_received(method_name)
       end
 
       it 'should return a result' do
-        expect(call_operation)
+        expect(call_method)
           .to be_a_failing_result
           .with_errors(expected_error)
       end
@@ -728,13 +728,13 @@ RSpec.describe Bronze::Collection do
       end
 
       it 'should not delegate to the adapter' do
-        call_operation
+        call_method
 
         expect(adapter).not_to have_received(method_name)
       end
 
       it 'should return a result' do
-        expect(call_operation)
+        expect(call_method)
           .to be_a_failing_result
           .with_errors(expected_error)
       end
@@ -744,13 +744,13 @@ RSpec.describe Bronze::Collection do
       let(:data) { super().merge(primary_key => primary_key_value) }
 
       it 'should delegate to the adapter' do
-        call_operation
+        call_method
 
         expect(adapter).to have_received(method_name)
       end
 
       it 'should return a passing result' do
-        expect(call_operation).to be_a_passing_result
+        expect(call_method).to be_a_passing_result
       end
     end
 
@@ -767,13 +767,13 @@ RSpec.describe Bronze::Collection do
         end
 
         it 'should not delegate to the adapter' do
-          call_operation
+          call_method
 
           expect(adapter).not_to have_received(method_name)
         end
 
         it 'should return a result' do
-          expect(call_operation)
+          expect(call_method)
             .to be_a_failing_result
             .with_errors(expected_error)
         end
@@ -789,13 +789,13 @@ RSpec.describe Bronze::Collection do
         end
 
         it 'should not delegate to the adapter' do
-          call_operation
+          call_method
 
           expect(adapter).not_to have_received(method_name)
         end
 
         it 'should return a result' do
-          expect(call_operation)
+          expect(call_method)
             .to be_a_failing_result
             .with_errors(expected_error)
         end
@@ -811,13 +811,13 @@ RSpec.describe Bronze::Collection do
         end
 
         it 'should not delegate to the adapter' do
-          call_operation
+          call_method
 
           expect(adapter).not_to have_received(method_name)
         end
 
         it 'should return a result' do
-          expect(call_operation)
+          expect(call_method)
             .to be_a_failing_result
             .with_errors(expected_error)
         end
@@ -843,13 +843,13 @@ RSpec.describe Bronze::Collection do
         end
 
         it 'should not delegate to the adapter' do
-          call_operation
+          call_method
 
           expect(adapter).not_to have_received(method_name)
         end
 
         it 'should return a result' do
-          expect(call_operation)
+          expect(call_method)
             .to be_a_failing_result
             .with_errors(expected_error)
         end
@@ -866,13 +866,13 @@ RSpec.describe Bronze::Collection do
         end
 
         it 'should not delegate to the adapter' do
-          call_operation
+          call_method
 
           expect(adapter).not_to have_received(method_name)
         end
 
         it 'should return a result' do
-          expect(call_operation)
+          expect(call_method)
             .to be_a_failing_result
             .with_errors(expected_error)
         end
@@ -882,13 +882,13 @@ RSpec.describe Bronze::Collection do
         let(:data) { super().merge(primary_key => primary_key_value) }
 
         it 'should delegate to the adapter' do
-          call_operation
+          call_method
 
           expect(adapter).to have_received(method_name)
         end
 
         it 'should return a passing result' do
-          expect(call_operation).to be_a_passing_result
+          expect(call_method).to be_a_passing_result
         end
       end
     end
@@ -905,13 +905,13 @@ RSpec.describe Bronze::Collection do
       end
 
       it 'should not delegate to the adapter' do
-        call_operation
+        call_method
 
         expect(adapter).not_to have_received(method_name)
       end
 
       it 'should return a result' do
-        expect(call_operation)
+        expect(call_method)
           .to be_a_failing_result
           .with_errors(expected_error)
       end
@@ -927,13 +927,13 @@ RSpec.describe Bronze::Collection do
       end
 
       it 'should not delegate to the adapter' do
-        call_operation
+        call_method
 
         expect(adapter).not_to have_received(method_name)
       end
 
       it 'should return a result' do
-        expect(call_operation)
+        expect(call_method)
           .to be_a_failing_result
           .with_errors(expected_error)
       end
@@ -1050,7 +1050,7 @@ RSpec.describe Bronze::Collection do
     let(:method_name) { :delete_matching }
     let(:selector)    { nil }
 
-    def call_operation
+    def call_method
       collection.delete_matching(selector)
     end
 
@@ -1074,7 +1074,7 @@ RSpec.describe Bronze::Collection do
 
         expect(adapter)
           .to have_received(:delete_matching)
-          .with(collection.name, selector)
+          .with(collection_name: collection.name, selector: selector)
       end
 
       it 'should return the result from the adapter' do
@@ -1100,7 +1100,7 @@ RSpec.describe Bronze::Collection do
 
         expect(adapter)
           .to have_received(:delete_matching)
-          .with(collection.name, selector)
+          .with(collection_name: collection.name, selector: selector)
       end
 
       it 'should return the result from the adapter' do
@@ -1125,7 +1125,7 @@ RSpec.describe Bronze::Collection do
     end
     let(:options) { super().merge primary_key_type: primary_key_type }
 
-    def call_operation
+    def call_method
       collection.delete_one(primary_key_value)
     end
 
@@ -1137,13 +1137,20 @@ RSpec.describe Bronze::Collection do
 
     describe 'with a valid primary key' do
       let(:result) { Bronze::Result.new(data) }
+      let(:expected_keywords) do
+        {
+          collection_name:   collection.name,
+          primary_key:       primary_key,
+          primary_key_value: primary_key_value
+        }
+      end
 
       it 'should delegate to the adapter' do
         collection.delete_one(primary_key_value)
 
         expect(adapter)
           .to have_received(:delete_one)
-          .with(collection.name, primary_key, primary_key_value)
+          .with(expected_keywords)
       end
 
       it 'should return the result from the adapter' do
@@ -1185,8 +1192,15 @@ RSpec.describe Bronze::Collection do
       }
     end
     let(:result) { Bronze::Result.new([expected]) }
+    let(:expected_keywords) do
+      {
+        collection_name: collection.name,
+        selector:        selector,
+        **delegated_options
+      }
+    end
 
-    def call_operation
+    def call_method
       collection.find_matching(selector)
     end
 
@@ -1207,7 +1221,7 @@ RSpec.describe Bronze::Collection do
 
         expect(adapter)
           .to have_received(:find_matching)
-          .with(collection.name, selector, delegated_options)
+          .with(expected_keywords)
       end
 
       it 'should return the result from the adapter' do
@@ -1224,7 +1238,7 @@ RSpec.describe Bronze::Collection do
 
           expect(adapter)
             .to have_received(:find_matching)
-            .with(collection.name, selector, delegated_options)
+            .with(expected_keywords)
         end
 
         it 'should return the result from the adapter' do
@@ -1242,7 +1256,7 @@ RSpec.describe Bronze::Collection do
 
           expect(adapter)
             .to have_received(:find_matching)
-            .with(collection.name, selector, delegated_options)
+            .with(expected_keywords)
         end
 
         it 'should return the result from the adapter' do
@@ -1260,7 +1274,7 @@ RSpec.describe Bronze::Collection do
 
           expect(adapter)
             .to have_received(:find_matching)
-            .with(collection.name, selector, delegated_options)
+            .with(expected_keywords)
         end
 
         it 'should return the result from the adapter' do
@@ -1280,7 +1294,7 @@ RSpec.describe Bronze::Collection do
 
           expect(adapter)
             .to have_received(:find_matching)
-            .with(collection.name, selector, delegated_options)
+            .with(expected_keywords)
         end
 
         # rubocop:disable RSpec/ExampleLength
@@ -1308,7 +1322,7 @@ RSpec.describe Bronze::Collection do
 
         expect(adapter)
           .to have_received(:find_matching)
-          .with(collection.name, selector, delegated_options)
+          .with(expected_keywords)
       end
 
       it 'should return the result from the adapter' do
@@ -1325,7 +1339,7 @@ RSpec.describe Bronze::Collection do
 
           expect(adapter)
             .to have_received(:find_matching)
-            .with(collection.name, selector, delegated_options)
+            .with(expected_keywords)
         end
 
         it 'should return the result from the adapter' do
@@ -1343,7 +1357,7 @@ RSpec.describe Bronze::Collection do
 
           expect(adapter)
             .to have_received(:find_matching)
-            .with(collection.name, selector, delegated_options)
+            .with(expected_keywords)
         end
 
         it 'should return the result from the adapter' do
@@ -1361,7 +1375,7 @@ RSpec.describe Bronze::Collection do
 
           expect(adapter)
             .to have_received(:find_matching)
-            .with(collection.name, selector, delegated_options)
+            .with(expected_keywords)
         end
 
         it 'should return the result from the adapter' do
@@ -1381,7 +1395,7 @@ RSpec.describe Bronze::Collection do
 
           expect(adapter)
             .to have_received(:find_matching)
-            .with(collection.name, selector, delegated_options)
+            .with(expected_keywords)
         end
 
         # rubocop:disable RSpec/ExampleLength
@@ -1416,7 +1430,7 @@ RSpec.describe Bronze::Collection do
     end
     let(:options) { super().merge primary_key_type: primary_key_type }
 
-    def call_operation
+    def call_method
       collection.find_one(primary_key_value)
     end
 
@@ -1428,13 +1442,20 @@ RSpec.describe Bronze::Collection do
 
     describe 'with a valid primary key' do
       let(:result) { Bronze::Result.new(data) }
+      let(:expected_keywords) do
+        {
+          collection_name:   collection.name,
+          primary_key:       primary_key,
+          primary_key_value: primary_key_value
+        }
+      end
 
       it 'should delegate to the adapter' do
         collection.find_one(primary_key_value)
 
         expect(adapter)
           .to have_received(:find_one)
-          .with(collection.name, primary_key, primary_key_value)
+          .with(expected_keywords)
       end
 
       it 'should return the result from the adapter' do
@@ -1459,7 +1480,7 @@ RSpec.describe Bronze::Collection do
     end
     let(:options) { super().merge primary_key_type: primary_key_type }
 
-    def call_operation
+    def call_method
       collection.insert_one(data)
     end
 
@@ -1479,7 +1500,7 @@ RSpec.describe Bronze::Collection do
 
         expect(adapter)
           .to have_received(:insert_one)
-          .with(collection.name, data)
+          .with(collection_name: collection.name, data: data)
       end
 
       it 'should return the result from the adapter' do
@@ -1502,7 +1523,7 @@ RSpec.describe Bronze::Collection do
 
         expect(adapter)
           .to have_received(:insert_one)
-          .with(collection.name, data)
+          .with(collection_name: collection.name, data: data)
       end
 
       it 'should return the result from the adapter' do
@@ -1837,7 +1858,7 @@ RSpec.describe Bronze::Collection do
     let(:selector)          { { key: 'value' } }
     let(:data)              { nil }
 
-    def call_operation
+    def call_method
       collection.update_matching(selector, with: data)
     end
 
@@ -1864,13 +1885,20 @@ RSpec.describe Bronze::Collection do
         }
       end
       let(:result) { Bronze::Result.new(expected) }
+      let(:expected_keywords) do
+        {
+          collection_name: collection.name,
+          data:            data,
+          selector:        selector
+        }
+      end
 
       it 'should delegate to the adapter' do
         collection.update_matching(selector, with: data)
 
         expect(adapter)
           .to have_received(:update_matching)
-          .with(collection.name, selector, data)
+          .with(expected_keywords)
       end
 
       it 'should return the result from the adapter' do
@@ -1891,13 +1919,20 @@ RSpec.describe Bronze::Collection do
         }
       end
       let(:result) { Bronze::Result.new(expected) }
+      let(:expected_keywords) do
+        {
+          collection_name: collection.name,
+          data:            data,
+          selector:        selector
+        }
+      end
 
       it 'should delegate to the adapter' do
         collection.update_matching(selector, with: data)
 
         expect(adapter)
           .to have_received(:update_matching)
-          .with(collection.name, selector, data)
+          .with(expected_keywords)
       end
 
       it 'should return the result from the adapter' do
@@ -1918,7 +1953,7 @@ RSpec.describe Bronze::Collection do
       super().merge primary_key_type: primary_key_type
     end
 
-    def call_operation
+    def call_method
       collection.update_one(primary_key_value, with: data)
     end
 
@@ -1946,13 +1981,21 @@ RSpec.describe Bronze::Collection do
         }
       end
       let(:result) { Bronze::Result.new(expected) }
+      let(:expected_keywords) do
+        {
+          collection_name:   collection.name,
+          data:              data,
+          primary_key:       primary_key,
+          primary_key_value: primary_key_value
+        }
+      end
 
       it 'should delegate to the adapter' do
         collection.update_one(primary_key_value, with: data)
 
         expect(adapter)
           .to have_received(:update_one)
-          .with(collection.name, primary_key, primary_key_value, data)
+          .with(expected_keywords)
       end
 
       it 'should return the result from the adapter' do
@@ -1973,13 +2016,21 @@ RSpec.describe Bronze::Collection do
         }
       end
       let(:result) { Bronze::Result.new(expected) }
+      let(:expected_keywords) do
+        {
+          collection_name:   collection.name,
+          data:              data,
+          primary_key:       primary_key,
+          primary_key_value: primary_key_value
+        }
+      end
 
       it 'should delegate to the adapter' do
         collection.update_one(primary_key_value, with: data)
 
         expect(adapter)
           .to have_received(:update_one)
-          .with(collection.name, primary_key, primary_key_value, data)
+          .with(expected_keywords)
       end
 
       it 'should return the result from the adapter' do

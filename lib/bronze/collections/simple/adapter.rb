@@ -8,6 +8,8 @@ require 'bronze/errors'
 require 'bronze/result'
 
 module Bronze::Collections::Simple
+  # rubocop:disable Metrics/ClassLength
+
   # Adapter class for querying and modifying an in-memory data structure.
   class Adapter < Bronze::Collections::Adapter
     Errors = Bronze::Collections::Errors
@@ -26,7 +28,7 @@ module Bronze::Collections::Simple
     end
 
     # (see Bronze::Collections::Adapter#delete_matching)
-    def delete_matching(collection_name, selector)
+    def delete_matching(collection_name:, selector:)
       result = Bronze::Result.new([])
       items  = query(collection_name).matching(selector).to_a
 
@@ -38,10 +40,13 @@ module Bronze::Collections::Simple
     end
 
     # (see Bronze::Collections::Adapter#delete_one)
-    def delete_one(collection_name, primary_key, value)
+    def delete_one(collection_name:, primary_key:, primary_key_value:)
       items  =
-        query(collection_name).matching(primary_key => value).limit(2).to_a
-      errors = uniqueness_errors(items, primary_key, value)
+        query(collection_name)
+        .matching(primary_key => primary_key_value)
+        .limit(2)
+        .to_a
+      errors = uniqueness_errors(items, primary_key, primary_key_value)
 
       return Bronze::Result.new(nil, errors: errors) if errors
 
@@ -51,7 +56,7 @@ module Bronze::Collections::Simple
     end
 
     # (see Bronze::Collections::Adapter#find_matching)
-    def find_matching(collection_name, selector, limit:, offset:, order:)
+    def find_matching(collection_name:, limit:, offset:, order:, selector:)
       items = query(collection_name).matching(selector)
 
       items = items.order(*Array(order)) if order
@@ -62,10 +67,13 @@ module Bronze::Collections::Simple
     end
 
     # (see Bronze::Collections::Adapter#find_one)
-    def find_one(collection_name, primary_key, value)
+    def find_one(collection_name:, primary_key:, primary_key_value:)
       items  =
-        query(collection_name).matching(primary_key => value).limit(2).to_a
-      errors = uniqueness_errors(items, primary_key, value)
+        query(collection_name)
+        .matching(primary_key => primary_key_value)
+        .limit(2)
+        .to_a
+      errors = uniqueness_errors(items, primary_key, primary_key_value)
 
       return Bronze::Result.new(nil, errors: errors) if errors
 
@@ -73,7 +81,7 @@ module Bronze::Collections::Simple
     end
 
     # (see Bronze::Collections::Adapter#insert_one)
-    def insert_one(collection_name, data)
+    def insert_one(collection_name:, data:)
       result       = Bronze::Result.new
       data         = tools.hash.convert_keys_to_strings(data)
       result.value = data
@@ -89,7 +97,7 @@ module Bronze::Collections::Simple
     end
 
     # (see Bronze::Collections::Adapter#update_matching)
-    def update_matching(collection_name, selector, data)
+    def update_matching(collection_name:, data:, selector:)
       result       = Bronze::Result.new([])
       data         = tools.hash.convert_keys_to_strings(data)
       result.value =
@@ -101,10 +109,13 @@ module Bronze::Collections::Simple
     end
 
     # (see Bronze::Collections::Adapter#update_one)
-    def update_one(collection_name, primary_key, value, data)
+    def update_one(collection_name:, data:, primary_key:, primary_key_value:)
       items  =
-        query(collection_name).matching(primary_key => value).limit(2).to_a
-      errors = uniqueness_errors(items, primary_key, value)
+        query(collection_name)
+        .matching(primary_key => primary_key_value)
+        .limit(2)
+        .to_a
+      errors = uniqueness_errors(items, primary_key, primary_key_value)
 
       return Bronze::Result.new(nil, errors: errors) if errors
 
@@ -160,4 +171,5 @@ module Bronze::Collections::Simple
       item.update(data)
     end
   end
+  # rubocop:enable Metrics/ClassLength
 end

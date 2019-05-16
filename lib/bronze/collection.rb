@@ -76,7 +76,7 @@ module Bronze
 
       return Bronze::Result.new(nil, errors: errors) if errors
 
-      adapter.delete_matching(name, selector)
+      adapter.delete_matching(collection_name: name, selector: selector)
     end
 
     # Deletes the item in the collection matching the given primary key.
@@ -89,7 +89,11 @@ module Bronze
 
       return Bronze::Result.new(nil, errors: errors) if errors
 
-      adapter.delete_one(name, primary_key, value)
+      adapter.delete_one(
+        collection_name:   name,
+        primary_key:       primary_key,
+        primary_key_value: value
+      )
     end
     alias_method :delete, :delete_one
 
@@ -104,11 +108,11 @@ module Bronze
       return Bronze::Result.new(nil, errors: errors) if errors
 
       adapter.find_matching(
-        name,
-        selector,
-        limit:  limit,
-        offset: offset,
-        order:  order
+        collection_name: name,
+        limit:           limit,
+        offset:          offset,
+        order:           order,
+        selector:        selector
       )
     end
 
@@ -122,7 +126,11 @@ module Bronze
 
       return Bronze::Result.new(nil, errors: errors) if errors
 
-      adapter.find_one(name, primary_key, value)
+      adapter.find_one(
+        collection_name:   name,
+        primary_key:       primary_key,
+        primary_key_value: value
+      )
     end
     alias_method :find, :find_one
 
@@ -136,7 +144,7 @@ module Bronze
 
       return Bronze::Result.new(nil, errors: errors) if errors
 
-      adapter.insert_one(name, data)
+      adapter.insert_one(collection_name: name, data: data)
     end
     alias_method :insert, :insert_one
 
@@ -170,7 +178,11 @@ module Bronze
 
       return Bronze::Result.new(nil, errors: errors) if errors
 
-      adapter.update_matching(name, selector, with)
+      adapter.update_matching(
+        collection_name: name,
+        selector:        selector,
+        data:            with
+      )
     end
 
     # Finds and updates the item in the collection with the given primary key.
@@ -179,7 +191,7 @@ module Bronze
     # @param with [Hash] The keys and values to update in the matching items.
     #
     # @return [Bronze::Result] the result of the update operation.
-    def update_one(value, with:)
+    def update_one(value, with:) # rubocop:disable Metrics/MethodLength
       errors =
         errors_for_primary_key_query(value) ||
         errors_for_data(with) ||
@@ -187,7 +199,12 @@ module Bronze
 
       return Bronze::Result.new(nil, errors: errors) if errors
 
-      adapter.update_one(name, primary_key, value, with)
+      adapter.update_one(
+        collection_name:   name,
+        data:              with,
+        primary_key:       primary_key,
+        primary_key_value: value
+      )
     end
     alias_method :update, :update_one
 

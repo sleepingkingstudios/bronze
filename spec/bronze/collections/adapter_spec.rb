@@ -69,8 +69,15 @@ RSpec.describe Bronze::Collections::Adapter do
       'Bronze::Collections::Adapter#delete_matching is not implemented'
     end
 
+    def call_method
+      adapter.delete_matching(
+        collection_name: collection_name,
+        selector:        selector
+      )
+    end
+
     it 'should raise an error' do
-      expect { adapter.delete_matching(collection_name, selector) }
+      expect { call_method }
         .to raise_error Bronze::NotImplementedError, error_message
     end
   end
@@ -83,10 +90,16 @@ RSpec.describe Bronze::Collections::Adapter do
       'Bronze::Collections::Adapter#delete_one is not implemented'
     end
 
+    def call_method
+      adapter.delete_one(
+        collection_name:   collection_name,
+        primary_key:       primary_key,
+        primary_key_value: primary_key_value
+      )
+    end
+
     it 'should raise an error' do
-      expect do
-        adapter.delete_one(collection_name, primary_key, primary_key_value)
-      end
+      expect { call_method }
         .to raise_error Bronze::NotImplementedError, error_message
     end
   end
@@ -98,24 +111,37 @@ RSpec.describe Bronze::Collections::Adapter do
       'Bronze::Collections::Adapter#find_matching is not implemented'
     end
 
+    def call_method
+      adapter.find_matching(
+        collection_name: collection_name,
+        selector:        selector
+      )
+    end
+
     it 'should raise an error' do
-      expect { adapter.find_matching(collection_name, selector) }
+      expect { call_method }
         .to raise_error Bronze::NotImplementedError, error_message
     end
   end
 
   describe '#find_one' do
-    let(:collection_name) { 'books' }
-    let(:primary_key)     { :id }
-    let(:value)           { 0 }
+    let(:collection_name)   { 'books' }
+    let(:primary_key)       { :id }
+    let(:primary_key_value) { 0 }
     let(:error_message) do
       'Bronze::Collections::Adapter#find_one is not implemented'
     end
 
+    def call_method
+      adapter.find_one(
+        collection_name:   collection_name,
+        primary_key:       primary_key,
+        primary_key_value: primary_key_value
+      )
+    end
+
     it 'should raise an error' do
-      expect do
-        adapter.find_one(collection_name, value, primary_key: primary_key)
-      end
+      expect { call_method }
         .to raise_error Bronze::NotImplementedError, error_message
     end
   end
@@ -127,8 +153,15 @@ RSpec.describe Bronze::Collections::Adapter do
       'Bronze::Collections::Adapter#insert_one is not implemented'
     end
 
+    def call_method
+      adapter.insert_one(
+        collection_name: collection_name,
+        data:            object
+      )
+    end
+
     it 'should raise an error' do
-      expect { adapter.insert_one(collection_name, object) }
+      expect { call_method }
         .to raise_error Bronze::NotImplementedError, error_message
     end
   end
@@ -158,8 +191,16 @@ RSpec.describe Bronze::Collections::Adapter do
       'Bronze::Collections::Adapter#update_matching is not implemented'
     end
 
+    def call_method
+      adapter.update_matching(
+        collection_name: collection_name,
+        data:            data,
+        selector:        selector
+      )
+    end
+
     it 'should raise an error' do
-      expect { adapter.update_matching(collection_name, selector, data) }
+      expect { call_method }
         .to raise_error Bronze::NotImplementedError, error_message
     end
   end
@@ -173,13 +214,17 @@ RSpec.describe Bronze::Collections::Adapter do
       'Bronze::Collections::Adapter#update_one is not implemented'
     end
 
-    it { expect(adapter).to respond_to(:update_one).with(4).arguments }
+    def call_method
+      adapter.update_one(
+        collection_name:   collection_name,
+        data:              data,
+        primary_key:       primary_key,
+        primary_key_value: primary_key_value
+      )
+    end
 
     it 'should raise an error' do
-      expect do
-        adapter
-          .update_one(collection_name, primary_key, primary_key_value, data)
-      end
+      expect { call_method }
         .to raise_error Bronze::NotImplementedError, error_message
     end
   end
