@@ -31,7 +31,7 @@ module Bronze::Collections::Simple
     # (see Bronze::Collections::Adapter#delete_matching)
     def delete_matching(collection_name:, selector:)
       result = Bronze::Result.new([])
-      items  = query(collection_name).matching(selector).to_a
+      items  = query(collection_name: collection_name).matching(selector).to_a
 
       items.each { |item| collection(collection_name).delete(item) }
 
@@ -43,7 +43,7 @@ module Bronze::Collections::Simple
     # (see Bronze::Collections::Adapter#delete_one)
     def delete_one(collection_name:, primary_key:, primary_key_value:)
       items  =
-        query(collection_name)
+        query(collection_name: collection_name)
         .matching(primary_key => primary_key_value)
         .limit(2)
         .to_a
@@ -58,7 +58,7 @@ module Bronze::Collections::Simple
 
     # (see Bronze::Collections::Adapter#find_matching)
     def find_matching(collection_name:, limit:, offset:, order:, selector:)
-      items = query(collection_name).matching(selector)
+      items = query(collection_name: collection_name).matching(selector)
 
       items = items.order(*Array(order)) if order
       items = items.limit(limit)         if limit
@@ -70,7 +70,7 @@ module Bronze::Collections::Simple
     # (see Bronze::Collections::Adapter#find_one)
     def find_one(collection_name:, primary_key:, primary_key_value:)
       items  =
-        query(collection_name)
+        query(collection_name: collection_name)
         .matching(primary_key => primary_key_value)
         .limit(2)
         .to_a
@@ -93,7 +93,7 @@ module Bronze::Collections::Simple
     end
 
     # (see Bronze::Collections::Adapter#query)
-    def query(collection_name)
+    def query(collection_name:)
       Bronze::Collections::Simple::Query.new(collection(collection_name))
     end
 
@@ -102,7 +102,9 @@ module Bronze::Collections::Simple
       result       = Bronze::Result.new([])
       data         = tools.hash.convert_keys_to_strings(data)
       result.value =
-        query(collection_name).matching(selector).each.map do |item|
+        query(collection_name: collection_name)
+        .matching(selector)
+        .each.map do |item|
           item.update(data)
         end
 
@@ -112,7 +114,7 @@ module Bronze::Collections::Simple
     # (see Bronze::Collections::Adapter#update_one)
     def update_one(collection_name:, data:, primary_key:, primary_key_value:)
       items  =
-        query(collection_name)
+        query(collection_name: collection_name)
         .matching(primary_key => primary_key_value)
         .limit(2)
         .to_a

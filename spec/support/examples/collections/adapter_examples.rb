@@ -57,7 +57,9 @@ module Spec::Support::Examples::Collections
 
         it 'should not change the data' do
           expect { call_method }
-            .not_to(change { adapter.query(collection_name).to_a })
+            .not_to(
+              change { adapter.query(collection_name: collection_name).to_a }
+            )
         end
 
         it 'should return a failing result' do
@@ -90,7 +92,9 @@ module Spec::Support::Examples::Collections
 
         it 'should not change the data' do
           expect { call_method }
-            .not_to(change { adapter.query(collection_name).to_a })
+            .not_to(
+              change { adapter.query(collection_name: collection_name).to_a }
+            )
         end
 
         it 'should return a failing result' do
@@ -160,11 +164,21 @@ module Spec::Support::Examples::Collections
       end
 
       describe '#null_query' do
-        it { expect(adapter).to respond_to(:null_query).with(1).argument }
+        it 'should define the method' do
+          expect(adapter)
+            .to respond_to(:null_query)
+            .with(0).arguments
+            .and_keywords(:collection_name)
+        end
       end
 
       describe '#query' do
-        it { expect(adapter).to respond_to(:query).with(1).argument }
+        it 'should define the method' do
+          expect(adapter)
+            .to respond_to(:query)
+            .with(0).arguments
+            .and_keywords(:collection_name)
+        end
       end
 
       describe '#update_matching' do
@@ -194,7 +208,11 @@ module Spec::Support::Examples::Collections
       let(:collection_name) { 'books' }
 
       def find_by_uuid(uuid)
-        adapter.query(collection_name).matching(uuid: uuid).to_a.first
+        adapter
+          .query(collection_name: collection_name)
+          .matching(uuid: uuid)
+          .to_a
+          .first
       end
 
       describe '#collection_name_for' do
@@ -360,7 +378,9 @@ module Spec::Support::Examples::Collections
 
           it 'should not change the data' do
             expect { call_method }
-              .not_to(change { adapter.query(collection_name).to_a })
+              .not_to(
+                change { adapter.query(collection_name: collection_name).to_a }
+              )
           end
 
           it 'should return a failing result' do
@@ -383,7 +403,9 @@ module Spec::Support::Examples::Collections
 
             it 'should change the collection count' do
               expect { call_method }
-                .to change(adapter.query(collection_name), :count)
+                .to change(
+                  adapter.query(collection_name: collection_name), :count
+                )
                 .by(-1)
             end
 
@@ -506,7 +528,7 @@ module Spec::Support::Examples::Collections
         before(:example) do
           allow(adapter)
             .to receive(:query)
-            .with(collection_name)
+            .with(collection_name: collection_name)
             .and_return(query)
 
           %i[matching limit offset order].each do |method_name|
@@ -597,7 +619,9 @@ module Spec::Support::Examples::Collections
 
           it 'should not change the data' do
             expect { call_method }
-              .not_to(change { adapter.query(collection_name).to_a })
+              .not_to(
+                change { adapter.query(collection_name: collection_name).to_a }
+              )
           end
 
           it 'should return a failing result' do
@@ -618,13 +642,17 @@ module Spec::Support::Examples::Collections
               end
             end
 
+            def change_collection_values
+              change { adapter.query(collection_name: collection_name).to_a }
+            end
+
             it 'should return a passing result' do
               expect(result).to be_a_passing_result.with_value(expected_item)
             end
 
             it 'should return a copy of the data' do
               expect { result.value['tags'] = ['time travel'] }
-                .not_to(change { adapter.query(collection_name).to_a })
+                .not_to(change_collection_values)
             end
           end
         end
@@ -639,13 +667,15 @@ module Spec::Support::Examples::Collections
 
           it 'should change the collection count' do
             expect { call_method }
-              .to change(adapter.query(collection_name), :count)
+              .to change(
+                adapter.query(collection_name: collection_name), :count
+              )
               .by(1)
           end
 
           it 'should insert the object into the collection' do
             expect { call_method }
-              .to change(adapter.query(collection_name), :to_a)
+              .to change(adapter.query(collection_name: collection_name), :to_a)
               .to include(expected)
           end
 
@@ -739,7 +769,7 @@ module Spec::Support::Examples::Collections
       end
 
       describe '#null_query' do
-        let(:query) { adapter.null_query('books') }
+        let(:query) { adapter.null_query(collection_name: 'books') }
 
         it { expect(query).to respond_to(:count).with(0).arguments }
 
@@ -751,7 +781,9 @@ module Spec::Support::Examples::Collections
       end
 
       describe '#query' do
-        it { expect(adapter.query('books')).to be_a query_class }
+        it 'should return a query instance' do
+          expect(adapter.query(collection_name: 'books')).to be_a query_class
+        end
       end
 
       describe '#update_matching' do
@@ -920,7 +952,9 @@ module Spec::Support::Examples::Collections
 
           it 'should not change the data' do
             expect { call_method }
-              .not_to(change { adapter.query(collection_name).to_a })
+              .not_to(
+                change { adapter.query(collection_name: collection_name).to_a }
+              )
           end
 
           it 'should return a failing result' do
@@ -944,6 +978,10 @@ module Spec::Support::Examples::Collections
                   .merge(data)
               end
 
+              def change_collection_values
+                change { adapter.query(collection_name: collection_name).to_a }
+              end
+
               it 'should return a passing result' do
                 expect(result).to be_a_passing_result.with_value(expected_item)
               end
@@ -958,7 +996,7 @@ module Spec::Support::Examples::Collections
                 result = call_method
 
                 expect { result.value['tags'] = ['time travel'] }
-                  .not_to(change { adapter.query(collection_name).to_a })
+                  .not_to(change_collection_values)
               end
             end
 
@@ -970,6 +1008,10 @@ module Spec::Support::Examples::Collections
                   .merge(tools.hash.convert_keys_to_strings(data))
               end
 
+              def change_collection_values
+                change { adapter.query(collection_name: collection_name).to_a }
+              end
+
               it 'should return a passing result' do
                 expect(result).to be_a_passing_result.with_value(expected_item)
               end
@@ -984,7 +1026,7 @@ module Spec::Support::Examples::Collections
                 result = call_method
 
                 expect { result.value['tags'] = ['time travel'] }
-                  .not_to(change { adapter.query(collection_name).to_a })
+                  .not_to(change_collection_values)
               end
             end
           end

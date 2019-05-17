@@ -161,7 +161,7 @@ module Bronze
     # @return [Bronze::Collections::NullQuery] a mock query that acts as a
     #     query against an empty collection.
     def null_query
-      adapter.null_query(name)
+      adapter.null_query(collection_name: name)
     end
     alias_method :none, :null_query
 
@@ -169,7 +169,7 @@ module Bronze
     #
     # @return [Bronze::Collections::Query] the query instance.
     def query
-      adapter.query(name)
+      adapter.query(collection_name: name)
     end
     alias_method :all, :query
 

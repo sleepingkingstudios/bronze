@@ -36,15 +36,15 @@ RSpec.describe Bronze::Collections::Simple::Adapter do
   end
 
   describe '#null_query' do
-    let(:null_query) { adapter.null_query('books') }
+    let(:null_query) { adapter.null_query(collection_name: 'books') }
 
     it { expect(null_query).to be_a Bronze::Collections::NullQuery }
   end
 
   describe '#query' do
-    let(:query) { adapter.query('books') }
+    let(:query) { adapter.query(collection_name: 'books') }
 
-    it { expect(adapter.query('books')).to be_a query_class }
+    it { expect(adapter.query(collection_name: 'books')).to be_a query_class }
 
     it { expect(query.send(:data)).to be == raw_data['books'] }
 

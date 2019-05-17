@@ -115,24 +115,22 @@ module Bronze::Collections
       raise Bronze::NotImplementedError.new(self, :insert_one)
     end
 
-    # @overload null_query(collection_name)
-    #   @param collection_name [String] The collection to query.
+    # @param collection_name [String] The collection to query.
     #
-    #   @return [Bronze::Collections::NullQuery] a mock query that acts as a
-    #     query against an empty collection.
-    def null_query(_collection_name)
+    # @return [Bronze::Collections::NullQuery] a mock query that acts as a query
+    #   against an empty collection.
+    def null_query(collection_name:)
       Bronze::Collections::NullQuery.new
     end
 
-    # @overload query(collection_name)
-    #   @param collection_name [String] The collection to query.
+    # @param collection_name [String] The collection to query.
     #
-    #   @return [Bronze::Collections::Query] a query against the specified
-    #     collection.
+    # @return [Bronze::Collections::Query] a query against the specified
+    #   collection.
     #
-    #   @raise Bronze::NotImplementedError unless overriden by an Adapter
-    #     subclass.
-    def query(_collection_name)
+    # @raise Bronze::NotImplementedError unless overriden by an Adapter
+    #   subclass.
+    def query(collection_name:)
       raise Bronze::NotImplementedError.new(self, :query)
     end
 

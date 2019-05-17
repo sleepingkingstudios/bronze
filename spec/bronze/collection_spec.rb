@@ -1640,7 +1640,9 @@ RSpec.describe Bronze::Collection do
     it 'should delegate to the adapter' do
       collection.null_query
 
-      expect(adapter).to have_received(:null_query).with(collection.name)
+      expect(adapter)
+        .to have_received(:null_query)
+        .with(collection_name: collection.name)
     end
 
     it { expect(collection.null_query).to be null_query }
@@ -1852,7 +1854,9 @@ RSpec.describe Bronze::Collection do
     it 'should delegate to the adapter' do
       collection.query
 
-      expect(adapter).to have_received(:query).with(collection.name)
+      expect(adapter)
+        .to have_received(:query)
+        .with(collection_name: collection.name)
     end
 
     it { expect(collection.query).to be query }
