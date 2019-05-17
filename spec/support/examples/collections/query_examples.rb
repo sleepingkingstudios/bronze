@@ -2,6 +2,8 @@
 
 require 'rspec/sleeping_king_studios/concerns/shared_example_group'
 
+require 'bronze/transforms/identity_transform'
+
 require 'support/examples/collections'
 
 module Spec::Support::Examples::Collections
@@ -170,6 +172,10 @@ module Spec::Support::Examples::Collections
 
       describe '#to_a' do
         it { expect(query).to respond_to(:to_a).with(0).arguments }
+      end
+
+      describe '#transform' do
+        it { expect(query).to respond_to(:transform).with(0).arguments }
       end
     end
 
@@ -1716,6 +1722,19 @@ module Spec::Support::Examples::Collections
           include_context 'when the data has many items'
 
           it { expect(query.to_a).to be == queried_data }
+        end
+      end
+
+      describe '#transform' do
+        let(:default_transform) { defined?(super()) ? super() : nil }
+
+        it { expect(query.transform).to be default_transform }
+
+        context 'when initialized with a transform' do
+          let(:transform)          { Bronze::Transforms::IdentityTransform.new }
+          let(:expected_transform) { defined?(super()) ? super() : transform }
+
+          it { expect(query.transform).to be expected_transform }
         end
       end
     end

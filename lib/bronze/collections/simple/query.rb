@@ -8,7 +8,7 @@ require 'bronze/collections/simple/ordering'
 
 module Bronze::Collections::Simple
   # Query class that filters in-memory data in an Array of Hashes format.
-  class Query < Bronze::Collections::Query
+  class Query < Bronze::Collections::Query # rubocop:disable Metrics/ClassLength
     include Bronze::Collections::Query::Validation
     include Bronze::Collections::Simple::Ordering
 
@@ -16,8 +16,11 @@ module Bronze::Collections::Simple
     private_constant :UNDEFINED
 
     # @param [Array<Hash>] data The data to query against.
-    def initialize(data)
+    # @return [Bronze::Transform] the transform used to convert queried data to
+    #   a usable form.
+    def initialize(data, transform: nil)
       @data         = data
+      @transform    = transform
       @filters      = []
       @max_results  = nil
       @skip_results = nil

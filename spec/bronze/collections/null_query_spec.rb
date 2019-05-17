@@ -101,4 +101,8 @@ RSpec.describe Bronze::Collections::NullQuery do
   describe '#to_a' do
     it { expect(query.to_a).to be == [] }
   end
+
+  describe '#transform' do
+    it { expect(query.transform).to be nil }
+  end
 end
