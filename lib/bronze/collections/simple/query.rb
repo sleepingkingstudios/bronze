@@ -136,7 +136,10 @@ module Bronze::Collections::Simple
       end
     end
 
-    def matching_data # rubocop:disable Metrics/CyclomaticComplexity
+    # rubocop:disable Metrics/AbcSize
+    # rubocop:disable Metrics/CyclomaticComplexity
+    # rubocop:disable Metrics/PerceivedComplexity
+    def matching_data
       skipped_count  = 0
       matching_count = 0
       items          = ordering? ? ordered_data : data
@@ -148,9 +151,12 @@ module Bronze::Collections::Simple
 
         break if max_results && max_results < (matching_count += 1)
 
-        yield item
+        yield transform ? transform.denormalize(item) : item
       end
     end
+    # rubocop:enable Metrics/AbcSize
+    # rubocop:enable Metrics/CyclomaticComplexity
+    # rubocop:enable Metrics/PerceivedComplexity
 
     def parse_selector(hsh, keys)
       hsh.each do |key, value|

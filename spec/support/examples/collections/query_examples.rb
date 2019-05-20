@@ -53,6 +53,7 @@ module Spec::Support::Examples::Collections
           }
         ]
       end
+      let(:collection_data) { defined?(super()) ? super() : raw_data }
     end
 
     shared_context 'when the query has a non-matching filter' do
@@ -109,6 +110,29 @@ module Spec::Support::Examples::Collections
       let(:queried_data)  { raw_data.sort_by { |item| item['title'] }[2...6] }
     end
 
+    shared_context 'when the query has a transform' do
+      let(:transform) do
+        instance_double(
+          Bronze::Transform,
+          denormalize: nil,
+          normalize:   nil
+        )
+      end
+      let(:transformed_data) do
+        collection_data.map { |hsh| transform.denormalize(hsh) }
+      end
+
+      before(:example) do
+        allow(transform).to receive(:denormalize) do |hsh|
+          map_keys(hsh, &:capitalize)
+        end
+      end
+
+      def map_keys(hsh)
+        Hash[hsh.map { |key, value| [yield(key), value] }]
+      end
+    end
+
     shared_examples 'should filter the data' do
       describe 'should filter the data' do
         let(:subquery)      { defined?(super()) ? super() : query }
@@ -119,7 +143,9 @@ module Spec::Support::Examples::Collections
         let(:filtered_data) do
           return super() if defined?(super())
 
-          ordered_data[offset...(offset + limit)] || []
+          data = ordered_data[offset...(offset + limit)] || []
+
+          transform ? data.map { |item| transform.denormalize(item) } : data
         end
 
         it { expect(subquery.count).to be == filtered_data.size }
@@ -210,6 +236,12 @@ module Spec::Support::Examples::Collections
 
           it { expect(query.count).to be queried_data.size }
         end
+
+        wrap_context 'when the query has a transform' do
+          include_context 'when the data has many items'
+
+          it { expect(query.count).to be raw_data.size }
+        end
       end
 
       describe '#dup' do
@@ -255,6 +287,16 @@ module Spec::Support::Examples::Collections
           it { expect(copied_query.count).to be queried_data.size }
 
           it { expect(copied_query.to_a).to be == queried_data }
+        end
+
+        wrap_context 'when the query has a transform' do
+          include_context 'when the data has many items'
+
+          it { expect(copied_query.count).to be transformed_data.size }
+
+          it { expect(copied_query.to_a).to be == transformed_data }
+
+          it { expect(copied_query.transform).to be transform }
         end
       end
 
@@ -341,6 +383,21 @@ module Spec::Support::Examples::Collections
             end
           end
         end
+
+        wrap_context 'when the query has a transform' do
+          include_context 'when the data has many items'
+
+          it { expect(query.each).to be_a Enumerator }
+
+          it { expect(query.each.to_a).to be == transformed_data }
+
+          describe 'with a block' do
+            it 'should yield each item' do
+              expect { |block| query.each(&block) }
+                .to yield_successive_args(*transformed_data)
+            end
+          end
+        end
       end
 
       describe '#exists?' do
@@ -375,6 +432,12 @@ module Spec::Support::Examples::Collections
         end
 
         wrap_context 'when the query has an ordering and a limit' do
+          include_context 'when the data has many items'
+
+          it { expect(query.exists?).to be true }
+        end
+
+        wrap_context 'when the query has a transform' do
           include_context 'when the data has many items'
 
           it { expect(query.exists?).to be true }
@@ -657,6 +720,50 @@ module Spec::Support::Examples::Collections
             it { expect(query.count).to be queried_data.count }
 
             it { expect(query.to_a).to be == queried_data }
+
+            include_examples 'should filter the data'
+          end
+        end
+
+        wrap_context 'when the query has a transform' do
+          include_context 'when the data has many items'
+
+          describe 'with one' do
+            let(:limit) { 1 }
+
+            it { expect(query.count).to be transformed_data.count }
+
+            it { expect(query.to_a).to be == transformed_data }
+
+            include_examples 'should filter the data'
+          end
+
+          describe 'with three' do
+            let(:limit) { 3 }
+
+            it { expect(query.count).to be transformed_data.count }
+
+            it { expect(query.to_a).to be == transformed_data }
+
+            include_examples 'should filter the data'
+          end
+
+          describe 'with the number of items' do
+            let(:limit) { raw_data.count }
+
+            it { expect(query.count).to be transformed_data.count }
+
+            it { expect(query.to_a).to be == transformed_data }
+
+            include_examples 'should filter the data'
+          end
+
+          describe 'with greater than the number of items' do
+            let(:limit) { raw_data.count + 3 }
+
+            it { expect(query.count).to be transformed_data.count }
+
+            it { expect(query.to_a).to be == transformed_data }
 
             include_examples 'should filter the data'
           end
@@ -989,6 +1096,72 @@ module Spec::Support::Examples::Collections
             include_examples 'should filter the data'
           end
         end
+
+        wrap_context 'when the query has a transform' do
+          include_context 'when the data has many items'
+
+          describe 'with an empty selector' do
+            let(:selector) { {} }
+
+            it { expect(query.count).to be transformed_data.size }
+
+            it { expect(query.to_a).to be == transformed_data }
+
+            include_examples 'should filter the data'
+          end
+
+          describe 'with a value selector that does not match any items' do
+            let(:selector) { { 'author' => 'C. S. Lewis' } }
+            let(:matching_data) do
+              raw_data.select { |item| item >= selector }
+            end
+
+            it { expect(query.count).to be transformed_data.size }
+
+            it { expect(query.to_a).to be == transformed_data }
+
+            include_examples 'should filter the data'
+          end
+
+          describe 'with a value selector that matches some items' do
+            let(:selector) { { 'series' => 'Barsoom' } }
+            let(:matching_data) do
+              raw_data.select { |item| item >= selector }
+            end
+
+            it { expect(query.count).to be transformed_data.size }
+
+            it { expect(query.to_a).to be == transformed_data }
+
+            include_examples 'should filter the data'
+          end
+
+          describe 'with a value selector that matches all items' do
+            let(:selector) { { 'author' => 'Edgar Rice Burroughs' } }
+            let(:matching_data) do
+              raw_data.select { |item| item >= selector }
+            end
+
+            it { expect(query.count).to be transformed_data.size }
+
+            it { expect(query.to_a).to be == transformed_data }
+
+            include_examples 'should filter the data'
+          end
+
+          describe 'with a value selector with symbol keys' do
+            let(:selector) { { series: 'Barsoom' } }
+            let(:matching_data) do
+              raw_data.select { |item| item['series'] == 'Barsoom' }
+            end
+
+            it { expect(query.count).to be transformed_data.size }
+
+            it { expect(query.to_a).to be == transformed_data }
+
+            include_examples 'should filter the data'
+          end
+        end
       end
 
       describe '#none' do
@@ -1049,6 +1222,16 @@ module Spec::Support::Examples::Collections
           it { expect(query.count).to be queried_data.size }
 
           it { expect(query.to_a).to be == queried_data }
+
+          include_examples 'should filter the data'
+        end
+
+        wrap_context 'when the query has a transform' do
+          include_context 'when the data has many items'
+
+          it { expect(query.count).to be transformed_data.size }
+
+          it { expect(query.to_a).to be == transformed_data }
 
           include_examples 'should filter the data'
         end
@@ -1392,6 +1575,60 @@ module Spec::Support::Examples::Collections
             include_examples 'should filter the data'
           end
         end
+
+        wrap_context 'when the query has a transform' do
+          include_context 'when the data has many items'
+
+          describe 'with zero' do
+            let(:offset) { 0 }
+
+            it { expect(query.count).to be transformed_data.count }
+
+            it { expect(query.to_a).to be == transformed_data }
+
+            include_examples 'should filter the data'
+          end
+
+          describe 'with one' do
+            let(:offset) { 1 }
+
+            it { expect(query.count).to be transformed_data.count }
+
+            it { expect(query.to_a).to be == transformed_data }
+
+            include_examples 'should filter the data'
+          end
+
+          describe 'with three' do
+            let(:offset) { 3 }
+
+            it { expect(query.count).to be transformed_data.count }
+
+            it { expect(query.to_a).to be == transformed_data }
+
+            include_examples 'should filter the data'
+          end
+
+          describe 'with the number of items' do
+            let(:offset) { raw_data.count }
+
+            it { expect(query.count).to be transformed_data.count }
+
+            it { expect(query.to_a).to be == transformed_data }
+
+            include_examples 'should filter the data'
+          end
+
+          describe 'with greater than the number of items' do
+            let(:offset) { raw_data.count + 3 }
+
+            it { expect(query.count).to be transformed_data.count }
+
+            it { expect(query.to_a).to be == transformed_data }
+
+            include_examples 'should filter the data'
+          end
+        end
       end
 
       describe '#order' do
@@ -1564,13 +1801,15 @@ module Spec::Support::Examples::Collections
 
         let(:attributes)    { %w[title] }
         let(:subquery)      { query.order(*attributes) }
-        let(:queried_data)  { raw_data }
         let(:expected_data) { queried_data }
         let(:sort_nils_before_values) do
           # The default behavior is to sort nil values after non-nil. This is
           # the expected behavior for Postgres, as well as the built-in Simple
           # collection.
           defined?(super()) ? super() : false
+        end
+        let(:queried_data) do
+          transform ? transformed_data : raw_data
         end
 
         it { expect(query.order(*attributes)).not_to be query }
@@ -1691,6 +1930,12 @@ module Spec::Support::Examples::Collections
 
           include_examples 'should sort the data'
         end
+
+        wrap_context 'when the query has a transform' do
+          include_context 'when the data has many items'
+
+          include_examples 'should sort the data'
+        end
       end
 
       describe '#to_a' do
@@ -1723,6 +1968,12 @@ module Spec::Support::Examples::Collections
 
           it { expect(query.to_a).to be == queried_data }
         end
+
+        wrap_context 'when the query has a transform' do
+          include_context 'when the data has many items'
+
+          it { expect(query.to_a).to be == transformed_data }
+        end
       end
 
       describe '#transform' do
@@ -1730,8 +1981,7 @@ module Spec::Support::Examples::Collections
 
         it { expect(query.transform).to be default_transform }
 
-        context 'when initialized with a transform' do
-          let(:transform)          { Bronze::Transforms::IdentityTransform.new }
+        wrap_context 'when the query has a transform' do
           let(:expected_transform) { defined?(super()) ? super() : transform }
 
           it { expect(query.transform).to be expected_transform }
