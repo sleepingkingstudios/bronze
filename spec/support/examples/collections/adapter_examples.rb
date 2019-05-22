@@ -2,8 +2,10 @@
 
 require 'rspec/sleeping_king_studios/concerns/shared_example_group'
 
+require 'bronze/transforms/entities/normalize_transform'
 require 'bronze/transforms/identity_transform'
 
+require 'support/entities/examples/basic_book'
 require 'support/examples/collections'
 
 module Spec::Support::Examples::Collections
@@ -44,6 +46,33 @@ module Spec::Support::Examples::Collections
             }
           ]
         }
+      end
+    end
+
+    shared_context 'with an attributes transform' do
+      let(:transform) do
+        instance_double(
+          Bronze::Transform,
+          denormalize: nil,
+          normalize:   nil
+        )
+      end
+
+      before(:example) do
+        allow(transform).to receive(:denormalize) do |hsh|
+          map_keys(hsh, &:capitalize)
+        end
+      end
+
+      def map_keys(hsh)
+        Hash[hsh.map { |key, value| [yield(key), value] }]
+      end
+    end
+
+    shared_context 'with an entity transform' do
+      let(:entity_class) { Spec::BasicBook }
+      let(:transform) do
+        Bronze::Transforms::Entities::NormalizeTransform.new(entity_class)
       end
     end
 
@@ -540,6 +569,7 @@ module Spec::Support::Examples::Collections
           adapter.find_matching(
             collection_name: collection_name,
             selector:        selector,
+            transform:       transform,
             **options
           )
         end
@@ -571,6 +601,40 @@ module Spec::Support::Examples::Collections
           let(:matching_items) { [] }
 
           include_examples 'should find the matching items'
+        end
+
+        describe 'with transform: an attributes transform' do
+          include_context 'with an attributes transform'
+
+          describe 'with an empty selector' do
+            let(:selector) { {} }
+
+            include_examples 'should find the matching items'
+          end
+
+          describe 'with a selector that does not match any items' do
+            let(:selector)       { { genre: 'Noir' } }
+            let(:matching_items) { [] }
+
+            include_examples 'should find the matching items'
+          end
+        end
+
+        describe 'with transform: an entity transform' do
+          include_context 'with an entity transform'
+
+          describe 'with an empty selector' do
+            let(:selector) { {} }
+
+            include_examples 'should find the matching items'
+          end
+
+          describe 'with a selector that does not match any items' do
+            let(:selector)       { { genre: 'Noir' } }
+            let(:matching_items) { [] }
+
+            include_examples 'should find the matching items'
+          end
         end
 
         wrap_context 'when the data has many items' do
@@ -614,23 +678,55 @@ module Spec::Support::Examples::Collections
 
             include_examples 'should find the matching items'
           end
-        end
 
-        describe 'with transform: value' do
-          describe 'with an empty selector' do
-            let(:selector) { {} }
+          describe 'with transform: an attributes transform' do
+            include_context 'with an attributes transform'
 
-            include_examples 'should find the matching items'
+            describe 'with an empty selector' do
+              let(:selector) { {} }
+
+              include_examples 'should find the matching items'
+            end
+
+            describe 'with a selector that does not match any items' do
+              let(:selector)       { { genre: 'Noir' } }
+              let(:matching_items) { [] }
+
+              include_examples 'should find the matching items'
+            end
+
+            describe 'with a selector that matches one item' do
+              let(:selector) { { title: 'Journey to the Center of the Earth' } }
+              let(:matching_items) do
+                super().select do |book|
+                  book['title'] == 'Journey to the Center of the Earth'
+                end
+              end
+
+              include_examples 'should find the matching items'
+            end
+
+            describe 'with a selector that matches some items' do
+              let(:selector) { { author: 'H. G. Wells' } }
+              let(:matching_items) do
+                super().select do |book|
+                  book['author'] == 'H. G. Wells'
+                end
+              end
+
+              include_examples 'should find the matching items'
+            end
+
+            describe 'with a selector that matches all items' do
+              let(:selector) { { genre: 'Science Fiction' } }
+
+              include_examples 'should find the matching items'
+            end
           end
 
-          describe 'with a selector that does not match any items' do
-            let(:selector)       { { genre: 'Noir' } }
-            let(:matching_items) { [] }
+          describe 'with transform: an entity transform' do
+            include_context 'with an entity transform'
 
-            include_examples 'should find the matching items'
-          end
-
-          wrap_context 'when the data has many items' do
             describe 'with an empty selector' do
               let(:selector) { {} }
 
@@ -678,13 +774,15 @@ module Spec::Support::Examples::Collections
       describe '#find_one' do
         let(:primary_key)       { :uuid }
         let(:primary_key_value) { nil }
+        let(:transform)         { nil }
         let(:result)            { call_method }
 
         def call_method
           adapter.find_one(
             collection_name:   collection_name,
             primary_key:       primary_key,
-            primary_key_value: primary_key_value
+            primary_key_value: primary_key_value,
+            transform:         transform
           )
         end
 
@@ -713,6 +811,56 @@ module Spec::Support::Examples::Collections
           end
         end
 
+        describe 'with transform: an attributes transform' do
+          include_context 'with an attributes transform'
+
+          describe 'with a non-matching primary key' do
+            let(:primary_key_value) { '00000000-0000-0000-0000-000000000000' }
+            let(:expected_error) do
+              {
+                type:   Bronze::Collections::Errors::NOT_FOUND,
+                params: { selector: { primary_key => primary_key_value } }
+              }
+            end
+
+            it 'should not change the data' do
+              expect { call_method }
+                .not_to(change_collection_values)
+            end
+
+            it 'should return a failing result' do
+              expect(call_method)
+                .to be_a_failing_result
+                .with_errors(expected_error)
+            end
+          end
+        end
+
+        describe 'with transform: an entity transform' do
+          include_context 'with an entity transform'
+
+          describe 'with a non-matching primary key' do
+            let(:primary_key_value) { '00000000-0000-0000-0000-000000000000' }
+            let(:expected_error) do
+              {
+                type:   Bronze::Collections::Errors::NOT_FOUND,
+                params: { selector: { primary_key => primary_key_value } }
+              }
+            end
+
+            it 'should not change the data' do
+              expect { call_method }
+                .not_to(change_collection_values)
+            end
+
+            it 'should return a failing result' do
+              expect(call_method)
+                .to be_a_failing_result
+                .with_errors(expected_error)
+            end
+          end
+        end
+
         wrap_context 'when the data has many items' do
           include_examples 'should validate the primary key'
 
@@ -733,38 +881,20 @@ module Spec::Support::Examples::Collections
                 .not_to(change_collection_values)
             end
           end
-        end
 
-        describe 'with transform: value' do
-          describe 'with a non-matching primary key' do
-            let(:primary_key_value) { '00000000-0000-0000-0000-000000000000' }
-            let(:expected_error) do
-              {
-                type:   Bronze::Collections::Errors::NOT_FOUND,
-                params: { selector: { primary_key => primary_key_value } }
-              }
-            end
+          describe 'with transform: an attributes transform' do
+            include_context 'with an attributes transform'
 
-            it 'should not change the data' do
-              expect { call_method }.not_to(change_collection_values)
-            end
-
-            it 'should return a failing result' do
-              expect(call_method)
-                .to be_a_failing_result
-                .with_errors(expected_error)
-            end
-          end
-
-          wrap_context 'when the data has many items' do
             include_examples 'should validate the primary key'
 
             describe 'with a matching primary key' do
               let(:primary_key_value) { 'ff0ea8fc-05b2-4f1f-b661-4d6e543ce86e' }
               let(:expected_item) do
-                raw_data['books'].find do |book|
-                  book['uuid'] == primary_key_value
-                end
+                item =
+                  raw_data['books']
+                  .find { |book| book['uuid'] == primary_key_value }
+
+                transform.denormalize(item)
               end
 
               it 'should return a passing result' do
@@ -777,6 +907,32 @@ module Spec::Support::Examples::Collections
               end
             end
           end
+
+          describe 'with transform: an entity transform' do
+            include_context 'with an entity transform'
+
+            include_examples 'should validate the primary key'
+
+            describe 'with a matching primary key' do
+              let(:primary_key_value) { 'ff0ea8fc-05b2-4f1f-b661-4d6e543ce86e' }
+              let(:expected_item) do
+                item =
+                  raw_data['books']
+                  .find { |book| book['uuid'] == primary_key_value }
+
+                transform.denormalize(item)
+              end
+
+              it 'should return a passing result' do
+                expect(result).to be_a_passing_result.with_value(expected_item)
+              end
+
+              it 'should return a copy of the data' do
+                expect { result.value.title = 'The Island of Doctor Moreau' }
+                  .not_to(change_collection_values)
+              end
+            end
+          end
         end
       end
 
@@ -784,6 +940,8 @@ module Spec::Support::Examples::Collections
         shared_examples 'should insert the item' do
           let(:result) { call_method }
           let(:expected) do
+            return super() if defined?(super())
+
             tools.hash.convert_keys_to_strings(data)
           end
 
