@@ -6,6 +6,7 @@ require 'bronze'
 require 'bronze/collections/primary_keys'
 require 'bronze/collections/validation'
 require 'bronze/result'
+require 'bronze/transforms/entities/normalize_transform'
 
 module Bronze
   # A collection represents a data set, providing a consistent interface to
@@ -122,7 +123,8 @@ module Bronze
         limit:           limit,
         offset:          offset,
         order:           order,
-        selector:        selector
+        selector:        selector,
+        transform:       transform
       )
     end
 
@@ -139,7 +141,8 @@ module Bronze
       adapter.find_one(
         collection_name:   name,
         primary_key:       primary_key,
-        primary_key_value: value
+        primary_key_value: value,
+        transform:         transform
       )
     end
     alias_method :find, :find_one
@@ -169,7 +172,10 @@ module Bronze
     #
     # @return [Bronze::Collections::Query] the query instance.
     def query
-      adapter.query(collection_name: name)
+      adapter.query(
+        collection_name: name,
+        transform:       transform
+      )
     end
     alias_method :all, :query
 

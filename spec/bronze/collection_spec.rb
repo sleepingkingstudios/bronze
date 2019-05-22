@@ -6,7 +6,6 @@ require 'bronze/collections/null_query'
 require 'bronze/collections/query'
 require 'bronze/entities/primary_key'
 require 'bronze/entity'
-require 'bronze/transforms/entities/normalize_transform'
 require 'bronze/transforms/identity_transform'
 
 RSpec.describe Bronze::Collection do
@@ -1204,6 +1203,7 @@ RSpec.describe Bronze::Collection do
       {
         collection_name: collection.name,
         selector:        selector,
+        transform:       nil,
         **delegated_options
       }
     end
@@ -1454,7 +1454,8 @@ RSpec.describe Bronze::Collection do
         {
           collection_name:   collection.name,
           primary_key:       primary_key,
-          primary_key_value: primary_key_value
+          primary_key_value: primary_key_value,
+          transform:         nil
         }
       end
 
@@ -1856,7 +1857,7 @@ RSpec.describe Bronze::Collection do
 
       expect(adapter)
         .to have_received(:query)
-        .with(collection_name: collection.name)
+        .with(collection_name: collection.name, transform: nil)
     end
 
     it { expect(collection.query).to be query }

@@ -2,6 +2,8 @@
 
 require 'rspec/sleeping_king_studios/concerns/shared_example_group'
 
+require 'bronze/transforms/identity_transform'
+
 require 'support/examples/collections'
 
 module Spec::Support::Examples::Collections
@@ -137,20 +139,28 @@ module Spec::Support::Examples::Collections
       end
 
       describe '#find_matching' do
+        let(:keywords) do
+          %i[collection_name limit offset order selector transform]
+        end
+
         it 'should define the method' do
           expect(adapter)
             .to respond_to(:find_matching)
             .with(0).arguments
-            .and_keywords(:collection_name, :limit, :offset, :order, :selector)
+            .and_keywords(*keywords)
         end
       end
 
       describe '#find_one' do
+        let(:keywords) do
+          %i[collection_name primary_key primary_key_value transform]
+        end
+
         it 'should define the method' do
           expect(adapter)
             .to respond_to(:find_one)
             .with(0).arguments
-            .and_keywords(:collection_name, :primary_key, :primary_key_value)
+            .and_keywords(*keywords)
         end
       end
 
@@ -168,7 +178,7 @@ module Spec::Support::Examples::Collections
           expect(adapter)
             .to respond_to(:null_query)
             .with(0).arguments
-            .and_keywords(:collection_name)
+            .and_keywords(:collection_name, :transform)
         end
       end
 
@@ -177,7 +187,7 @@ module Spec::Support::Examples::Collections
           expect(adapter)
             .to respond_to(:query)
             .with(0).arguments
-            .and_keywords(:collection_name)
+            .and_keywords(:collection_name, :transform)
         end
       end
 
@@ -503,16 +513,25 @@ module Spec::Support::Examples::Collections
         let(:limit)          { nil }
         let(:offset)         { nil }
         let(:order)          { nil }
-        let(:options)        { { limit: limit, offset: offset, order: order } }
+        let(:transform)      { nil }
         let(:matching_items) { raw_data[collection_name] }
+        let(:options) do
+          {
+            limit:     limit,
+            offset:    offset,
+            order:     order,
+            transform: transform
+          }
+        end
         let(:query) do
           instance_double(
             query_class,
-            limit:    nil,
-            matching: nil,
-            offset:   nil,
-            order:    nil,
-            to_a:     nil
+            limit:     nil,
+            matching:  nil,
+            offset:    nil,
+            order:     nil,
+            to_a:      nil,
+            transform: transform
           )
         end
         let(:result) { call_method }
@@ -528,7 +547,10 @@ module Spec::Support::Examples::Collections
         before(:example) do
           allow(adapter)
             .to receive(:query)
-            .with(collection_name: collection_name)
+            .with(
+              collection_name: collection_name,
+              transform:       transform
+            )
             .and_return(query)
 
           %i[matching limit offset order].each do |method_name|
@@ -593,6 +615,64 @@ module Spec::Support::Examples::Collections
             include_examples 'should find the matching items'
           end
         end
+
+        describe 'with transform: value' do
+          describe 'with an empty selector' do
+            let(:selector) { {} }
+
+            include_examples 'should find the matching items'
+          end
+
+          describe 'with a selector that does not match any items' do
+            let(:selector)       { { genre: 'Noir' } }
+            let(:matching_items) { [] }
+
+            include_examples 'should find the matching items'
+          end
+
+          wrap_context 'when the data has many items' do
+            describe 'with an empty selector' do
+              let(:selector) { {} }
+
+              include_examples 'should find the matching items'
+            end
+
+            describe 'with a selector that does not match any items' do
+              let(:selector)       { { genre: 'Noir' } }
+              let(:matching_items) { [] }
+
+              include_examples 'should find the matching items'
+            end
+
+            describe 'with a selector that matches one item' do
+              let(:selector) { { title: 'Journey to the Center of the Earth' } }
+              let(:matching_items) do
+                super().select do |book|
+                  book['title'] == 'Journey to the Center of the Earth'
+                end
+              end
+
+              include_examples 'should find the matching items'
+            end
+
+            describe 'with a selector that matches some items' do
+              let(:selector) { { author: 'H. G. Wells' } }
+              let(:matching_items) do
+                super().select do |book|
+                  book['author'] == 'H. G. Wells'
+                end
+              end
+
+              include_examples 'should find the matching items'
+            end
+
+            describe 'with a selector that matches all items' do
+              let(:selector) { { genre: 'Science Fiction' } }
+
+              include_examples 'should find the matching items'
+            end
+          end
+        end
       end
 
       describe '#find_one' do
@@ -608,6 +688,10 @@ module Spec::Support::Examples::Collections
           )
         end
 
+        def change_collection_values
+          change { adapter.query(collection_name: collection_name).to_a }
+        end
+
         describe 'with a non-matching primary key' do
           let(:primary_key_value) { '00000000-0000-0000-0000-000000000000' }
           let(:expected_error) do
@@ -619,9 +703,7 @@ module Spec::Support::Examples::Collections
 
           it 'should not change the data' do
             expect { call_method }
-              .not_to(
-                change { adapter.query(collection_name: collection_name).to_a }
-              )
+              .not_to(change_collection_values)
           end
 
           it 'should return a failing result' do
@@ -642,10 +724,6 @@ module Spec::Support::Examples::Collections
               end
             end
 
-            def change_collection_values
-              change { adapter.query(collection_name: collection_name).to_a }
-            end
-
             it 'should return a passing result' do
               expect(result).to be_a_passing_result.with_value(expected_item)
             end
@@ -653,6 +731,50 @@ module Spec::Support::Examples::Collections
             it 'should return a copy of the data' do
               expect { result.value['tags'] = ['time travel'] }
                 .not_to(change_collection_values)
+            end
+          end
+        end
+
+        describe 'with transform: value' do
+          describe 'with a non-matching primary key' do
+            let(:primary_key_value) { '00000000-0000-0000-0000-000000000000' }
+            let(:expected_error) do
+              {
+                type:   Bronze::Collections::Errors::NOT_FOUND,
+                params: { selector: { primary_key => primary_key_value } }
+              }
+            end
+
+            it 'should not change the data' do
+              expect { call_method }.not_to(change_collection_values)
+            end
+
+            it 'should return a failing result' do
+              expect(call_method)
+                .to be_a_failing_result
+                .with_errors(expected_error)
+            end
+          end
+
+          wrap_context 'when the data has many items' do
+            include_examples 'should validate the primary key'
+
+            describe 'with a matching primary key' do
+              let(:primary_key_value) { 'ff0ea8fc-05b2-4f1f-b661-4d6e543ce86e' }
+              let(:expected_item) do
+                raw_data['books'].find do |book|
+                  book['uuid'] == primary_key_value
+                end
+              end
+
+              it 'should return a passing result' do
+                expect(result).to be_a_passing_result.with_value(expected_item)
+              end
+
+              it 'should return a copy of the data' do
+                expect { result.value['tags'] = ['time travel'] }
+                  .not_to(change_collection_values)
+              end
             end
           end
         end
@@ -781,8 +903,32 @@ module Spec::Support::Examples::Collections
       end
 
       describe '#query' do
-        it 'should return a query instance' do
-          expect(adapter.query(collection_name: 'books')).to be_a query_class
+        let(:query) { adapter.query(collection_name: 'books') }
+        let(:default_transform) do
+          defined?(super()) ? super() : nil
+        end
+
+        def be_default_transform
+          return default_transform if default_transform.respond_to?(:matches?)
+
+          # :nocov:
+          be(default_transform)
+          # :nocov:
+        end
+
+        it { expect(query).to be_a query_class }
+
+        it { expect(query.transform).to be_default_transform }
+
+        describe 'with transform: value' do
+          let(:transform) { Bronze::Transforms::IdentityTransform.new }
+          let(:query) do
+            adapter.query(collection_name: 'books', transform: transform)
+          end
+
+          it { expect(query).to be_a query_class }
+
+          it { expect(query.transform).to be transform }
         end
       end
 

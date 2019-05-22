@@ -65,13 +65,15 @@ module Bronze::Collections
     # Finds all items in the collection matching the given selector.
     #
     # @param collection_name [String] The collection to query.
-    # @param selector [Hash] The criteria used to filter the data.
     # @param limit [Integer] The maximum number of items to return. If nil or
     #   if no value is given, all matching items will be returned. Defaults
     #   to nil.
     # @param offset [Integer] The number of items to skip. If nil or if no
     #   value is given, all matching items will be returned. Defaults to nil.
     # @param order [String, Symbol, Array, Hash] See Query#order.
+    # @param selector [Hash] The criteria used to filter the data.
+    # @param transform [Bronze::Transform] the transform used to convert queried
+    #   data to a usable form.
     #
     # @return [Bronze::Result] the result of the find operation.
     #
@@ -82,7 +84,8 @@ module Bronze::Collections
       selector:,
       limit: nil,
       offset: nil,
-      order: nil
+      order: nil,
+      transform: nil
     )
       raise Bronze::NotImplementedError.new(self, :find_matching)
     end
@@ -93,12 +96,19 @@ module Bronze::Collections
     # @param primary_key [Symbol] The name of the primary key column or
     #   attribute.
     # @param primary_key_value [Object] The primary key value to search for.
+    # @param transform [Bronze::Transform] the transform used to convert queried
+    #   data to a usable form.
     #
     # @return [Bronze::Result] the result of the find operation.
     #
     # @raise Bronze::NotImplementedError unless overriden by an Adapter
     #   subclass.
-    def find_one(collection_name:, primary_key:, primary_key_value:)
+    def find_one(
+      collection_name:,
+      primary_key:,
+      primary_key_value:,
+      transform: nil
+    )
       raise Bronze::NotImplementedError.new(self, :find_one)
     end
 
@@ -116,21 +126,25 @@ module Bronze::Collections
     end
 
     # @param collection_name [String] The collection to query.
+    # @param transform [Bronze::Transform] the transform used to convert queried
+    #   data to a usable form.
     #
     # @return [Bronze::Collections::NullQuery] a mock query that acts as a query
     #   against an empty collection.
-    def null_query(collection_name:)
+    def null_query(collection_name:, transform: nil)
       Bronze::Collections::NullQuery.new
     end
 
     # @param collection_name [String] The collection to query.
+    # @param transform [Bronze::Transform] the transform used to convert queried
+    #   data to a usable form.
     #
     # @return [Bronze::Collections::Query] a query against the specified
     #   collection.
     #
     # @raise Bronze::NotImplementedError unless overriden by an Adapter
     #   subclass.
-    def query(collection_name:)
+    def query(collection_name:, transform: nil)
       raise Bronze::NotImplementedError.new(self, :query)
     end
 

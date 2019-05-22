@@ -18,6 +18,9 @@ RSpec.describe Bronze::Collections::Simple::Adapter do
 
   let(:query_class) { Bronze::Collections::Simple::Query }
   let(:raw_data)    { { 'books' => [] } }
+  let(:default_transform) do
+    an_instance_of(Bronze::Transforms::CopyTransform)
+  end
 
   def tools
     SleepingKingStudios::Tools::Toolbelt.instance

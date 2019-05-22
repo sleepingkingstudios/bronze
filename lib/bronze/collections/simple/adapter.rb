@@ -6,6 +6,7 @@ require 'bronze/collections/simple'
 require 'bronze/collections/simple/query'
 require 'bronze/errors'
 require 'bronze/result'
+require 'bronze/transforms/copy_transform'
 
 module Bronze::Collections::Simple
   # rubocop:disable Metrics/ClassLength
@@ -57,8 +58,17 @@ module Bronze::Collections::Simple
     end
 
     # (see Bronze::Collections::Adapter#find_matching)
-    def find_matching(collection_name:, limit:, offset:, order:, selector:)
-      items = query(collection_name: collection_name).matching(selector)
+    def find_matching(
+      collection_name:,
+      limit:,
+      offset:,
+      order:,
+      selector:,
+      transform: nil
+    )
+      items =
+        query(collection_name: collection_name, transform: transform)
+        .matching(selector)
 
       items = items.order(*Array(order)) if order
       items = items.limit(limit)         if limit
@@ -68,9 +78,14 @@ module Bronze::Collections::Simple
     end
 
     # (see Bronze::Collections::Adapter#find_one)
-    def find_one(collection_name:, primary_key:, primary_key_value:)
+    def find_one(
+      collection_name:,
+      primary_key:,
+      primary_key_value:,
+      transform: nil
+    )
       items  =
-        query(collection_name: collection_name)
+        query(collection_name: collection_name, transform: transform)
         .matching(primary_key => primary_key_value)
         .limit(2)
         .to_a
@@ -78,7 +93,7 @@ module Bronze::Collections::Simple
 
       return Bronze::Result.new(nil, errors: errors) if errors
 
-      Bronze::Result.new(tools.hash.deep_dup(items.first))
+      Bronze::Result.new(items.first)
     end
 
     # (see Bronze::Collections::Adapter#insert_one)
@@ -93,8 +108,14 @@ module Bronze::Collections::Simple
     end
 
     # (see Bronze::Collections::Adapter#query)
-    def query(collection_name:)
-      Bronze::Collections::Simple::Query.new(collection(collection_name))
+    def query(
+      collection_name:,
+      transform: Bronze::Transforms::CopyTransform.instance
+    )
+      Bronze::Collections::Simple::Query.new(
+        collection(collection_name),
+        transform: transform
+      )
     end
 
     # (see Bronze::Collections::Adapter#update_matching)
@@ -102,7 +123,7 @@ module Bronze::Collections::Simple
       result       = Bronze::Result.new([])
       data         = tools.hash.convert_keys_to_strings(data)
       result.value =
-        query(collection_name: collection_name)
+        raw_query(collection_name: collection_name)
         .matching(selector)
         .each.map do |item|
           item.update(data)
@@ -114,7 +135,7 @@ module Bronze::Collections::Simple
     # (see Bronze::Collections::Adapter#update_one)
     def update_one(collection_name:, data:, primary_key:, primary_key_value:)
       items  =
-        query(collection_name: collection_name)
+        raw_query(collection_name: collection_name)
         .matching(primary_key => primary_key_value)
         .limit(2)
         .to_a
@@ -157,6 +178,10 @@ module Bronze::Collections::Simple
 
     def insert_into_collection(collection, object)
       collection << object
+    end
+
+    def raw_query(collection_name:)
+      query(collection_name: collection_name, transform: nil)
     end
 
     def tools
