@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require 'date'
-
 require 'bronze/entity'
 require 'bronze/entities/primary_keys/uuid'
 

@@ -98,9 +98,8 @@ module Bronze::Collections::Simple
 
     # (see Bronze::Collections::Adapter#insert_one)
     def insert_one(collection_name:, data:)
-      result       = Bronze::Result.new
-      data         = tools.hash.convert_keys_to_strings(data)
-      result.value = data
+      data   = tools.hash.convert_keys_to_strings(data)
+      result = Bronze::Result.new(data)
 
       insert_into_collection(collection(collection_name), data)
 
@@ -110,8 +109,10 @@ module Bronze::Collections::Simple
     # (see Bronze::Collections::Adapter#query)
     def query(
       collection_name:,
-      transform: Bronze::Transforms::CopyTransform.instance
+      transform: nil
     )
+      transform ||= Bronze::Transforms::CopyTransform.instance
+
       Bronze::Collections::Simple::Query.new(
         collection(collection_name),
         transform: transform
@@ -181,7 +182,7 @@ module Bronze::Collections::Simple
     end
 
     def raw_query(collection_name:)
-      query(collection_name: collection_name, transform: nil)
+      Bronze::Collections::Simple::Query.new(collection(collection_name))
     end
 
     def tools

@@ -147,19 +147,33 @@ module Bronze
     end
     alias_method :find, :find_one
 
+    # rubocop:disable Metrics/AbcSize
+    # rubocop:disable Metrics/CyclomaticComplexity
+
     # Inserts the data hash into the collection.
     #
     # @param data [Hash] The data hash to insert.
     #
     # @return [Bronze::Result] the result of the insert operation.
     def insert_one(data)
+      errors = errors_for_entity(data)
+
+      return Bronze::Result.new(nil, errors: errors) if errors
+
+      data   = transform ? transform.normalize(data) : data
       errors = errors_for_data(data) || errors_for_primary_key_insert(data)
 
       return Bronze::Result.new(nil, errors: errors) if errors
 
-      adapter.insert_one(collection_name: name, data: data)
+      result = adapter.insert_one(collection_name: name, data: data)
+
+      return result unless transform && result.success?
+
+      Bronze::Result.new(transform.denormalize(result.value))
     end
     alias_method :insert, :insert_one
+    # rubocop:enable Metrics/AbcSize
+    # rubocop:enable Metrics/CyclomaticComplexity
 
     # @return [Bronze::Collections::NullQuery] a mock query that acts as a
     #     query against an empty collection.
@@ -225,6 +239,22 @@ module Bronze
     alias_method :update, :update_one
 
     private
+
+    def entity_collection?
+      transform.is_a?(Bronze::Transforms::Entities::NormalizeTransform)
+    end
+
+    def entity_invalid_error(data)
+      return if data.is_a?(transform.entity_class)
+
+      build_errors.add(Bronze::Collections::Errors.data_invalid, data: data)
+    end
+
+    def errors_for_entity(data)
+      return unless entity_collection?
+
+      data_missing_error(data) || entity_invalid_error(data)
+    end
 
     def parse_definition(definition)
       return parse_module_definition(definition) if definition.is_a?(Module)
