@@ -32,5 +32,11 @@ module Bronze::Transforms
     def normalize(value)
       @right_transform.normalize(@left_transform.normalize(value))
     end
+
+    private
+
+    attr_reader :left_transform
+
+    attr_reader :right_transform
   end
 end
