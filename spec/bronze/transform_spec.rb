@@ -9,6 +9,46 @@ RSpec.describe Bronze::Transform do
     it { expect(described_class).to be_constructible.with(0).arguments }
   end
 
+  describe '#<<' do
+    let(:other_transform)    { described_class.new }
+    let(:composed_transform) { transform << other_transform }
+
+    it { expect(transform).to respond_to(:<<).with(1).argument }
+
+    it 'should return a composed transform' do
+      expect(transform << other_transform)
+        .to be_a Bronze::Transforms::ComposedTransform
+    end
+
+    it 'should set the left transform' do
+      expect(composed_transform.send(:left_transform)).to be other_transform
+    end
+
+    it 'should set the right transform' do
+      expect(composed_transform.send(:right_transform)).to be transform
+    end
+  end
+
+  describe '#>>' do
+    let(:other_transform)    { described_class.new }
+    let(:composed_transform) { transform >> other_transform }
+
+    it { expect(transform).to respond_to(:>>).with(1).argument }
+
+    it 'should return a composed transform' do
+      expect(transform >> other_transform)
+        .to be_a Bronze::Transforms::ComposedTransform
+    end
+
+    it 'should set the left transform' do
+      expect(composed_transform.send(:left_transform)).to be transform
+    end
+
+    it 'should set the right transform' do
+      expect(composed_transform.send(:right_transform)).to be other_transform
+    end
+  end
+
   describe '#denormalize' do
     let(:error_message) do
       "#{described_class.name}#denormalize is not implemented"

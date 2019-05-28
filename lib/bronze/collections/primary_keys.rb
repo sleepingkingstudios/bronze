@@ -5,6 +5,14 @@ require 'bronze/collections'
 module Bronze::Collections
   # Methods for handing entity primary keys in a collection.
   module PrimaryKeys
+    # @param definition [Class, String] An object defining the data to access.
+    #   Can be a String (the name of the data set) or a Class (the objects
+    #   represented by the data set).
+    # @param primary_key [String, Symbol, false] The name of the primary key for
+    #   the data set. If no value is given, defaults to 'id'. A value of false
+    #   indicates that the data set does not have a primary key.
+    # @param primary_key_type [Class, String] The type of the primary key for
+    #   the data set. If no value is given, defaults to String.
     def initialize(definition, primary_key:, primary_key_type:)
       parse_primary_key(definition)
 

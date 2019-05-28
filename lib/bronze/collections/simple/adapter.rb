@@ -13,6 +13,7 @@ module Bronze::Collections::Simple
   # Adapter class for querying and modifying an in-memory data structure.
   class Adapter < Bronze::Collections::Adapter
     Errors = Bronze::Collections::Errors
+    private_constant :Errors
 
     # @param data [Hash<String, Array<Hash>>] The stored data.
     def initialize(data)

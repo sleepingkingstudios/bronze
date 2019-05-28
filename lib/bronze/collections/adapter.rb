@@ -92,7 +92,7 @@ module Bronze::Collections
     # @param collection_name [String] The collection to query.
     # @param primary_key [Symbol] The name of the primary key column or
     #   attribute.
-    # @param value [Object] The primary key value to search for.
+    # @param primary_key_value [Object] The primary key value to search for.
     #
     # @return [Bronze::Result] the result of the find operation.
     #
