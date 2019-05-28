@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.2.0
+
+### Transforms
+
+Implemented Transform composition via the #<< and #>> methods.
+
 ## 0.1.0
 
 Initial release.

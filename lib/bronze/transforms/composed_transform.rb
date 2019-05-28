@@ -17,7 +17,7 @@ module Bronze::Transforms
 
     # Evaluates the transforms' #denormalize methods from right to left.
     #
-    # @param object [Object] The object to convert.
+    # @param value [Object] The object to convert.
     #
     # @return [Object] The converted object.
     def denormalize(value)
@@ -26,7 +26,7 @@ module Bronze::Transforms
 
     # Evaluates the transforms' #normalize methods from left to right.
     #
-    # @param object [Object] The object to convert.
+    # @param value [Object] The object to convert.
     #
     # @return [Object] The converted object.
     def normalize(value)

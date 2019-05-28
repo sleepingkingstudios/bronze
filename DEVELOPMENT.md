@@ -136,4 +136,12 @@ Collection#transform
 
 ## Transforms
 
+- Rename #normalize to #call, #denormalize to #reverse_call ?
 - JSON transform - to/from JSON string
+- Reversible transforms
+  - #reverse
+  - Returns ReversedTransform
+    - wraps transform
+    - swaps #normalize, #denormalize
+    - #reverse just returns original transform
+- Irreversible transforms

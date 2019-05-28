@@ -620,6 +620,14 @@ Optional. An `::instance` class method is recommended For transforms that take n
 
 If the transform does have internal state, e.g. stores values with instance variables, an alternative might be to use a thread-local instance.
 
+#### #<< Method
+
+Left (or "backward") composes the transform with the given other transform. See [Composing Transforms](#label-Composing+Transforms), below.
+
+#### #>> Method
+
+Right (or "forward") composes the transform with the given other transform. See [Composing Transforms](#label-Composing+Transforms), below.
+
 #### #denormalize Method
 
 The `#denormalize` method converts the object or data back from an alternate form. This should be the inverse of the `#normalize` method (see below).
@@ -639,6 +647,133 @@ The `#normalize` method converts the object or data to an alternate form. By con
     #=> 'upper case string'
 
 For one-way transforms, use the `#normalize` method to transform the data.
+
+### Composing Transforms
+
+Bronze transforms are composable, meaning that they can be combined together to form a new transform object that calls each child in sequence. This can be envisioned as a pipeline. Data is input to the composed transform. For each child transform, the data is modified, and then passed to the next child in sequence. Finally, the result of the final transform is returned.
+
+Bronze transforms are bidirectional, in that they have both a `#normalize` and
+`#denormalize` method to transform the data. A composed transform is likewise bidirectional - the child transforms will be called in reverse order when de-normalizing data, relative to the order when normalizing data.
+
+#### Forward Composition
+
+Also known as "left" composition. Forward composition is equivalent to a pipeline, and the transforms are called from left to right (on a `#normalize` call). Think of the carets `>>` as arrows indicating the direction that the data flows.
+
+On a `#normalize` call, the leftmost transform is called with the input data, the second to the left transform is called with the result of the first transform, and so on. Finally, the rightmost transform is called, and the result of that is returned by the composed transform.
+
+    class AddTwoTransform < Bronze::Transform
+      def denormalize(int)
+        int - 2
+      end
+
+      def normalize(int)
+        int + 2
+      end
+    end
+
+    class MultiplyByThreeTransform < Bronze::Transform
+      def denormalize(int)
+        int / 3
+      end
+
+      def normalize(int)
+        int * 3
+      end
+    end
+
+    add_2      = AddTwoTransform.new
+    multiply_3 = MultiplyByThreeTransform.new
+    composed   = add_2 >> multiply_3
+
+    # First, our composed transform calls AddTwoTransform#normalize with our
+    # input, which returns 5 + 2 = 7. Then, MultiplyByThreeTransform#normalize
+    # is called with that result and returns 7 * 3 = 21. This value is then
+    # returned by the composed transform.
+    composed.normalize(5) #=> 21
+
+    # This is equivalent to the following:
+    multiply_3.normalize(add_2.normalize(5)) # => 21
+
+On a `#denormalize` call, this order is reversed.
+
+    # First, our composed transform calls MultiplyByThreeTransform#denormalize
+    # with our input, which returns 21 / 3 = 7. Then,
+    # AddByTwoTransform#denormalize is called with that result and returns
+    # 7 - 2 = 5. This value is then returned by the composed transform.
+    composed.denormalize(21) #=> 5
+
+    # This is equivalent to the following:
+    add_2.denormalize(multiply_3.denormalize(21)) #=> 5
+
+If both of the composed transforms are fully reversible, then our composed transform will also be reversible.
+
+    composed.normalize(composed.denormalize(5)) => 5
+
+Composed transforms can themselves be composed together with other transforms.
+
+    class HexTransform
+      def denormalize(str)
+        str.to_i(16)
+      end
+
+      def normalize(int)
+        int.to_s(16)
+      end
+    end
+
+    hex_composed = composed >> HexTransform.new
+
+    # First, we call AddTwoTransform#normalize to get 7. This is passed to
+    # MultiplyByThreeTransform#normalize to get 21. Finally, this is passed to
+    # HexTransform#normalize to return the string "15".
+    hex_composed.normalize(5) => "15" # 21 in Base 16.
+
+    # These transforms are called in reverse order when calling #denormalize.
+    hex_composed.denormalize("15")
+
+When composing transforms, it's critically important to ensure that the correct
+operator and order are used. Depending on the transforms used, an incorrect order can cause invalid or nonsensical results.
+
+    # Reversing the order of these numerical transforms changes the result.
+    composed = multiply_3 >> add_2
+    composed.normalize(5) #=> 17
+
+    # Other transforms can change the type of the data, so the result may be
+    # nonsensical or even raise an Exception.
+    composed = HexTransform.new >> multiply_3
+    composed.normalize(5) => "555"
+
+Remember, using the `#>>` operator, the transforms will be executed from left to right in a `#normalize` call.
+
+#### Backward Composition
+
+Also known as "right" composition. The transforms are called from right to left (on a `#normalize` call). Think of the carets `<<` as arrows indicating the direction that the data flows.
+
+On a `#normalize` call, the rightmost transform is called with the input data, the second to the right transform is called with the result of the first transform, and so on. Finally, the leftmost transform is called, and the result of that is returned by the composed transform.
+
+    add_2      = AddTwoTransform.new
+    multiply_3 = MultiplyByThreeTransform.new
+    composed   = add_2 >> multiply_3
+
+    # First, our composed transform calls MultiplyByThreeTransform#normalize
+    # with our input, which returns 5 * 3 = 15. Then, AddTwo#normalize
+    # is called with that result and returns 15 + 2 = 17. This value is then
+    # returned by the composed transform.
+    composed.normalize(5) #=> 17
+
+    # This is equivalent to the following:
+    add_2.normalize(multiply_3.normalize(5)) # => 17
+
+On a `#denormalize` call, this order is reversed.
+
+    # First, our composed transform calls AddByTwoTransform#denormalize
+    # with our input, which returns 17 - 2 = 15. Then,
+    # MultiplyByThreeTransform#denormalize is called with that result and
+    # returns 15 / 3 = 5. This value is then returned by the composed transform.
+    composed.denormalize(17) #=> 5
+
+    # This is equivalent to the following:
+    multiply_3.denormalize(add_2.denormalize(17)) #=> 5
 
 ### Attribute Transforms
 
