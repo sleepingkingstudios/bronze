@@ -8,43 +8,15 @@ require 'bronze/entities/primary_key'
 require 'bronze/entities/primary_keys/uuid'
 require 'bronze/entity'
 require 'bronze/transforms/identity_transform'
+require 'bronze/transforms/entities/normalize_transform'
+
+require 'support/entities/examples/basic_book'
 
 RSpec.describe Bronze::Collection do
   shared_context 'when the definition is an entity class' do
-    let(:definition) { Spec::ColoringBook }
-
-    example_class 'Spec::ColoringBook', Bronze::Entity do |klass|
-      klass.attribute :title,  String
-      klass.attribute :author, String
-    end
-  end
-
-  shared_context 'when the entity class has a primary key' do
-    let(:primary_key)       { :id }
-    let(:primary_key_type)  { Integer }
-    let(:primary_key_value) { 0 }
-
-    before(:example) do
-      Spec::ColoringBook.send :include, Bronze::Entities::PrimaryKey
-
-      Spec::ColoringBook.define_primary_key(
-        primary_key,
-        primary_key_type,
-        default: -> { primary_key_value }
-      )
-    end
-  end
-
-  shared_context 'when the entity class has a custom primary key' do
-    let(:primary_key)       { :hex }
-    let(:primary_key_type)  { String }
-    let(:primary_key_value) { 'ff' }
-
-    before(:example) do
-      Spec::ColoringBook.send :include, Bronze::Entities::PrimaryKey
-
-      Spec::ColoringBook.define_primary_key :hex, String, default: -> { 'ff' }
-    end
+    let(:definition)       { Spec::BasicBook }
+    let(:primary_key)      { definition.primary_key.name }
+    let(:primary_key_type) { definition.primary_key.type }
   end
 
   shared_context 'when initialized with a transform' do
@@ -72,6 +44,13 @@ RSpec.describe Bronze::Collection do
 
       Hash[obj.map { |key, value| [yield(key), value] }]
     end
+  end
+
+  shared_context 'when initialized with an entity transform' do
+    let(:transform) do
+      Bronze::Transforms::Entities::NormalizeTransform.new(definition)
+    end
+    let(:options) { super().merge(transform: transform) }
   end
 
   shared_examples 'should validate the data object' do
@@ -479,12 +458,9 @@ RSpec.describe Bronze::Collection do
     end
 
     wrap_context 'when the definition is an entity class' do
-      let(:data)   { super().tap { |hsh| hsh.delete('id') } }
-      let(:object) { definition.new(data) }
+      let(:data) { super().tap { |hsh| hsh.delete(primary_key.to_s) } }
 
       describe 'with a nil primary key' do
-        include_context 'when the entity class has a primary key'
-
         let(:expected_error) do
           {
             type:   Bronze::Collections::Errors::PRIMARY_KEY_MISSING,
@@ -492,8 +468,6 @@ RSpec.describe Bronze::Collection do
             path:   [primary_key]
           }
         end
-
-        before(:example) { object.send(:"#{primary_key}=", nil) }
 
         it 'should not delegate to the adapter' do
           call_method
@@ -509,9 +483,10 @@ RSpec.describe Bronze::Collection do
       end
 
       describe 'with a primary key with invalid type' do
-        include_context 'when the entity class has a primary key'
-
         let(:primary_key_value) { Object.new }
+        let(:data) do
+          super().merge(primary_key => primary_key_value)
+        end
         let(:expected_error) do
           {
             type:   Bronze::Collections::Errors::PRIMARY_KEY_INVALID,
@@ -522,8 +497,6 @@ RSpec.describe Bronze::Collection do
             path:   [primary_key]
           }
         end
-
-        before(:example) { object.send(:"#{primary_key}=", primary_key_value) }
 
         it 'should not delegate to the adapter' do
           call_method
@@ -539,9 +512,6 @@ RSpec.describe Bronze::Collection do
       end
 
       describe 'with an empty primary key' do
-        include_context 'when the entity class has a custom primary key'
-
-        let(:primary_key_type)  { String }
         let(:primary_key_value) { '' }
         let(:data) do
           super().merge(primary_key => primary_key_value)
@@ -567,80 +537,8 @@ RSpec.describe Bronze::Collection do
         end
       end
 
-      context 'when options[:primary_key] is false' do
-        let(:options) { super().merge primary_key: false }
-
-        describe 'with a nil primary key' do
-          include_context 'when the entity class has a primary key'
-
-          before(:example) { object.send(:"#{primary_key}=", nil) }
-
-          it 'should delegate to the adapter' do
-            call_method
-
-            expect(adapter).to have_received(method_name)
-          end
-
-          it 'should return a passing result' do
-            expect(call_method).to be_a_passing_result
-          end
-        end
-
-        describe 'with a primary key with invalid type' do
-          include_context 'when the entity class has a primary key'
-
-          let(:primary_key_value) { Object.new }
-
-          before(:example) do
-            object.send(:"#{primary_key}=", primary_key_value)
-          end
-
-          it 'should delegate to the adapter' do
-            call_method
-
-            expect(adapter).to have_received(method_name)
-          end
-
-          it 'should return a passing result' do
-            expect(call_method).to be_a_passing_result
-          end
-        end
-
-        describe 'with an empty primary key' do
-          include_context 'when the entity class has a custom primary key'
-
-          let(:primary_key_type)  { String }
-          let(:primary_key_value) { '' }
-
-          before(:example) do
-            object.send(:"#{primary_key}=", primary_key_value)
-          end
-
-          it 'should delegate to the adapter' do
-            call_method
-
-            expect(adapter).to have_received(method_name)
-          end
-
-          it 'should return a passing result' do
-            expect(call_method).to be_a_passing_result
-          end
-        end
-      end
-
-      context 'when options[:primary_key] is set' do
-        let(:primary_key)       { :uuid }
-        let(:primary_key_type)  { String }
-        let(:primary_key_value) { '' }
-        let(:options) do
-          super().merge primary_key: :uuid, primary_key_type: String
-        end
-
-        before(:example) do
-          Spec::ColoringBook.send :include, Bronze::Entities::PrimaryKeys::Uuid
-
-          Spec::ColoringBook.define_primary_key :uuid
-        end
+      wrap_context 'when initialized with an entity transform' do
+        let(:object) { definition.new(data) }
 
         describe 'with a nil primary key' do
           let(:expected_error) do
@@ -659,7 +557,7 @@ RSpec.describe Bronze::Collection do
             expect(adapter).not_to have_received(method_name)
           end
 
-          it 'should return a result' do
+          it 'should return a failing result' do
             expect(call_method)
               .to be_a_failing_result
               .with_errors(expected_error)
@@ -689,7 +587,7 @@ RSpec.describe Bronze::Collection do
             expect(adapter).not_to have_received(method_name)
           end
 
-          it 'should return a result' do
+          it 'should return a failing result' do
             expect(call_method)
               .to be_a_failing_result
               .with_errors(expected_error)
@@ -697,6 +595,10 @@ RSpec.describe Bronze::Collection do
         end
 
         describe 'with an empty primary key' do
+          let(:primary_key_value) { '' }
+          let(:data) do
+            super().merge(primary_key => primary_key_value)
+          end
           let(:expected_error) do
             {
               type:   Bronze::Collections::Errors::PRIMARY_KEY_EMPTY,
@@ -705,17 +607,13 @@ RSpec.describe Bronze::Collection do
             }
           end
 
-          before(:example) do
-            object.send(:"#{primary_key}=", primary_key_value)
-          end
-
           it 'should not delegate to the adapter' do
             call_method
 
             expect(adapter).not_to have_received(method_name)
           end
 
-          it 'should return a result' do
+          it 'should return a failing result' do
             expect(call_method)
               .to be_a_failing_result
               .with_errors(expected_error)
@@ -1908,6 +1806,7 @@ RSpec.describe Bronze::Collection do
     include_examples 'should delegate to the adapter'
 
     wrap_context 'when the definition is an entity class' do
+      let(:primary_key_value) { '00000000-0000-0000-0000-000000000000' }
       let(:expected_keywords) do
         super().merge(transform: collection.transform)
       end
@@ -1931,9 +1830,9 @@ RSpec.describe Bronze::Collection do
     let(:method_name)       { :insert_one }
     let(:data) do
       {
-        'id'     => 0,
-        'title'  => 'Romance of the Three Kingdoms',
-        'author' => 'Luo Guanzhong'
+        primary_key.to_s => primary_key_value,
+        'title'          => 'Romance of the Three Kingdoms',
+        'author'         => 'Luo Guanzhong'
       }
     end
     let(:object)  { data }
@@ -2015,32 +1914,79 @@ RSpec.describe Bronze::Collection do
     end
 
     wrap_context 'when the definition is an entity class' do
-      include_context 'when the entity class has a primary key'
-
-      let(:object) { definition.new(data) }
+      let(:primary_key_value) { '00000000-0000-0000-0000-000000000000' }
 
       include_examples 'should validate the data object'
 
-      describe 'with a valid entity' do
-        let(:expected) { definition.new(data) }
-
-        before(:example) do
-          allow(adapter)
-            .to receive(:insert_one)
-            .and_return(Bronze::Result.new(data))
-        end
+      describe 'with a valid data object with String keys' do
+        let(:result) { Bronze::Result.new(data) }
 
         it 'should delegate to the adapter' do
-          collection.insert_one(object)
+          collection.insert_one(data)
 
           expect(adapter)
             .to have_received(:insert_one)
             .with(collection_name: collection.name, data: data)
         end
 
-        it 'should wrap the result from the adapter' do
-          expect(collection.insert_one(object))
-            .to be_a_passing_result.with_value(expected)
+        it 'should return the result from the adapter' do
+          allow(adapter).to receive(:insert_one).and_return(result)
+
+          expect(collection.insert_one(data)).to be result
+        end
+      end
+
+      describe 'with a valid data object with Symbol keys' do
+        let(:data) do
+          tools.hash.convert_keys_to_symbols(super())
+        end
+        let(:result) do
+          Bronze::Result.new.tap { |obj| obj.value = data }
+        end
+
+        it 'should delegate to the adapter' do
+          collection.insert_one(data)
+
+          expect(adapter)
+            .to have_received(:insert_one)
+            .with(collection_name: collection.name, data: data)
+        end
+
+        it 'should return the result from the adapter' do
+          allow(adapter).to receive(:insert_one).and_return(result)
+
+          expect(collection.insert_one(data)).to be result
+        end
+      end
+
+      wrap_context 'when initialized with an entity transform' do
+        let(:object) { definition.new(data) }
+
+        include_examples 'should validate the data object'
+
+        describe 'with a valid entity' do
+          let(:primary_key_value) { '00000000-0000-0000-0000-000000000000' }
+          let(:expected)          { definition.new(data) }
+          let(:attributes)        { collection.transform.normalize(expected) }
+
+          before(:example) do
+            allow(adapter)
+              .to receive(:insert_one)
+              .and_return(Bronze::Result.new(data))
+          end
+
+          it 'should delegate to the adapter' do
+            collection.insert_one(object)
+
+            expect(adapter)
+              .to have_received(:insert_one)
+              .with(collection_name: collection.name, data: attributes)
+          end
+
+          it 'should wrap the result from the adapter' do
+            expect(collection.insert_one(object))
+              .to be_a_passing_result.with_value(expected)
+          end
         end
       end
     end
@@ -2209,7 +2155,7 @@ RSpec.describe Bronze::Collection do
     context 'when options[:primary_key] is false' do
       let(:options) { super().merge primary_key: false }
 
-      it { expect(collection.primary_key).to be false }
+      it { expect(collection.primary_key).to be nil }
     end
 
     context 'when options[:primary_key] is a String' do
@@ -2225,51 +2171,7 @@ RSpec.describe Bronze::Collection do
     end
 
     wrap_context 'when the definition is an entity class' do
-      it { expect(collection.primary_key).to be :id }
-
-      context 'when options[:primary_key] is false' do
-        let(:options) { super().merge primary_key: false }
-
-        it { expect(collection.primary_key).to be false }
-      end
-
-      context 'when options[:primary_key] is set' do
-        let(:options) { super().merge primary_key: 'uuid' }
-
-        it { expect(collection.primary_key).to be :uuid }
-      end
-
-      wrap_context 'when the entity class has a primary key' do
-        it { expect(collection.primary_key).to be :id }
-
-        context 'when options[:primary_key] is false' do
-          let(:options) { super().merge primary_key: false }
-
-          it { expect(collection.primary_key).to be false }
-        end
-
-        context 'when options[:primary_key] is set' do
-          let(:options) { super().merge primary_key: 'uuid' }
-
-          it { expect(collection.primary_key).to be :uuid }
-        end
-      end
-
-      wrap_context 'when the entity class has a custom primary key' do
-        it { expect(collection.primary_key).to be :hex }
-
-        context 'when options[:primary_key] is false' do
-          let(:options) { super().merge primary_key: false }
-
-          it { expect(collection.primary_key).to be false }
-        end
-
-        context 'when options[:primary_key] is set' do
-          let(:options) { super().merge primary_key: 'uuid' }
-
-          it { expect(collection.primary_key).to be :uuid }
-        end
-      end
+      it { expect(collection.primary_key).to be primary_key }
     end
   end
 
@@ -2290,50 +2192,6 @@ RSpec.describe Bronze::Collection do
 
     wrap_context 'when the definition is an entity class' do
       it { expect(collection.primary_key?).to be true }
-
-      context 'when options[:primary_key] is false' do
-        let(:options) { super().merge primary_key: false }
-
-        it { expect(collection.primary_key?).to be false }
-      end
-
-      context 'when options[:primary_key] is set' do
-        let(:options) { super().merge primary_key: 'uuid' }
-
-        it { expect(collection.primary_key?).to be true }
-      end
-
-      wrap_context 'when the entity class has a primary key' do
-        it { expect(collection.primary_key?).to be true }
-
-        context 'when options[:primary_key] is false' do
-          let(:options) { super().merge primary_key: false }
-
-          it { expect(collection.primary_key?).to be false }
-        end
-
-        context 'when options[:primary_key] is set' do
-          let(:options) { super().merge primary_key: 'uuid' }
-
-          it { expect(collection.primary_key?).to be true }
-        end
-      end
-
-      wrap_context 'when the entity class has a custom primary key' do
-        it { expect(collection.primary_key?).to be true }
-
-        context 'when options[:primary_key] is false' do
-          let(:options) { super().merge primary_key: false }
-
-          it { expect(collection.primary_key?).to be false }
-        end
-
-        context 'when options[:primary_key] is set' do
-          let(:options) { super().merge primary_key: 'uuid' }
-
-          it { expect(collection.primary_key?).to be true }
-        end
-      end
     end
   end
 
@@ -2354,50 +2212,6 @@ RSpec.describe Bronze::Collection do
 
     wrap_context 'when the definition is an entity class' do
       it { expect(collection.primary_key_type).to be String }
-
-      context 'when options[:primary_key] is a Class' do
-        let(:options) { super().merge primary_key_type: Symbol }
-
-        it { expect(collection.primary_key_type).to be Symbol }
-      end
-
-      context 'when options[:primary_key] is a class name' do
-        let(:options) { super().merge primary_key_type: 'Symbol' }
-
-        it { expect(collection.primary_key_type).to be Symbol }
-      end
-
-      wrap_context 'when the entity class has a primary key' do
-        it { expect(collection.primary_key_type).to be Integer }
-
-        context 'when options[:primary_key] is a Class' do
-          let(:options) { super().merge primary_key_type: Symbol }
-
-          it { expect(collection.primary_key_type).to be Symbol }
-        end
-
-        context 'when options[:primary_key] is a class name' do
-          let(:options) { super().merge primary_key_type: 'Symbol' }
-
-          it { expect(collection.primary_key_type).to be Symbol }
-        end
-      end
-
-      wrap_context 'when the entity class has a custom primary key' do
-        it { expect(collection.primary_key_type).to be String }
-
-        context 'when options[:primary_key] is a Class' do
-          let(:options) { super().merge primary_key_type: Symbol }
-
-          it { expect(collection.primary_key_type).to be Symbol }
-        end
-
-        context 'when options[:primary_key] is a class name' do
-          let(:options) { super().merge primary_key_type: 'Symbol' }
-
-          it { expect(collection.primary_key_type).to be Symbol }
-        end
-      end
     end
   end
 
@@ -2454,13 +2268,9 @@ RSpec.describe Bronze::Collection do
     end
 
     wrap_context 'when the definition is an entity class' do
-      let(:transform_class) { Bronze::Transforms::Entities::NormalizeTransform }
+      it { expect(collection.transform).to be nil }
 
-      it { expect(collection.transform).to be_a transform_class }
-
-      it { expect(collection.transform.entity_class).to be definition }
-
-      wrap_context 'when initialized with a transform' do
+      wrap_context 'when initialized with an entity transform' do
         it { expect(collection.transform).to be transform }
       end
     end

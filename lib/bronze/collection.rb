@@ -6,7 +6,6 @@ require 'bronze'
 require 'bronze/collections/primary_keys'
 require 'bronze/collections/validation'
 require 'bronze/result'
-require 'bronze/transforms/entities/normalize_transform'
 
 module Bronze
   # A collection represents a data set, providing a consistent interface to
@@ -147,21 +146,15 @@ module Bronze
     end
     alias_method :find, :find_one
 
-    # rubocop:disable Metrics/AbcSize
-    # rubocop:disable Metrics/CyclomaticComplexity
-
     # Inserts the data hash into the collection.
     #
     # @param data [Hash] The data hash to insert.
     #
     # @return [Bronze::Result] the result of the insert operation.
     def insert_one(data)
-      errors = errors_for_entity(data)
+      data, errors = normalize_data(data)
 
-      return Bronze::Result.new(nil, errors: errors) if errors
-
-      data   = transform ? transform.normalize(data) : data
-      errors = errors_for_data(data) || errors_for_primary_key_insert(data)
+      errors ||= errors_for_data(data) || errors_for_primary_key_insert(data)
 
       return Bronze::Result.new(nil, errors: errors) if errors
 
@@ -172,8 +165,6 @@ module Bronze
       Bronze::Result.new(transform.denormalize(result.value))
     end
     alias_method :insert, :insert_one
-    # rubocop:enable Metrics/AbcSize
-    # rubocop:enable Metrics/CyclomaticComplexity
 
     # @return [Bronze::Collections::NullQuery] a mock query that acts as a
     #     query against an empty collection.
@@ -240,24 +231,19 @@ module Bronze
 
     private
 
-    def entity_collection?
-      transform.is_a?(Bronze::Transforms::Entities::NormalizeTransform)
-    end
+    def normalize_data(data)
+      return [data, nil] unless transform
 
-    def entity_invalid_error(data)
-      return if data.is_a?(transform.entity_class)
-
-      build_errors.add(Bronze::Collections::Errors.data_invalid, data: data)
-    end
-
-    def errors_for_entity(data)
-      return unless entity_collection?
-
-      data_missing_error(data) || entity_invalid_error(data)
+      [transform.normalize(data), nil]
+    rescue NoMethodError
+      [
+        nil,
+        build_errors.add(Bronze::Collections::Errors.data_invalid, data: data)
+      ]
     end
 
     def parse_definition(definition)
-      return parse_module_definition(definition) if definition.is_a?(Module)
+      return @name = parse_module_name(definition) if definition.is_a?(Module)
 
       if definition.is_a?(String) || definition.is_a?(Symbol)
         @name = definition.to_s
@@ -270,21 +256,10 @@ module Bronze
         "#{definition.inspect}"
     end
 
-    def parse_module_definition(definition)
-      @name      = parse_module_name(definition)
-      @transform = parse_module_transform(definition)
-    end
-
     def parse_module_name(mod)
       return mod.collection_name.to_s if mod.respond_to?(:collection_name)
 
       adapter.collection_name_for(mod)
-    end
-
-    def parse_module_transform(mod)
-      return unless mod < Bronze::Entity
-
-      Bronze::Transforms::Entities::NormalizeTransform.new(mod)
     end
   end
 end

@@ -70,9 +70,7 @@ module Spec::Support::Matchers
 
       return message + ', but was not a result' unless actual_is_result?
 
-      unless status_matches?
-        return message + ", but the result was #{actual_status}"
-      end
+      return status_failure_message(message) unless status_matches?
 
       message += value_message unless value_matches?
 
@@ -178,6 +176,14 @@ module Spec::Support::Matchers
 
     def expected_value?
       @expected_value != DEFAULT_VALUE
+    end
+
+    def status_failure_message(message)
+      message += ", but the result was #{actual_status}"
+
+      return message if actual.success?
+
+      message + " with errors: #{actual.errors.to_a.inspect}"
     end
 
     def status_matches?

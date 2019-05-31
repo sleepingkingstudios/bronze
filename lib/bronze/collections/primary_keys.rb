@@ -16,7 +16,10 @@ module Bronze::Collections
     def initialize(definition, primary_key:, primary_key_type:)
       parse_primary_key(definition)
 
-      @primary_key      = normalize_primary_key(primary_key)
+      @primary_key = normalize_primary_key(primary_key)
+
+      return if primary_key == false
+
       @primary_key_type = normalize_primary_key_type(primary_key_type)
     end
 
@@ -45,7 +48,7 @@ module Bronze::Collections
     def normalize_primary_key(value)
       return @primary_key || default_primary_key if value.nil?
 
-      return false if value == false
+      return nil if value == false
 
       return value if value.is_a?(Symbol)
 
