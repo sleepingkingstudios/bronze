@@ -2,6 +2,7 @@
 
 require 'bronze/collections/adapter'
 require 'bronze/repository'
+require 'bronze/transforms/identity_transform'
 
 RSpec.describe Bronze::Repository do
   subject(:repository) { described_class.new(adapter: adapter) }
@@ -28,11 +29,15 @@ RSpec.describe Bronze::Repository do
   end
 
   describe '#collection' do
+    let(:expected_keywords) do
+      %i[name primary_key primary_key_type transform]
+    end
+
     it 'should define the method' do
       expect(repository)
         .to respond_to(:collection)
         .with(1).argument
-        .and_keywords(:name, :primary_key, :primary_key_type)
+        .and_keywords(*expected_keywords)
     end
 
     describe 'with nil' do
@@ -72,10 +77,34 @@ RSpec.describe Bronze::Repository do
 
       it { expect(collection.name).to be == collection_name }
 
+      it { expect(collection.transform).to be nil }
+
       describe 'with name: String' do
         let(:options) { { name: 'publications' } }
 
         it { expect(collection.name).to be == 'publications' }
+      end
+
+      describe 'with primary_key: value' do
+        let(:options) { { primary_key: :uuid } }
+
+        it { expect(collection.primary_key).to be == options[:primary_key] }
+      end
+
+      describe 'with primary_key_type: class' do
+        let(:options) { { primary_key_type: Integer } }
+
+        it 'should set the primary key type' do
+          expect(collection.primary_key_type)
+            .to be == options[:primary_key_type]
+        end
+      end
+
+      describe 'with transform: value' do
+        let(:transform) { Bronze::Transforms::IdentityTransform }
+        let(:options)   { { transform: transform } }
+
+        it { expect(collection.transform).to be transform }
       end
     end
 
@@ -101,10 +130,19 @@ RSpec.describe Bronze::Repository do
 
       it { expect(collection.name).to be == collection_name }
 
+      it { expect(collection.transform).to be nil }
+
       describe 'with name: String' do
         let(:options) { { name: 'whatsits' } }
 
         it { expect(collection.name).to be == 'whatsits' }
+      end
+
+      describe 'with transform: value' do
+        let(:transform) { Bronze::Transforms::IdentityTransform }
+        let(:options)   { { transform: transform } }
+
+        it { expect(collection.transform).to be transform }
       end
     end
   end

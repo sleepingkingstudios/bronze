@@ -69,7 +69,7 @@ RSpec.describe Bronze::Collection do
         expect(adapter).not_to have_received(method_name)
       end
 
-      it 'should return a result' do
+      it 'should return a failing result' do
         expect(call_method)
           .to be_a_failing_result
           .with_errors(expected_error)
@@ -91,7 +91,7 @@ RSpec.describe Bronze::Collection do
         expect(adapter).not_to have_received(method_name)
       end
 
-      it 'should return a result' do
+      it 'should return a failing result' do
         expect(call_method)
           .to be_a_failing_result
           .with_errors(expected_error)
@@ -117,7 +117,7 @@ RSpec.describe Bronze::Collection do
           expect(adapter).not_to have_received(method_name)
         end
 
-        it 'should return a result' do
+        it 'should return a failing result' do
           expect(call_method)
             .to be_a_failing_result
             .with_errors(expected_error)
@@ -140,7 +140,7 @@ RSpec.describe Bronze::Collection do
           expect(adapter).not_to have_received(method_name)
         end
 
-        it 'should return a result' do
+        it 'should return a failing result' do
           expect(call_method)
             .to be_a_failing_result
             .with_errors(expected_error)
@@ -205,7 +205,7 @@ RSpec.describe Bronze::Collection do
             expect(adapter).not_to have_received(method_name)
           end
 
-          it 'should return a result' do
+          it 'should return a failing result' do
             expect(call_method)
               .to be_a_failing_result
               .with_errors(expected_error)
@@ -228,7 +228,7 @@ RSpec.describe Bronze::Collection do
             expect(adapter).not_to have_received(method_name)
           end
 
-          it 'should return a result' do
+          it 'should return a failing result' do
             expect(call_method)
               .to be_a_failing_result
               .with_errors(expected_error)
@@ -255,7 +255,7 @@ RSpec.describe Bronze::Collection do
         expect(adapter).not_to have_received(method_name)
       end
 
-      it 'should return a result' do
+      it 'should return a failing result' do
         expect(call_method)
           .to be_a_failing_result
           .with_errors(expected_error)
@@ -284,7 +284,7 @@ RSpec.describe Bronze::Collection do
         expect(adapter).not_to have_received(method_name)
       end
 
-      it 'should return a result' do
+      it 'should return a failing result' do
         expect(call_method)
           .to be_a_failing_result
           .with_errors(expected_error)
@@ -311,7 +311,7 @@ RSpec.describe Bronze::Collection do
         expect(adapter).not_to have_received(method_name)
       end
 
-      it 'should return a result' do
+      it 'should return a failing result' do
         expect(call_method)
           .to be_a_failing_result
           .with_errors(expected_error)
@@ -395,7 +395,7 @@ RSpec.describe Bronze::Collection do
           expect(adapter).not_to have_received(method_name)
         end
 
-        it 'should return a result' do
+        it 'should return a failing result' do
           expect(call_method)
             .to be_a_failing_result
             .with_errors(expected_error)
@@ -424,7 +424,7 @@ RSpec.describe Bronze::Collection do
           expect(adapter).not_to have_received(method_name)
         end
 
-        it 'should return a result' do
+        it 'should return a failing result' do
           expect(call_method)
             .to be_a_failing_result
             .with_errors(expected_error)
@@ -449,7 +449,7 @@ RSpec.describe Bronze::Collection do
           expect(adapter).not_to have_received(method_name)
         end
 
-        it 'should return a result' do
+        it 'should return a failing result' do
           expect(call_method)
             .to be_a_failing_result
             .with_errors(expected_error)
@@ -475,7 +475,7 @@ RSpec.describe Bronze::Collection do
           expect(adapter).not_to have_received(method_name)
         end
 
-        it 'should return a result' do
+        it 'should return a failing result' do
           expect(call_method)
             .to be_a_failing_result
             .with_errors(expected_error)
@@ -504,7 +504,7 @@ RSpec.describe Bronze::Collection do
           expect(adapter).not_to have_received(method_name)
         end
 
-        it 'should return a result' do
+        it 'should return a failing result' do
           expect(call_method)
             .to be_a_failing_result
             .with_errors(expected_error)
@@ -530,7 +530,7 @@ RSpec.describe Bronze::Collection do
           expect(adapter).not_to have_received(method_name)
         end
 
-        it 'should return a result' do
+        it 'should return a failing result' do
           expect(call_method)
             .to be_a_failing_result
             .with_errors(expected_error)
@@ -640,7 +640,7 @@ RSpec.describe Bronze::Collection do
           expect(adapter).not_to have_received(method_name)
         end
 
-        it 'should return a result' do
+        it 'should return a failing result' do
           expect(call_method)
             .to be_a_failing_result
             .with_errors(expected_error)
@@ -669,7 +669,7 @@ RSpec.describe Bronze::Collection do
           expect(adapter).not_to have_received(method_name)
         end
 
-        it 'should return a result' do
+        it 'should return a failing result' do
           expect(call_method)
             .to be_a_failing_result
             .with_errors(expected_error)
@@ -696,7 +696,7 @@ RSpec.describe Bronze::Collection do
           expect(adapter).not_to have_received(method_name)
         end
 
-        it 'should return a result' do
+        it 'should return a failing result' do
           expect(call_method)
             .to be_a_failing_result
             .with_errors(expected_error)
@@ -780,7 +780,7 @@ RSpec.describe Bronze::Collection do
             expect(adapter).not_to have_received(method_name)
           end
 
-          it 'should return a result' do
+          it 'should return a failing result' do
             expect(call_method)
               .to be_a_failing_result
               .with_errors(expected_error)
@@ -809,7 +809,7 @@ RSpec.describe Bronze::Collection do
             expect(adapter).not_to have_received(method_name)
           end
 
-          it 'should return a result' do
+          it 'should return a failing result' do
             expect(call_method)
               .to be_a_failing_result
               .with_errors(expected_error)
@@ -834,7 +834,7 @@ RSpec.describe Bronze::Collection do
             expect(adapter).not_to have_received(method_name)
           end
 
-          it 'should return a result' do
+          it 'should return a failing result' do
             expect(call_method)
               .to be_a_failing_result
               .with_errors(expected_error)
@@ -861,7 +861,7 @@ RSpec.describe Bronze::Collection do
         expect(adapter).not_to have_received(method_name)
       end
 
-      it 'should return a result' do
+      it 'should return a failing result' do
         expect(call_method)
           .to be_a_failing_result
           .with_errors(expected_error)
@@ -887,7 +887,7 @@ RSpec.describe Bronze::Collection do
         expect(adapter).not_to have_received(method_name)
       end
 
-      it 'should return a result' do
+      it 'should return a failing result' do
         expect(call_method)
           .to be_a_failing_result
           .with_errors(expected_error)
@@ -911,7 +911,7 @@ RSpec.describe Bronze::Collection do
         expect(adapter).not_to have_received(method_name)
       end
 
-      it 'should return a result' do
+      it 'should return a failing result' do
         expect(call_method)
           .to be_a_failing_result
           .with_errors(expected_error)
@@ -931,7 +931,7 @@ RSpec.describe Bronze::Collection do
           expect(adapter).not_to have_received(method_name)
         end
 
-        it 'should return a result' do
+        it 'should return a failing result' do
           expect(call_method)
             .to be_a_failing_result
             .with_errors(expected_error)
@@ -948,7 +948,7 @@ RSpec.describe Bronze::Collection do
           expect(adapter).not_to have_received(method_name)
         end
 
-        it 'should return a result' do
+        it 'should return a failing result' do
           expect(call_method)
             .to be_a_failing_result
             .with_errors(expected_error)
@@ -966,7 +966,7 @@ RSpec.describe Bronze::Collection do
           expect(adapter).not_to have_received(method_name)
         end
 
-        it 'should return a result' do
+        it 'should return a failing result' do
           expect(call_method)
             .to be_a_failing_result
             .with_errors(expected_error)
@@ -974,7 +974,7 @@ RSpec.describe Bronze::Collection do
       end
 
       describe 'with a valid primary key' do
-        let(:expected_error)    { Bronze::Collections::Errors::NO_PRIMARY_KEY }
+        let(:expected_error) { Bronze::Collections::Errors::NO_PRIMARY_KEY }
 
         it 'should not delegate to the adapter' do
           call_method
@@ -982,7 +982,7 @@ RSpec.describe Bronze::Collection do
           expect(adapter).not_to have_received(method_name)
         end
 
-        it 'should return a result' do
+        it 'should return a failing result' do
           expect(call_method)
             .to be_a_failing_result
             .with_errors(expected_error)
@@ -1014,7 +1014,7 @@ RSpec.describe Bronze::Collection do
           expect(adapter).not_to have_received(method_name)
         end
 
-        it 'should return a result' do
+        it 'should return a failing result' do
           expect(call_method)
             .to be_a_failing_result
             .with_errors(expected_error)
@@ -1040,7 +1040,7 @@ RSpec.describe Bronze::Collection do
           expect(adapter).not_to have_received(method_name)
         end
 
-        it 'should return a result' do
+        it 'should return a failing result' do
           expect(call_method)
             .to be_a_failing_result
             .with_errors(expected_error)
@@ -1063,7 +1063,7 @@ RSpec.describe Bronze::Collection do
           expect(adapter).not_to have_received(method_name)
         end
 
-        it 'should return a result' do
+        it 'should return a failing result' do
           expect(call_method)
             .to be_a_failing_result
             .with_errors(expected_error)
@@ -1089,7 +1089,7 @@ RSpec.describe Bronze::Collection do
         expect(adapter).not_to have_received(method_name)
       end
 
-      it 'should return a result' do
+      it 'should return a failing result' do
         expect(call_method)
           .to be_a_failing_result
           .with_errors(expected_error)
@@ -1112,7 +1112,7 @@ RSpec.describe Bronze::Collection do
         expect(adapter).not_to have_received(method_name)
       end
 
-      it 'should return a result' do
+      it 'should return a failing result' do
         expect(call_method)
           .to be_a_failing_result
           .with_errors(expected_error)
@@ -1151,7 +1151,7 @@ RSpec.describe Bronze::Collection do
           expect(adapter).not_to have_received(method_name)
         end
 
-        it 'should return a result' do
+        it 'should return a failing result' do
           expect(call_method)
             .to be_a_failing_result
             .with_errors(expected_error)
@@ -1173,7 +1173,7 @@ RSpec.describe Bronze::Collection do
           expect(adapter).not_to have_received(method_name)
         end
 
-        it 'should return a result' do
+        it 'should return a failing result' do
           expect(call_method)
             .to be_a_failing_result
             .with_errors(expected_error)
@@ -1195,7 +1195,7 @@ RSpec.describe Bronze::Collection do
           expect(adapter).not_to have_received(method_name)
         end
 
-        it 'should return a result' do
+        it 'should return a failing result' do
           expect(call_method)
             .to be_a_failing_result
             .with_errors(expected_error)
@@ -1227,7 +1227,7 @@ RSpec.describe Bronze::Collection do
           expect(adapter).not_to have_received(method_name)
         end
 
-        it 'should return a result' do
+        it 'should return a failing result' do
           expect(call_method)
             .to be_a_failing_result
             .with_errors(expected_error)
@@ -1250,7 +1250,7 @@ RSpec.describe Bronze::Collection do
           expect(adapter).not_to have_received(method_name)
         end
 
-        it 'should return a result' do
+        it 'should return a failing result' do
           expect(call_method)
             .to be_a_failing_result
             .with_errors(expected_error)
@@ -1289,7 +1289,7 @@ RSpec.describe Bronze::Collection do
         expect(adapter).not_to have_received(method_name)
       end
 
-      it 'should return a result' do
+      it 'should return a failing result' do
         expect(call_method)
           .to be_a_failing_result
           .with_errors(expected_error)
@@ -1311,7 +1311,7 @@ RSpec.describe Bronze::Collection do
         expect(adapter).not_to have_received(method_name)
       end
 
-      it 'should return a result' do
+      it 'should return a failing result' do
         expect(call_method)
           .to be_a_failing_result
           .with_errors(expected_error)
@@ -1825,8 +1825,8 @@ RSpec.describe Bronze::Collection do
 
   describe '#insert_one' do
     let(:primary_key)       { :id }
-    let(:primary_key_type)  { Integer }
-    let(:primary_key_value) { 0 }
+    let(:primary_key_type)  { String }
+    let(:primary_key_value) { '0xFF' }
     let(:method_name)       { :insert_one }
     let(:data) do
       {
@@ -1835,8 +1835,7 @@ RSpec.describe Bronze::Collection do
         'author'         => 'Luo Guanzhong'
       }
     end
-    let(:object)  { data }
-    let(:options) { super().merge primary_key_type: primary_key_type }
+    let(:object) { data }
 
     def call_method
       collection.insert_one(object)
@@ -1865,7 +1864,7 @@ RSpec.describe Bronze::Collection do
         expect(adapter).not_to have_received(method_name)
       end
 
-      it 'should return a result' do
+      it 'should return a failing result' do
         expect(call_method)
           .to be_a_failing_result
           .with_errors(expected_error)
@@ -2011,7 +2010,7 @@ RSpec.describe Bronze::Collection do
           expect(adapter).not_to have_received(method_name)
         end
 
-        it 'should return a result' do
+        it 'should return a failing result' do
           expect(call_method)
             .to be_a_failing_result
             .with_errors(expected_error)
@@ -2316,7 +2315,7 @@ RSpec.describe Bronze::Collection do
         expect(adapter).not_to have_received(method_name)
       end
 
-      it 'should return a result' do
+      it 'should return a failing result' do
         expect(call_method)
           .to be_a_failing_result
           .with_errors(expected_error)
@@ -2436,7 +2435,7 @@ RSpec.describe Bronze::Collection do
         expect(adapter).not_to have_received(method_name)
       end
 
-      it 'should return a result' do
+      it 'should return a failing result' do
         expect(call_method)
           .to be_a_failing_result
           .with_errors(expected_error)

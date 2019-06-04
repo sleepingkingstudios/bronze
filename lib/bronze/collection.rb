@@ -31,8 +31,7 @@ module Bronze
     #   the data set. If no value is given, defaults to String.
     # @param transform [Bronze::Transform] The transform used to convert
     #   collection data to and from a usable form, such as an entity class.
-    #   Defaults to nil, or a normalize transfomr if the definition is an entity
-    #   class.
+    #   Defaults to nil.
     #
     # @raise ArgumentError if the definition is not a name or a Class.
     def initialize(
