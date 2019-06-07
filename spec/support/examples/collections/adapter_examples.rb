@@ -243,6 +243,22 @@ module Spec::Support::Examples::Collections
       end
     end
 
+    shared_examples 'should return a bulk operation result' do
+      it 'should return a passing result' do
+        expect(result).to be_a_passing_result.with_value(an_instance_of Hash)
+      end
+
+      it 'should return the item count' do
+        expect(result.value)
+          .to have_key(:count)
+          .and(satisfy { |value| value[:count] == expected.size })
+      end
+
+      it 'should match the expected data' do
+        expect(result.value).to be == build_bulk_result_value(expected)
+      end
+    end
+
     shared_examples 'should implement the Adapter methods' do
       let(:collection_name) { 'books' }
 
@@ -301,6 +317,8 @@ module Spec::Support::Examples::Collections
 
       describe '#delete_matching' do
         shared_examples 'should delete the matching items' do
+          let(:expected) { affected_items }
+
           it 'should delete each matching item' do
             call_method
 
@@ -321,9 +339,7 @@ module Spec::Support::Examples::Collections
             end
           end
 
-          it 'should return a passing result' do
-            expect(result).to be_a_passing_result.with_value(affected_items)
-          end
+          include_examples 'should return a bulk operation result'
         end
 
         let(:selector) { {} }
@@ -1115,9 +1131,7 @@ module Spec::Support::Examples::Collections
               end
             end
 
-            it 'should return a result' do
-              expect(result).to be_a_passing_result.with_value(expected)
-            end
+            include_examples 'should return a bulk operation result'
           end
 
           describe 'with a data hash with Symbol keys' do
@@ -1144,9 +1158,7 @@ module Spec::Support::Examples::Collections
               end
             end
 
-            it 'should return a result' do
-              expect(result).to be_a_passing_result.with_value(expected)
-            end
+            include_examples 'should return a bulk operation result'
           end
         end
 

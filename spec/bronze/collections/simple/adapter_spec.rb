@@ -22,6 +22,13 @@ RSpec.describe Bronze::Collections::Simple::Adapter do
     an_instance_of(Bronze::Transforms::CopyTransform)
   end
 
+  def build_bulk_result_value(items)
+    {
+      count: items.size,
+      data:  items
+    }
+  end
+
   def tools
     SleepingKingStudios::Tools::Toolbelt.instance
   end

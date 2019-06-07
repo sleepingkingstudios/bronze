@@ -36,7 +36,7 @@ module Bronze::Collections::Simple
 
       items.each { |item| collection(collection_name).delete(item) }
 
-      result.value = items
+      result.value = { count: items.size, data: items }
 
       result
     end
@@ -121,15 +121,16 @@ module Bronze::Collections::Simple
 
     # (see Bronze::Collections::Adapter#update_matching)
     def update_matching(collection_name:, data:, selector:)
-      result       = Bronze::Result.new([])
-      data         = tools.hash.convert_keys_to_strings(data)
-      result.value =
+      result = Bronze::Result.new
+      data   = tools.hash.convert_keys_to_strings(data)
+      items  =
         raw_query(collection_name: collection_name)
         .matching(selector)
         .each.map do |item|
           item.update(data)
         end
 
+      result.value = { count: items.size, data: items }
       result
     end
 

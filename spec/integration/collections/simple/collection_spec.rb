@@ -189,6 +189,12 @@ RSpec.describe Bronze::Collections::Simple do
     let(:nonmatching) do
       periodicals - matching
     end
+    let(:result_value) do
+      {
+        count: matching.size,
+        data:  matching
+      }
+    end
 
     def find_periodical(id)
       collection.matching(id: id).to_a.first
@@ -213,7 +219,7 @@ RSpec.describe Bronze::Collections::Simple do
       end
 
       it 'should return a passing result' do
-        expect(result).to be_a_passing_result.with_value(matching)
+        expect(result).to be_a_passing_result.with_value(result_value)
       end
     end
 
@@ -248,7 +254,7 @@ RSpec.describe Bronze::Collections::Simple do
       end
 
       it 'should return a passing result' do
-        expect(result).to be_a_passing_result.with_value(matching)
+        expect(result).to be_a_passing_result.with_value(result_value)
       end
     end
 
@@ -283,7 +289,7 @@ RSpec.describe Bronze::Collections::Simple do
       end
 
       it 'should return a passing result' do
-        expect(result).to be_a_passing_result.with_value(matching)
+        expect(result).to be_a_passing_result.with_value(result_value)
       end
     end
 
@@ -917,6 +923,12 @@ RSpec.describe Bronze::Collections::Simple do
     let(:nonmatching) do
       periodicals - matching
     end
+    let(:result_value) do
+      {
+        count: matching.size,
+        data:  matching
+      }
+    end
 
     def find_periodical(id)
       collection.matching(id: id).to_a.first
@@ -931,7 +943,7 @@ RSpec.describe Bronze::Collections::Simple do
       let(:selector) { { title: 'Triskadecaphobia Today' } }
       let(:result)   { collection.update_matching(selector, with: data) }
 
-      it { expect(result).to be_a_passing_result.with_value(expected) }
+      it { expect(result).to be_a_passing_result.with_value(result_value) }
 
       it 'should not change the collection count' do
         expect { collection.update_matching(selector, with: data) }
@@ -949,7 +961,7 @@ RSpec.describe Bronze::Collections::Simple do
       let(:selector) { { id: 9 } }
       let(:result)   { collection.update_matching(selector, with: data) }
 
-      it { expect(result).to be_a_passing_result.with_value(expected) }
+      it { expect(result).to be_a_passing_result.with_value(result_value) }
 
       it 'should not change the collection count' do
         expect { collection.update_matching(selector, with: data) }
@@ -982,7 +994,7 @@ RSpec.describe Bronze::Collections::Simple do
       let(:selector) { { title: 'Modern Mentalism' } }
       let(:result)   { collection.update_matching(selector, with: data) }
 
-      it { expect(result).to be_a_passing_result.with_value(expected) }
+      it { expect(result).to be_a_passing_result.with_value(result_value) }
 
       it 'should not change the collection count' do
         expect { collection.update_matching(selector, with: data) }
