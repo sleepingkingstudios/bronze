@@ -21,6 +21,13 @@ RSpec.describe Spec::Support::Matchers::BeAResultMatcher do
     before(:example) { matcher.with_value(expected_value) }
   end
 
+  shared_context 'when the matcher as a value matcher expectation' do
+    let(:raw_value)      { 'result value' }
+    let(:expected_value) { be == raw_value }
+
+    before(:example) { matcher.with_value(expected_value) }
+  end
+
   shared_context 'when the matcher has an errors expectation' do
     let(:expected_errors) do
       [
@@ -51,6 +58,12 @@ RSpec.describe Spec::Support::Matchers::BeAResultMatcher do
     end
 
     wrap_context 'when the matcher has a value expectation' do
+      it 'should return the description' do
+        expect(matcher.description).to be == 'be a result with specified value'
+      end
+    end
+
+    wrap_context 'when the matcher as a value matcher expectation' do
       it 'should return the description' do
         expect(matcher.description).to be == 'be a result with specified value'
       end
@@ -289,6 +302,88 @@ RSpec.describe Spec::Support::Matchers::BeAResultMatcher do
       describe 'with a result with matching value' do
         let(:actual) do
           Cuprum::Result.new.tap { |result| result.value = expected_value }
+        end
+
+        include_examples 'should pass with a positive expectation'
+
+        include_examples 'should raise an error when negated'
+      end
+    end
+
+    wrap_context 'when the matcher as a value matcher expectation' do
+      let(:actual_value) { nil }
+      let(:method_name)  { :with_value }
+      let(:failure_message) do
+        "expected #{actual.inspect} to be a result with specified value"
+      end
+      let(:value_message) do
+        "\n" \
+        "\n  the result does not match the expected value:" \
+        "\n    expected: #{expected_value.description}" \
+        "\n         got: #{actual_value.inspect}"
+      end
+
+      describe 'with nil' do
+        let(:actual) { nil }
+        let(:failure_message) do
+          super() + ', but was not a result'
+        end
+
+        include_examples 'should fail with a positive expectation'
+
+        include_examples 'should raise an error when negated'
+      end
+
+      describe 'with an Object' do
+        let(:actual) { Object.new }
+        let(:failure_message) do
+          super() + ', but was not a result'
+        end
+
+        include_examples 'should fail with a positive expectation'
+
+        include_examples 'should raise an error when negated'
+      end
+
+      describe 'with a passing result' do
+        let(:actual) { Cuprum::Result.new }
+        let(:failure_message) do
+          super() + value_message
+        end
+
+        include_examples 'should fail with a positive expectation'
+
+        include_examples 'should raise an error when negated'
+      end
+
+      describe 'with a failing result' do
+        let(:actual) { Cuprum::Result.new.failure! }
+        let(:failure_message) do
+          super() + value_message
+        end
+
+        include_examples 'should fail with a positive expectation'
+
+        include_examples 'should raise an error when negated'
+      end
+
+      describe 'with a result with non-matching value' do
+        let(:actual_value) { 'other value' }
+        let(:actual) do
+          Cuprum::Result.new.tap { |result| result.value = actual_value }
+        end
+        let(:failure_message) do
+          super() + value_message
+        end
+
+        include_examples 'should fail with a positive expectation'
+
+        include_examples 'should raise an error when negated'
+      end
+
+      describe 'with a result with matching value' do
+        let(:actual) do
+          Cuprum::Result.new.tap { |result| result.value = raw_value }
         end
 
         include_examples 'should pass with a positive expectation'
