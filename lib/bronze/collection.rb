@@ -85,7 +85,9 @@ module Bronze
 
       return Bronze::Result.new(nil, errors: errors) if errors
 
-      adapter.delete_matching(collection_name: name, selector: selector)
+      denormalize_result do
+        adapter.delete_matching(collection_name: name, selector: selector)
+      end
     end
 
     # Deletes the item in the collection matching the given primary key.
@@ -229,6 +231,23 @@ module Bronze
     alias_method :update, :update_one
 
     private
+
+    # rubocop:disable Metrics/AbcSize
+    def denormalize_result
+      result = yield
+
+      return result unless transform
+      return result unless result.success?
+      return result unless result.value.is_a?(Hash) && result.value.key?(:data)
+
+      transformed_data =
+        result.value[:data].map { |item| transform.denormalize item }
+
+      Bronze::Result.new.tap do |res|
+        res.value = result.value.merge(data: transformed_data)
+      end
+    end
+    # rubocop:enable Metrics/AbcSize
 
     def normalize_data(data)
       return [data, nil] unless transform

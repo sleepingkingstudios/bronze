@@ -11,6 +11,7 @@ require 'bronze/transforms/identity_transform'
 require 'bronze/transforms/entities/normalize_transform'
 
 require 'support/entities/examples/basic_book'
+require 'support/transforms/capitalize_keys_transform'
 
 RSpec.describe Bronze::Collection do
   shared_context 'when the definition is an entity class' do
@@ -20,30 +21,8 @@ RSpec.describe Bronze::Collection do
   end
 
   shared_context 'when initialized with a transform' do
-    let(:transform) do
-      instance_double(
-        Bronze::Transform,
-        denormalize: nil,
-        normalize:   nil
-      )
-    end
-    let(:options) { super().merge(transform: transform) }
-
-    before(:example) do
-      allow(transform).to receive(:denormalize) do |hsh|
-        map_keys(hsh, &:capitalize)
-      end
-
-      allow(transform).to receive(:normalize) do |hsh|
-        map_keys(hsh, &:downcase)
-      end
-    end
-
-    def map_keys(obj)
-      return obj unless obj.is_a?(Hash)
-
-      Hash[obj.map { |key, value| [yield(key), value] }]
-    end
+    let(:transform) { Spec::CapitalizeKeysTransform.new }
+    let(:options)   { super().merge(transform: transform) }
   end
 
   shared_context 'when initialized with an entity transform' do
@@ -1432,8 +1411,77 @@ RSpec.describe Bronze::Collection do
   end
 
   describe '#delete_matching' do
+    shared_context 'when the adapter result includes data' do
+      let(:data) do
+        [
+          {
+            'uuid'   => '00000000-0000-0000-0000-000000000000',
+            'title'  => 'Romance of the Three Kingdoms',
+            'author' => 'Luo Guanzhong'
+          },
+          {
+            'uuid'   => '00000000-0000-0000-0000-000000000001',
+            'title'  => 'Journey to the West',
+            'author' => "Wu Cheng'en"
+          },
+          {
+            'uuid'   => '00000000-0000-0000-0000-000000000002',
+            'title'  => 'Dream of the Red Chamber',
+            'author' => 'Cao Xueqin'
+          }
+        ]
+      end
+      let(:value) { { count: 3, data: data } }
+    end
+
+    shared_examples 'should delegate to the adapter' do
+      describe 'with an empty Hash selector' do
+        let(:selector) { {} }
+        let(:result)   { Bronze::Result.new.tap { |res| res.value = value } }
+
+        it 'should delegate to the adapter' do
+          collection.delete_matching(selector)
+
+          expect(adapter)
+            .to have_received(:delete_matching)
+            .with(collection_name: collection.name, selector: selector)
+        end
+
+        it 'should return a passing result' do
+          allow(adapter).to receive(:delete_matching).and_return(result)
+
+          expect(collection.delete_matching(selector))
+            .to be_a_passing_result
+            .with_value(expected)
+        end
+      end
+
+      describe 'with a non-empty Hash selector' do
+        let(:selector) { { author: 'Luo Guanzhong' } }
+        let(:result)   { Bronze::Result.new.tap { |res| res.value = value } }
+
+        it 'should delegate to the adapter' do
+          collection.delete_matching(selector)
+
+          expect(adapter)
+            .to have_received(:delete_matching)
+            .with(collection_name: collection.name, selector: selector)
+        end
+
+        it 'should return a passing result' do
+          allow(adapter).to receive(:delete_matching).and_return(result)
+
+          expect(collection.delete_matching(selector))
+            .to be_a_passing_result
+            .with_value(expected)
+        end
+      end
+    end
+
     let(:method_name) { :delete_matching }
     let(:selector)    { nil }
+    let(:value)       { { count: 3 } }
+    let(:expected)    { value }
 
     def call_method
       collection.delete_matching(selector)
@@ -1443,55 +1491,43 @@ RSpec.describe Bronze::Collection do
 
     include_examples 'should validate the selector'
 
-    describe 'with an empty Hash selector' do
-      let(:selector) { {} }
-      let(:expected) do
-        {
-          'title'    => 'Romance of the Three Kingdoms',
-          'author'   => 'Luo Guanzhong',
-          'language' => 'Chinese'
-        }
-      end
-      let(:result) { Bronze::Result.new(expected) }
+    include_examples 'should delegate to the adapter'
 
-      it 'should delegate to the adapter' do
-        collection.delete_matching(selector)
+    wrap_context 'when the adapter result includes data' do
+      include_examples 'should delegate to the adapter'
+    end
 
-        expect(adapter)
-          .to have_received(:delete_matching)
-          .with(collection_name: collection.name, selector: selector)
+    wrap_context 'when the definition is an entity class' do
+      include_examples 'should delegate to the adapter'
+
+      wrap_context 'when the adapter result includes data' do
+        include_examples 'should delegate to the adapter'
       end
 
-      it 'should return the result from the adapter' do
-        allow(adapter).to receive(:delete_matching).and_return(result)
+      wrap_context 'when initialized with an entity transform' do
+        include_examples 'should delegate to the adapter'
 
-        expect(collection.delete_matching(selector)).to be result
+        wrap_context 'when the adapter result includes data' do
+          let(:transformed_data) do
+            data.map { |item| transform.denormalize(item) }
+          end
+          let(:expected) { super().merge(data: transformed_data) }
+
+          include_examples 'should delegate to the adapter'
+        end
       end
     end
 
-    describe 'with a non-empty Hash selector' do
-      let(:selector) { { author: 'Luo Guanzhong' } }
-      let(:expected) do
-        {
-          'title'    => 'Romance of the Three Kingdoms',
-          'author'   => 'Luo Guanzhong',
-          'language' => 'Chinese'
-        }
-      end
-      let(:result) { Bronze::Result.new(expected) }
+    wrap_context 'when initialized with a transform' do
+      include_examples 'should delegate to the adapter'
 
-      it 'should delegate to the adapter' do
-        collection.delete_matching(selector)
+      wrap_context 'when the adapter result includes data' do
+        let(:transformed_data) do
+          data.map { |item| transform.denormalize(item) }
+        end
+        let(:expected) { super().merge(data: transformed_data) }
 
-        expect(adapter)
-          .to have_received(:delete_matching)
-          .with(collection_name: collection.name, selector: selector)
-      end
-
-      it 'should return the result from the adapter' do
-        allow(adapter).to receive(:delete_matching).and_return(result)
-
-        expect(collection.delete_matching(selector)).to be result
+        include_examples 'should delegate to the adapter'
       end
     end
   end

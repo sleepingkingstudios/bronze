@@ -5,6 +5,7 @@ require 'rspec/sleeping_king_studios/concerns/shared_example_group'
 require 'bronze/transforms/identity_transform'
 
 require 'support/examples/collections'
+require 'support/transforms/capitalize_keys_transform'
 
 module Spec::Support::Examples::Collections
   module QueryExamples
@@ -111,25 +112,9 @@ module Spec::Support::Examples::Collections
     end
 
     shared_context 'when the query has a transform' do
-      let(:transform) do
-        instance_double(
-          Bronze::Transform,
-          denormalize: nil,
-          normalize:   nil
-        )
-      end
+      let(:transform) { Spec::CapitalizeKeysTransform.new }
       let(:transformed_data) do
         collection_data.map { |hsh| transform.denormalize(hsh) }
-      end
-
-      before(:example) do
-        allow(transform).to receive(:denormalize) do |hsh|
-          map_keys(hsh, &:capitalize)
-        end
-      end
-
-      def map_keys(hsh)
-        Hash[hsh.map { |key, value| [yield(key), value] }]
       end
     end
 

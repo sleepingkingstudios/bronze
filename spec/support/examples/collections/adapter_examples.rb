@@ -7,6 +7,7 @@ require 'bronze/transforms/identity_transform'
 
 require 'support/entities/examples/basic_book'
 require 'support/examples/collections'
+require 'support/transforms/capitalize_keys_transform'
 
 module Spec::Support::Examples::Collections
   module AdapterExamples
@@ -50,23 +51,7 @@ module Spec::Support::Examples::Collections
     end
 
     shared_context 'with an attributes transform' do
-      let(:transform) do
-        instance_double(
-          Bronze::Transform,
-          denormalize: nil,
-          normalize:   nil
-        )
-      end
-
-      before(:example) do
-        allow(transform).to receive(:denormalize) do |hsh|
-          map_keys(hsh, &:capitalize)
-        end
-      end
-
-      def map_keys(hsh)
-        Hash[hsh.map { |key, value| [yield(key), value] }]
-      end
+      let(:transform) { Spec::CapitalizeKeysTransform.new }
     end
 
     shared_context 'with an entity transform' do

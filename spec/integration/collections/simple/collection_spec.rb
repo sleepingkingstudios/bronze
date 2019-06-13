@@ -196,6 +196,12 @@ RSpec.describe Bronze::Collections::Simple do
       }
     end
 
+    def change_collection_data
+      query = Bronze::Collections::Simple::Query.new(adapter.data)
+
+      change(query, :to_a)
+    end
+
     def find_periodical(id)
       collection.matching(id: id).to_a.first
     end
@@ -215,7 +221,7 @@ RSpec.describe Bronze::Collections::Simple do
 
       it 'should not change the collection data' do
         expect { collection.delete_matching(selector) }
-          .not_to change(collection.query, :to_a)
+          .not_to change_collection_data
       end
 
       it 'should return a passing result' do
@@ -294,7 +300,101 @@ RSpec.describe Bronze::Collections::Simple do
     end
 
     wrap_context 'when configured for an entity class' do
-      pending
+      let(:result_value) do
+        {
+          count: matching.size,
+          data:  matching.map { |item| collection.transform.denormalize(item) }
+        }
+      end
+
+      describe 'with a selector that does not match any items' do
+        let(:selector) { { title: 'Triskadecaphobia Today' } }
+        let(:result)   { collection.delete_matching(selector) }
+
+        it 'should not change the collection count' do
+          expect { collection.delete_matching(selector) }
+            .not_to change(collection, :count)
+        end
+
+        it 'should not change the collection data' do
+          expect { collection.delete_matching(selector) }
+            .not_to change_collection_data
+        end
+
+        it 'should return a passing result' do
+          expect(result).to be_a_passing_result.with_value(result_value)
+        end
+      end
+
+      describe 'with a selector that matches one item' do
+        let(:selector) { { id: 9 } }
+        let(:result)   { collection.delete_matching(selector) }
+
+        it 'should change the collection count' do
+          expect { collection.delete_matching(selector) }
+            .to change(collection, :count)
+            .by(-matching.size)
+        end
+
+        it 'should delete the matching items' do
+          collection.delete_matching(selector)
+
+          matching.each do |matching_item|
+            periodical = find_periodical(matching_item['id'])
+
+            expect(periodical).to be nil
+          end
+        end
+
+        it 'should not delete the non-matching items' do
+          collection.delete_matching(selector)
+
+          nonmatching.each do |non_matching_item|
+            periodical = find_periodical(non_matching_item['id'])
+
+            expect(periodical).not_to be nil
+          end
+        end
+
+        it 'should return a passing result' do
+          expect(result).to be_a_passing_result.with_value(result_value)
+        end
+      end
+
+      describe 'with a selector that matches many items' do
+        let(:selector) { { title: 'Modern Mentalism' } }
+        let(:result)   { collection.delete_matching(selector) }
+
+        it 'should change the collection count' do
+          expect { collection.delete_matching(selector) }
+            .to change(collection, :count)
+            .by(-matching.size)
+        end
+
+        it 'should delete the matching items' do
+          collection.delete_matching(selector)
+
+          matching.each do |matching_item|
+            periodical = find_periodical(matching_item['id'])
+
+            expect(periodical).to be nil
+          end
+        end
+
+        it 'should not delete the non-matching items' do
+          collection.delete_matching(selector)
+
+          nonmatching.each do |non_matching_item|
+            periodical = find_periodical(non_matching_item['id'])
+
+            expect(periodical).not_to be nil
+          end
+        end
+
+        it 'should return a passing result' do
+          expect(result).to be_a_passing_result.with_value(result_value)
+        end
+      end
     end
   end
 
@@ -910,6 +1010,10 @@ RSpec.describe Bronze::Collections::Simple do
 
         expect(find_periodical(primary_key_value)).to be == expected_value
       end
+    end
+
+    wrap_context 'when configured for an entity class' do
+      pending
     end
   end
 
