@@ -132,6 +132,12 @@ RSpec.describe Bronze::Collections::Simple do
     )
   end
 
+  def change_collection_data
+    query = Bronze::Collections::Simple::Query.new(adapter.data)
+
+    change(query, :to_a)
+  end
+
   def find_by_id(id)
     periodicals.find { |item| item['id'] == id }
   end
@@ -152,7 +158,7 @@ RSpec.describe Bronze::Collections::Simple do
 
       it 'should not change the collection data' do
         expect { collection.delete_one(primary_key_value) }
-          .not_to change(collection.query, :to_a)
+          .not_to change_collection_data
       end
     end
 
@@ -176,7 +182,43 @@ RSpec.describe Bronze::Collections::Simple do
     end
 
     wrap_context 'when configured for an entity class' do
-      pending
+      describe 'with a primary key that does not match an item' do
+        let(:primary_key_value) { 13 }
+        let(:expected_error)    { Bronze::Collections::Errors.not_found }
+
+        it { expect(result).to be_a_failing_result.with_errors(expected_error) }
+
+        it 'should not change the collection count' do
+          expect { collection.delete_one(primary_key_value) }
+            .not_to change(collection, :count)
+        end
+
+        it 'should not change the collection data' do
+          expect { collection.delete_one(primary_key_value) }
+            .not_to change_collection_data
+        end
+      end
+
+      describe 'with a primary key that matches an item' do
+        let(:primary_key_value) { 9 }
+        let!(:expected_value) do
+          collection.transform.denormalize(find_by_id(primary_key_value))
+        end
+
+        it { expect(result).to be_a_passing_result.with_value(expected_value) }
+
+        it 'should change the collection count' do
+          expect { collection.delete_one(primary_key_value) }
+            .to change(collection, :count)
+            .by(-1)
+        end
+
+        it 'should remove the item from the collection' do
+          expect { collection.delete_one(primary_key_value) }
+            .to change(collection.query, :to_a)
+            .to(satisfy { |ary| !ary.include?(expected_value) })
+        end
+      end
     end
   end
 
@@ -194,12 +236,6 @@ RSpec.describe Bronze::Collections::Simple do
         count: matching.size,
         data:  matching
       }
-    end
-
-    def change_collection_data
-      query = Bronze::Collections::Simple::Query.new(adapter.data)
-
-      change(query, :to_a)
     end
 
     def find_periodical(id)
@@ -441,12 +477,6 @@ RSpec.describe Bronze::Collections::Simple do
       periodicals.select { |item| matches_selector?(selector, item) }
     end
     let(:options) { {} }
-
-    def change_collection_data
-      query = Bronze::Collections::Simple::Query.new(adapter.data)
-
-      change(query, :to_a)
-    end
 
     def matches_selector?(selector, item)
       item >= tools.hash.convert_keys_to_strings(selector)
@@ -1032,12 +1062,6 @@ RSpec.describe Bronze::Collections::Simple do
         count: matching.size,
         data:  matching
       }
-    end
-
-    def change_collection_data
-      query = Bronze::Collections::Simple::Query.new(adapter.data)
-
-      change(query, :to_a)
     end
 
     def find_periodical(id)

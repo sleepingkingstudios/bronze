@@ -85,7 +85,7 @@ module Bronze
 
       return Bronze::Result.new(nil, errors: errors) if errors
 
-      denormalize_result do
+      denormalize_bulk_result do
         adapter.delete_matching(collection_name: name, selector: selector)
       end
     end
@@ -100,11 +100,13 @@ module Bronze
 
       return Bronze::Result.new(nil, errors: errors) if errors
 
-      adapter.delete_one(
-        collection_name:   name,
-        primary_key:       primary_key,
-        primary_key_value: value
-      )
+      denormalize_result do
+        adapter.delete_one(
+          collection_name:   name,
+          primary_key:       primary_key,
+          primary_key_value: value
+        )
+      end
     end
     alias_method :delete, :delete_one
 
@@ -200,7 +202,7 @@ module Bronze
 
       return Bronze::Result.new(nil, errors: errors) if errors
 
-      denormalize_result do
+      denormalize_bulk_result do
         adapter.update_matching(
           collection_name: name,
           selector:        selector,
@@ -235,7 +237,7 @@ module Bronze
     private
 
     # rubocop:disable Metrics/AbcSize
-    def denormalize_result
+    def denormalize_bulk_result
       result = yield
 
       return result unless transform
@@ -250,6 +252,15 @@ module Bronze
       end
     end
     # rubocop:enable Metrics/AbcSize
+
+    def denormalize_result
+      result = yield
+
+      return result unless transform
+      return result unless result.success?
+
+      Bronze::Result.new(transform.denormalize(result.value))
+    end
 
     def normalize_data(data)
       return [data, nil] unless transform

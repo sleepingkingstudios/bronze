@@ -1533,15 +1533,45 @@ RSpec.describe Bronze::Collection do
   end
 
   describe '#delete_one' do
+    shared_examples 'should delegate to the adapter' do
+      describe 'with a valid primary key' do
+        let(:result) { Bronze::Result.new(value) }
+
+        it 'should delegate to the adapter' do
+          collection.delete_one(primary_key_value)
+
+          expect(adapter)
+            .to have_received(:delete_one)
+            .with(expected_keywords)
+        end
+
+        it 'should return a passing result' do
+          allow(adapter).to receive(:delete_one).and_return(result)
+
+          expect(collection.delete_one(primary_key_value))
+            .to be_a_passing_result
+            .with_value(expected)
+        end
+      end
+    end
+
     let(:primary_key)       { :id }
-    let(:primary_key_type)  { Integer }
-    let(:primary_key_value) { 0 }
+    let(:primary_key_type)  { String }
+    let(:primary_key_value) { '00000000-0000-0000-0000-000000000000' }
     let(:method_name)       { :delete_one }
-    let(:data) do
+    let(:value) do
       {
-        'id'     => 0,
+        'uuid'   => '00000000-0000-0000-0000-000000000000',
         'title'  => 'Romance of the Three Kingdoms',
         'author' => 'Luo Guanzhong'
+      }
+    end
+    let(:expected) { value }
+    let(:expected_keywords) do
+      {
+        collection_name:   collection.name,
+        primary_key:       primary_key,
+        primary_key_value: primary_key_value
       }
     end
     let(:options) { super().merge primary_key_type: primary_key_type }
@@ -1556,28 +1586,21 @@ RSpec.describe Bronze::Collection do
 
     include_examples 'should validate the primary key for querying'
 
-    describe 'with a valid primary key' do
-      let(:result) { Bronze::Result.new(data) }
-      let(:expected_keywords) do
-        {
-          collection_name:   collection.name,
-          primary_key:       primary_key,
-          primary_key_value: primary_key_value
-        }
-      end
+    include_examples 'should delegate to the adapter'
 
-      it 'should delegate to the adapter' do
-        collection.delete_one(primary_key_value)
+    wrap_context 'when initialized with a transform' do
+      let(:expected) { transform.denormalize(value) }
 
-        expect(adapter)
-          .to have_received(:delete_one)
-          .with(expected_keywords)
-      end
+      include_examples 'should delegate to the adapter'
+    end
 
-      it 'should return the result from the adapter' do
-        allow(adapter).to receive(:delete_one).and_return(result)
+    wrap_context 'when the definition is an entity class' do
+      include_examples 'should delegate to the adapter'
 
-        expect(collection.delete_one(primary_key_value)).to be result
+      wrap_context 'when initialized with an entity transform' do
+        let(:expected) { transform.denormalize(value) }
+
+        include_examples 'should delegate to the adapter'
       end
     end
   end
