@@ -1034,6 +1034,12 @@ RSpec.describe Bronze::Collections::Simple do
       }
     end
 
+    def change_collection_data
+      query = Bronze::Collections::Simple::Query.new(adapter.data)
+
+      change(query, :to_a)
+    end
+
     def find_periodical(id)
       collection.matching(id: id).to_a.first
     end
@@ -1056,7 +1062,7 @@ RSpec.describe Bronze::Collections::Simple do
 
       it 'should not change the collection data' do
         expect { collection.update_matching(selector, with: data) }
-          .not_to change(collection.query, :to_a)
+          .not_to change_collection_data
       end
     end
 
@@ -1127,7 +1133,96 @@ RSpec.describe Bronze::Collections::Simple do
     end
 
     wrap_context 'when configured for an entity class' do
-      pending
+      let(:result_value) do
+        {
+          count: matching.size,
+          data:  matching.map { |item| collection.transform.denormalize(item) }
+        }
+      end
+
+      describe 'with a selector that does not match any items' do
+        let(:data)     { { 'publisher' => 'Miskatonic University Press' } }
+        let(:selector) { { title: 'Triskadecaphobia Today' } }
+        let(:result)   { collection.update_matching(selector, with: data) }
+
+        it { expect(result).to be_a_passing_result.with_value(result_value) }
+
+        it 'should not change the collection count' do
+          expect { collection.update_matching(selector, with: data) }
+            .not_to change(collection, :count)
+        end
+
+        it 'should not change the collection data' do
+          expect { collection.update_matching(selector, with: data) }
+            .not_to change_collection_data
+        end
+      end
+
+      describe 'with a selector that matches one item' do
+        let(:data)     { { 'publisher' => 'Miskatonic University Press' } }
+        let(:selector) { { id: 9 } }
+        let(:result)   { collection.update_matching(selector, with: data) }
+
+        it { expect(result).to be_a_passing_result.with_value(result_value) }
+
+        it 'should not change the collection count' do
+          expect { collection.update_matching(selector, with: data) }
+            .not_to change(collection, :count)
+        end
+
+        it 'should update the matching items' do
+          collection.update_matching(selector, with: data)
+
+          matching.each do |matching_item|
+            periodical = find_periodical(matching_item['id'])
+
+            expect(periodical).to have_attributes(data)
+          end
+        end
+
+        it 'should not update the non-matching items' do
+          collection.update_matching(selector, with: data)
+
+          nonmatching.each do |non_matching_item|
+            periodical = find_periodical(non_matching_item['id'])
+
+            expect(periodical).not_to have_attributes(data)
+          end
+        end
+      end
+
+      describe 'with a selector that matches many items' do
+        let(:data)     { { 'publisher' => 'Miskatonic University Press' } }
+        let(:selector) { { title: 'Modern Mentalism' } }
+        let(:result)   { collection.update_matching(selector, with: data) }
+
+        it { expect(result).to be_a_passing_result.with_value(result_value) }
+
+        it 'should not change the collection count' do
+          expect { collection.update_matching(selector, with: data) }
+            .not_to change(collection, :count)
+        end
+
+        it 'should update the matching items' do
+          collection.update_matching(selector, with: data)
+
+          matching.each do |matching_item|
+            periodical = find_periodical(matching_item['id'])
+
+            expect(periodical).to have_attributes(data)
+          end
+        end
+
+        it 'should not update the non-matching items' do
+          collection.update_matching(selector, with: data)
+
+          nonmatching.each do |non_matching_item|
+            periodical = find_periodical(non_matching_item['id'])
+
+            expect(periodical).not_to have_attributes(data)
+          end
+        end
+      end
     end
   end
 end

@@ -1412,7 +1412,7 @@ RSpec.describe Bronze::Collection do
 
   describe '#delete_matching' do
     shared_context 'when the adapter result includes data' do
-      let(:data) do
+      let(:result_data) do
         [
           {
             'uuid'   => '00000000-0000-0000-0000-000000000000',
@@ -1431,7 +1431,7 @@ RSpec.describe Bronze::Collection do
           }
         ]
       end
-      let(:value) { { count: 3, data: data } }
+      let(:value) { { count: 3, data: result_data } }
     end
 
     shared_examples 'should delegate to the adapter' do
@@ -1509,7 +1509,7 @@ RSpec.describe Bronze::Collection do
 
         wrap_context 'when the adapter result includes data' do
           let(:transformed_data) do
-            data.map { |item| transform.denormalize(item) }
+            result_data.map { |item| transform.denormalize(item) }
           end
           let(:expected) { super().merge(data: transformed_data) }
 
@@ -1523,7 +1523,7 @@ RSpec.describe Bronze::Collection do
 
       wrap_context 'when the adapter result includes data' do
         let(:transformed_data) do
-          data.map { |item| transform.denormalize(item) }
+          result_data.map { |item| transform.denormalize(item) }
         end
         let(:expected) { super().merge(data: transformed_data) }
 
@@ -2312,6 +2312,111 @@ RSpec.describe Bronze::Collection do
   end
 
   describe '#update_matching' do
+    shared_context 'when the adapter result includes data' do
+      let(:result_data) do
+        [
+          {
+            'uuid'   => '00000000-0000-0000-0000-000000000000',
+            'title'  => 'Romance of the Three Kingdoms',
+            'author' => 'Luo Guanzhong'
+          },
+          {
+            'uuid'   => '00000000-0000-0000-0000-000000000001',
+            'title'  => 'Journey to the West',
+            'author' => "Wu Cheng'en"
+          },
+          {
+            'uuid'   => '00000000-0000-0000-0000-000000000002',
+            'title'  => 'Dream of the Red Chamber',
+            'author' => 'Cao Xueqin'
+          }
+        ]
+      end
+      let(:value) { { count: 3, data: result_data } }
+    end
+
+    shared_examples 'should delegate to the adapter' do
+      describe 'with an empty data object' do
+        let(:data) { {} }
+        let(:expected_error) do
+          {
+            type:   Bronze::Collections::Errors::DATA_EMPTY,
+            params: { data: object }
+          }
+        end
+
+        it 'should not delegate to the adapter' do
+          call_method
+
+          expect(adapter).not_to have_received(method_name)
+        end
+
+        it 'should return a failing result' do
+          expect(call_method)
+            .to be_a_failing_result
+            .with_errors(expected_error)
+        end
+      end
+
+      describe 'with a valid selector and data object with String keys' do
+        let(:selector) { { author: 'Luo Guanzhong' } }
+        let(:data)     { { 'language' => 'Chinese' } }
+        let(:result)   { Bronze::Result.new.tap { |res| res.value = value } }
+        let(:expected_keywords) do
+          {
+            collection_name: collection.name,
+            data:            data,
+            selector:        selector
+          }
+        end
+
+        it 'should delegate to the adapter' do
+          collection.update_matching(selector, with: data)
+
+          expect(adapter)
+            .to have_received(:update_matching)
+            .with(expected_keywords)
+        end
+
+        it 'should return a passing result' do
+          allow(adapter).to receive(:update_matching).and_return(result)
+
+          expect(collection.update_matching(selector, with: data))
+            .to be_a_passing_result
+            .with_value(expected)
+        end
+      end
+
+      describe 'with a valid selector and data object with Symbol keys' do
+        let(:selector) { { author: 'Luo Guanzhong' } }
+        let(:data)     { { language: 'Chinese' } }
+        let(:result)   { Bronze::Result.new.tap { |res| res.value = value } }
+        let(:expected_keywords) do
+          {
+            collection_name: collection.name,
+            data:            data,
+            selector:        selector
+          }
+        end
+
+        it 'should delegate to the adapter' do
+          collection.update_matching(selector, with: data)
+
+          expect(adapter)
+            .to have_received(:update_matching)
+            .with(expected_keywords)
+        end
+
+        it 'should return a passing result' do
+          allow(adapter).to receive(:update_matching).and_return(result)
+
+          expect(collection.update_matching(selector, with: data))
+            .to be_a_passing_result
+            .with_value(expected)
+        end
+      end
+    end
+
     let(:primary_key)       { :id }
     let(:primary_key_type)  { Integer }
     let(:primary_key_value) { 0 }
@@ -2319,6 +2424,8 @@ RSpec.describe Bronze::Collection do
     let(:selector)          { { key: 'value' } }
     let(:data)              { nil }
     let(:object)            { data }
+    let(:value)             { { count: 3 } }
+    let(:expected)          { value }
 
     def call_method
       collection.update_matching(selector, with: object)
@@ -2336,93 +2443,39 @@ RSpec.describe Bronze::Collection do
 
     include_examples 'should validate the selector'
 
-    describe 'with an empty data object' do
-      let(:data) { {} }
-      let(:expected_error) do
-        {
-          type:   Bronze::Collections::Errors::DATA_EMPTY,
-          params: { data: object }
-        }
-      end
+    include_examples 'should delegate to the adapter'
 
-      it 'should not delegate to the adapter' do
-        call_method
+    wrap_context 'when the adapter result includes data' do
+      include_examples 'should delegate to the adapter'
+    end
 
-        expect(adapter).not_to have_received(method_name)
-      end
+    wrap_context 'when the definition is an entity class' do
+      include_examples 'should delegate to the adapter'
 
-      it 'should return a failing result' do
-        expect(call_method)
-          .to be_a_failing_result
-          .with_errors(expected_error)
+      wrap_context 'when initialized with an entity transform' do
+        include_examples 'should delegate to the adapter'
+
+        wrap_context 'when the adapter result includes data' do
+          let(:transformed_data) do
+            result_data.map { |item| transform.denormalize(item) }
+          end
+          let(:expected) { super().merge(data: transformed_data) }
+
+          include_examples 'should delegate to the adapter'
+        end
       end
     end
 
-    describe 'with a valid selector and data object with String keys' do
-      let(:selector) { { author: 'Luo Guanzhong' } }
-      let(:data)     { { 'language' => 'Chinese' } }
-      let(:expected) do
-        {
-          'title'    => 'Romance of the Three Kingdoms',
-          'author'   => 'Luo Guanzhong',
-          'language' => 'Chinese'
-        }
-      end
-      let(:result) { Bronze::Result.new(expected) }
-      let(:expected_keywords) do
-        {
-          collection_name: collection.name,
-          data:            data,
-          selector:        selector
-        }
-      end
+    wrap_context 'when initialized with a transform' do
+      include_examples 'should delegate to the adapter'
 
-      it 'should delegate to the adapter' do
-        collection.update_matching(selector, with: data)
+      wrap_context 'when the adapter result includes data' do
+        let(:transformed_data) do
+          result_data.map { |item| transform.denormalize(item) }
+        end
+        let(:expected) { super().merge(data: transformed_data) }
 
-        expect(adapter)
-          .to have_received(:update_matching)
-          .with(expected_keywords)
-      end
-
-      it 'should return the result from the adapter' do
-        allow(adapter).to receive(:update_matching).and_return(result)
-
-        expect(collection.update_matching(selector, with: data)).to be result
-      end
-    end
-
-    describe 'with a valid selector and data object with Symbol keys' do
-      let(:selector) { { author: 'Luo Guanzhong' } }
-      let(:data)     { { language: 'Chinese' } }
-      let(:expected) do
-        {
-          'title'    => 'Romance of the Three Kingdoms',
-          'author'   => 'Luo Guanzhong',
-          'language' => 'Chinese'
-        }
-      end
-      let(:result) { Bronze::Result.new(expected) }
-      let(:expected_keywords) do
-        {
-          collection_name: collection.name,
-          data:            data,
-          selector:        selector
-        }
-      end
-
-      it 'should delegate to the adapter' do
-        collection.update_matching(selector, with: data)
-
-        expect(adapter)
-          .to have_received(:update_matching)
-          .with(expected_keywords)
-      end
-
-      it 'should return the result from the adapter' do
-        allow(adapter).to receive(:update_matching).and_return(result)
-
-        expect(collection.update_matching(selector, with: data)).to be result
+        include_examples 'should delegate to the adapter'
       end
     end
   end

@@ -15,9 +15,10 @@ module Spec
 
     define_primary_key :id, Integer, default: -1
 
-    attribute :title,    String
-    attribute :issue,    Integer
-    attribute :headline, String
-    attribute :date,     Date
+    attribute :title,     String
+    attribute :issue,     Integer
+    attribute :headline,  String
+    attribute :date,      Date
+    attribute :publisher, String
   end
 end

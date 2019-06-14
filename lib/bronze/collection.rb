@@ -192,7 +192,7 @@ module Bronze
     # @param with [Hash] The keys and values to update in the matching items.
     #
     # @return [Bronze::Result] the result of the update operation.
-    def update_matching(selector, with:)
+    def update_matching(selector, with:) # rubocop:disable Metrics/MethodLength
       errors =
         errors_for_selector(selector) ||
         errors_for_data(with) ||
@@ -200,11 +200,13 @@ module Bronze
 
       return Bronze::Result.new(nil, errors: errors) if errors
 
-      adapter.update_matching(
-        collection_name: name,
-        selector:        selector,
-        data:            with
-      )
+      denormalize_result do
+        adapter.update_matching(
+          collection_name: name,
+          selector:        selector,
+          data:            with
+        )
+      end
     end
 
     # Finds and updates the item in the collection with the given primary key.
