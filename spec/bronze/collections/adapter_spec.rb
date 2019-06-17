@@ -167,7 +167,7 @@ RSpec.describe Bronze::Collections::Adapter do
   end
 
   describe '#null_query' do
-    let(:null_query) { adapter.null_query('books') }
+    let(:null_query) { adapter.null_query(collection_name: 'books') }
 
     it { expect(null_query).to be_a Bronze::Collections::NullQuery }
   end
@@ -178,7 +178,7 @@ RSpec.describe Bronze::Collections::Adapter do
     end
 
     it 'should raise an error' do
-      expect { adapter.query('books') }
+      expect { adapter.query(collection_name: 'books') }
         .to raise_error Bronze::NotImplementedError, error_message
     end
   end

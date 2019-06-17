@@ -29,8 +29,8 @@ module Spec::Support
     attr_reader :options
 
     def compare_attributes(attribute, first, second, reversed:)
-      first_value  = first[attribute]
-      second_value = second[attribute]
+      first_value  = get_attribute(first,  attribute)
+      second_value = get_attribute(second, attribute)
 
       return nil if first_value.nil? && second_value.nil?
 
@@ -59,6 +59,12 @@ module Spec::Support
       {
         sort_nils_before_values: false
       }
+    end
+
+    def get_attribute(object, attribute)
+      return object[attribute] if object.respond_to?(:[])
+
+      object.send(attribute)
     end
 
     def sort_nils_before_values

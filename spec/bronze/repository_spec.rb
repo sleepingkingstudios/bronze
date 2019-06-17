@@ -2,6 +2,7 @@
 
 require 'bronze/collections/adapter'
 require 'bronze/repository'
+require 'bronze/transforms/identity_transform'
 
 RSpec.describe Bronze::Repository do
   subject(:repository) { described_class.new(adapter: adapter) }
@@ -28,11 +29,15 @@ RSpec.describe Bronze::Repository do
   end
 
   describe '#collection' do
+    let(:expected_keywords) do
+      %i[name primary_key primary_key_type transform]
+    end
+
     it 'should define the method' do
       expect(repository)
         .to respond_to(:collection)
         .with(1).argument
-        .and_keywords(:name, :primary_key, :primary_key_type)
+        .and_keywords(*expected_keywords)
     end
 
     describe 'with nil' do
@@ -72,21 +77,49 @@ RSpec.describe Bronze::Repository do
 
       it { expect(collection.name).to be == collection_name }
 
+      it { expect(collection.transform).to be nil }
+
       describe 'with name: String' do
         let(:options) { { name: 'publications' } }
 
         it { expect(collection.name).to be == 'publications' }
+      end
+
+      describe 'with primary_key: value' do
+        let(:options) { { primary_key: :uuid } }
+
+        it { expect(collection.primary_key).to be == options[:primary_key] }
+      end
+
+      describe 'with primary_key_type: class' do
+        let(:options) { { primary_key_type: Integer } }
+
+        it 'should set the primary key type' do
+          expect(collection.primary_key_type)
+            .to be == options[:primary_key_type]
+        end
+      end
+
+      describe 'with transform: value' do
+        let(:transform) { Bronze::Transforms::IdentityTransform }
+        let(:options)   { { transform: transform } }
+
+        it { expect(collection.transform).to be transform }
       end
     end
 
     describe 'with an entity class' do
       let(:options)         { {} }
       let(:collection_name) { 'spec__widgets' }
+      let(:entity_class)    { Spec::Widget }
       let(:collection) do
-        repository.collection(Spec::Widget, **options)
+        repository.collection(entity_class, **options)
+      end
+      let(:transform_class) do
+        Bronze::Transforms::Entities::NormalizeTransform
       end
 
-      example_class 'Spec::Widget'
+      example_class 'Spec::Widget', Bronze::Entity
 
       before(:example) do
         allow(adapter)
@@ -95,16 +128,27 @@ RSpec.describe Bronze::Repository do
           .and_return('spec__widgets')
       end
 
-      it { expect(collection).to be_a Bronze::Collection }
+      it { expect(collection).to be_a Bronze::Collections::EntityCollection }
 
       it { expect(collection.adapter).to be adapter }
 
       it { expect(collection.name).to be == collection_name }
 
+      it { expect(collection.transform).to be_an_instance_of(transform_class) }
+
+      it { expect(collection.transform.entity_class).to be entity_class }
+
       describe 'with name: String' do
         let(:options) { { name: 'whatsits' } }
 
         it { expect(collection.name).to be == 'whatsits' }
+      end
+
+      describe 'with transform: value' do
+        let(:transform) { Bronze::Transforms::IdentityTransform }
+        let(:options)   { { transform: transform } }
+
+        it { expect(collection.transform).to be transform }
       end
     end
   end

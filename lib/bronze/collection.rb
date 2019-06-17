@@ -29,6 +29,9 @@ module Bronze
     #   indicates that the data set does not have a primary key.
     # @param primary_key_type [Class, String] The type of the primary key for
     #   the data set. If no value is given, defaults to String.
+    # @param transform [Bronze::Transform] The transform used to convert
+    #   collection data to and from a usable form, such as an entity class.
+    #   Defaults to nil.
     #
     # @raise ArgumentError if the definition is not a name or a Class.
     def initialize(
@@ -36,7 +39,8 @@ module Bronze
       adapter:,
       name:             nil,
       primary_key:      nil,
-      primary_key_type: nil
+      primary_key_type: nil,
+      transform:        nil
     )
       @adapter = adapter
 
@@ -48,7 +52,8 @@ module Bronze
 
       parse_definition(definition)
 
-      @name = name.to_s unless name.nil?
+      @name      = name.to_s unless name.nil?
+      @transform = transform unless transform.nil?
     end
 
     def_delegators :query,
@@ -65,6 +70,10 @@ module Bronze
     # @return [String] the name of the data set.
     attr_reader :name
 
+    # @return [Bronze::Transform] the transform used to convert collection data
+    #   to and from a usable form, such as a model class.
+    attr_reader :transform
+
     # Deletes each item in the collection matching the given selector, removing
     # it from the collection.
     #
@@ -76,7 +85,9 @@ module Bronze
 
       return Bronze::Result.new(nil, errors: errors) if errors
 
-      adapter.delete_matching(collection_name: name, selector: selector)
+      denormalize_bulk_result do
+        adapter.delete_matching(collection_name: name, selector: selector)
+      end
     end
 
     # Deletes the item in the collection matching the given primary key.
@@ -89,11 +100,13 @@ module Bronze
 
       return Bronze::Result.new(nil, errors: errors) if errors
 
-      adapter.delete_one(
-        collection_name:   name,
-        primary_key:       primary_key,
-        primary_key_value: value
-      )
+      denormalize_result do
+        adapter.delete_one(
+          collection_name:   name,
+          primary_key:       primary_key,
+          primary_key_value: value
+        )
+      end
     end
     alias_method :delete, :delete_one
 
@@ -112,7 +125,8 @@ module Bronze
         limit:           limit,
         offset:          offset,
         order:           order,
-        selector:        selector
+        selector:        selector,
+        transform:       transform
       )
     end
 
@@ -129,7 +143,8 @@ module Bronze
       adapter.find_one(
         collection_name:   name,
         primary_key:       primary_key,
-        primary_key_value: value
+        primary_key_value: value,
+        transform:         transform
       )
     end
     alias_method :find, :find_one
@@ -140,18 +155,24 @@ module Bronze
     #
     # @return [Bronze::Result] the result of the insert operation.
     def insert_one(data)
-      errors = errors_for_data(data) || errors_for_primary_key_insert(data)
+      data, errors = normalize_data(data)
+
+      errors ||= errors_for_data(data) || errors_for_primary_key_insert(data)
 
       return Bronze::Result.new(nil, errors: errors) if errors
 
-      adapter.insert_one(collection_name: name, data: data)
+      result = adapter.insert_one(collection_name: name, data: data)
+
+      return result unless transform && result.success?
+
+      Bronze::Result.new(transform.denormalize(result.value))
     end
     alias_method :insert, :insert_one
 
     # @return [Bronze::Collections::NullQuery] a mock query that acts as a
     #     query against an empty collection.
     def null_query
-      adapter.null_query(name)
+      adapter.null_query(collection_name: name)
     end
     alias_method :none, :null_query
 
@@ -159,7 +180,10 @@ module Bronze
     #
     # @return [Bronze::Collections::Query] the query instance.
     def query
-      adapter.query(name)
+      adapter.query(
+        collection_name: name,
+        transform:       transform
+      )
     end
     alias_method :all, :query
 
@@ -170,7 +194,7 @@ module Bronze
     # @param with [Hash] The keys and values to update in the matching items.
     #
     # @return [Bronze::Result] the result of the update operation.
-    def update_matching(selector, with:)
+    def update_matching(selector, with:) # rubocop:disable Metrics/MethodLength
       errors =
         errors_for_selector(selector) ||
         errors_for_data(with) ||
@@ -178,11 +202,13 @@ module Bronze
 
       return Bronze::Result.new(nil, errors: errors) if errors
 
-      adapter.update_matching(
-        collection_name: name,
-        selector:        selector,
-        data:            with
-      )
+      denormalize_bulk_result do
+        adapter.update_matching(
+          collection_name: name,
+          selector:        selector,
+          data:            with
+        )
+      end
     end
 
     # Finds and updates the item in the collection with the given primary key.
@@ -199,23 +225,60 @@ module Bronze
 
       return Bronze::Result.new(nil, errors: errors) if errors
 
-      adapter.update_one(
-        collection_name:   name,
-        data:              with,
-        primary_key:       primary_key,
-        primary_key_value: value
-      )
+      denormalize_result do
+        adapter.update_one(
+          collection_name:   name,
+          data:              with,
+          primary_key:       primary_key,
+          primary_key_value: value
+        )
+      end
     end
     alias_method :update, :update_one
 
     private
 
-    def parse_definition(definition)
-      if definition.is_a?(Module)
-        @name = parse_module_definition(definition)
+    # rubocop:disable Metrics/AbcSize
+    def denormalize_bulk_result
+      result = yield
 
-        return
-      elsif definition.is_a?(String) || definition.is_a?(Symbol)
+      return result unless transform
+      return result unless result.success?
+      return result unless result.value.is_a?(Hash) && result.value.key?(:data)
+
+      transformed_data =
+        result.value[:data].map { |item| transform.denormalize item }
+
+      Bronze::Result.new.tap do |res|
+        res.value = result.value.merge(data: transformed_data)
+      end
+    end
+    # rubocop:enable Metrics/AbcSize
+
+    def denormalize_result
+      result = yield
+
+      return result unless transform
+      return result unless result.success?
+
+      Bronze::Result.new(transform.denormalize(result.value))
+    end
+
+    def normalize_data(data)
+      return [data, nil] unless transform
+
+      [transform.normalize(data), nil]
+    rescue NoMethodError
+      [
+        nil,
+        build_errors.add(Bronze::Collections::Errors.data_invalid, data: data)
+      ]
+    end
+
+    def parse_definition(definition)
+      return @name = parse_module_name(definition) if definition.is_a?(Module)
+
+      if definition.is_a?(String) || definition.is_a?(Symbol)
         @name = definition.to_s
 
         return
@@ -226,7 +289,7 @@ module Bronze
         "#{definition.inspect}"
     end
 
-    def parse_module_definition(mod)
+    def parse_module_name(mod)
       return mod.collection_name.to_s if mod.respond_to?(:collection_name)
 
       adapter.collection_name_for(mod)

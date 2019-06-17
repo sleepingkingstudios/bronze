@@ -6,6 +6,16 @@ require 'bronze/not_implemented_error'
 module Bronze::Collections
   # Abstract class defining the interface for collection queries.
   class Query
+    # @param transform [Bronze::Transform] the transform used to convert queried
+    #   data to a usable form.
+    def initialize(transform: nil)
+      @transform = transform
+    end
+
+    # @return [Bronze::Transform] the transform used to convert queried data to
+    #   a usable form.
+    attr_reader :transform
+
     # @return [Integer] the number of matching items.
     #
     # @raise Bronze::NotImplementedError unless overriden by a Query subclass.

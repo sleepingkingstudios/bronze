@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'bronze/transform'
+require 'bronze/transforms'
 
 module Bronze::Transforms
   # Transform class that maps an object to itself.

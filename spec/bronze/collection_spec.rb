@@ -5,42 +5,54 @@ require 'bronze/collections/adapter'
 require 'bronze/collections/null_query'
 require 'bronze/collections/query'
 require 'bronze/entities/primary_key'
+require 'bronze/entities/primary_keys/uuid'
 require 'bronze/entity'
+require 'bronze/transforms/identity_transform'
+require 'bronze/transforms/entities/normalize_transform'
+
+require 'support/entities/examples/basic_book'
+require 'support/transforms/capitalize_keys_transform'
 
 RSpec.describe Bronze::Collection do
   shared_context 'when the definition is an entity class' do
-    let(:definition) { Spec::ColoringBook }
-
-    example_class 'Spec::ColoringBook', Bronze::Entity
+    let(:definition)       { Spec::BasicBook }
+    let(:primary_key)      { definition.primary_key.name }
+    let(:primary_key_type) { definition.primary_key.type }
   end
 
-  shared_context 'when the entity class has a primary key' do
-    let(:primary_key)       { :id }
-    let(:primary_key_type)  { Integer }
-    let(:primary_key_value) { 0 }
+  shared_context 'when initialized with a transform' do
+    let(:transform) { Spec::CapitalizeKeysTransform.new }
+    let(:options)   { super().merge(transform: transform) }
+  end
 
-    before(:example) do
-      Spec::ColoringBook.send :include, Bronze::Entities::PrimaryKey
-
-      Spec::ColoringBook.define_primary_key :id, Integer, default: -> { 0 }
+  shared_context 'when initialized with an entity transform' do
+    let(:transform) do
+      Bronze::Transforms::Entities::NormalizeTransform.new(definition)
     end
+    let(:options) { super().merge(transform: transform) }
   end
 
-  shared_context 'when the entity class has a custom primary key' do
-    let(:primary_key)       { :hex }
-    let(:primary_key_type)  { String }
-    let(:primary_key_value) { 'ff' }
+  shared_examples 'should delegate to the adapter' do
+    let(:result) { Bronze::Result.new.tap { |res| res.value = value } }
 
-    before(:example) do
-      Spec::ColoringBook.send :include, Bronze::Entities::PrimaryKey
+    it 'should delegate to the adapter' do
+      call_method
 
-      Spec::ColoringBook.define_primary_key :hex, String, default: -> { 'ff' }
+      expect(adapter).to have_received(method_name).with(expected_keywords)
+    end
+
+    it 'should return a passing result' do
+      allow(adapter).to receive(method_name).and_return(result)
+
+      expect(call_method)
+        .to be_a_passing_result
+        .with_value(expected)
     end
   end
 
   shared_examples 'should validate the data object' do
     describe 'with a nil data object' do
-      let(:data) { nil }
+      let(:object) { nil }
       let(:expected_error) do
         {
           type:   Bronze::Collections::Errors::DATA_MISSING,
@@ -54,7 +66,7 @@ RSpec.describe Bronze::Collection do
         expect(adapter).not_to have_received(method_name)
       end
 
-      it 'should return a result' do
+      it 'should return a failing result' do
         expect(call_method)
           .to be_a_failing_result
           .with_errors(expected_error)
@@ -62,11 +74,11 @@ RSpec.describe Bronze::Collection do
     end
 
     describe 'with a non-Hash data object' do
-      let(:data) { Object.new }
+      let(:object) { Object.new }
       let(:expected_error) do
         {
           type:   Bronze::Collections::Errors::DATA_INVALID,
-          params: { data: data }
+          params: { data: object }
         }
       end
 
@@ -76,29 +88,7 @@ RSpec.describe Bronze::Collection do
         expect(adapter).not_to have_received(method_name)
       end
 
-      it 'should return a result' do
-        expect(call_method)
-          .to be_a_failing_result
-          .with_errors(expected_error)
-      end
-    end
-
-    describe 'with an empty data object' do
-      let(:data) { {} }
-      let(:expected_error) do
-        {
-          type:   Bronze::Collections::Errors::DATA_EMPTY,
-          params: { data: data }
-        }
-      end
-
-      it 'should not delegate to the adapter' do
-        call_method
-
-        expect(adapter).not_to have_received(method_name)
-      end
-
-      it 'should return a result' do
+      it 'should return a failing result' do
         expect(call_method)
           .to be_a_failing_result
           .with_errors(expected_error)
@@ -124,7 +114,7 @@ RSpec.describe Bronze::Collection do
           expect(adapter).not_to have_received(method_name)
         end
 
-        it 'should return a result' do
+        it 'should return a failing result' do
           expect(call_method)
             .to be_a_failing_result
             .with_errors(expected_error)
@@ -147,7 +137,7 @@ RSpec.describe Bronze::Collection do
           expect(adapter).not_to have_received(method_name)
         end
 
-        it 'should return a result' do
+        it 'should return a failing result' do
           expect(call_method)
             .to be_a_failing_result
             .with_errors(expected_error)
@@ -212,7 +202,7 @@ RSpec.describe Bronze::Collection do
             expect(adapter).not_to have_received(method_name)
           end
 
-          it 'should return a result' do
+          it 'should return a failing result' do
             expect(call_method)
               .to be_a_failing_result
               .with_errors(expected_error)
@@ -235,7 +225,7 @@ RSpec.describe Bronze::Collection do
             expect(adapter).not_to have_received(method_name)
           end
 
-          it 'should return a result' do
+          it 'should return a failing result' do
             expect(call_method)
               .to be_a_failing_result
               .with_errors(expected_error)
@@ -247,7 +237,7 @@ RSpec.describe Bronze::Collection do
 
   shared_examples 'should validate the primary key for insertion' do
     describe 'with a nil primary key' do
-      let(:data) { super().tap { |hsh| hsh.delete primary_key.to_s } }
+      let(:data) { super().tap { |hsh| hsh.delete('id') } }
       let(:expected_error) do
         {
           type:   Bronze::Collections::Errors::PRIMARY_KEY_MISSING,
@@ -262,7 +252,7 @@ RSpec.describe Bronze::Collection do
         expect(adapter).not_to have_received(method_name)
       end
 
-      it 'should return a result' do
+      it 'should return a failing result' do
         expect(call_method)
           .to be_a_failing_result
           .with_errors(expected_error)
@@ -291,7 +281,7 @@ RSpec.describe Bronze::Collection do
         expect(adapter).not_to have_received(method_name)
       end
 
-      it 'should return a result' do
+      it 'should return a failing result' do
         expect(call_method)
           .to be_a_failing_result
           .with_errors(expected_error)
@@ -318,7 +308,7 @@ RSpec.describe Bronze::Collection do
         expect(adapter).not_to have_received(method_name)
       end
 
-      it 'should return a result' do
+      it 'should return a failing result' do
         expect(call_method)
           .to be_a_failing_result
           .with_errors(expected_error)
@@ -402,7 +392,7 @@ RSpec.describe Bronze::Collection do
           expect(adapter).not_to have_received(method_name)
         end
 
-        it 'should return a result' do
+        it 'should return a failing result' do
           expect(call_method)
             .to be_a_failing_result
             .with_errors(expected_error)
@@ -431,7 +421,7 @@ RSpec.describe Bronze::Collection do
           expect(adapter).not_to have_received(method_name)
         end
 
-        it 'should return a result' do
+        it 'should return a failing result' do
           expect(call_method)
             .to be_a_failing_result
             .with_errors(expected_error)
@@ -456,10 +446,396 @@ RSpec.describe Bronze::Collection do
           expect(adapter).not_to have_received(method_name)
         end
 
-        it 'should return a result' do
+        it 'should return a failing result' do
           expect(call_method)
             .to be_a_failing_result
             .with_errors(expected_error)
+        end
+      end
+    end
+
+    wrap_context 'when the definition is an entity class' do
+      let(:data) { super().tap { |hsh| hsh.delete(primary_key.to_s) } }
+
+      describe 'with a nil primary key' do
+        let(:expected_error) do
+          {
+            type:   Bronze::Collections::Errors::PRIMARY_KEY_MISSING,
+            params: {},
+            path:   [primary_key]
+          }
+        end
+
+        it 'should not delegate to the adapter' do
+          call_method
+
+          expect(adapter).not_to have_received(method_name)
+        end
+
+        it 'should return a failing result' do
+          expect(call_method)
+            .to be_a_failing_result
+            .with_errors(expected_error)
+        end
+      end
+
+      describe 'with a primary key with invalid type' do
+        let(:primary_key_value) { Object.new }
+        let(:data) do
+          super().merge(primary_key => primary_key_value)
+        end
+        let(:expected_error) do
+          {
+            type:   Bronze::Collections::Errors::PRIMARY_KEY_INVALID,
+            params: {
+              type:  primary_key_type.name,
+              value: primary_key_value.to_s
+            },
+            path:   [primary_key]
+          }
+        end
+
+        it 'should not delegate to the adapter' do
+          call_method
+
+          expect(adapter).not_to have_received(method_name)
+        end
+
+        it 'should return a failing result' do
+          expect(call_method)
+            .to be_a_failing_result
+            .with_errors(expected_error)
+        end
+      end
+
+      describe 'with an empty primary key' do
+        let(:primary_key_value) { '' }
+        let(:data) do
+          super().merge(primary_key => primary_key_value)
+        end
+        let(:expected_error) do
+          {
+            type:   Bronze::Collections::Errors::PRIMARY_KEY_EMPTY,
+            params: { value: primary_key_value.to_s },
+            path:   [primary_key]
+          }
+        end
+
+        it 'should not delegate to the adapter' do
+          call_method
+
+          expect(adapter).not_to have_received(method_name)
+        end
+
+        it 'should return a failing result' do
+          expect(call_method)
+            .to be_a_failing_result
+            .with_errors(expected_error)
+        end
+      end
+
+      wrap_context 'when initialized with an entity transform' do
+        let(:object) { definition.new(data) }
+
+        describe 'with a nil primary key' do
+          let(:expected_error) do
+            {
+              type:   Bronze::Collections::Errors::PRIMARY_KEY_MISSING,
+              params: {},
+              path:   [primary_key]
+            }
+          end
+
+          before(:example) { object.send(:"#{primary_key}=", nil) }
+
+          it 'should not delegate to the adapter' do
+            call_method
+
+            expect(adapter).not_to have_received(method_name)
+          end
+
+          it 'should return a failing result' do
+            expect(call_method)
+              .to be_a_failing_result
+              .with_errors(expected_error)
+          end
+        end
+
+        describe 'with a primary key with invalid type' do
+          let(:primary_key_value) { Object.new }
+          let(:expected_error) do
+            {
+              type:   Bronze::Collections::Errors::PRIMARY_KEY_INVALID,
+              params: {
+                type:  primary_key_type.name,
+                value: primary_key_value.to_s
+              },
+              path:   [primary_key]
+            }
+          end
+
+          before(:example) do
+            object.send(:"#{primary_key}=", primary_key_value)
+          end
+
+          it 'should not delegate to the adapter' do
+            call_method
+
+            expect(adapter).not_to have_received(method_name)
+          end
+
+          it 'should return a failing result' do
+            expect(call_method)
+              .to be_a_failing_result
+              .with_errors(expected_error)
+          end
+        end
+
+        describe 'with an empty primary key' do
+          let(:primary_key_value) { '' }
+          let(:data) do
+            super().merge(primary_key => primary_key_value)
+          end
+          let(:expected_error) do
+            {
+              type:   Bronze::Collections::Errors::PRIMARY_KEY_EMPTY,
+              params: { value: primary_key_value.to_s },
+              path:   [primary_key]
+            }
+          end
+
+          it 'should not delegate to the adapter' do
+            call_method
+
+            expect(adapter).not_to have_received(method_name)
+          end
+
+          it 'should return a failing result' do
+            expect(call_method)
+              .to be_a_failing_result
+              .with_errors(expected_error)
+          end
+        end
+      end
+    end
+
+    wrap_context 'when initialized with a transform' do
+      let(:data) { super().tap { |hsh| hsh.delete('id') } }
+
+      describe 'with a nil primary key' do
+        let(:expected_error) do
+          {
+            type:   Bronze::Collections::Errors::PRIMARY_KEY_MISSING,
+            params: {},
+            path:   [primary_key]
+          }
+        end
+
+        it 'should not delegate to the adapter' do
+          call_method
+
+          expect(adapter).not_to have_received(method_name)
+        end
+
+        it 'should return a failing result' do
+          expect(call_method)
+            .to be_a_failing_result
+            .with_errors(expected_error)
+        end
+      end
+
+      describe 'with a primary key with invalid type' do
+        let(:primary_key_value) { Object.new }
+        let(:data) do
+          super().merge(primary_key => primary_key_value)
+        end
+        let(:expected_error) do
+          {
+            type:   Bronze::Collections::Errors::PRIMARY_KEY_INVALID,
+            params: {
+              type:  primary_key_type.name,
+              value: primary_key_value.to_s
+            },
+            path:   [primary_key]
+          }
+        end
+
+        it 'should not delegate to the adapter' do
+          call_method
+
+          expect(adapter).not_to have_received(method_name)
+        end
+
+        it 'should return a failing result' do
+          expect(call_method)
+            .to be_a_failing_result
+            .with_errors(expected_error)
+        end
+      end
+
+      describe 'with an empty primary key' do
+        let(:primary_key_type)  { String }
+        let(:primary_key_value) { '' }
+        let(:data) do
+          super().merge(primary_key => primary_key_value)
+        end
+        let(:expected_error) do
+          {
+            type:   Bronze::Collections::Errors::PRIMARY_KEY_EMPTY,
+            params: { value: primary_key_value.to_s },
+            path:   [primary_key]
+          }
+        end
+
+        it 'should not delegate to the adapter' do
+          call_method
+
+          expect(adapter).not_to have_received(method_name)
+        end
+
+        it 'should return a failing result' do
+          expect(call_method)
+            .to be_a_failing_result
+            .with_errors(expected_error)
+        end
+      end
+
+      context 'when options[:primary_key] is false' do
+        let(:options) { super().merge primary_key: false }
+
+        describe 'with a nil primary key' do
+          let(:data) { super().tap { |hsh| hsh.delete primary_key.to_s } }
+
+          it 'should delegate to the adapter' do
+            call_method
+
+            expect(adapter).to have_received(method_name)
+          end
+
+          it 'should return a passing result' do
+            expect(call_method).to be_a_passing_result
+          end
+        end
+
+        describe 'with a primary key with invalid type' do
+          let(:primary_key_value) { Object.new }
+          let(:data) do
+            super().merge(primary_key => primary_key_value)
+          end
+
+          it 'should delegate to the adapter' do
+            call_method
+
+            expect(adapter).to have_received(method_name)
+          end
+
+          it 'should return a passing result' do
+            expect(call_method).to be_a_passing_result
+          end
+        end
+
+        describe 'with an empty primary key' do
+          let(:primary_key_type)  { String }
+          let(:primary_key_value) { '' }
+          let(:data) do
+            super().merge(primary_key => primary_key_value)
+          end
+
+          it 'should delegate to the adapter' do
+            call_method
+
+            expect(adapter).to have_received(method_name)
+          end
+
+          it 'should return a passing result' do
+            expect(call_method).to be_a_passing_result
+          end
+        end
+      end
+
+      context 'when options[:primary_key] is set' do
+        let(:primary_key)       { :uuid }
+        let(:primary_key_type)  { String }
+        let(:primary_key_value) { '' }
+        let(:options) do
+          super().merge primary_key: :uuid, primary_key_type: String
+        end
+
+        describe 'with a nil primary key' do
+          let(:data) { super().tap { |hsh| hsh.delete primary_key.to_s } }
+          let(:expected_error) do
+            {
+              type:   Bronze::Collections::Errors::PRIMARY_KEY_MISSING,
+              params: {},
+              path:   [primary_key]
+            }
+          end
+
+          it 'should not delegate to the adapter' do
+            call_method
+
+            expect(adapter).not_to have_received(method_name)
+          end
+
+          it 'should return a failing result' do
+            expect(call_method)
+              .to be_a_failing_result
+              .with_errors(expected_error)
+          end
+        end
+
+        describe 'with a primary key with invalid type' do
+          let(:primary_key_value) { Object.new }
+          let(:data) do
+            super().merge(primary_key => primary_key_value)
+          end
+          let(:expected_error) do
+            {
+              type:   Bronze::Collections::Errors::PRIMARY_KEY_INVALID,
+              params: {
+                type:  primary_key_type.name,
+                value: primary_key_value.to_s
+              },
+              path:   [primary_key]
+            }
+          end
+
+          it 'should not delegate to the adapter' do
+            call_method
+
+            expect(adapter).not_to have_received(method_name)
+          end
+
+          it 'should return a failing result' do
+            expect(call_method)
+              .to be_a_failing_result
+              .with_errors(expected_error)
+          end
+        end
+
+        describe 'with an empty primary key' do
+          let(:data) do
+            super().merge(primary_key => primary_key_value)
+          end
+          let(:expected_error) do
+            {
+              type:   Bronze::Collections::Errors::PRIMARY_KEY_EMPTY,
+              params: { value: primary_key_value.to_s },
+              path:   [primary_key]
+            }
+          end
+
+          it 'should not delegate to the adapter' do
+            call_method
+
+            expect(adapter).not_to have_received(method_name)
+          end
+
+          it 'should return a failing result' do
+            expect(call_method)
+              .to be_a_failing_result
+              .with_errors(expected_error)
+          end
         end
       end
     end
@@ -482,7 +858,7 @@ RSpec.describe Bronze::Collection do
         expect(adapter).not_to have_received(method_name)
       end
 
-      it 'should return a result' do
+      it 'should return a failing result' do
         expect(call_method)
           .to be_a_failing_result
           .with_errors(expected_error)
@@ -508,7 +884,7 @@ RSpec.describe Bronze::Collection do
         expect(adapter).not_to have_received(method_name)
       end
 
-      it 'should return a result' do
+      it 'should return a failing result' do
         expect(call_method)
           .to be_a_failing_result
           .with_errors(expected_error)
@@ -532,7 +908,7 @@ RSpec.describe Bronze::Collection do
         expect(adapter).not_to have_received(method_name)
       end
 
-      it 'should return a result' do
+      it 'should return a failing result' do
         expect(call_method)
           .to be_a_failing_result
           .with_errors(expected_error)
@@ -552,7 +928,7 @@ RSpec.describe Bronze::Collection do
           expect(adapter).not_to have_received(method_name)
         end
 
-        it 'should return a result' do
+        it 'should return a failing result' do
           expect(call_method)
             .to be_a_failing_result
             .with_errors(expected_error)
@@ -569,7 +945,7 @@ RSpec.describe Bronze::Collection do
           expect(adapter).not_to have_received(method_name)
         end
 
-        it 'should return a result' do
+        it 'should return a failing result' do
           expect(call_method)
             .to be_a_failing_result
             .with_errors(expected_error)
@@ -587,7 +963,7 @@ RSpec.describe Bronze::Collection do
           expect(adapter).not_to have_received(method_name)
         end
 
-        it 'should return a result' do
+        it 'should return a failing result' do
           expect(call_method)
             .to be_a_failing_result
             .with_errors(expected_error)
@@ -595,7 +971,7 @@ RSpec.describe Bronze::Collection do
       end
 
       describe 'with a valid primary key' do
-        let(:expected_error)    { Bronze::Collections::Errors::NO_PRIMARY_KEY }
+        let(:expected_error) { Bronze::Collections::Errors::NO_PRIMARY_KEY }
 
         it 'should not delegate to the adapter' do
           call_method
@@ -603,7 +979,7 @@ RSpec.describe Bronze::Collection do
           expect(adapter).not_to have_received(method_name)
         end
 
-        it 'should return a result' do
+        it 'should return a failing result' do
           expect(call_method)
             .to be_a_failing_result
             .with_errors(expected_error)
@@ -635,7 +1011,7 @@ RSpec.describe Bronze::Collection do
           expect(adapter).not_to have_received(method_name)
         end
 
-        it 'should return a result' do
+        it 'should return a failing result' do
           expect(call_method)
             .to be_a_failing_result
             .with_errors(expected_error)
@@ -661,7 +1037,7 @@ RSpec.describe Bronze::Collection do
           expect(adapter).not_to have_received(method_name)
         end
 
-        it 'should return a result' do
+        it 'should return a failing result' do
           expect(call_method)
             .to be_a_failing_result
             .with_errors(expected_error)
@@ -684,7 +1060,7 @@ RSpec.describe Bronze::Collection do
           expect(adapter).not_to have_received(method_name)
         end
 
-        it 'should return a result' do
+        it 'should return a failing result' do
           expect(call_method)
             .to be_a_failing_result
             .with_errors(expected_error)
@@ -710,7 +1086,7 @@ RSpec.describe Bronze::Collection do
         expect(adapter).not_to have_received(method_name)
       end
 
-      it 'should return a result' do
+      it 'should return a failing result' do
         expect(call_method)
           .to be_a_failing_result
           .with_errors(expected_error)
@@ -733,7 +1109,7 @@ RSpec.describe Bronze::Collection do
         expect(adapter).not_to have_received(method_name)
       end
 
-      it 'should return a result' do
+      it 'should return a failing result' do
         expect(call_method)
           .to be_a_failing_result
           .with_errors(expected_error)
@@ -772,7 +1148,7 @@ RSpec.describe Bronze::Collection do
           expect(adapter).not_to have_received(method_name)
         end
 
-        it 'should return a result' do
+        it 'should return a failing result' do
           expect(call_method)
             .to be_a_failing_result
             .with_errors(expected_error)
@@ -794,7 +1170,7 @@ RSpec.describe Bronze::Collection do
           expect(adapter).not_to have_received(method_name)
         end
 
-        it 'should return a result' do
+        it 'should return a failing result' do
           expect(call_method)
             .to be_a_failing_result
             .with_errors(expected_error)
@@ -816,7 +1192,7 @@ RSpec.describe Bronze::Collection do
           expect(adapter).not_to have_received(method_name)
         end
 
-        it 'should return a result' do
+        it 'should return a failing result' do
           expect(call_method)
             .to be_a_failing_result
             .with_errors(expected_error)
@@ -848,7 +1224,7 @@ RSpec.describe Bronze::Collection do
           expect(adapter).not_to have_received(method_name)
         end
 
-        it 'should return a result' do
+        it 'should return a failing result' do
           expect(call_method)
             .to be_a_failing_result
             .with_errors(expected_error)
@@ -871,7 +1247,7 @@ RSpec.describe Bronze::Collection do
           expect(adapter).not_to have_received(method_name)
         end
 
-        it 'should return a result' do
+        it 'should return a failing result' do
           expect(call_method)
             .to be_a_failing_result
             .with_errors(expected_error)
@@ -910,7 +1286,7 @@ RSpec.describe Bronze::Collection do
         expect(adapter).not_to have_received(method_name)
       end
 
-      it 'should return a result' do
+      it 'should return a failing result' do
         expect(call_method)
           .to be_a_failing_result
           .with_errors(expected_error)
@@ -932,7 +1308,7 @@ RSpec.describe Bronze::Collection do
         expect(adapter).not_to have_received(method_name)
       end
 
-      it 'should return a result' do
+      it 'should return a failing result' do
         expect(call_method)
           .to be_a_failing_result
           .with_errors(expected_error)
@@ -979,11 +1355,17 @@ RSpec.describe Bronze::Collection do
   end
 
   describe '::new' do
-    it 'should define the constructor' do
+    it 'should define the constructor' do # rubocop:disable RSpec/ExampleLength
       expect(described_class)
         .to be_constructible
         .with(1).argument
-        .and_keywords(:adapter, :name, :primary_key, :primary_key_type)
+        .and_keywords(
+          :adapter,
+          :name,
+          :primary_key,
+          :primary_key_type,
+          :transform
+        )
     end
 
     describe 'with nil' do
@@ -1047,8 +1429,53 @@ RSpec.describe Bronze::Collection do
   end
 
   describe '#delete_matching' do
+    shared_context 'when the adapter result includes data' do
+      let(:result_data) do
+        [
+          {
+            'uuid'   => '00000000-0000-0000-0000-000000000000',
+            'title'  => 'Romance of the Three Kingdoms',
+            'author' => 'Luo Guanzhong'
+          },
+          {
+            'uuid'   => '00000000-0000-0000-0000-000000000001',
+            'title'  => 'Journey to the West',
+            'author' => "Wu Cheng'en"
+          },
+          {
+            'uuid'   => '00000000-0000-0000-0000-000000000002',
+            'title'  => 'Dream of the Red Chamber',
+            'author' => 'Cao Xueqin'
+          }
+        ]
+      end
+      let(:value) { { count: 3, data: result_data } }
+    end
+
+    shared_examples 'should delete the matching items' do
+      describe 'with an empty Hash selector' do
+        let(:selector) { {} }
+
+        include_examples 'should delegate to the adapter'
+      end
+
+      describe 'with a non-empty Hash selector' do
+        let(:selector) { { author: 'Luo Guanzhong' } }
+
+        include_examples 'should delegate to the adapter'
+      end
+    end
+
     let(:method_name) { :delete_matching }
     let(:selector)    { nil }
+    let(:value)       { { count: 3 } }
+    let(:expected)    { value }
+    let(:expected_keywords) do
+      {
+        collection_name: collection.name,
+        selector:        selector
+      }
+    end
 
     def call_method
       collection.delete_matching(selector)
@@ -1058,72 +1485,73 @@ RSpec.describe Bronze::Collection do
 
     include_examples 'should validate the selector'
 
-    describe 'with an empty Hash selector' do
-      let(:selector) { {} }
-      let(:expected) do
-        {
-          'title'    => 'Romance of the Three Kingdoms',
-          'author'   => 'Luo Guanzhong',
-          'language' => 'Chinese'
-        }
-      end
-      let(:result) { Bronze::Result.new(expected) }
+    include_examples 'should delete the matching items'
 
-      it 'should delegate to the adapter' do
-        collection.delete_matching(selector)
+    wrap_context 'when the adapter result includes data' do
+      include_examples 'should delete the matching items'
+    end
 
-        expect(adapter)
-          .to have_received(:delete_matching)
-          .with(collection_name: collection.name, selector: selector)
+    wrap_context 'when the definition is an entity class' do
+      include_examples 'should delete the matching items'
+
+      wrap_context 'when the adapter result includes data' do
+        include_examples 'should delete the matching items'
       end
 
-      it 'should return the result from the adapter' do
-        allow(adapter).to receive(:delete_matching).and_return(result)
+      wrap_context 'when initialized with an entity transform' do
+        include_examples 'should delete the matching items'
 
-        expect(collection.delete_matching(selector)).to be result
+        wrap_context 'when the adapter result includes data' do
+          let(:transformed_data) do
+            result_data.map { |item| transform.denormalize(item) }
+          end
+          let(:expected) { super().merge(data: transformed_data) }
+
+          include_examples 'should delete the matching items'
+        end
       end
     end
 
-    describe 'with a non-empty Hash selector' do
-      let(:selector) { { author: 'Luo Guanzhong' } }
-      let(:expected) do
-        {
-          'title'    => 'Romance of the Three Kingdoms',
-          'author'   => 'Luo Guanzhong',
-          'language' => 'Chinese'
-        }
-      end
-      let(:result) { Bronze::Result.new(expected) }
+    wrap_context 'when initialized with a transform' do
+      include_examples 'should delete the matching items'
 
-      it 'should delegate to the adapter' do
-        collection.delete_matching(selector)
+      wrap_context 'when the adapter result includes data' do
+        let(:transformed_data) do
+          result_data.map { |item| transform.denormalize(item) }
+        end
+        let(:expected) { super().merge(data: transformed_data) }
 
-        expect(adapter)
-          .to have_received(:delete_matching)
-          .with(collection_name: collection.name, selector: selector)
-      end
-
-      it 'should return the result from the adapter' do
-        allow(adapter).to receive(:delete_matching).and_return(result)
-
-        expect(collection.delete_matching(selector)).to be result
+        include_examples 'should delete the matching items'
       end
     end
   end
 
   describe '#delete_one' do
+    shared_examples 'should delete the item' do
+      describe 'with a valid primary key' do
+        include_examples 'should delegate to the adapter'
+      end
+    end
+
     let(:primary_key)       { :id }
-    let(:primary_key_type)  { Integer }
-    let(:primary_key_value) { 0 }
+    let(:primary_key_type)  { String }
+    let(:primary_key_value) { '00000000-0000-0000-0000-000000000000' }
     let(:method_name)       { :delete_one }
-    let(:data) do
+    let(:value) do
       {
-        'id'     => 0,
+        'uuid'   => '00000000-0000-0000-0000-000000000000',
         'title'  => 'Romance of the Three Kingdoms',
         'author' => 'Luo Guanzhong'
       }
     end
-    let(:options) { super().merge primary_key_type: primary_key_type }
+    let(:expected) { value }
+    let(:expected_keywords) do
+      {
+        collection_name:   collection.name,
+        primary_key:       primary_key,
+        primary_key_value: primary_key_value
+      }
+    end
 
     def call_method
       collection.delete_one(primary_key_value)
@@ -1135,29 +1563,22 @@ RSpec.describe Bronze::Collection do
 
     include_examples 'should validate the primary key for querying'
 
-    describe 'with a valid primary key' do
-      let(:result) { Bronze::Result.new(data) }
-      let(:expected_keywords) do
-        {
-          collection_name:   collection.name,
-          primary_key:       primary_key,
-          primary_key_value: primary_key_value
-        }
+    include_examples 'should delete the item'
+
+    wrap_context 'when the definition is an entity class' do
+      include_examples 'should delete the item'
+
+      wrap_context 'when initialized with an entity transform' do
+        let(:expected) { transform.denormalize(value) }
+
+        include_examples 'should delete the item'
       end
+    end
 
-      it 'should delegate to the adapter' do
-        collection.delete_one(primary_key_value)
+    wrap_context 'when initialized with a transform' do
+      let(:expected) { transform.denormalize(value) }
 
-        expect(adapter)
-          .to have_received(:delete_one)
-          .with(expected_keywords)
-      end
-
-      it 'should return the result from the adapter' do
-        allow(adapter).to receive(:delete_one).and_return(result)
-
-        expect(collection.delete_one(primary_key_value)).to be result
-      end
+      include_examples 'should delete the item'
     end
   end
 
@@ -1174,6 +1595,52 @@ RSpec.describe Bronze::Collection do
   end
 
   describe '#find_matching' do
+    shared_examples 'should delegate to the adapter with options' do
+      describe 'with no options' do
+        include_examples 'should delegate to the adapter'
+      end
+
+      describe 'with limit: value' do
+        let(:method_options) { super().merge limit: 3 }
+
+        include_examples 'should delegate to the adapter'
+      end
+
+      describe 'with order: value' do
+        let(:method_options) { super().merge order: :title }
+
+        include_examples 'should delegate to the adapter'
+      end
+
+      describe 'with offset: value' do
+        let(:method_options) { super().merge offset: 3 }
+
+        include_examples 'should delegate to the adapter'
+      end
+
+      describe 'with multiple options' do
+        let(:method_options) do
+          super().merge limit: 4, offset: 2, order: :title
+        end
+
+        include_examples 'should delegate to the adapter'
+      end
+    end
+
+    shared_examples 'should find the matching items' do
+      describe 'with an empty Hash selector' do
+        let(:selector) { {} }
+
+        include_examples 'should delegate to the adapter with options'
+      end
+
+      describe 'with a non-empty Hash selector' do
+        let(:selector) { { author: 'Luo Guanzhong' } }
+
+        include_examples 'should delegate to the adapter with options'
+      end
+    end
+
     let(:method_name)    { :find_matching }
     let(:selector)       { nil }
     let(:method_options) { {} }
@@ -1184,24 +1651,27 @@ RSpec.describe Bronze::Collection do
         order:  nil
       }.merge(method_options)
     end
-    let(:expected) do
-      {
-        'title'    => 'Romance of the Three Kingdoms',
-        'author'   => 'Luo Guanzhong',
-        'language' => 'Chinese'
-      }
+    let(:value) do
+      [
+        {
+          'title'    => 'Romance of the Three Kingdoms',
+          'author'   => 'Luo Guanzhong',
+          'language' => 'Chinese'
+        }
+      ]
     end
-    let(:result) { Bronze::Result.new([expected]) }
+    let(:expected) { value }
     let(:expected_keywords) do
       {
         collection_name: collection.name,
         selector:        selector,
+        transform:       nil,
         **delegated_options
       }
     end
 
     def call_method
-      collection.find_matching(selector)
+      collection.find_matching(selector, **method_options)
     end
 
     it 'should define the method' do
@@ -1213,222 +1683,57 @@ RSpec.describe Bronze::Collection do
 
     include_examples 'should validate the selector'
 
-    describe 'with an empty Hash selector' do
-      let(:selector) { {} }
+    include_examples 'should find the matching items'
 
-      it 'should delegate to the adapter' do
-        collection.find_matching(selector)
-
-        expect(adapter)
-          .to have_received(:find_matching)
-          .with(expected_keywords)
+    wrap_context 'when the definition is an entity class' do
+      let(:expected_keywords) do
+        super().merge(transform: collection.transform)
       end
 
-      it 'should return the result from the adapter' do
-        allow(adapter).to receive(:find_matching).and_return(result)
+      include_examples 'should find the matching items'
 
-        expect(collection.find_matching(selector)).to be result
-      end
+      wrap_context 'when initialized with an entity transform' do
+        let(:expected_keywords) { super().merge(transform: transform) }
 
-      describe 'with limit: value' do
-        let(:method_options) { super().merge limit: 3 }
-
-        it 'should delegate to the adapter' do
-          collection.find_matching(selector, limit: 3)
-
-          expect(adapter)
-            .to have_received(:find_matching)
-            .with(expected_keywords)
-        end
-
-        it 'should return the result from the adapter' do
-          allow(adapter).to receive(:find_matching).and_return(result)
-
-          expect(collection.find_matching(selector, limit: 3)).to be result
-        end
-      end
-
-      describe 'with order: value' do
-        let(:method_options) { super().merge order: :title }
-
-        it 'should delegate to the adapter' do
-          collection.find_matching(selector, order: :title)
-
-          expect(adapter)
-            .to have_received(:find_matching)
-            .with(expected_keywords)
-        end
-
-        it 'should return the result from the adapter' do
-          allow(adapter).to receive(:find_matching).and_return(result)
-
-          expect(collection.find_matching(selector, order: :title)).to be result
-        end
-      end
-
-      describe 'with offset: value' do
-        let(:method_options) { super().merge offset: 3 }
-
-        it 'should delegate to the adapter' do
-          collection.find_matching(selector, offset: 3)
-
-          expect(adapter)
-            .to have_received(:find_matching)
-            .with(expected_keywords)
-        end
-
-        it 'should return the result from the adapter' do
-          allow(adapter).to receive(:find_matching).and_return(result)
-
-          expect(collection.find_matching(selector, offset: 3)).to be result
-        end
-      end
-
-      describe 'with multiple options' do
-        let(:method_options) do
-          super().merge limit: 4, offset: 2, order: :title
-        end
-
-        it 'should delegate to the adapter' do
-          collection.find_matching(selector, limit: 4, offset: 2, order: :title)
-
-          expect(adapter)
-            .to have_received(:find_matching)
-            .with(expected_keywords)
-        end
-
-        # rubocop:disable RSpec/ExampleLength
-        it 'should return the result from the adapter' do
-          allow(adapter).to receive(:find_matching).and_return(result)
-
-          expect(
-            collection.find_matching(
-              selector,
-              limit:  4,
-              offset: 2,
-              order:  :title
-            )
-          ).to be result
-        end
-        # rubocop:enable RSpec/ExampleLength
+        include_examples 'should find the matching items'
       end
     end
 
-    describe 'with a non-empty Hash selector' do
-      let(:selector) { { author: 'Luo Guanzhong' } }
-
-      it 'should delegate to the adapter' do
-        collection.find_matching(selector)
-
-        expect(adapter)
-          .to have_received(:find_matching)
-          .with(expected_keywords)
+    wrap_context 'when initialized with a transform' do
+      let(:expected_keywords) do
+        super().merge(transform: transform)
       end
 
-      it 'should return the result from the adapter' do
-        allow(adapter).to receive(:find_matching).and_return(result)
-
-        expect(collection.find_matching(selector)).to be result
-      end
-
-      describe 'with limit: value' do
-        let(:method_options) { super().merge limit: 3 }
-
-        it 'should delegate to the adapter' do
-          collection.find_matching(selector, limit: 3)
-
-          expect(adapter)
-            .to have_received(:find_matching)
-            .with(expected_keywords)
-        end
-
-        it 'should return the result from the adapter' do
-          allow(adapter).to receive(:find_matching).and_return(result)
-
-          expect(collection.find_matching(selector, limit: 3)).to be result
-        end
-      end
-
-      describe 'with order: value' do
-        let(:method_options) { super().merge order: :title }
-
-        it 'should delegate to the adapter' do
-          collection.find_matching(selector, order: :title)
-
-          expect(adapter)
-            .to have_received(:find_matching)
-            .with(expected_keywords)
-        end
-
-        it 'should return the result from the adapter' do
-          allow(adapter).to receive(:find_matching).and_return(result)
-
-          expect(collection.find_matching(selector, order: :title)).to be result
-        end
-      end
-
-      describe 'with offset: value' do
-        let(:method_options) { super().merge offset: 3 }
-
-        it 'should delegate to the adapter' do
-          collection.find_matching(selector, offset: 3)
-
-          expect(adapter)
-            .to have_received(:find_matching)
-            .with(expected_keywords)
-        end
-
-        it 'should return the result from the adapter' do
-          allow(adapter).to receive(:find_matching).and_return(result)
-
-          expect(collection.find_matching(selector, offset: 3)).to be result
-        end
-      end
-
-      describe 'with multiple options' do
-        let(:method_options) do
-          super().merge limit: 4, offset: 2, order: :title
-        end
-
-        it 'should delegate to the adapter' do
-          collection.find_matching(selector, limit: 4, offset: 2, order: :title)
-
-          expect(adapter)
-            .to have_received(:find_matching)
-            .with(expected_keywords)
-        end
-
-        # rubocop:disable RSpec/ExampleLength
-        it 'should return the result from the adapter' do
-          allow(adapter).to receive(:find_matching).and_return(result)
-
-          expect(
-            collection.find_matching(
-              selector,
-              limit:  4,
-              offset: 2,
-              order:  :title
-            )
-          ).to be result
-        end
-        # rubocop:enable RSpec/ExampleLength
-      end
+      include_examples 'should find the matching items'
     end
   end
 
   describe '#find_one' do
+    shared_examples 'should find the item' do
+      describe 'with a valid primary key' do
+        include_examples 'should delegate to the adapter'
+      end
+    end
+
     let(:primary_key)       { :id }
-    let(:primary_key_type)  { Integer }
-    let(:primary_key_value) { 0 }
+    let(:primary_key_type)  { String }
+    let(:primary_key_value) { '00000000-0000-0000-0000-000000000000' }
     let(:method_name)       { :find_one }
-    let(:data) do
+    let(:value) do
       {
-        'id'     => 0,
         'title'  => 'Romance of the Three Kingdoms',
         'author' => 'Luo Guanzhong'
       }
     end
-    let(:options) { super().merge primary_key_type: primary_key_type }
+    let(:expected) { value }
+    let(:expected_keywords) do
+      {
+        collection_name:   collection.name,
+        primary_key:       primary_key,
+        primary_key_value: primary_key_value,
+        transform:         nil
+      }
+    end
 
     def call_method
       collection.find_one(primary_key_value)
@@ -1440,48 +1745,86 @@ RSpec.describe Bronze::Collection do
 
     include_examples 'should validate the primary key for querying'
 
-    describe 'with a valid primary key' do
-      let(:result) { Bronze::Result.new(data) }
+    include_examples 'should find the item'
+
+    wrap_context 'when the definition is an entity class' do
+      let(:primary_key_value) { '00000000-0000-0000-0000-000000000000' }
       let(:expected_keywords) do
-        {
-          collection_name:   collection.name,
-          primary_key:       primary_key,
-          primary_key_value: primary_key_value
-        }
+        super().merge(transform: collection.transform)
       end
 
-      it 'should delegate to the adapter' do
-        collection.find_one(primary_key_value)
+      include_examples 'should find the item'
+    end
 
-        expect(adapter)
-          .to have_received(:find_one)
-          .with(expected_keywords)
+    wrap_context 'when initialized with a transform' do
+      let(:expected_keywords) do
+        super().merge(transform: transform)
       end
 
-      it 'should return the result from the adapter' do
-        allow(adapter).to receive(:find_one).and_return(result)
-
-        expect(collection.find_one(primary_key_value)).to be result
-      end
+      include_examples 'should find the item'
     end
   end
 
   describe '#insert_one' do
+    shared_examples 'should insert the item' do
+      describe 'with an empty data object' do
+        let(:data) { {} }
+        let(:expected_error) do
+          {
+            type:   Bronze::Collections::Errors::DATA_EMPTY,
+            params: { data: object }
+          }
+        end
+
+        it 'should not delegate to the adapter' do
+          call_method
+
+          expect(adapter).not_to have_received(method_name)
+        end
+
+        it 'should return a failing result' do
+          expect(call_method)
+            .to be_a_failing_result
+            .with_errors(expected_error)
+        end
+      end
+
+      describe 'with a valid data object with String keys' do
+        include_examples 'should delegate to the adapter'
+      end
+
+      describe 'with a valid data object with Symbol keys' do
+        let(:data) do
+          tools.hash.convert_keys_to_symbols(super())
+        end
+
+        include_examples 'should delegate to the adapter'
+      end
+    end
+
     let(:primary_key)       { :id }
-    let(:primary_key_type)  { Integer }
-    let(:primary_key_value) { 0 }
+    let(:primary_key_type)  { String }
+    let(:primary_key_value) { '00000000-0000-0000-0000-000000000000' }
     let(:method_name)       { :insert_one }
     let(:data) do
       {
-        'id'     => 0,
-        'title'  => 'Romance of the Three Kingdoms',
-        'author' => 'Luo Guanzhong'
+        primary_key.to_s => primary_key_value,
+        'title'          => 'Romance of the Three Kingdoms',
+        'author'         => 'Luo Guanzhong'
       }
     end
-    let(:options) { super().merge primary_key_type: primary_key_type }
+    let(:object)   { data }
+    let(:value)    { data }
+    let(:expected) { value }
+    let(:expected_keywords) do
+      {
+        collection_name: collection.name,
+        data:            data
+      }
+    end
 
     def call_method
-      collection.insert_one(data)
+      collection.insert_one(object)
     end
 
     it { expect(collection).to respond_to(:insert_one).with(1).argument }
@@ -1492,44 +1835,83 @@ RSpec.describe Bronze::Collection do
 
     include_examples 'should validate the primary key for insertion'
 
-    describe 'with a valid data object with String keys' do
-      let(:result) { Bronze::Result.new(data) }
+    include_examples 'should insert the item'
 
-      it 'should delegate to the adapter' do
-        collection.insert_one(data)
+    wrap_context 'when the definition is an entity class' do
+      include_examples 'should insert the item'
 
-        expect(adapter)
-          .to have_received(:insert_one)
-          .with(collection_name: collection.name, data: data)
-      end
+      wrap_context 'when initialized with an entity transform' do
+        let(:object) { definition.new(data) }
 
-      it 'should return the result from the adapter' do
-        allow(adapter).to receive(:insert_one).and_return(result)
+        include_examples 'should validate the data object'
 
-        expect(collection.insert_one(data)).to be result
+        describe 'with a valid entity' do
+          let(:primary_key_value) { '00000000-0000-0000-0000-000000000000' }
+          let(:expected)          { definition.new(data) }
+          let(:attributes)        { collection.transform.normalize(expected) }
+          let(:expected_keywords) do
+            super().merge(data: attributes)
+          end
+
+          before(:example) do
+            allow(adapter)
+              .to receive(:insert_one)
+              .and_return(Bronze::Result.new(data))
+          end
+
+          include_examples 'should delegate to the adapter'
+        end
       end
     end
 
-    describe 'with a valid data object with Symbol keys' do
-      let(:data) do
-        tools.hash.convert_keys_to_symbols(super())
+    wrap_context 'when initialized with a transform' do
+      let(:object) { transform.denormalize(data) }
+
+      include_examples 'should validate the data object'
+
+      describe 'with an empty data object' do
+        let(:data) { {} }
+        let(:expected_error) do
+          {
+            type:   Bronze::Collections::Errors::DATA_EMPTY,
+            params: { data: object }
+          }
+        end
+
+        it 'should not delegate to the adapter' do
+          call_method
+
+          expect(adapter).not_to have_received(method_name)
+        end
+
+        it 'should return a failing result' do
+          expect(call_method)
+            .to be_a_failing_result
+            .with_errors(expected_error)
+        end
       end
-      let(:result) do
-        Bronze::Result.new.tap { |obj| obj.value = data }
-      end
 
-      it 'should delegate to the adapter' do
-        collection.insert_one(data)
+      describe 'with a valid data object with String keys' do
+        let(:expected) { transform.denormalize(data) }
 
-        expect(adapter)
-          .to have_received(:insert_one)
-          .with(collection_name: collection.name, data: data)
-      end
+        before(:example) do
+          allow(adapter)
+            .to receive(:insert_one)
+            .and_return(Bronze::Result.new(data))
+        end
 
-      it 'should return the result from the adapter' do
-        allow(adapter).to receive(:insert_one).and_return(result)
+        it 'should delegate to the adapter' do
+          collection.insert_one(object)
 
-        expect(collection.insert_one(data)).to be result
+          expect(adapter)
+            .to have_received(:insert_one)
+            .with(collection_name: collection.name, data: data)
+        end
+
+        it 'should wrap the result from the adapter' do
+          expect(collection.insert_one(object))
+            .to be_a_passing_result.with_value(expected)
+        end
       end
     end
   end
@@ -1632,7 +2014,9 @@ RSpec.describe Bronze::Collection do
     it 'should delegate to the adapter' do
       collection.null_query
 
-      expect(adapter).to have_received(:null_query).with(collection.name)
+      expect(adapter)
+        .to have_received(:null_query)
+        .with(collection_name: collection.name)
     end
 
     it { expect(collection.null_query).to be null_query }
@@ -1644,7 +2028,7 @@ RSpec.describe Bronze::Collection do
     context 'when options[:primary_key] is false' do
       let(:options) { super().merge primary_key: false }
 
-      it { expect(collection.primary_key).to be false }
+      it { expect(collection.primary_key).to be nil }
     end
 
     context 'when options[:primary_key] is a String' do
@@ -1660,51 +2044,7 @@ RSpec.describe Bronze::Collection do
     end
 
     wrap_context 'when the definition is an entity class' do
-      it { expect(collection.primary_key).to be :id }
-
-      context 'when options[:primary_key] is false' do
-        let(:options) { super().merge primary_key: false }
-
-        it { expect(collection.primary_key).to be false }
-      end
-
-      context 'when options[:primary_key] is set' do
-        let(:options) { super().merge primary_key: 'uuid' }
-
-        it { expect(collection.primary_key).to be :uuid }
-      end
-
-      wrap_context 'when the entity class has a primary key' do
-        it { expect(collection.primary_key).to be :id }
-
-        context 'when options[:primary_key] is false' do
-          let(:options) { super().merge primary_key: false }
-
-          it { expect(collection.primary_key).to be false }
-        end
-
-        context 'when options[:primary_key] is set' do
-          let(:options) { super().merge primary_key: 'uuid' }
-
-          it { expect(collection.primary_key).to be :uuid }
-        end
-      end
-
-      wrap_context 'when the entity class has a custom primary key' do
-        it { expect(collection.primary_key).to be :hex }
-
-        context 'when options[:primary_key] is false' do
-          let(:options) { super().merge primary_key: false }
-
-          it { expect(collection.primary_key).to be false }
-        end
-
-        context 'when options[:primary_key] is set' do
-          let(:options) { super().merge primary_key: 'uuid' }
-
-          it { expect(collection.primary_key).to be :uuid }
-        end
-      end
+      it { expect(collection.primary_key).to be primary_key }
     end
   end
 
@@ -1725,50 +2065,6 @@ RSpec.describe Bronze::Collection do
 
     wrap_context 'when the definition is an entity class' do
       it { expect(collection.primary_key?).to be true }
-
-      context 'when options[:primary_key] is false' do
-        let(:options) { super().merge primary_key: false }
-
-        it { expect(collection.primary_key?).to be false }
-      end
-
-      context 'when options[:primary_key] is set' do
-        let(:options) { super().merge primary_key: 'uuid' }
-
-        it { expect(collection.primary_key?).to be true }
-      end
-
-      wrap_context 'when the entity class has a primary key' do
-        it { expect(collection.primary_key?).to be true }
-
-        context 'when options[:primary_key] is false' do
-          let(:options) { super().merge primary_key: false }
-
-          it { expect(collection.primary_key?).to be false }
-        end
-
-        context 'when options[:primary_key] is set' do
-          let(:options) { super().merge primary_key: 'uuid' }
-
-          it { expect(collection.primary_key?).to be true }
-        end
-      end
-
-      wrap_context 'when the entity class has a custom primary key' do
-        it { expect(collection.primary_key?).to be true }
-
-        context 'when options[:primary_key] is false' do
-          let(:options) { super().merge primary_key: false }
-
-          it { expect(collection.primary_key?).to be false }
-        end
-
-        context 'when options[:primary_key] is set' do
-          let(:options) { super().merge primary_key: 'uuid' }
-
-          it { expect(collection.primary_key?).to be true }
-        end
-      end
     end
   end
 
@@ -1789,50 +2085,6 @@ RSpec.describe Bronze::Collection do
 
     wrap_context 'when the definition is an entity class' do
       it { expect(collection.primary_key_type).to be String }
-
-      context 'when options[:primary_key] is a Class' do
-        let(:options) { super().merge primary_key_type: Symbol }
-
-        it { expect(collection.primary_key_type).to be Symbol }
-      end
-
-      context 'when options[:primary_key] is a class name' do
-        let(:options) { super().merge primary_key_type: 'Symbol' }
-
-        it { expect(collection.primary_key_type).to be Symbol }
-      end
-
-      wrap_context 'when the entity class has a primary key' do
-        it { expect(collection.primary_key_type).to be Integer }
-
-        context 'when options[:primary_key] is a Class' do
-          let(:options) { super().merge primary_key_type: Symbol }
-
-          it { expect(collection.primary_key_type).to be Symbol }
-        end
-
-        context 'when options[:primary_key] is a class name' do
-          let(:options) { super().merge primary_key_type: 'Symbol' }
-
-          it { expect(collection.primary_key_type).to be Symbol }
-        end
-      end
-
-      wrap_context 'when the entity class has a custom primary key' do
-        it { expect(collection.primary_key_type).to be String }
-
-        context 'when options[:primary_key] is a Class' do
-          let(:options) { super().merge primary_key_type: Symbol }
-
-          it { expect(collection.primary_key_type).to be Symbol }
-        end
-
-        context 'when options[:primary_key] is a class name' do
-          let(:options) { super().merge primary_key_type: 'Symbol' }
-
-          it { expect(collection.primary_key_type).to be Symbol }
-        end
-      end
     end
   end
 
@@ -1844,22 +2096,140 @@ RSpec.describe Bronze::Collection do
     it 'should delegate to the adapter' do
       collection.query
 
-      expect(adapter).to have_received(:query).with(collection.name)
+      expect(adapter)
+        .to have_received(:query)
+        .with(collection_name: collection.name, transform: nil)
     end
 
     it { expect(collection.query).to be query }
+
+    wrap_context 'when initialized with a transform' do
+      it 'should delegate to the adapter' do
+        collection.query
+
+        expect(adapter)
+          .to have_received(:query)
+          .with(collection_name: collection.name, transform: transform)
+      end
+
+      it { expect(collection.query).to be query }
+    end
+
+    wrap_context 'when the definition is an entity class' do
+      # rubocop:disable RSpec/ExampleLength
+      it 'should delegate to the adapter' do
+        collection.query
+
+        expect(adapter)
+          .to have_received(:query)
+          .with(
+            collection_name: collection.name,
+            transform:       collection.transform
+          )
+      end
+      # rubocop:enable RSpec/ExampleLength
+
+      it { expect(collection.query).to be query }
+    end
+  end
+
+  describe '#transform' do
+    include_examples 'should have reader', :transform, nil
+
+    wrap_context 'when initialized with a transform' do
+      it { expect(collection.transform).to be transform }
+    end
+
+    wrap_context 'when the definition is an entity class' do
+      it { expect(collection.transform).to be nil }
+
+      wrap_context 'when initialized with an entity transform' do
+        it { expect(collection.transform).to be transform }
+      end
+    end
   end
 
   describe '#update_matching' do
+    shared_context 'when the adapter result includes data' do
+      let(:result_data) do
+        [
+          {
+            'uuid'   => '00000000-0000-0000-0000-000000000000',
+            'title'  => 'Romance of the Three Kingdoms',
+            'author' => 'Luo Guanzhong'
+          },
+          {
+            'uuid'   => '00000000-0000-0000-0000-000000000001',
+            'title'  => 'Journey to the West',
+            'author' => "Wu Cheng'en"
+          },
+          {
+            'uuid'   => '00000000-0000-0000-0000-000000000002',
+            'title'  => 'Dream of the Red Chamber',
+            'author' => 'Cao Xueqin'
+          }
+        ]
+      end
+      let(:value) { { count: 3, data: result_data } }
+    end
+
+    shared_examples 'should update the matching items' do
+      describe 'with an empty data object' do
+        let(:data) { {} }
+        let(:expected_error) do
+          {
+            type:   Bronze::Collections::Errors::DATA_EMPTY,
+            params: { data: object }
+          }
+        end
+
+        it 'should not delegate to the adapter' do
+          call_method
+
+          expect(adapter).not_to have_received(method_name)
+        end
+
+        it 'should return a failing result' do
+          expect(call_method)
+            .to be_a_failing_result
+            .with_errors(expected_error)
+        end
+      end
+
+      describe 'with a valid selector and data object with String keys' do
+        let(:selector) { { author: 'Luo Guanzhong' } }
+        let(:data)     { { 'language' => 'Chinese' } }
+
+        include_examples 'should delegate to the adapter'
+      end
+
+      describe 'with a valid selector and data object with Symbol keys' do
+        let(:selector) { { author: 'Luo Guanzhong' } }
+        let(:data)     { { language: 'Chinese' } }
+
+        include_examples 'should delegate to the adapter'
+      end
+    end
+
     let(:primary_key)       { :id }
     let(:primary_key_type)  { Integer }
     let(:primary_key_value) { 0 }
     let(:method_name)       { :update_matching }
     let(:selector)          { { key: 'value' } }
     let(:data)              { nil }
+    let(:object)            { data }
+    let(:value)             { { count: 3 } }
+    let(:expected)          { value }
+    let(:expected_keywords) do
+      {
+        collection_name: collection.name,
+        data:            data,
+        selector:        selector
+      }
+    end
 
     def call_method
-      collection.update_matching(selector, with: data)
+      collection.update_matching(selector, with: object)
     end
 
     it 'should define the method' do
@@ -1874,87 +2244,112 @@ RSpec.describe Bronze::Collection do
 
     include_examples 'should validate the selector'
 
-    describe 'with a valid selector and data object with String keys' do
-      let(:selector) { { author: 'Luo Guanzhong' } }
-      let(:data)     { { 'language' => 'Chinese' } }
-      let(:expected) do
-        {
-          'title'    => 'Romance of the Three Kingdoms',
-          'author'   => 'Luo Guanzhong',
-          'language' => 'Chinese'
-        }
-      end
-      let(:result) { Bronze::Result.new(expected) }
-      let(:expected_keywords) do
-        {
-          collection_name: collection.name,
-          data:            data,
-          selector:        selector
-        }
+    include_examples 'should update the matching items'
+
+    wrap_context 'when the adapter result includes data' do
+      include_examples 'should update the matching items'
+    end
+
+    wrap_context 'when the definition is an entity class' do
+      include_examples 'should update the matching items'
+
+      wrap_context 'when the adapter result includes data' do
+        include_examples 'should update the matching items'
       end
 
-      it 'should delegate to the adapter' do
-        collection.update_matching(selector, with: data)
+      wrap_context 'when initialized with an entity transform' do
+        include_examples 'should update the matching items'
 
-        expect(adapter)
-          .to have_received(:update_matching)
-          .with(expected_keywords)
-      end
+        wrap_context 'when the adapter result includes data' do
+          let(:transformed_data) do
+            result_data.map { |item| transform.denormalize(item) }
+          end
+          let(:expected) { super().merge(data: transformed_data) }
 
-      it 'should return the result from the adapter' do
-        allow(adapter).to receive(:update_matching).and_return(result)
-
-        expect(collection.update_matching(selector, with: data)).to be result
+          include_examples 'should update the matching items'
+        end
       end
     end
 
-    describe 'with a valid selector and data object with Symbol keys' do
-      let(:selector) { { author: 'Luo Guanzhong' } }
-      let(:data)     { { language: 'Chinese' } }
-      let(:expected) do
-        {
-          'title'    => 'Romance of the Three Kingdoms',
-          'author'   => 'Luo Guanzhong',
-          'language' => 'Chinese'
-        }
-      end
-      let(:result) { Bronze::Result.new(expected) }
-      let(:expected_keywords) do
-        {
-          collection_name: collection.name,
-          data:            data,
-          selector:        selector
-        }
-      end
+    wrap_context 'when initialized with a transform' do
+      include_examples 'should update the matching items'
 
-      it 'should delegate to the adapter' do
-        collection.update_matching(selector, with: data)
+      wrap_context 'when the adapter result includes data' do
+        let(:transformed_data) do
+          result_data.map { |item| transform.denormalize(item) }
+        end
+        let(:expected) { super().merge(data: transformed_data) }
 
-        expect(adapter)
-          .to have_received(:update_matching)
-          .with(expected_keywords)
-      end
-
-      it 'should return the result from the adapter' do
-        allow(adapter).to receive(:update_matching).and_return(result)
-
-        expect(collection.update_matching(selector, with: data)).to be result
+        include_examples 'should update the matching items'
       end
     end
   end
 
   describe '#update_one' do
+    shared_examples 'should update the item' do
+      describe 'with an empty data object' do
+        let(:data) { {} }
+        let(:expected_error) do
+          {
+            type:   Bronze::Collections::Errors::DATA_EMPTY,
+            params: { data: object }
+          }
+        end
+
+        it 'should not delegate to the adapter' do
+          call_method
+
+          expect(adapter).not_to have_received(method_name)
+        end
+
+        it 'should return a failing result' do
+          expect(call_method)
+            .to be_a_failing_result
+            .with_errors(expected_error)
+        end
+      end
+
+      describe 'with a valid primary key and data object with String keys' do
+        let(:data)   { { 'language' => 'Chinese' } }
+
+        include_examples 'should delegate to the adapter'
+      end
+
+      describe 'with a valid primary key and data object with Symbol keys' do
+        let(:data)   { { language: 'Chinese' } }
+
+        include_examples 'should delegate to the adapter'
+      end
+    end
+
     let(:primary_key)       { :id }
-    let(:primary_key_type)  { Integer }
-    let(:primary_key_value) { 0 }
+    let(:primary_key_type)  { String }
+    let(:primary_key_value) { '00000000-0000-0000-0000-000000000000' }
     let(:method_name)       { :update_one }
     let(:data)              { { language: 'Chinese' } }
+    let(:object)            { data }
+    let(:value) do
+      {
+        'uuid'   => '00000000-0000-0000-0000-000000000000',
+        'title'  => 'Romance of the Three Kingdoms',
+        'author' => 'Luo Guanzhong'
+      }
+    end
+    let(:expected) { value }
     let(:options) do
       super().merge primary_key_type: primary_key_type
     end
+    let(:expected_keywords) do
+      {
+        collection_name:   collection.name,
+        data:              data,
+        primary_key:       primary_key,
+        primary_key_value: primary_key_value
+      }
+    end
 
     def call_method
-      collection.update_one(primary_key_value, with: data)
+      collection.update_one(primary_key_value, with: object)
     end
 
     it 'should define the method' do
@@ -1971,74 +2366,22 @@ RSpec.describe Bronze::Collection do
 
     include_examples 'should validate the primary key for updates'
 
-    describe 'with a valid primary key and data object with String keys' do
-      let(:data) { { 'language' => 'Chinese' } }
-      let(:expected) do
-        {
-          'title'    => 'Romance of the Three Kingdoms',
-          'author'   => 'Luo Guanzhong',
-          'language' => 'Chinese'
-        }
-      end
-      let(:result) { Bronze::Result.new(expected) }
-      let(:expected_keywords) do
-        {
-          collection_name:   collection.name,
-          data:              data,
-          primary_key:       primary_key,
-          primary_key_value: primary_key_value
-        }
-      end
+    include_examples 'should update the item'
 
-      it 'should delegate to the adapter' do
-        collection.update_one(primary_key_value, with: data)
+    wrap_context 'when the definition is an entity class' do
+      include_examples 'should update the item'
 
-        expect(adapter)
-          .to have_received(:update_one)
-          .with(expected_keywords)
-      end
+      wrap_context 'when initialized with an entity transform' do
+        let(:expected) { transform.denormalize(value) }
 
-      it 'should return the result from the adapter' do
-        allow(adapter).to receive(:update_one).and_return(result)
-
-        expect(collection.update_one(primary_key_value, with: data))
-          .to be result
+        include_examples 'should update the item'
       end
     end
 
-    describe 'with a valid primary key and data object with Symbol keys' do
-      let(:data) { { language: 'Chinese' } }
-      let(:expected) do
-        {
-          'title'    => 'Romance of the Three Kingdoms',
-          'author'   => 'Luo Guanzhong',
-          'language' => 'Chinese'
-        }
-      end
-      let(:result) { Bronze::Result.new(expected) }
-      let(:expected_keywords) do
-        {
-          collection_name:   collection.name,
-          data:              data,
-          primary_key:       primary_key,
-          primary_key_value: primary_key_value
-        }
-      end
+    wrap_context 'when initialized with a transform' do
+      let(:expected) { transform.denormalize(value) }
 
-      it 'should delegate to the adapter' do
-        collection.update_one(primary_key_value, with: data)
-
-        expect(adapter)
-          .to have_received(:update_one)
-          .with(expected_keywords)
-      end
-
-      it 'should return the result from the adapter' do
-        allow(adapter).to receive(:update_one).and_return(result)
-
-        expect(collection.update_one(primary_key_value, with: data))
-          .to be result
-      end
+      include_examples 'should update the item'
     end
   end
 end

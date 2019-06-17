@@ -5,8 +5,12 @@ require 'date'
 require 'bronze/collections/errors'
 require 'bronze/collections/simple/adapter'
 require 'bronze/repository'
+require 'bronze/transforms/entities/normalize_transform'
 
-RSpec.describe Bronze::Collections::Simple do
+require 'support/entities/examples/periodical'
+
+RSpec.describe Bronze::Collections::EntityCollection do
+  let(:entity_class) { Spec::Periodical }
   let(:periodicals) do
     [
       {
@@ -103,41 +107,17 @@ RSpec.describe Bronze::Collections::Simple do
   let(:adapter) do
     Bronze::Collections::Simple::Adapter.new('periodicals' => periodicals)
   end
-  let(:repository) do
-    Bronze::Repository.new(adapter: adapter)
-  end
-  let(:collection) do
-    repository.collection(
-      'periodicals',
-      primary_key:      :id,
-      primary_key_type: Integer
-    )
+  let(:repository) { Bronze::Repository.new(adapter: adapter) }
+  let(:collection) { repository.collection(entity_class) }
+
+  def change_collection_data
+    query = Bronze::Collections::Simple::Query.new(adapter.data)
+
+    change(query, :to_a)
   end
 
-  describe 'accessing a collection' do
-    describe 'with an invalid collection name' do
-      let(:collection) { repository.collection('books') }
-
-      it { expect(collection).to be_a Bronze::Collection }
-
-      it { expect(collection.adapter).to be adapter }
-
-      it { expect(collection.name).to be == 'books' }
-
-      it { expect(collection.count).to be 0 }
-    end
-
-    describe 'with a valid collection name' do
-      let(:collection) { repository.collection('periodicals') }
-
-      it { expect(collection).to be_a Bronze::Collection }
-
-      it { expect(collection.adapter).to be adapter }
-
-      it { expect(collection.name).to be == 'periodicals' }
-
-      it { expect(collection.count).to be periodicals.size }
-    end
+  def find_by_id(id)
+    periodicals.find { |item| item['id'] == id }
   end
 
   describe 'deleting data by primary key' do
@@ -156,14 +136,14 @@ RSpec.describe Bronze::Collections::Simple do
 
       it 'should not change the collection data' do
         expect { collection.delete_one(primary_key_value) }
-          .not_to change(collection.query, :to_a)
+          .not_to change_collection_data
       end
     end
 
     describe 'with a primary key that matches an item' do
       let(:primary_key_value) { 9 }
       let!(:expected_value) do
-        periodicals.find { |item| item['id'] == primary_key_value }
+        entity_class.new(find_by_id(primary_key_value))
       end
 
       it { expect(result).to be_a_passing_result.with_value(expected_value) }
@@ -191,6 +171,12 @@ RSpec.describe Bronze::Collections::Simple do
     let(:nonmatching) do
       periodicals - matching
     end
+    let(:result_value) do
+      {
+        count: matching.size,
+        data:  matching.map { |item| collection.transform.denormalize(item) }
+      }
+    end
 
     def find_periodical(id)
       collection.matching(id: id).to_a.first
@@ -211,11 +197,11 @@ RSpec.describe Bronze::Collections::Simple do
 
       it 'should not change the collection data' do
         expect { collection.delete_matching(selector) }
-          .not_to change(collection.query, :to_a)
+          .not_to change_collection_data
       end
 
-      it 'should return a result' do
-        expect(result).to be_a_passing_result.with_value(matching)
+      it 'should return a passing result' do
+        expect(result).to be_a_passing_result.with_value(result_value)
       end
     end
 
@@ -249,8 +235,8 @@ RSpec.describe Bronze::Collections::Simple do
         end
       end
 
-      it 'should return a result' do
-        expect(result).to be_a_passing_result.with_value(matching)
+      it 'should return a passing result' do
+        expect(result).to be_a_passing_result.with_value(result_value)
       end
     end
 
@@ -284,8 +270,8 @@ RSpec.describe Bronze::Collections::Simple do
         end
       end
 
-      it 'should return a result' do
-        expect(result).to be_a_passing_result.with_value(matching)
+      it 'should return a passing result' do
+        expect(result).to be_a_passing_result.with_value(result_value)
       end
     end
   end
@@ -302,21 +288,27 @@ RSpec.describe Bronze::Collections::Simple do
 
     describe 'with a primary key that matches an item' do
       let(:primary_key_value) { 3 }
-      let(:expected_item) do
-        periodicals.find { |item| item['id'] == primary_key_value }
+      let(:expected_value) do
+        entity_class.new(find_by_id(primary_key_value))
       end
 
-      it { expect(result).to be_a_passing_result.with_value(expected_item) }
+      it { expect(result).to be_a_passing_result }
+
+      it { expect(result.value).to be == expected_value }
     end
   end
 
   describe 'finding data matching a selector' do
     let(:matching) do
-      periodicals.select do |item|
-        item >= tools.hash.convert_keys_to_strings(selector)
-      end
+      periodicals
+        .select { |item| matches_selector?(selector, item) }
+        .map { |item| entity_class.new(item) }
     end
     let(:options) { {} }
+
+    def matches_selector?(selector, item)
+      item >= tools.hash.convert_keys_to_strings(selector)
+    end
 
     def tools
       SleepingKingStudios::Tools::Toolbelt.instance
@@ -328,10 +320,10 @@ RSpec.describe Bronze::Collections::Simple do
 
       it 'should not change the collection data' do
         expect { collection.find_matching(selector) }
-          .not_to change(collection.query, :to_a)
+          .not_to change_collection_data
       end
 
-      it 'should return a result' do
+      it 'should return a passing result' do
         expect(result).to be_a_passing_result.with_value(matching)
       end
     end
@@ -342,10 +334,10 @@ RSpec.describe Bronze::Collections::Simple do
 
       it 'should not change the collection data' do
         expect { collection.find_matching(selector) }
-          .not_to change(collection.query, :to_a)
+          .not_to change_collection_data
       end
 
-      it 'should return a result' do
+      it 'should return a passing result' do
         expect(result).to be_a_passing_result.with_value(matching)
       end
     end
@@ -356,10 +348,10 @@ RSpec.describe Bronze::Collections::Simple do
 
       it 'should not change the collection data' do
         expect { collection.find_matching(selector) }
-          .not_to change(collection.query, :to_a)
+          .not_to change_collection_data
       end
 
-      it 'should return a result' do
+      it 'should return a passing result' do
         expect(result).to be_a_passing_result.with_value(matching)
       end
 
@@ -369,10 +361,10 @@ RSpec.describe Bronze::Collections::Simple do
 
         it 'should not change the collection data' do
           expect { collection.find_matching(selector, limit: 2) }
-            .not_to change(collection.query, :to_a)
+            .not_to change_collection_data
         end
 
-        it 'should return a result' do
+        it 'should return a passing result' do
           expect(result).to be_a_passing_result.with_value(matching)
         end
       end
@@ -383,10 +375,10 @@ RSpec.describe Bronze::Collections::Simple do
 
         it 'should not change the collection data' do
           expect { collection.find_matching(selector, offset: 1) }
-            .not_to change(collection.query, :to_a)
+            .not_to change_collection_data
         end
 
-        it 'should return a result' do
+        it 'should return a passing result' do
           expect(result).to be_a_passing_result.with_value(matching)
         end
       end
@@ -399,10 +391,10 @@ RSpec.describe Bronze::Collections::Simple do
 
         it 'should not change the collection data' do
           expect { collection.find_matching(selector, offset: 1) }
-            .not_to change(collection.query, :to_a)
+            .not_to change_collection_data
         end
 
-        it 'should return a result' do
+        it 'should return a passing result' do
           expect(result).to be_a_passing_result.with_value(matching)
         end
       end
@@ -415,10 +407,10 @@ RSpec.describe Bronze::Collections::Simple do
 
         it 'should not change the collection data' do
           expect { collection.find_matching(selector, offset: 1) }
-            .not_to change(collection.query, :to_a)
+            .not_to change_collection_data
         end
 
-        it 'should return a result' do
+        it 'should return a passing result' do
           expect(result).to be_a_passing_result.with_value(matching)
         end
       end
@@ -426,41 +418,40 @@ RSpec.describe Bronze::Collections::Simple do
   end
 
   describe 'inserting data into the collection' do
-    describe 'with a valid data hash' do
-      let(:data) do
-        {
+    describe 'with a valid entity' do
+      let(:entity) do
+        Spec::Periodical.new(
           'id'       => 13,
           'title'    => 'Triskadecaphobia Today',
           'issue'    => 13,
           'headline' => '13 Reasons To Fear The Number Thirteen',
           'date'     => Date.new(2013, 1, 3)
-        }
+        )
       end
-      let(:result) { collection.insert_one(data) }
+      let(:result) { collection.insert_one(entity) }
 
-      it { expect(result).to be_a_passing_result.with_value(data) }
+      it { expect(result).to be_a_passing_result.with_value(entity) }
 
       it 'should change the collection count' do
-        expect { collection.insert_one(data) }
+        expect { collection.insert_one(entity) }
           .to change(collection, :count).by(1)
       end
 
       it 'should insert the item into the collection' do
-        expect { collection.insert_one(data) }
+        expect { collection.insert_one(entity) }
           .to change(collection.query, :to_a)
-          .to include(data)
+          .to include(entity)
       end
     end
   end
 
   describe 'querying all data' do
-    it { expect(collection.all.count).to be periodicals.size }
-
-    it { expect(collection.all.to_a).to be == periodicals }
+    let(:matching) { periodicals }
+    let(:expected) { matching.map { |item| entity_class.new(item) } }
 
     describe 'with a simple ordering' do
       let(:query) { collection.all.order(:headline) }
-      let(:expected) do
+      let(:matching) do
         Spec::Support::Sorting.sort_hashes(periodicals, 'headline' => :asc)
       end
 
@@ -471,7 +462,7 @@ RSpec.describe Bronze::Collections::Simple do
 
     describe 'with a complex ordering' do
       let(:query) { collection.all.order(:issue, headline: :desc) }
-      let(:expected) do
+      let(:matching) do
         Spec::Support::Sorting.sort_hashes(
           periodicals,
           'issue'    => :asc,
@@ -486,7 +477,7 @@ RSpec.describe Bronze::Collections::Simple do
 
     describe 'with an ordering with a limit' do
       let(:query) { collection.all.order(:headline).limit(4).offset(2) }
-      let(:expected) do
+      let(:matching) do
         Spec::Support::Sorting
           .sort_hashes(periodicals, 'headline' => :asc)[2...6]
       end
@@ -498,12 +489,15 @@ RSpec.describe Bronze::Collections::Simple do
   end
 
   describe 'querying the data matching a selector' do
+    let(:matching) { periodicals }
+    let(:expected) { matching.map { |item| entity_class.new(item) } }
+
     describe 'with an empty selector' do
       let(:query) { collection.matching({}) }
 
-      it { expect(query.count).to be periodicals.size }
+      it { expect(query.count).to be expected.size }
 
-      it { expect(query.to_a).to be == periodicals }
+      it { expect(query.to_a).to be == expected }
     end
 
     describe 'with a selector that does not match any items' do
@@ -516,7 +510,7 @@ RSpec.describe Bronze::Collections::Simple do
 
     describe 'with a selector that matches one item' do
       let(:query) { collection.matching(id: 9) }
-      let(:expected) do
+      let(:matching) do
         periodicals.select { |hsh| hsh['id'] == 9 }
       end
 
@@ -527,7 +521,7 @@ RSpec.describe Bronze::Collections::Simple do
 
     describe 'with a selector that matches some items' do
       let(:query) { collection.matching('title' => 'Modern Mentalism') }
-      let(:expected) do
+      let(:matching) do
         periodicals.select { |hsh| hsh['title'] == 'Modern Mentalism' }
       end
 
@@ -537,7 +531,7 @@ RSpec.describe Bronze::Collections::Simple do
 
       describe 'with a simple ordering' do
         let(:query) { super().order(:headline) }
-        let(:expected) do
+        let(:matching) do
           Spec::Support::Sorting.sort_hashes(super(), 'headline' => :asc)
         end
 
@@ -548,7 +542,7 @@ RSpec.describe Bronze::Collections::Simple do
 
       describe 'with a complex ordering' do
         let(:query) { super().order(:issue, headline: :desc) }
-        let(:expected) do
+        let(:matching) do
           Spec::Support::Sorting.sort_hashes(
             super(),
             'issue'    => :asc,
@@ -563,8 +557,9 @@ RSpec.describe Bronze::Collections::Simple do
 
       describe 'with an ordering with a limit' do
         let(:query) { super().order(:headline).limit(4).offset(2) }
-        let(:expected) do
-          Spec::Support::Sorting.sort_hashes(super(), 'headline' => :asc)[2...6]
+        let(:matching) do
+          Spec::Support::Sorting
+            .sort_hashes(super(), 'headline' => :asc)[2...6]
         end
 
         it { expect(query.count).to be expected.size }
@@ -575,38 +570,40 @@ RSpec.describe Bronze::Collections::Simple do
   end
 
   describe 'updating data by primary key' do
-    let(:primary_key) { nil }
-    let(:data)        { { 'publisher' => 'Miskatonic University Press' } }
-    let(:result)      { collection.update_one(primary_key, with: data) }
+    let(:expected_value) { nil }
+    let(:data)           { { 'publisher' => 'Miskatonic University Press' } }
+    let(:result) do
+      collection.update_one(primary_key_value, with: data)
+    end
 
     def find_periodical(id)
       collection.matching(id: id).to_a.first
     end
 
     describe 'with a primary key that does not match an item' do
-      let(:primary_key)    { 13 }
-      let(:expected_error) { Bronze::Collections::Errors.not_found }
+      let(:primary_key_value) { 13 }
+      let(:expected_error)    { Bronze::Collections::Errors.not_found }
 
       it { expect(result).to be_a_failing_result.with_errors(expected_error) }
 
       it 'should not update the collection' do
-        expect { collection.update_one(primary_key, with: data) }
-          .not_to change(collection.query, :to_a)
+        expect { collection.update_one(primary_key_value, with: data) }
+          .not_to change_collection_data
       end
     end
 
     describe 'with a primary key that matches an item' do
-      let(:primary_key) { 9 }
-      let(:expected) do
-        periodicals.find { |item| item['id'] == primary_key }.merge(data)
+      let(:primary_key_value) { 9 }
+      let(:expected_value) do
+        entity_class.new(find_by_id(primary_key_value).merge(data))
       end
 
-      it { expect(result).to be_a_passing_result.with_value(expected) }
+      it { expect(result).to be_a_passing_result.with_value(expected_value) }
 
       it 'should update the matching item' do
-        collection.update_one(primary_key, with: data)
+        collection.update_one(primary_key_value, with: data)
 
-        expect(find_periodical(primary_key)).to be == expected
+        expect(find_periodical(primary_key_value)).to be == expected_value
       end
     end
   end
@@ -620,6 +617,12 @@ RSpec.describe Bronze::Collections::Simple do
     end
     let(:nonmatching) do
       periodicals - matching
+    end
+    let(:result_value) do
+      {
+        count: matching.size,
+        data:  matching.map { |item| collection.transform.denormalize(item) }
+      }
     end
 
     def find_periodical(id)
@@ -635,7 +638,7 @@ RSpec.describe Bronze::Collections::Simple do
       let(:selector) { { title: 'Triskadecaphobia Today' } }
       let(:result)   { collection.update_matching(selector, with: data) }
 
-      it { expect(result).to be_a_passing_result.with_value(expected) }
+      it { expect(result).to be_a_passing_result.with_value(result_value) }
 
       it 'should not change the collection count' do
         expect { collection.update_matching(selector, with: data) }
@@ -644,7 +647,7 @@ RSpec.describe Bronze::Collections::Simple do
 
       it 'should not change the collection data' do
         expect { collection.update_matching(selector, with: data) }
-          .not_to change(collection.query, :to_a)
+          .not_to change_collection_data
       end
     end
 
@@ -653,7 +656,7 @@ RSpec.describe Bronze::Collections::Simple do
       let(:selector) { { id: 9 } }
       let(:result)   { collection.update_matching(selector, with: data) }
 
-      it { expect(result).to be_a_passing_result.with_value(expected) }
+      it { expect(result).to be_a_passing_result.with_value(result_value) }
 
       it 'should not change the collection count' do
         expect { collection.update_matching(selector, with: data) }
@@ -666,7 +669,7 @@ RSpec.describe Bronze::Collections::Simple do
         matching.each do |matching_item|
           periodical = find_periodical(matching_item['id'])
 
-          expect(periodical).to be >= data
+          expect(periodical).to have_attributes(data)
         end
       end
 
@@ -676,7 +679,7 @@ RSpec.describe Bronze::Collections::Simple do
         nonmatching.each do |non_matching_item|
           periodical = find_periodical(non_matching_item['id'])
 
-          expect(periodical).not_to be >= data
+          expect(periodical).not_to have_attributes(data)
         end
       end
     end
@@ -686,7 +689,7 @@ RSpec.describe Bronze::Collections::Simple do
       let(:selector) { { title: 'Modern Mentalism' } }
       let(:result)   { collection.update_matching(selector, with: data) }
 
-      it { expect(result).to be_a_passing_result.with_value(expected) }
+      it { expect(result).to be_a_passing_result.with_value(result_value) }
 
       it 'should not change the collection count' do
         expect { collection.update_matching(selector, with: data) }
@@ -699,7 +702,7 @@ RSpec.describe Bronze::Collections::Simple do
         matching.each do |matching_item|
           periodical = find_periodical(matching_item['id'])
 
-          expect(periodical).to be >= data
+          expect(periodical).to have_attributes(data)
         end
       end
 
@@ -709,7 +712,7 @@ RSpec.describe Bronze::Collections::Simple do
         nonmatching.each do |non_matching_item|
           periodical = find_periodical(non_matching_item['id'])
 
-          expect(periodical).not_to be >= data
+          expect(periodical).not_to have_attributes(data)
         end
       end
     end

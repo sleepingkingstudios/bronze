@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'bronze/collections/query'
+require 'bronze/transforms/identity_transform'
 
 require 'support/examples/collections/query_examples'
 
@@ -10,6 +11,15 @@ RSpec.describe Bronze::Collections::Query do
   subject(:query) { described_class.new }
 
   include_examples 'should implement the Query interface'
+
+  describe '::new' do
+    it 'should define the constructor' do
+      expect(described_class)
+        .to be_constructible
+        .with(0).arguments
+        .and_keywords(:transform)
+    end
+  end
 
   describe '#count' do
     let(:error_message) do
@@ -114,6 +124,18 @@ RSpec.describe Bronze::Collections::Query do
     it 'should raise an error' do
       expect { query.to_a }
         .to raise_error Bronze::NotImplementedError, error_message
+    end
+  end
+
+  describe '#transform' do
+    it { expect(query.transform).to be nil }
+
+    context 'when initialized with transform: value' do
+      subject(:query) { described_class.new(transform: transform) }
+
+      let(:transform) { Bronze::Transforms::IdentityTransform.new }
+
+      it { expect(query.transform).to be transform }
     end
   end
 end

@@ -70,9 +70,7 @@ module Spec::Support::Matchers
 
       return message + ', but was not a result' unless actual_is_result?
 
-      unless status_matches?
-        return message + ", but the result was #{actual_status}"
-      end
+      return status_failure_message(message) unless status_matches?
 
       message += value_message unless value_matches?
 
@@ -180,6 +178,18 @@ module Spec::Support::Matchers
       @expected_value != DEFAULT_VALUE
     end
 
+    def rspec_matcher?(value)
+      value.respond_to?(:matches?) && value.respond_to?(:description)
+    end
+
+    def status_failure_message(message)
+      message += ", but the result was #{actual_status}"
+
+      return message if actual.success?
+
+      message + " with errors: #{actual.errors.to_a.inspect}"
+    end
+
     def status_matches?
       return @status_matches unless @status_matches.nil?
 
@@ -211,13 +221,20 @@ module Spec::Support::Matchers
         caller[1..-1]
     end
 
-    def value_matches?
-      # TODO: Support @expected_value as RSpec matcher, e.g.
-      #   be_a_result.with_value(an_instance_of String)
+    def value_description
+      return @expected_value.description if rspec_matcher?(@expected_value)
 
+      @expected_value.inspect
+    end
+
+    def value_matches?
       return @value_matches unless @value_matches.nil?
 
       return @value_matches = true unless expected_value?
+
+      if rspec_matcher?(@expected_value)
+        return @value_matches = @expected_value.matches?(actual.value)
+      end
 
       @value_matches = @expected_value == actual.value
     end
@@ -225,7 +242,7 @@ module Spec::Support::Matchers
     def value_message
       "\n" \
       "\n  the result does not match the expected value:" \
-      "\n    expected: #{@expected_value.inspect}" \
+      "\n    expected: #{value_description}" \
       "\n         got: #{actual.value.inspect}"
     end
   end

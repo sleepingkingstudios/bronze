@@ -2,6 +2,10 @@
 
 ## Collections
 
+- Extract EntityCollection
+- Implement Collection#build
+  - returns Collection or EntityCollection
+
 ### Advanced Querying
 
 - Mongo-style selectors - query.matching(year: { $gt: 1986 }): |
