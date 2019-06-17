@@ -1588,12 +1588,6 @@ RSpec.describe Bronze::Collection do
 
     include_examples 'should delegate to the adapter'
 
-    wrap_context 'when initialized with a transform' do
-      let(:expected) { transform.denormalize(value) }
-
-      include_examples 'should delegate to the adapter'
-    end
-
     wrap_context 'when the definition is an entity class' do
       include_examples 'should delegate to the adapter'
 
@@ -1602,6 +1596,12 @@ RSpec.describe Bronze::Collection do
 
         include_examples 'should delegate to the adapter'
       end
+    end
+
+    wrap_context 'when initialized with a transform' do
+      let(:expected) { transform.denormalize(value) }
+
+      include_examples 'should delegate to the adapter'
     end
   end
 
@@ -2504,14 +2504,96 @@ RSpec.describe Bronze::Collection do
   end
 
   describe '#update_one' do
+    shared_examples 'should delegate to the adapter' do
+      describe 'with an empty data object' do
+        let(:data) { {} }
+        let(:expected_error) do
+          {
+            type:   Bronze::Collections::Errors::DATA_EMPTY,
+            params: { data: object }
+          }
+        end
+
+        it 'should not delegate to the adapter' do
+          call_method
+
+          expect(adapter).not_to have_received(method_name)
+        end
+
+        it 'should return a failing result' do
+          expect(call_method)
+            .to be_a_failing_result
+            .with_errors(expected_error)
+        end
+      end
+
+      describe 'with a valid primary key and data object with String keys' do
+        let(:data)   { { 'language' => 'Chinese' } }
+        let(:result) { Bronze::Result.new.tap { |res| res.value = value } }
+
+        it 'should delegate to the adapter' do
+          collection.update_one(primary_key_value, with: data)
+
+          expect(adapter)
+            .to have_received(:update_one)
+            .with(expected_keywords)
+        end
+
+        it 'should return a passing result' do
+          allow(adapter).to receive(:update_one).and_return(result)
+
+          expect(collection.update_one(primary_key_value, with: data))
+            .to be_a_passing_result
+            .with_value(expected)
+        end
+      end
+
+      describe 'with a valid primary key and data object with Symbol keys' do
+        let(:data)   { { language: 'Chinese' } }
+        let(:result) { Bronze::Result.new.tap { |res| res.value = value } }
+
+        it 'should delegate to the adapter' do
+          collection.update_one(primary_key_value, with: data)
+
+          expect(adapter)
+            .to have_received(:update_one)
+            .with(expected_keywords)
+        end
+
+        it 'should return a passing result' do
+          allow(adapter).to receive(:update_one).and_return(result)
+
+          expect(collection.update_one(primary_key_value, with: data))
+            .to be_a_passing_result
+            .with_value(expected)
+        end
+      end
+    end
+
     let(:primary_key)       { :id }
-    let(:primary_key_type)  { Integer }
-    let(:primary_key_value) { 0 }
+    let(:primary_key_type)  { String }
+    let(:primary_key_value) { '00000000-0000-0000-0000-000000000000' }
     let(:method_name)       { :update_one }
     let(:data)              { { language: 'Chinese' } }
     let(:object)            { data }
+    let(:value) do
+      {
+        'uuid'   => '00000000-0000-0000-0000-000000000000',
+        'title'  => 'Romance of the Three Kingdoms',
+        'author' => 'Luo Guanzhong'
+      }
+    end
+    let(:expected) { value }
     let(:options) do
       super().merge primary_key_type: primary_key_type
+    end
+    let(:expected_keywords) do
+      {
+        collection_name:   collection.name,
+        data:              data,
+        primary_key:       primary_key,
+        primary_key_value: primary_key_value
+      }
     end
 
     def call_method
@@ -2532,96 +2614,22 @@ RSpec.describe Bronze::Collection do
 
     include_examples 'should validate the primary key for updates'
 
-    describe 'with an empty data object' do
-      let(:data) { {} }
-      let(:expected_error) do
-        {
-          type:   Bronze::Collections::Errors::DATA_EMPTY,
-          params: { data: object }
-        }
-      end
+    include_examples 'should delegate to the adapter'
 
-      it 'should not delegate to the adapter' do
-        call_method
+    wrap_context 'when the definition is an entity class' do
+      include_examples 'should delegate to the adapter'
 
-        expect(adapter).not_to have_received(method_name)
-      end
+      wrap_context 'when initialized with an entity transform' do
+        let(:expected) { transform.denormalize(value) }
 
-      it 'should return a failing result' do
-        expect(call_method)
-          .to be_a_failing_result
-          .with_errors(expected_error)
+        include_examples 'should delegate to the adapter'
       end
     end
 
-    describe 'with a valid primary key and data object with String keys' do
-      let(:data) { { 'language' => 'Chinese' } }
-      let(:expected) do
-        {
-          'title'    => 'Romance of the Three Kingdoms',
-          'author'   => 'Luo Guanzhong',
-          'language' => 'Chinese'
-        }
-      end
-      let(:result) { Bronze::Result.new(expected) }
-      let(:expected_keywords) do
-        {
-          collection_name:   collection.name,
-          data:              data,
-          primary_key:       primary_key,
-          primary_key_value: primary_key_value
-        }
-      end
+    wrap_context 'when initialized with a transform' do
+      let(:expected) { transform.denormalize(value) }
 
-      it 'should delegate to the adapter' do
-        collection.update_one(primary_key_value, with: data)
-
-        expect(adapter)
-          .to have_received(:update_one)
-          .with(expected_keywords)
-      end
-
-      it 'should return the result from the adapter' do
-        allow(adapter).to receive(:update_one).and_return(result)
-
-        expect(collection.update_one(primary_key_value, with: data))
-          .to be result
-      end
-    end
-
-    describe 'with a valid primary key and data object with Symbol keys' do
-      let(:data) { { language: 'Chinese' } }
-      let(:expected) do
-        {
-          'title'    => 'Romance of the Three Kingdoms',
-          'author'   => 'Luo Guanzhong',
-          'language' => 'Chinese'
-        }
-      end
-      let(:result) { Bronze::Result.new(expected) }
-      let(:expected_keywords) do
-        {
-          collection_name:   collection.name,
-          data:              data,
-          primary_key:       primary_key,
-          primary_key_value: primary_key_value
-        }
-      end
-
-      it 'should delegate to the adapter' do
-        collection.update_one(primary_key_value, with: data)
-
-        expect(adapter)
-          .to have_received(:update_one)
-          .with(expected_keywords)
-      end
-
-      it 'should return the result from the adapter' do
-        allow(adapter).to receive(:update_one).and_return(result)
-
-        expect(collection.update_one(primary_key_value, with: data))
-          .to be result
-      end
+      include_examples 'should delegate to the adapter'
     end
   end
 end

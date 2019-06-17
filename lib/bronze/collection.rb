@@ -225,12 +225,14 @@ module Bronze
 
       return Bronze::Result.new(nil, errors: errors) if errors
 
-      adapter.update_one(
-        collection_name:   name,
-        data:              with,
-        primary_key:       primary_key,
-        primary_key_value: value
-      )
+      denormalize_result do
+        adapter.update_one(
+          collection_name:   name,
+          data:              with,
+          primary_key:       primary_key,
+          primary_key_value: value
+        )
+      end
     end
     alias_method :update, :update_one
 

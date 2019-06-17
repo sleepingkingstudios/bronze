@@ -1023,7 +1023,7 @@ RSpec.describe Bronze::Collections::Simple do
 
       it 'should not update the collection' do
         expect { collection.update_one(primary_key_value, with: data) }
-          .not_to change(collection.query, :to_a)
+          .not_to change_collection_data
       end
     end
 
@@ -1043,7 +1043,34 @@ RSpec.describe Bronze::Collections::Simple do
     end
 
     wrap_context 'when configured for an entity class' do
-      pending
+      describe 'with a primary key that does not match an item' do
+        let(:primary_key_value) { 13 }
+        let(:expected_error)    { Bronze::Collections::Errors.not_found }
+
+        it { expect(result).to be_a_failing_result.with_errors(expected_error) }
+
+        it 'should not update the collection' do
+          expect { collection.update_one(primary_key_value, with: data) }
+            .not_to change_collection_data
+        end
+      end
+
+      describe 'with a primary key that matches an item' do
+        let(:primary_key_value) { 9 }
+        let(:expected_value) do
+          collection.transform.denormalize(
+            find_by_id(primary_key_value).merge(data)
+          )
+        end
+
+        it { expect(result).to be_a_passing_result.with_value(expected_value) }
+
+        it 'should update the matching item' do
+          collection.update_one(primary_key_value, with: data)
+
+          expect(find_periodical(primary_key_value)).to be == expected_value
+        end
+      end
     end
   end
 
