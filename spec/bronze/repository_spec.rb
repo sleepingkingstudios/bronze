@@ -111,11 +111,15 @@ RSpec.describe Bronze::Repository do
     describe 'with an entity class' do
       let(:options)         { {} }
       let(:collection_name) { 'spec__widgets' }
+      let(:entity_class)    { Spec::Widget }
       let(:collection) do
-        repository.collection(Spec::Widget, **options)
+        repository.collection(entity_class, **options)
+      end
+      let(:transform_class) do
+        Bronze::Transforms::Entities::NormalizeTransform
       end
 
-      example_class 'Spec::Widget'
+      example_class 'Spec::Widget', Bronze::Entity
 
       before(:example) do
         allow(adapter)
@@ -124,13 +128,15 @@ RSpec.describe Bronze::Repository do
           .and_return('spec__widgets')
       end
 
-      it { expect(collection).to be_a Bronze::Collection }
+      it { expect(collection).to be_a Bronze::Collections::EntityCollection }
 
       it { expect(collection.adapter).to be adapter }
 
       it { expect(collection.name).to be == collection_name }
 
-      it { expect(collection.transform).to be nil }
+      it { expect(collection.transform).to be_an_instance_of(transform_class) }
+
+      it { expect(collection.transform.entity_class).to be entity_class }
 
       describe 'with name: String' do
         let(:options) { { name: 'whatsits' } }

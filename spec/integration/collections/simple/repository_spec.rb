@@ -49,11 +49,9 @@ RSpec.describe Bronze::Repository do
     end
 
     describe 'with an invalid entity class' do
-      let(:collection) do
-        repository.collection(Spec::BasicBook)
-      end
+      let(:collection) { repository.collection(Spec::BasicBook) }
 
-      it { expect(collection).to be_a Bronze::Collection }
+      it { expect(collection).to be_a Bronze::Collections::EntityCollection }
 
       it { expect(collection.adapter).to be adapter }
 
@@ -63,16 +61,11 @@ RSpec.describe Bronze::Repository do
     end
 
     describe 'with a valid entity class' do
-      let(:entity_class) { Spec::Periodical }
-      let(:collection) do
-        repository.collection(entity_class, transform: transform)
-      end
+      let(:entity_class)    { Spec::Periodical }
+      let(:collection)      { repository.collection(entity_class) }
       let(:transform_class) { Bronze::Transforms::Entities::NormalizeTransform }
-      let(:transform) do
-        Bronze::Transforms::Entities::NormalizeTransform.new(entity_class)
-      end
 
-      it { expect(collection).to be_a Bronze::Collection }
+      it { expect(collection).to be_a Bronze::Collections::EntityCollection }
 
       it { expect(collection.adapter).to be adapter }
 
