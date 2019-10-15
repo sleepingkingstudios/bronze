@@ -54,7 +54,7 @@ RSpec.describe Bronze::Collections::EntityCollection do
   end
 
   shared_examples 'should delegate to the adapter' do
-    let(:result) { Bronze::Result.new.tap { |res| res.value = value } }
+    let(:result) { Cuprum::Result.new(value: value) }
 
     it 'delegate to the adapter' do
       call_method

@@ -14,8 +14,6 @@ module Bronze
 
     alias_method :errors, :error
 
-    attr_writer :value
-
     private
 
     def build_errors

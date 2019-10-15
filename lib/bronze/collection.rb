@@ -238,7 +238,6 @@ module Bronze
 
     private
 
-    # rubocop:disable Metrics/AbcSize
     def denormalize_bulk_result
       result = yield
 
@@ -249,11 +248,8 @@ module Bronze
       transformed_data =
         result.value[:data].map { |item| transform.denormalize item }
 
-      Bronze::Result.new.tap do |res|
-        res.value = result.value.merge(data: transformed_data)
-      end
+      Cuprum::Result.new(value: result.value.merge(data: transformed_data))
     end
-    # rubocop:enable Metrics/AbcSize
 
     def denormalize_result
       result = yield
