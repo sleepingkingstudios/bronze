@@ -702,15 +702,15 @@ RSpec.describe Bronze::Collections::EntityCollection do
     instance_double(
       Bronze::Collections::Adapter,
       collection_name_for: '',
-      delete_matching:     Bronze::Result.new,
-      delete_one:          Bronze::Result.new,
-      find_matching:       Bronze::Result.new,
-      find_one:            Bronze::Result.new,
-      insert_one:          Bronze::Result.new,
+      delete_matching:     Cuprum::Result.new,
+      delete_one:          Cuprum::Result.new,
+      find_matching:       Cuprum::Result.new,
+      find_one:            Cuprum::Result.new,
+      insert_one:          Cuprum::Result.new,
       null_query:          null_query,
       query:               query,
-      update_matching:     Bronze::Result.new,
-      update_one:          Bronze::Result.new
+      update_matching:     Cuprum::Result.new,
+      update_one:          Cuprum::Result.new
     )
   end
   let(:null_query) do

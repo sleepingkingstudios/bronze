@@ -39,7 +39,7 @@ module Bronze::Collections
     # @param collection_name [String] The collection to delete.
     # @param selector [Hash] The criteria used to filter the data.
     #
-    # @return [Bronze::Result] the result of the delete operation.
+    # @return [Cuprum::Result] the result of the delete operation.
     #
     # @raise Bronze::NotImplementedError unless overriden by an Adapter
     #   subclass.
@@ -54,7 +54,7 @@ module Bronze::Collections
     #   attribute.
     # @param primary_key_value [Object] The primary key value to search for.
     #
-    # @return [Bronze::Result] the result of the delete operation.
+    # @return [Cuprum::Result] the result of the delete operation.
     #
     # @raise Bronze::NotImplementedError unless overriden by an Adapter
     #   subclass.
@@ -75,7 +75,7 @@ module Bronze::Collections
     # @param transform [Bronze::Transform] the transform used to convert queried
     #   data to a usable form.
     #
-    # @return [Bronze::Result] the result of the find operation.
+    # @return [Cuprum::Result] the result of the find operation.
     #
     # @raise Bronze::NotImplementedError unless overriden by an Adapter
     #   subclass.
@@ -99,7 +99,7 @@ module Bronze::Collections
     # @param transform [Bronze::Transform] the transform used to convert queried
     #   data to a usable form.
     #
-    # @return [Bronze::Result] the result of the find operation.
+    # @return [Cuprum::Result] the result of the find operation.
     #
     # @raise Bronze::NotImplementedError unless overriden by an Adapter
     #   subclass.
@@ -117,7 +117,7 @@ module Bronze::Collections
     # @param collection_name [String] The collection to insert.
     # @param data [Hash] The data hash to insert.
     #
-    # @return [Bronze::Result] the result of the insert operation.
+    # @return [Cuprum::Result] the result of the insert operation.
     #
     # @raise Bronze::NotImplementedError unless overriden by an Adapter
     #   subclass.
@@ -155,7 +155,7 @@ module Bronze::Collections
     # @param selector [Hash] The criteria used to filter the data.
     # @param data [Hash] The keys and values to update in the matching items.
     #
-    # @return [Bronze::Result] the result of the update operation.
+    # @return [Cuprum::Result] the result of the update operation.
     #
     # @raise Bronze::NotImplementedError unless overriden by an Adapter
     #   subclass.
@@ -173,7 +173,7 @@ module Bronze::Collections
     #   @param value [Object] The primary key value to search for.
     #   @param data [Hash] The keys and values to update in the matching item.
     #
-    #   @return [Bronze::Result] the result of the update operation.
+    #   @return [Cuprum::Result] the result of the update operation.
     #
     #   @raise Bronze::NotImplementedError unless overriden by an Adapter
     #     subclass.

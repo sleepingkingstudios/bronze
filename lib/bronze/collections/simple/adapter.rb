@@ -5,7 +5,6 @@ require 'bronze/collections/errors'
 require 'bronze/collections/simple'
 require 'bronze/collections/simple/query'
 require 'bronze/errors'
-require 'bronze/result'
 require 'bronze/transforms/copy_transform'
 
 module Bronze::Collections::Simple

@@ -5,7 +5,6 @@ require 'forwardable'
 require 'bronze'
 require 'bronze/collections/primary_keys'
 require 'bronze/collections/validation'
-require 'bronze/result'
 
 module Bronze
   # A collection represents a data set, providing a consistent interface to
@@ -79,11 +78,11 @@ module Bronze
     #
     # @param selector [Hash] The criteria used to filter the data.
     #
-    # @return [Bronze::Result] the result of the delete operation.
+    # @return [Cuprum::Result] the result of the delete operation.
     def delete_matching(selector)
       errors = errors_for_selector(selector)
 
-      return Bronze::Result.new(nil, errors: errors) if errors
+      return Cuprum::Result.new(error: errors) if errors
 
       denormalize_bulk_result do
         adapter.delete_matching(collection_name: name, selector: selector)
@@ -94,11 +93,11 @@ module Bronze
     #
     # @param [Object] value The primary key value to delete.
     #
-    # @return [Bronze::Result] the result of the delete operation.
+    # @return [Cuprum::Result] the result of the delete operation.
     def delete_one(value)
       errors = errors_for_primary_key_query(value)
 
-      return Bronze::Result.new(nil, errors: errors) if errors
+      return Cuprum::Result.new(error: errors) if errors
 
       denormalize_result do
         adapter.delete_one(
@@ -114,11 +113,11 @@ module Bronze
     #
     # @param selector [Hash] The criteria used to filter the data.
     #
-    # @return [Bronze::Result] the result of the find operation.
+    # @return [Cuprum::Result] the result of the find operation.
     def find_matching(selector, limit: nil, offset: nil, order: nil)
       errors = errors_for_selector(selector)
 
-      return Bronze::Result.new(nil, errors: errors) if errors
+      return Cuprum::Result.new(error: errors) if errors
 
       adapter.find_matching(
         collection_name: name,
@@ -134,11 +133,11 @@ module Bronze
     #
     # @param [Object] value The primary key value to search for.
     #
-    # @return [Bronze::Result] the result of the find operation.
+    # @return [Cuprum::Result] the result of the find operation.
     def find_one(value)
       errors = errors_for_primary_key_query(value)
 
-      return Bronze::Result.new(nil, errors: errors) if errors
+      return Cuprum::Result.new(error: errors) if errors
 
       adapter.find_one(
         collection_name:   name,
@@ -153,19 +152,19 @@ module Bronze
     #
     # @param data [Hash] The data hash to insert.
     #
-    # @return [Bronze::Result] the result of the insert operation.
+    # @return [Cuprum::Result] the result of the insert operation.
     def insert_one(data)
       data, errors = normalize_data(data)
 
       errors ||= errors_for_data(data) || errors_for_primary_key_insert(data)
 
-      return Bronze::Result.new(nil, errors: errors) if errors
+      return Cuprum::Result.new(error: errors) if errors
 
       result = adapter.insert_one(collection_name: name, data: data)
 
       return result unless transform && result.success?
 
-      Bronze::Result.new(transform.denormalize(result.value))
+      Cuprum::Result.new(value: transform.denormalize(result.value))
     end
     alias_method :insert, :insert_one
 
@@ -193,14 +192,14 @@ module Bronze
     # @param selector [Hash] The criteria used to filter the data.
     # @param with [Hash] The keys and values to update in the matching items.
     #
-    # @return [Bronze::Result] the result of the update operation.
+    # @return [Cuprum::Result] the result of the update operation.
     def update_matching(selector, with:) # rubocop:disable Metrics/MethodLength
       errors =
         errors_for_selector(selector) ||
         errors_for_data(with) ||
         errors_for_primary_key_bulk_update(with)
 
-      return Bronze::Result.new(nil, errors: errors) if errors
+      return Cuprum::Result.new(error: errors) if errors
 
       denormalize_bulk_result do
         adapter.update_matching(
@@ -216,14 +215,14 @@ module Bronze
     # @param value [Object] The primary key value to search for.
     # @param with [Hash] The keys and values to update in the matching items.
     #
-    # @return [Bronze::Result] the result of the update operation.
+    # @return [Cuprum::Result] the result of the update operation.
     def update_one(value, with:) # rubocop:disable Metrics/MethodLength
       errors =
         errors_for_primary_key_query(value) ||
         errors_for_data(with) ||
         errors_for_primary_key_update(with, value)
 
-      return Bronze::Result.new(nil, errors: errors) if errors
+      return Cuprum::Result.new(error: errors) if errors
 
       denormalize_result do
         adapter.update_one(
@@ -257,7 +256,7 @@ module Bronze
       return result unless transform
       return result unless result.success?
 
-      Bronze::Result.new(transform.denormalize(result.value))
+      Cuprum::Result.new(value: transform.denormalize(result.value))
     end
 
     def normalize_data(data)
