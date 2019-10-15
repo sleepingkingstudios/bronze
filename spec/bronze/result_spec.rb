@@ -40,8 +40,4 @@ RSpec.describe Bronze::Result do
       it { expect(result.errors).to be errors }
     end
   end
-
-  describe '#to_result' do
-    include_examples 'should have reader', :to_result, -> { result }
-  end
 end

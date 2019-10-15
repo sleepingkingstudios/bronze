@@ -2,10 +2,6 @@
 
 ## Collections
 
-- Extract EntityCollection
-- Implement Collection#build
-  - returns Collection or EntityCollection
-
 ### Advanced Querying
 
 - Mongo-style selectors - query.matching(year: { $gt: 1986 }): |
@@ -52,14 +48,6 @@
 - Nested querying:
   { key: { subkey: value } }
   { key: { subkey: { $eq => value } } }
-
-### Transforms
-
-Collection#transform
-
-- configurable - repository.collection(definition, transform:)
-- defaults to nil
-- if definition is an Entity class, transform defaults to NormalizeTransform
 
 ## Entities
 

@@ -2,6 +2,8 @@
 
 require 'rspec/sleeping_king_studios/examples/rspec_matcher_examples'
 
+require 'bronze/result'
+
 require 'support/matchers/be_a_result_matcher'
 
 RSpec.describe Spec::Support::Matchers::BeAResultMatcher do
@@ -124,8 +126,8 @@ RSpec.describe Spec::Support::Matchers::BeAResultMatcher do
       include_examples 'should pass with a negative expectation'
     end
 
-    describe 'with a Cuprum result' do
-      let(:actual) { Cuprum::Result.new }
+    describe 'with a Bronze result' do
+      let(:actual) { Bronze::Result.new }
 
       include_examples 'should pass with a positive expectation'
 
@@ -161,7 +163,7 @@ RSpec.describe Spec::Support::Matchers::BeAResultMatcher do
       end
 
       describe 'with a passing result' do
-        let(:actual) { Cuprum::Result.new }
+        let(:actual) { Bronze::Result.new }
 
         include_examples 'should pass with a positive expectation'
 
@@ -169,7 +171,7 @@ RSpec.describe Spec::Support::Matchers::BeAResultMatcher do
       end
 
       describe 'with a failing result' do
-        let(:actual) { Cuprum::Result.new.failure! }
+        let(:actual) { Bronze::Result.new.failure! }
         let(:failure_message) do
           super() + ', but the result was failing'
         end
@@ -209,7 +211,7 @@ RSpec.describe Spec::Support::Matchers::BeAResultMatcher do
       end
 
       describe 'with a failing result' do
-        let(:actual) { Cuprum::Result.new.failure! }
+        let(:actual) { Bronze::Result.new.failure! }
 
         include_examples 'should pass with a positive expectation'
 
@@ -217,7 +219,7 @@ RSpec.describe Spec::Support::Matchers::BeAResultMatcher do
       end
 
       describe 'with a passing result' do
-        let(:actual) { Cuprum::Result.new }
+        let(:actual) { Bronze::Result.new }
         let(:failure_message) do
           super() + ', but the result was passing'
         end
@@ -264,7 +266,7 @@ RSpec.describe Spec::Support::Matchers::BeAResultMatcher do
       end
 
       describe 'with a passing result' do
-        let(:actual) { Cuprum::Result.new }
+        let(:actual) { Bronze::Result.new }
         let(:failure_message) do
           super() + value_message
         end
@@ -275,7 +277,7 @@ RSpec.describe Spec::Support::Matchers::BeAResultMatcher do
       end
 
       describe 'with a failing result' do
-        let(:actual) { Cuprum::Result.new.failure! }
+        let(:actual) { Bronze::Result.new.failure! }
         let(:failure_message) do
           super() + value_message
         end
@@ -288,7 +290,7 @@ RSpec.describe Spec::Support::Matchers::BeAResultMatcher do
       describe 'with a result with non-matching value' do
         let(:actual_value) { 'other value' }
         let(:actual) do
-          Cuprum::Result.new.tap { |result| result.value = actual_value }
+          Bronze::Result.new.tap { |result| result.value = actual_value }
         end
         let(:failure_message) do
           super() + value_message
@@ -301,7 +303,7 @@ RSpec.describe Spec::Support::Matchers::BeAResultMatcher do
 
       describe 'with a result with matching value' do
         let(:actual) do
-          Cuprum::Result.new.tap { |result| result.value = expected_value }
+          Bronze::Result.new.tap { |result| result.value = expected_value }
         end
 
         include_examples 'should pass with a positive expectation'
@@ -346,7 +348,7 @@ RSpec.describe Spec::Support::Matchers::BeAResultMatcher do
       end
 
       describe 'with a passing result' do
-        let(:actual) { Cuprum::Result.new }
+        let(:actual) { Bronze::Result.new }
         let(:failure_message) do
           super() + value_message
         end
@@ -357,7 +359,7 @@ RSpec.describe Spec::Support::Matchers::BeAResultMatcher do
       end
 
       describe 'with a failing result' do
-        let(:actual) { Cuprum::Result.new.failure! }
+        let(:actual) { Bronze::Result.new.failure! }
         let(:failure_message) do
           super() + value_message
         end
@@ -370,7 +372,7 @@ RSpec.describe Spec::Support::Matchers::BeAResultMatcher do
       describe 'with a result with non-matching value' do
         let(:actual_value) { 'other value' }
         let(:actual) do
-          Cuprum::Result.new.tap { |result| result.value = actual_value }
+          Bronze::Result.new.tap { |result| result.value = actual_value }
         end
         let(:failure_message) do
           super() + value_message
@@ -383,7 +385,7 @@ RSpec.describe Spec::Support::Matchers::BeAResultMatcher do
 
       describe 'with a result with matching value' do
         let(:actual) do
-          Cuprum::Result.new.tap { |result| result.value = raw_value }
+          Bronze::Result.new.tap { |result| result.value = raw_value }
         end
 
         include_examples 'should pass with a positive expectation'
@@ -428,7 +430,7 @@ RSpec.describe Spec::Support::Matchers::BeAResultMatcher do
       end
 
       describe 'with a passing result' do
-        let(:actual) { Cuprum::Result.new }
+        let(:actual) { Bronze::Result.new }
         let(:failure_message) do
           super() + errors_message
         end
@@ -439,7 +441,7 @@ RSpec.describe Spec::Support::Matchers::BeAResultMatcher do
       end
 
       describe 'with a failing result' do
-        let(:actual) { Cuprum::Result.new.failure! }
+        let(:actual) { Bronze::Result.new.failure! }
         let(:failure_message) do
           super() + errors_message
         end
@@ -454,7 +456,7 @@ RSpec.describe Spec::Support::Matchers::BeAResultMatcher do
           ['spec.errors.custom_error', 'spec.errors.other_error']
         end
         let(:actual) do
-          Cuprum::Result.new.tap { |result| result.errors = actual_errors }
+          Bronze::Result.new.tap { |result| result.errors = actual_errors }
         end
         let(:failure_message) do
           super() + errors_message
@@ -470,7 +472,7 @@ RSpec.describe Spec::Support::Matchers::BeAResultMatcher do
           ['spec.errors.custom_error', 'spec.errors.first_error']
         end
         let(:actual) do
-          Cuprum::Result.new.tap { |result| result.errors = actual_errors }
+          Bronze::Result.new.tap { |result| result.errors = actual_errors }
         end
         let(:failure_message) do
           super() + errors_message
@@ -484,7 +486,7 @@ RSpec.describe Spec::Support::Matchers::BeAResultMatcher do
       describe 'with a result with matching errors' do
         let(:actual_errors) { expected_errors }
         let(:actual) do
-          Cuprum::Result.new.tap { |result| result.errors = actual_errors }
+          Bronze::Result.new.tap { |result| result.errors = actual_errors }
         end
 
         include_examples 'should pass with a positive expectation'
@@ -495,7 +497,7 @@ RSpec.describe Spec::Support::Matchers::BeAResultMatcher do
       describe 'with a result with unordered errors' do
         let(:actual_errors) { expected_errors.rotate }
         let(:actual) do
-          Cuprum::Result.new.tap { |result| result.errors = actual_errors }
+          Bronze::Result.new.tap { |result| result.errors = actual_errors }
         end
 
         include_examples 'should pass with a positive expectation'
@@ -551,7 +553,7 @@ RSpec.describe Spec::Support::Matchers::BeAResultMatcher do
       end
 
       describe 'with a passing result' do
-        let(:actual) { Cuprum::Result.new }
+        let(:actual) { Bronze::Result.new }
         let(:failure_message) do
           super() + ', but the result was passing'
         end
@@ -562,7 +564,7 @@ RSpec.describe Spec::Support::Matchers::BeAResultMatcher do
       end
 
       describe 'with a failing result' do
-        let(:actual) { Cuprum::Result.new.failure! }
+        let(:actual) { Bronze::Result.new.failure! }
         let(:failure_message) do
           super() + value_message + errors_message
         end
@@ -577,7 +579,7 @@ RSpec.describe Spec::Support::Matchers::BeAResultMatcher do
           ['spec.errors.custom_error', 'spec.errors.other_error']
         end
         let(:actual) do
-          Cuprum::Result.new(nil, errors: actual_errors).failure!
+          Bronze::Result.new(nil, errors: actual_errors).failure!
         end
         let(:failure_message) do
           super() + value_message + errors_message
@@ -590,7 +592,7 @@ RSpec.describe Spec::Support::Matchers::BeAResultMatcher do
 
       describe 'with a failing result with matching errors' do
         let(:actual) do
-          Cuprum::Result.new(nil, errors: expected_errors).failure!
+          Bronze::Result.new(nil, errors: expected_errors).failure!
         end
         let(:failure_message) do
           super() + value_message
@@ -603,7 +605,7 @@ RSpec.describe Spec::Support::Matchers::BeAResultMatcher do
 
       describe 'with a failing result with non-matching value' do
         let(:actual_value) { 'other value' }
-        let(:actual)       { Cuprum::Result.new(actual_value).failure! }
+        let(:actual)       { Bronze::Result.new(actual_value).failure! }
         let(:failure_message) do
           super() + value_message + errors_message
         end
@@ -614,7 +616,7 @@ RSpec.describe Spec::Support::Matchers::BeAResultMatcher do
       end
 
       describe 'with a failing result with matching value' do
-        let(:actual) { Cuprum::Result.new(expected_value).failure! }
+        let(:actual) { Bronze::Result.new(expected_value).failure! }
         let(:failure_message) do
           super() + errors_message
         end
@@ -626,7 +628,7 @@ RSpec.describe Spec::Support::Matchers::BeAResultMatcher do
 
       describe 'with a failing result with matching value and errors' do
         let(:actual) do
-          Cuprum::Result.new(expected_value, errors: expected_errors).failure!
+          Bronze::Result.new(expected_value, errors: expected_errors).failure!
         end
 
         include_examples 'should pass with a positive expectation'
