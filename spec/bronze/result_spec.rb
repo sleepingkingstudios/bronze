@@ -27,7 +27,7 @@ RSpec.describe Bronze::Result do
   end
 
   describe '#errors' do
-    include_examples 'should have property',
+    include_examples 'should have reader',
       :errors,
       -> { an_instance_of(Bronze::Errors) }
 

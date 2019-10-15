@@ -16,16 +16,6 @@ module Bronze
 
     attr_writer :value
 
-    def errors=(errors)
-      @error = errors
-    end
-
-    def failure!
-      @status = :failure
-
-      self
-    end
-
     private
 
     def build_errors

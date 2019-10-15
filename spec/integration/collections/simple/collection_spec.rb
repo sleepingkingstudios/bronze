@@ -147,9 +147,14 @@ RSpec.describe Bronze::Collection do
 
     describe 'with a primary key that does not match an item' do
       let(:primary_key_value) { 13 }
-      let(:expected_error)    { Bronze::Collections::Errors.not_found }
+      let(:expected_error) do
+        Bronze::Errors.new.add(
+          Bronze::Collections::Errors.not_found,
+          selector: { id: primary_key_value }
+        )
+      end
 
-      it { expect(result).to be_a_failing_result.with_errors(expected_error) }
+      it { expect(result).to be_a_failing_result.with_error(expected_error) }
 
       it 'should not change the collection count' do
         expect { collection.delete_one(primary_key_value) }
@@ -184,9 +189,14 @@ RSpec.describe Bronze::Collection do
     wrap_context 'when configured for an entity class' do
       describe 'with a primary key that does not match an item' do
         let(:primary_key_value) { 13 }
-        let(:expected_error)    { Bronze::Collections::Errors.not_found }
+        let(:expected_error) do
+          Bronze::Errors.new.add(
+            Bronze::Collections::Errors.not_found,
+            selector: { id: primary_key_value }
+          )
+        end
 
-        it { expect(result).to be_a_failing_result.with_errors(expected_error) }
+        it { expect(result).to be_a_failing_result.with_error(expected_error) }
 
         it 'should not change the collection count' do
           expect { collection.delete_one(primary_key_value) }
@@ -439,9 +449,14 @@ RSpec.describe Bronze::Collection do
 
     describe 'with a primary key that does not match an item' do
       let(:primary_key_value) { 13 }
-      let(:expected_error)    { Bronze::Collections::Errors.not_found }
+      let(:expected_error) do
+        Bronze::Errors.new.add(
+          Bronze::Collections::Errors.not_found,
+          selector: { id: primary_key_value }
+        )
+      end
 
-      it { expect(result).to be_a_failing_result.with_errors(expected_error) }
+      it { expect(result).to be_a_failing_result.with_error(expected_error) }
     end
 
     describe 'with a primary key that matches an item' do
@@ -454,9 +469,14 @@ RSpec.describe Bronze::Collection do
     wrap_context 'when configured for an entity class' do
       describe 'with a primary key that does not match an item' do
         let(:primary_key_value) { 13 }
-        let(:expected_error)    { Bronze::Collections::Errors.not_found }
+        let(:expected_error) do
+          Bronze::Errors.new.add(
+            Bronze::Collections::Errors.not_found,
+            selector: { id: primary_key_value }
+          )
+        end
 
-        it { expect(result).to be_a_failing_result.with_errors(expected_error) }
+        it { expect(result).to be_a_failing_result.with_error(expected_error) }
       end
 
       describe 'with a primary key that matches an item' do
@@ -1017,9 +1037,14 @@ RSpec.describe Bronze::Collection do
 
     describe 'with a primary key that does not match an item' do
       let(:primary_key_value) { 13 }
-      let(:expected_error)    { Bronze::Collections::Errors.not_found }
+      let(:expected_error) do
+        Bronze::Errors.new.add(
+          Bronze::Collections::Errors.not_found,
+          selector: { id: primary_key_value }
+        )
+      end
 
-      it { expect(result).to be_a_failing_result.with_errors(expected_error) }
+      it { expect(result).to be_a_failing_result.with_error(expected_error) }
 
       it 'should not update the collection' do
         expect { collection.update_one(primary_key_value, with: data) }
@@ -1045,9 +1070,14 @@ RSpec.describe Bronze::Collection do
     wrap_context 'when configured for an entity class' do
       describe 'with a primary key that does not match an item' do
         let(:primary_key_value) { 13 }
-        let(:expected_error)    { Bronze::Collections::Errors.not_found }
+        let(:expected_error) do
+          Bronze::Errors.new.add(
+            Bronze::Collections::Errors.not_found,
+            selector: { id: primary_key_value }
+          )
+        end
 
-        it { expect(result).to be_a_failing_result.with_errors(expected_error) }
+        it { expect(result).to be_a_failing_result.with_error(expected_error) }
 
         it 'should not update the collection' do
           expect { collection.update_one(primary_key_value, with: data) }
