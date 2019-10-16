@@ -4,7 +4,7 @@ require 'bronze/collections/adapter'
 require 'bronze/collections/errors'
 require 'bronze/collections/mongo'
 require 'bronze/collections/mongo/query'
-require 'bronze/result'
+require 'bronze/errors'
 
 module Bronze::Collections::Mongo
   # Adapter class that executes against a MongoDB collection.
@@ -24,27 +24,26 @@ module Bronze::Collections::Mongo
 
     # (see Bronze::Collections::Adapter#delete_matching)
     def delete_matching(collection_name, selector)
-      result       = Bronze::Result.new([])
-      result.value = { count: 0 }
+      errors = Bronze::Errors.new
 
-      validate_selector(selector, errors: result.errors)
+      validate_selector(selector, errors: errors)
 
-      return result unless result.success?
+      return Cuprum::Result.new(error: errors) unless errors.empty?
 
-      delete_from_collection(collection_name, selector, result: result)
+      delete_from_collection(collection_name, selector)
     end
 
     # (see Bronze::Collections::Adapter#insert_one)
     def insert_one(collection_name, data)
-      result       = Bronze::Result.new
-      result.value = { count: 0, data: data }
+      errors = Bronze::Errors.new
 
-      return result unless validate_attributes(data, errors: result.errors)
+      validate_attributes(data, errors: errors)
 
-      data         = tools.hash.convert_keys_to_strings(data)
-      result.value = { count: 1, data: data }
+      return Cuprum::Result.new(error: errors) unless errors.empty?
 
-      insert_into_collection(collection_name, data, result: result)
+      data = tools.hash.convert_keys_to_strings(data)
+
+      insert_into_collection(collection_name, data)
     end
 
     # (see Bronze::Collections::Adapter#query)
@@ -54,49 +53,44 @@ module Bronze::Collections::Mongo
 
     # (see Bronze::Collections::Adapter#update_matching)
     def update_matching(collection_name, selector, data)
-      result = Bronze::Result.new
-      result.value = { count: 0 }
+      errors = Bronze::Errors.new
 
-      validate_selector(selector, errors: result.errors) &&
-        validate_attributes(data, errors: result.errors)
+      validate_selector(selector, errors: errors) &&
+        validate_attributes(data, errors: errors)
 
-      return result unless result.success?
+      return Cuprum::Result.new(error: errors) unless errors.empty?
 
-      update_in_collection(collection_name, selector, data, result: result)
+      update_in_collection(collection_name, selector, data)
     end
 
     private
 
     attr_reader :client
 
-    def delete_from_collection(collection_name, selector, result:)
+    def delete_from_collection(collection_name, selector)
       collection = native_collection(collection_name)
       delete     = collection.delete_many(selector)
 
-      result.value[:count] = delete.n
-
-      result
+      Cuprum::Result.new(value: { count: delete.n })
     end
 
-    def insert_into_collection(collection_name, data, result:)
+    def insert_into_collection(collection_name, data)
       collection = native_collection(collection_name)
 
       collection.insert_one(data)
 
-      result
+      Cuprum::Result.new(value: { count: 1, data: data })
     end
 
     def native_collection(name)
       client[name]
     end
 
-    def update_in_collection(collection_name, selector, data, result:)
+    def update_in_collection(collection_name, selector, data)
       collection = native_collection(collection_name)
       update     = collection.update_many(selector, '$set' => data)
 
-      result.value[:count] = update.n
-
-      result
+      Cuprum::Result.new(value: { count: update.n })
     end
 
     def validate_attributes(attributes, errors:)

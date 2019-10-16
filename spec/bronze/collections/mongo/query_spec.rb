@@ -7,9 +7,10 @@ require 'support/examples/collections/query_examples'
 RSpec.describe Bronze::Collections::Mongo::Query do
   include Spec::Support::Examples::Collections::QueryExamples
 
-  subject(:query) { described_class.new(collection) }
+  subject(:query) { described_class.new(collection, transform: transform) }
 
   let(:collection) { Spec.mongo_client[:books] }
+  let(:transform)  { nil }
   let(:raw_data)   { [] }
   let(:sort_nils_before_values) do
     true # MongoDB sorts nil values before non-nil
@@ -31,7 +32,12 @@ RSpec.describe Bronze::Collections::Mongo::Query do
   after(:example) { collection.delete_many }
 
   describe '::new' do
-    it { expect(described_class).to be_constructible.with(1).argument }
+    it 'should define the constructor' do
+      expect(described_class)
+        .to be_constructible
+        .with(1).argument
+        .and_keywords(:transform)
+    end
   end
 
   describe '#collection' do

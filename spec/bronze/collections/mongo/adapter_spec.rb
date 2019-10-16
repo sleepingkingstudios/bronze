@@ -158,10 +158,7 @@ RSpec.describe Bronze::Collections::Mongo::Adapter do
         adapter.delete_matching(collection_name, nil)
       end
       let(:expected_error) do
-        {
-          type:   Bronze::Collections::Errors::SELECTOR_MISSING,
-          params: {}
-        }
+        Bronze::Errors.new.add(Bronze::Collections::Errors::SELECTOR_MISSING)
       end
 
       it 'should not change the data' do
@@ -170,7 +167,7 @@ RSpec.describe Bronze::Collections::Mongo::Adapter do
       end
 
       it 'should return a result' do
-        expect(result).to be_a_failing_result.with_errors(expected_error)
+        expect(result).to be_a_failing_result.with_error(expected_error)
       end
     end
 
@@ -180,10 +177,10 @@ RSpec.describe Bronze::Collections::Mongo::Adapter do
         adapter.delete_matching(collection_name, selector)
       end
       let(:expected_error) do
-        {
-          type:   Bronze::Collections::Errors::SELECTOR_INVALID,
-          params: { selector: selector }
-        }
+        Bronze::Errors.new.add(
+          Bronze::Collections::Errors::SELECTOR_INVALID,
+          selector: selector
+        )
       end
 
       it 'should not change the data' do
@@ -192,7 +189,7 @@ RSpec.describe Bronze::Collections::Mongo::Adapter do
       end
 
       it 'should return a result' do
-        expect(result).to be_a_failing_result.with_errors(expected_error)
+        expect(result).to be_a_failing_result.with_error(expected_error)
       end
     end
 
@@ -268,10 +265,7 @@ RSpec.describe Bronze::Collections::Mongo::Adapter do
     describe 'with a nil data object' do
       let(:collection_name) { 'books' }
       let(:expected_error) do
-        {
-          type:   Bronze::Collections::Errors::DATA_MISSING,
-          params: {}
-        }
+        Bronze::Errors.new.add(Bronze::Collections::Errors::DATA_MISSING)
       end
       let(:result) { adapter.insert_one(collection_name, nil) }
 
@@ -281,17 +275,17 @@ RSpec.describe Bronze::Collections::Mongo::Adapter do
       end
 
       it 'should return a result' do
-        expect(result).to be_a_failing_result.with_errors(expected_error)
+        expect(result).to be_a_failing_result.with_error(expected_error)
       end
     end
 
     describe 'with an Object' do
       let(:collection_name) { 'books' }
       let(:expected_error) do
-        {
-          type:   Bronze::Collections::Errors::DATA_INVALID,
-          params: { data: object }
-        }
+        Bronze::Errors.new.add(
+          Bronze::Collections::Errors::DATA_INVALID,
+          data: object
+        )
       end
       let(:object) { Object.new }
       let(:result) { adapter.insert_one(collection_name, object) }
@@ -302,17 +296,14 @@ RSpec.describe Bronze::Collections::Mongo::Adapter do
       end
 
       it 'should return a result' do
-        expect(result).to be_a_failing_result.with_errors(expected_error)
+        expect(result).to be_a_failing_result.with_error(expected_error)
       end
     end
 
     describe 'with an empty data object' do
       let(:collection_name) { 'books' }
       let(:expected_error) do
-        {
-          type:   Bronze::Collections::Errors::DATA_EMPTY,
-          params: {}
-        }
+        Bronze::Errors.new.add(Bronze::Collections::Errors::DATA_EMPTY)
       end
       let(:data)   { {} }
       let(:result) { adapter.insert_one(collection_name, data) }
@@ -323,7 +314,7 @@ RSpec.describe Bronze::Collections::Mongo::Adapter do
       end
 
       it 'should return a result' do
-        expect(result).to be_a_failing_result.with_errors(expected_error)
+        expect(result).to be_a_failing_result.with_error(expected_error)
       end
     end
 
@@ -481,10 +472,7 @@ RSpec.describe Bronze::Collections::Mongo::Adapter do
         adapter.update_matching(collection_name, nil, data)
       end
       let(:expected_error) do
-        {
-          type:   Bronze::Collections::Errors::SELECTOR_MISSING,
-          params: {}
-        }
+        Bronze::Errors.new.add(Bronze::Collections::Errors::SELECTOR_MISSING)
       end
 
       it 'should not change the data' do
@@ -493,7 +481,7 @@ RSpec.describe Bronze::Collections::Mongo::Adapter do
       end
 
       it 'should return a result' do
-        expect(result).to be_a_failing_result.with_errors(expected_error)
+        expect(result).to be_a_failing_result.with_error(expected_error)
       end
     end
 
@@ -503,10 +491,10 @@ RSpec.describe Bronze::Collections::Mongo::Adapter do
         adapter.update_matching(collection_name, selector, data)
       end
       let(:expected_error) do
-        {
-          type:   Bronze::Collections::Errors::SELECTOR_INVALID,
-          params: { selector: selector }
-        }
+        Bronze::Errors.new.add(
+          Bronze::Collections::Errors::SELECTOR_INVALID,
+          selector: selector
+        )
       end
 
       it 'should not change the data' do
@@ -515,7 +503,7 @@ RSpec.describe Bronze::Collections::Mongo::Adapter do
       end
 
       it 'should return a result' do
-        expect(result).to be_a_failing_result.with_errors(expected_error)
+        expect(result).to be_a_failing_result.with_error(expected_error)
       end
     end
 
@@ -524,10 +512,7 @@ RSpec.describe Bronze::Collections::Mongo::Adapter do
         adapter.update_matching(collection_name, selector, nil)
       end
       let(:expected_error) do
-        {
-          type:   Bronze::Collections::Errors::DATA_MISSING,
-          params: {}
-        }
+        Bronze::Errors.new.add(Bronze::Collections::Errors::DATA_MISSING)
       end
 
       it 'should not change the data' do
@@ -536,7 +521,7 @@ RSpec.describe Bronze::Collections::Mongo::Adapter do
       end
 
       it 'should return a result' do
-        expect(result).to be_a_failing_result.with_errors(expected_error)
+        expect(result).to be_a_failing_result.with_error(expected_error)
       end
     end
 
@@ -546,10 +531,10 @@ RSpec.describe Bronze::Collections::Mongo::Adapter do
         adapter.update_matching(collection_name, selector, data)
       end
       let(:expected_error) do
-        {
-          type:   Bronze::Collections::Errors::DATA_INVALID,
-          params: { data: data }
-        }
+        Bronze::Errors.new.add(
+          Bronze::Collections::Errors::DATA_INVALID,
+          data: data
+        )
       end
 
       it 'should not change the data' do
@@ -558,7 +543,7 @@ RSpec.describe Bronze::Collections::Mongo::Adapter do
       end
 
       it 'should return a result' do
-        expect(result).to be_a_failing_result.with_errors(expected_error)
+        expect(result).to be_a_failing_result.with_error(expected_error)
       end
     end
 
@@ -567,10 +552,7 @@ RSpec.describe Bronze::Collections::Mongo::Adapter do
         adapter.update_matching(collection_name, selector, {})
       end
       let(:expected_error) do
-        {
-          type:   Bronze::Collections::Errors::DATA_EMPTY,
-          params: {}
-        }
+        Bronze::Errors.new.add(Bronze::Collections::Errors::DATA_EMPTY)
       end
 
       it 'should not change the data' do
@@ -579,7 +561,7 @@ RSpec.describe Bronze::Collections::Mongo::Adapter do
       end
 
       it 'should return a result' do
-        expect(result).to be_a_failing_result.with_errors(expected_error)
+        expect(result).to be_a_failing_result.with_error(expected_error)
       end
     end
 

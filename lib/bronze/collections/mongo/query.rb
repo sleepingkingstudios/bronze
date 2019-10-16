@@ -18,8 +18,9 @@ module Bronze::Collections::Mongo
 
     # @param [Mongo::Collection] collection The MongoDB collection to query
     #   against.
-    def initialize(collection)
+    def initialize(collection, transform: nil)
       @collection = collection
+      @transform  = transform
       @selector   = {}
       @ordering   = nil
       @limit      = nil
@@ -36,9 +37,9 @@ module Bronze::Collections::Mongo
 
     # (see Bronze::Collections::Query#each)
     def each
-      return native_query.each unless block_given?
+      return enum_for(:each_with_transform) unless block_given?
 
-      native_query.each { |item| yield item }
+      each_with_transform { |item| yield item }
     end
 
     # (see Bronze::Collections::Query#exists?)
@@ -104,6 +105,16 @@ module Bronze::Collections::Mongo
     attr_reader :ordering
 
     attr_reader :selector
+
+    def each_with_transform
+      enumerator = native_query.each
+
+      if transform
+        enumerator = enumerator.map { |item| transform.denormalize(item) }
+      end
+
+      enumerator.each { |item| yield item }
+    end
 
     def native_query
       query = collection.find(selector)
