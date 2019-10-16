@@ -2,6 +2,22 @@
 
 ## 0.2.0
 
+### Collections
+
+Adds the Bronze::Collection class, which represents a searchable set of entities.
+
+#### Adapters
+
+Each collection delegates to a Bronze::Collections::Adapter, which handles the wiring between the Collection interface and a specific data source such as a database or an in-memory data structure.
+
+#### Queries
+
+Each collection adapter defines a Query object, which provides a standardized interface for running queries against the underlying data.
+
+#### Repositories
+
+Collections are grouped together as a Bronze::Repository, which abstracts accessing multiple data streams from a single source, such as a database with multiple tables.
+
 ### Transforms
 
 Implemented Transform composition via the #<< and #>> methods.

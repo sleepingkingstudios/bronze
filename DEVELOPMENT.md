@@ -1,8 +1,12 @@
 # Development
 
-## Collections
+## Version 0.2.0
 
-### Advanced Querying
+- Update documentation.
+
+### Collections
+
+#### Advanced Querying
 
 - Mongo-style selectors - query.matching(year: { $gt: 1986 }): |
   see https://docs.mongodb.com/manual/reference/operator/query/
@@ -20,6 +24,22 @@
   Element:
     $exists   Matches documents that have the specified field.
     $type   Selects documents if a field is of the specified type.
+
+### Errors
+
+- Replace Bronze::Errors instances with Cuprum::Error subclasses.
+
+## Future Versions
+
+- Extract attributes to Stannum.
+
+### Associations
+
+TBD
+
+### Collections
+
+#### Advanced Querying
 
 - Additional selectors: |
   see https://docs.mongodb.com/manual/reference/operator/query/
@@ -49,17 +69,17 @@
   { key: { subkey: value } }
   { key: { subkey: { $eq => value } } }
 
-## Entities
+### Entities
 
-### Attributes
+#### Attributes
 
-#### Boolean attributes
+##### Boolean attributes
 
 - attribute :flag, Boolean, default: false
 
 - also generates #flag? predicate
 
-#### :default option
+##### :default option
 
 - default value method: |
   #default_introduction => 'It was a dark and stormy night...'
@@ -74,7 +94,7 @@
     attribute :full_name, String, default:
       ->(user) { [user.first_name, user.last_name].compact.join(' ') }
 
-#### :enum option
+##### :enum option
 
 - Unmapped: |
     attribute :rarity, String, enum: %w(rare medium well)
@@ -113,7 +133,7 @@
       }
       end
 
-#### :visible option
+##### :visible option
 
 - attribute :hidden, String, visible: false
 - defaults to true
@@ -122,11 +142,11 @@
     - make getter, setter private
     - do include in normalize-denormalize
 
-## Errors
+### Errors
 
 - messages -> I18N?
 
-## Transforms
+### Transforms
 
 - Rename #normalize to #call, #denormalize to #reverse_call ?
 - JSON transform - to/from JSON string
