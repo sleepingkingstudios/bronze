@@ -54,7 +54,7 @@ RSpec.describe Bronze::Collections::EntityCollection do
   end
 
   shared_examples 'should delegate to the adapter' do
-    let(:result) { Bronze::Result.new.tap { |res| res.value = value } }
+    let(:result) { Cuprum::Result.new(value: value) }
 
     it 'delegate to the adapter' do
       call_method
@@ -75,10 +75,10 @@ RSpec.describe Bronze::Collections::EntityCollection do
     describe 'with a nil data object' do
       let(:object) { nil }
       let(:expected_error) do
-        {
-          type:   Bronze::Collections::Errors::DATA_MISSING,
-          params: {}
-        }
+        Bronze::Errors.new.add(
+          Bronze::Collections::Errors::DATA_MISSING,
+          {}
+        )
       end
 
       it 'should not delegate to the adapter' do
@@ -90,17 +90,17 @@ RSpec.describe Bronze::Collections::EntityCollection do
       it 'should return a failing result' do
         expect(call_method)
           .to be_a_failing_result
-          .with_errors(expected_error)
+          .with_error(expected_error)
       end
     end
 
     describe 'with a non-entity data object' do
       let(:object) { Object.new }
       let(:expected_error) do
-        {
-          type:   Bronze::Collections::Errors::DATA_INVALID,
-          params: { data: object }
-        }
+        Bronze::Errors.new.add(
+          Bronze::Collections::Errors::DATA_INVALID,
+          data: object
+        )
       end
 
       it 'should not delegate to the adapter' do
@@ -112,7 +112,7 @@ RSpec.describe Bronze::Collections::EntityCollection do
       it 'should return a failing result' do
         expect(call_method)
           .to be_a_failing_result
-          .with_errors(expected_error)
+          .with_error(expected_error)
       end
     end
   end
@@ -123,10 +123,10 @@ RSpec.describe Bronze::Collections::EntityCollection do
     describe 'with a data hash' do
       let(:object) { data }
       let(:expected_error) do
-        {
-          type:   Bronze::Collections::Errors::DATA_INVALID,
-          params: { data: object }
-        }
+        Bronze::Errors.new.add(
+          Bronze::Collections::Errors::DATA_INVALID,
+          data: object
+        )
       end
 
       it 'should not delegate to the adapter' do
@@ -138,7 +138,7 @@ RSpec.describe Bronze::Collections::EntityCollection do
       it 'should return a failing result' do
         expect(call_method)
           .to be_a_failing_result
-          .with_errors(expected_error)
+          .with_error(expected_error)
       end
     end
   end
@@ -148,11 +148,10 @@ RSpec.describe Bronze::Collections::EntityCollection do
       describe 'with a data object that includes the primary key' do
         let(:data) { { primary_key.to_s => primary_key_value } }
         let(:expected_error) do
-          {
-            type:   Bronze::Collections::Errors::PRIMARY_KEY_BULK_UPDATE,
-            params: { value: primary_key_value },
-            path:   [primary_key]
-          }
+          Bronze::Errors.new[primary_key].add(
+            Bronze::Collections::Errors::PRIMARY_KEY_BULK_UPDATE,
+            value: primary_key_value
+          )
         end
 
         it 'should not delegate to the adapter' do
@@ -164,7 +163,7 @@ RSpec.describe Bronze::Collections::EntityCollection do
         it 'should return a failing result' do
           expect(call_method)
             .to be_a_failing_result
-            .with_errors(expected_error)
+            .with_error(expected_error)
         end
       end
     end
@@ -173,11 +172,10 @@ RSpec.describe Bronze::Collections::EntityCollection do
       describe 'with a data object that includes the primary key' do
         let(:data) { { primary_key => primary_key_value } }
         let(:expected_error) do
-          {
-            type:   Bronze::Collections::Errors::PRIMARY_KEY_BULK_UPDATE,
-            params: { value: primary_key_value },
-            path:   [primary_key]
-          }
+          Bronze::Errors.new[primary_key].add(
+            Bronze::Collections::Errors::PRIMARY_KEY_BULK_UPDATE,
+            value: primary_key_value
+          )
         end
 
         it 'should not delegate to the adapter' do
@@ -189,7 +187,7 @@ RSpec.describe Bronze::Collections::EntityCollection do
         it 'should return a failing result' do
           expect(call_method)
             .to be_a_failing_result
-            .with_errors(expected_error)
+            .with_error(expected_error)
         end
       end
     end
@@ -199,11 +197,9 @@ RSpec.describe Bronze::Collections::EntityCollection do
     wrap_context 'when the entity class has an integer primary key' do
       describe 'with a nil primary key' do
         let(:expected_error) do
-          {
-            type:   Bronze::Collections::Errors::PRIMARY_KEY_MISSING,
-            params: {},
-            path:   [primary_key]
-          }
+          Bronze::Errors.new[primary_key].add(
+            Bronze::Collections::Errors::PRIMARY_KEY_MISSING
+          )
         end
 
         before(:example) do
@@ -219,7 +215,7 @@ RSpec.describe Bronze::Collections::EntityCollection do
         it 'should return a failing result' do
           expect(call_method)
             .to be_a_failing_result
-            .with_errors(expected_error)
+            .with_error(expected_error)
         end
       end
 
@@ -229,14 +225,11 @@ RSpec.describe Bronze::Collections::EntityCollection do
           super().merge(primary_key => primary_key_value)
         end
         let(:expected_error) do
-          {
-            type:   Bronze::Collections::Errors::PRIMARY_KEY_INVALID,
-            params: {
-              type:  primary_key_type.name,
-              value: primary_key_value.to_s
-            },
-            path:   [primary_key]
-          }
+          Bronze::Errors.new[primary_key].add(
+            Bronze::Collections::Errors::PRIMARY_KEY_INVALID,
+            type:  primary_key_type.name,
+            value: primary_key_value.to_s
+          )
         end
 
         it 'should not delegate to the adapter' do
@@ -248,7 +241,7 @@ RSpec.describe Bronze::Collections::EntityCollection do
         it 'should return a failing result' do
           expect(call_method)
             .to be_a_failing_result
-            .with_errors(expected_error)
+            .with_error(expected_error)
         end
       end
     end
@@ -256,11 +249,9 @@ RSpec.describe Bronze::Collections::EntityCollection do
     wrap_context 'when the entity class has a string primary key' do
       describe 'with a nil primary key' do
         let(:expected_error) do
-          {
-            type:   Bronze::Collections::Errors::PRIMARY_KEY_MISSING,
-            params: {},
-            path:   [primary_key]
-          }
+          Bronze::Errors.new[primary_key].add(
+            Bronze::Collections::Errors::PRIMARY_KEY_MISSING
+          )
         end
 
         before(:example) do
@@ -276,7 +267,7 @@ RSpec.describe Bronze::Collections::EntityCollection do
         it 'should return a failing result' do
           expect(call_method)
             .to be_a_failing_result
-            .with_errors(expected_error)
+            .with_error(expected_error)
         end
       end
 
@@ -286,14 +277,11 @@ RSpec.describe Bronze::Collections::EntityCollection do
           super().merge(primary_key => primary_key_value)
         end
         let(:expected_error) do
-          {
-            type:   Bronze::Collections::Errors::PRIMARY_KEY_INVALID,
-            params: {
-              type:  primary_key_type.name,
-              value: primary_key_value.to_s
-            },
-            path:   [primary_key]
-          }
+          Bronze::Errors.new[primary_key].add(
+            Bronze::Collections::Errors::PRIMARY_KEY_INVALID,
+            type:  primary_key_type.name,
+            value: primary_key_value.to_s
+          )
         end
 
         it 'should not delegate to the adapter' do
@@ -305,7 +293,7 @@ RSpec.describe Bronze::Collections::EntityCollection do
         it 'should return a failing result' do
           expect(call_method)
             .to be_a_failing_result
-            .with_errors(expected_error)
+            .with_error(expected_error)
         end
       end
 
@@ -315,11 +303,10 @@ RSpec.describe Bronze::Collections::EntityCollection do
           super().merge(primary_key => primary_key_value)
         end
         let(:expected_error) do
-          {
-            type:   Bronze::Collections::Errors::PRIMARY_KEY_EMPTY,
-            params: { value: primary_key_value.to_s },
-            path:   [primary_key]
-          }
+          Bronze::Errors.new[primary_key].add(
+            Bronze::Collections::Errors::PRIMARY_KEY_EMPTY,
+            value: primary_key_value.to_s
+          )
         end
 
         it 'should not delegate to the adapter' do
@@ -331,7 +318,7 @@ RSpec.describe Bronze::Collections::EntityCollection do
         it 'should return a failing result' do
           expect(call_method)
             .to be_a_failing_result
-            .with_errors(expected_error)
+            .with_error(expected_error)
         end
       end
     end
@@ -341,11 +328,7 @@ RSpec.describe Bronze::Collections::EntityCollection do
     describe 'with a nil primary key' do
       let(:primary_key_value) { nil }
       let(:expected_error) do
-        {
-          type:   Bronze::Collections::Errors::NO_PRIMARY_KEY,
-          params: {},
-          path:   []
-        }
+        Bronze::Errors.new.add(Bronze::Collections::Errors::NO_PRIMARY_KEY)
       end
 
       it 'should not delegate to the adapter' do
@@ -357,18 +340,14 @@ RSpec.describe Bronze::Collections::EntityCollection do
       it 'should return a failing result' do
         expect(call_method)
           .to be_a_failing_result
-          .with_errors(expected_error)
+          .with_error(expected_error)
       end
     end
 
     describe 'with a primary key' do
       let(:primary_key_value) { '00000000-0000-0000-0000-000000000000' }
       let(:expected_error) do
-        {
-          type:   Bronze::Collections::Errors::NO_PRIMARY_KEY,
-          params: {},
-          path:   []
-        }
+        Bronze::Errors.new.add(Bronze::Collections::Errors::NO_PRIMARY_KEY)
       end
 
       it 'should not delegate to the adapter' do
@@ -380,7 +359,7 @@ RSpec.describe Bronze::Collections::EntityCollection do
       it 'should return a failing result' do
         expect(call_method)
           .to be_a_failing_result
-          .with_errors(expected_error)
+          .with_error(expected_error)
       end
     end
 
@@ -388,11 +367,9 @@ RSpec.describe Bronze::Collections::EntityCollection do
       describe 'with a nil primary key' do
         let(:primary_key_value) { nil }
         let(:expected_error) do
-          {
-            type:   Bronze::Collections::Errors::PRIMARY_KEY_MISSING,
-            params: {},
-            path:   [primary_key]
-          }
+          Bronze::Errors.new[primary_key].add(
+            Bronze::Collections::Errors::PRIMARY_KEY_MISSING
+          )
         end
 
         it 'should not delegate to the adapter' do
@@ -404,21 +381,18 @@ RSpec.describe Bronze::Collections::EntityCollection do
         it 'should return a failing result' do
           expect(call_method)
             .to be_a_failing_result
-            .with_errors(expected_error)
+            .with_error(expected_error)
         end
       end
 
       describe 'with a primary key with invalid type' do
         let(:primary_key_value) { Object.new }
         let(:expected_error) do
-          {
-            type:   Bronze::Collections::Errors::PRIMARY_KEY_INVALID,
-            params: {
-              type:  primary_key_type.name,
-              value: primary_key_value.to_s
-            },
-            path:   [primary_key]
-          }
+          Bronze::Errors.new[primary_key].add(
+            Bronze::Collections::Errors::PRIMARY_KEY_INVALID,
+            type:  primary_key_type.name,
+            value: primary_key_value.to_s
+          )
         end
 
         it 'should not delegate to the adapter' do
@@ -430,7 +404,7 @@ RSpec.describe Bronze::Collections::EntityCollection do
         it 'should return a failing result' do
           expect(call_method)
             .to be_a_failing_result
-            .with_errors(expected_error)
+            .with_error(expected_error)
         end
       end
     end
@@ -439,11 +413,9 @@ RSpec.describe Bronze::Collections::EntityCollection do
       describe 'with a nil primary key' do
         let(:primary_key_value) { nil }
         let(:expected_error) do
-          {
-            type:   Bronze::Collections::Errors::PRIMARY_KEY_MISSING,
-            params: {},
-            path:   [primary_key]
-          }
+          Bronze::Errors.new[primary_key].add(
+            Bronze::Collections::Errors::PRIMARY_KEY_MISSING
+          )
         end
 
         it 'should not delegate to the adapter' do
@@ -455,21 +427,18 @@ RSpec.describe Bronze::Collections::EntityCollection do
         it 'should return a failing result' do
           expect(call_method)
             .to be_a_failing_result
-            .with_errors(expected_error)
+            .with_error(expected_error)
         end
       end
 
       describe 'with a primary key with invalid type' do
         let(:primary_key_value) { Object.new }
         let(:expected_error) do
-          {
-            type:   Bronze::Collections::Errors::PRIMARY_KEY_INVALID,
-            params: {
-              type:  primary_key_type.name,
-              value: primary_key_value.to_s
-            },
-            path:   [primary_key]
-          }
+          Bronze::Errors.new[primary_key].add(
+            Bronze::Collections::Errors::PRIMARY_KEY_INVALID,
+            type:  primary_key_type.name,
+            value: primary_key_value.to_s
+          )
         end
 
         it 'should not delegate to the adapter' do
@@ -481,7 +450,7 @@ RSpec.describe Bronze::Collections::EntityCollection do
         it 'should return a failing result' do
           expect(call_method)
             .to be_a_failing_result
-            .with_errors(expected_error)
+            .with_error(expected_error)
         end
       end
 
@@ -489,11 +458,10 @@ RSpec.describe Bronze::Collections::EntityCollection do
         let(:primary_key_type)  { String }
         let(:primary_key_value) { '' }
         let(:expected_error) do
-          {
-            type:   Bronze::Collections::Errors::PRIMARY_KEY_EMPTY,
-            params: { value: primary_key_value.to_s },
-            path:   [primary_key]
-          }
+          Bronze::Errors.new[primary_key].add(
+            Bronze::Collections::Errors::PRIMARY_KEY_EMPTY,
+            value: primary_key_value.to_s
+          )
         end
 
         it 'should not delegate to the adapter' do
@@ -505,7 +473,7 @@ RSpec.describe Bronze::Collections::EntityCollection do
         it 'should return a failing result' do
           expect(call_method)
             .to be_a_failing_result
-            .with_errors(expected_error)
+            .with_error(expected_error)
         end
       end
     end
@@ -515,11 +483,7 @@ RSpec.describe Bronze::Collections::EntityCollection do
     describe 'with a nil primary key' do
       let(:primary_key_value) { nil }
       let(:expected_error) do
-        {
-          type:   Bronze::Collections::Errors::NO_PRIMARY_KEY,
-          params: {},
-          path:   []
-        }
+        Bronze::Errors.new.add(Bronze::Collections::Errors::NO_PRIMARY_KEY)
       end
 
       it 'should not delegate to the adapter' do
@@ -531,18 +495,14 @@ RSpec.describe Bronze::Collections::EntityCollection do
       it 'should return a failing result' do
         expect(call_method)
           .to be_a_failing_result
-          .with_errors(expected_error)
+          .with_error(expected_error)
       end
     end
 
     describe 'with a primary key' do
       let(:primary_key_value) { '00000000-0000-0000-0000-000000000000' }
       let(:expected_error) do
-        {
-          type:   Bronze::Collections::Errors::NO_PRIMARY_KEY,
-          params: {},
-          path:   []
-        }
+        Bronze::Errors.new.add(Bronze::Collections::Errors::NO_PRIMARY_KEY)
       end
 
       it 'should not delegate to the adapter' do
@@ -554,7 +514,7 @@ RSpec.describe Bronze::Collections::EntityCollection do
       it 'should return a failing result' do
         expect(call_method)
           .to be_a_failing_result
-          .with_errors(expected_error)
+          .with_error(expected_error)
       end
     end
 
@@ -564,11 +524,10 @@ RSpec.describe Bronze::Collections::EntityCollection do
       describe 'with primary_key: nil' do
         let(:data) { super().merge(primary_key => nil) }
         let(:expected_error) do
-          {
-            type:   Bronze::Collections::Errors::PRIMARY_KEY_CHANGED,
-            params: { value: nil },
-            path:   [primary_key]
-          }
+          Bronze::Errors.new[primary_key].add(
+            Bronze::Collections::Errors::PRIMARY_KEY_CHANGED,
+            value: nil
+          )
         end
 
         it 'should not delegate to the adapter' do
@@ -580,18 +539,17 @@ RSpec.describe Bronze::Collections::EntityCollection do
         it 'should return a failing result' do
           expect(call_method)
             .to be_a_failing_result
-            .with_errors(expected_error)
+            .with_error(expected_error)
         end
       end
 
       describe 'with primary_key: different value' do
         let(:data) { super().merge(primary_key => 13) }
         let(:expected_error) do
-          {
-            type:   Bronze::Collections::Errors::PRIMARY_KEY_CHANGED,
-            params: { value: 13 },
-            path:   [primary_key]
-          }
+          Bronze::Errors.new[primary_key].add(
+            Bronze::Collections::Errors::PRIMARY_KEY_CHANGED,
+            value: 13
+          )
         end
 
         it 'should not delegate to the adapter' do
@@ -603,7 +561,7 @@ RSpec.describe Bronze::Collections::EntityCollection do
         it 'should return a failing result' do
           expect(call_method)
             .to be_a_failing_result
-            .with_errors(expected_error)
+            .with_error(expected_error)
         end
       end
 
@@ -628,11 +586,10 @@ RSpec.describe Bronze::Collections::EntityCollection do
       describe 'with primary_key: nil' do
         let(:data) { super().merge(primary_key => nil) }
         let(:expected_error) do
-          {
-            type:   Bronze::Collections::Errors::PRIMARY_KEY_CHANGED,
-            params: { value: nil },
-            path:   [primary_key]
-          }
+          Bronze::Errors.new[primary_key].add(
+            Bronze::Collections::Errors::PRIMARY_KEY_CHANGED,
+            value: nil
+          )
         end
 
         it 'should not delegate to the adapter' do
@@ -644,7 +601,7 @@ RSpec.describe Bronze::Collections::EntityCollection do
         it 'should return a failing result' do
           expect(call_method)
             .to be_a_failing_result
-            .with_errors(expected_error)
+            .with_error(expected_error)
         end
       end
 
@@ -653,11 +610,10 @@ RSpec.describe Bronze::Collections::EntityCollection do
           super().merge(primary_key => '00000000-0000-0000-0000-00000000000d')
         end
         let(:expected_error) do
-          {
-            type:   Bronze::Collections::Errors::PRIMARY_KEY_CHANGED,
-            params: { value: '00000000-0000-0000-0000-00000000000d' },
-            path:   [primary_key]
-          }
+          Bronze::Errors.new[primary_key].add(
+            Bronze::Collections::Errors::PRIMARY_KEY_CHANGED,
+            value: '00000000-0000-0000-0000-00000000000d'
+          )
         end
 
         it 'should not delegate to the adapter' do
@@ -669,7 +625,7 @@ RSpec.describe Bronze::Collections::EntityCollection do
         it 'should return a failing result' do
           expect(call_method)
             .to be_a_failing_result
-            .with_errors(expected_error)
+            .with_error(expected_error)
         end
       end
 
@@ -693,10 +649,10 @@ RSpec.describe Bronze::Collections::EntityCollection do
     describe 'with a nil selector' do
       let(:selector) { nil }
       let(:expected_error) do
-        {
-          type:   Bronze::Collections::Errors::SELECTOR_MISSING,
-          params: {}
-        }
+        Bronze::Errors.new.add(
+          Bronze::Collections::Errors::SELECTOR_MISSING,
+          {}
+        )
       end
 
       it 'should not delegate to the adapter' do
@@ -708,17 +664,17 @@ RSpec.describe Bronze::Collections::EntityCollection do
       it 'should return a failing result' do
         expect(call_method)
           .to be_a_failing_result
-          .with_errors(expected_error)
+          .with_error(expected_error)
       end
     end
 
     describe 'with a non-Hash selector' do
       let(:selector) { Object.new }
       let(:expected_error) do
-        {
-          type:   Bronze::Collections::Errors::SELECTOR_INVALID,
-          params: { selector: selector }
-        }
+        Bronze::Errors.new.add(
+          Bronze::Collections::Errors::SELECTOR_INVALID,
+          selector: selector
+        )
       end
 
       it 'should not delegate to the adapter' do
@@ -730,7 +686,7 @@ RSpec.describe Bronze::Collections::EntityCollection do
       it 'should return a failing result' do
         expect(call_method)
           .to be_a_failing_result
-          .with_errors(expected_error)
+          .with_error(expected_error)
       end
     end
   end
@@ -746,15 +702,15 @@ RSpec.describe Bronze::Collections::EntityCollection do
     instance_double(
       Bronze::Collections::Adapter,
       collection_name_for: '',
-      delete_matching:     Bronze::Result.new,
-      delete_one:          Bronze::Result.new,
-      find_matching:       Bronze::Result.new,
-      find_one:            Bronze::Result.new,
-      insert_one:          Bronze::Result.new,
+      delete_matching:     Cuprum::Result.new,
+      delete_one:          Cuprum::Result.new,
+      find_matching:       Cuprum::Result.new,
+      find_one:            Cuprum::Result.new,
+      insert_one:          Cuprum::Result.new,
       null_query:          null_query,
       query:               query,
-      update_matching:     Bronze::Result.new,
-      update_one:          Bronze::Result.new
+      update_matching:     Cuprum::Result.new,
+      update_one:          Cuprum::Result.new
     )
   end
   let(:null_query) do
@@ -1389,10 +1345,10 @@ RSpec.describe Bronze::Collections::EntityCollection do
       describe 'with an empty data object' do
         let(:data) { {} }
         let(:expected_error) do
-          {
-            type:   Bronze::Collections::Errors::DATA_EMPTY,
-            params: { data: object }
-          }
+          Bronze::Errors.new.add(
+            Bronze::Collections::Errors::DATA_EMPTY,
+            data: object
+          )
         end
 
         it 'should not delegate to the adapter' do
@@ -1404,7 +1360,7 @@ RSpec.describe Bronze::Collections::EntityCollection do
         it 'should return a failing result' do
           expect(call_method)
             .to be_a_failing_result
-            .with_errors(expected_error)
+            .with_error(expected_error)
         end
       end
 
@@ -1491,10 +1447,10 @@ RSpec.describe Bronze::Collections::EntityCollection do
       describe 'with an empty data object' do
         let(:data) { {} }
         let(:expected_error) do
-          {
-            type:   Bronze::Collections::Errors::DATA_EMPTY,
-            params: { data: object }
-          }
+          Bronze::Errors.new.add(
+            Bronze::Collections::Errors::DATA_EMPTY,
+            data: object
+          )
         end
 
         it 'should not delegate to the adapter' do
@@ -1506,7 +1462,7 @@ RSpec.describe Bronze::Collections::EntityCollection do
         it 'should return a failing result' do
           expect(call_method)
             .to be_a_failing_result
-            .with_errors(expected_error)
+            .with_error(expected_error)
         end
       end
 

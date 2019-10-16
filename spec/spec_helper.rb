@@ -12,7 +12,7 @@ require 'byebug'
 # Isolated namespace for defining spec-only or transient objects.
 module Spec; end
 
-require 'support/matchers/be_a_result'
+require 'cuprum/rspec/be_a_result'
 require 'support/matchers/match_attributes'
 require 'support/matchers/not_yield_control'
 require 'support/sorting'

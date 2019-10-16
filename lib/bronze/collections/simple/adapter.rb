@@ -5,7 +5,6 @@ require 'bronze/collections/errors'
 require 'bronze/collections/simple'
 require 'bronze/collections/simple/query'
 require 'bronze/errors'
-require 'bronze/result'
 require 'bronze/transforms/copy_transform'
 
 module Bronze::Collections::Simple
@@ -31,14 +30,11 @@ module Bronze::Collections::Simple
 
     # (see Bronze::Collections::Adapter#delete_matching)
     def delete_matching(collection_name:, selector:)
-      result = Bronze::Result.new([])
-      items  = query(collection_name: collection_name).matching(selector).to_a
+      items = query(collection_name: collection_name).matching(selector).to_a
 
       items.each { |item| collection(collection_name).delete(item) }
 
-      result.value = { count: items.size, data: items }
-
-      result
+      Cuprum::Result.new(value: { count: items.size, data: items })
     end
 
     # (see Bronze::Collections::Adapter#delete_one)
@@ -50,11 +46,11 @@ module Bronze::Collections::Simple
         .to_a
       errors = uniqueness_errors(items, primary_key, primary_key_value)
 
-      return Bronze::Result.new(nil, errors: errors) if errors
+      return Cuprum::Result.new(error: errors) if errors
 
       collection(collection_name).delete(items.first)
 
-      Bronze::Result.new(items.first)
+      Cuprum::Result.new(value: items.first)
     end
 
     # (see Bronze::Collections::Adapter#find_matching)
@@ -74,7 +70,7 @@ module Bronze::Collections::Simple
       items = items.limit(limit)         if limit
       items = items.offset(offset)       if offset
 
-      Bronze::Result.new(items.to_a)
+      Cuprum::Result.new(value: items.to_a)
     end
 
     # (see Bronze::Collections::Adapter#find_one)
@@ -91,15 +87,15 @@ module Bronze::Collections::Simple
         .to_a
       errors = uniqueness_errors(items, primary_key, primary_key_value)
 
-      return Bronze::Result.new(nil, errors: errors) if errors
+      return Cuprum::Result.new(error: errors) if errors
 
-      Bronze::Result.new(items.first)
+      Cuprum::Result.new(value: items.first)
     end
 
     # (see Bronze::Collections::Adapter#insert_one)
     def insert_one(collection_name:, data:)
       data   = tools.hash.convert_keys_to_strings(data)
-      result = Bronze::Result.new(data)
+      result = Cuprum::Result.new(value: data)
 
       insert_into_collection(collection(collection_name), data)
 
@@ -121,17 +117,15 @@ module Bronze::Collections::Simple
 
     # (see Bronze::Collections::Adapter#update_matching)
     def update_matching(collection_name:, data:, selector:)
-      result = Bronze::Result.new
-      data   = tools.hash.convert_keys_to_strings(data)
-      items  =
+      data  = tools.hash.convert_keys_to_strings(data)
+      items =
         raw_query(collection_name: collection_name)
         .matching(selector)
         .each.map do |item|
           item.update(data)
         end
 
-      result.value = { count: items.size, data: items }
-      result
+      Cuprum::Result.new(value: { count: items.size, data: items })
     end
 
     # (see Bronze::Collections::Adapter#update_one)
@@ -143,11 +137,11 @@ module Bronze::Collections::Simple
         .to_a
       errors = uniqueness_errors(items, primary_key, primary_key_value)
 
-      return Bronze::Result.new(nil, errors: errors) if errors
+      return Cuprum::Result.new(error: errors) if errors
 
       update_item(items.first, data)
 
-      Bronze::Result.new(tools.hash.deep_dup(items.first))
+      Cuprum::Result.new(value: tools.hash.deep_dup(items.first))
     end
 
     private

@@ -65,10 +65,10 @@ module Spec::Support::Examples::Collections
       describe 'with a non-matching primary key' do
         let(:primary_key_value) { '00000000-0000-0000-0000-000000000000' }
         let(:expected_error) do
-          {
-            type:   Bronze::Collections::Errors::NOT_FOUND,
-            params: { selector: { primary_key => primary_key_value } }
-          }
+          Bronze::Errors.new.add(
+            Bronze::Collections::Errors::NOT_FOUND,
+            selector: { primary_key => primary_key_value }
+          )
         end
 
         it 'should not change the data' do
@@ -81,7 +81,7 @@ module Spec::Support::Examples::Collections
         it 'should return a failing result' do
           expect(call_method)
             .to be_a_failing_result
-            .with_errors(expected_error)
+            .with_error(expected_error)
         end
       end
 
@@ -100,10 +100,10 @@ module Spec::Support::Examples::Collections
           data
         end
         let(:expected_error) do
-          {
-            type:   Bronze::Collections::Errors::NOT_UNIQUE,
-            params: { selector: { primary_key => primary_key_value } }
-          }
+          Bronze::Errors.new.add(
+            Bronze::Collections::Errors::NOT_UNIQUE,
+            selector: { primary_key => primary_key_value }
+          )
         end
 
         it 'should not change the data' do
@@ -116,7 +116,7 @@ module Spec::Support::Examples::Collections
         it 'should return a failing result' do
           expect(call_method)
             .to be_a_failing_result
-            .with_errors(expected_error)
+            .with_error(expected_error)
         end
       end
     end
@@ -410,10 +410,10 @@ module Spec::Support::Examples::Collections
         describe 'with a non-matching primary key' do
           let(:primary_key_value) { '00000000-0000-0000-0000-000000000000' }
           let(:expected_error) do
-            {
-              type:   Bronze::Collections::Errors::NOT_FOUND,
-              params: { selector: { primary_key => primary_key_value } }
-            }
+            Bronze::Errors.new.add(
+              Bronze::Collections::Errors::NOT_FOUND,
+              selector: { primary_key => primary_key_value }
+            )
           end
 
           it 'should not change the data' do
@@ -426,7 +426,7 @@ module Spec::Support::Examples::Collections
           it 'should return a failing result' do
             expect(call_method)
               .to be_a_failing_result
-              .with_errors(expected_error)
+              .with_error(expected_error)
           end
         end
 
@@ -794,10 +794,10 @@ module Spec::Support::Examples::Collections
         describe 'with a non-matching primary key' do
           let(:primary_key_value) { '00000000-0000-0000-0000-000000000000' }
           let(:expected_error) do
-            {
-              type:   Bronze::Collections::Errors::NOT_FOUND,
-              params: { selector: { primary_key => primary_key_value } }
-            }
+            Bronze::Errors.new.add(
+              Bronze::Collections::Errors::NOT_FOUND,
+              selector: { primary_key => primary_key_value }
+            )
           end
 
           it 'should not change the data' do
@@ -808,7 +808,7 @@ module Spec::Support::Examples::Collections
           it 'should return a failing result' do
             expect(call_method)
               .to be_a_failing_result
-              .with_errors(expected_error)
+              .with_error(expected_error)
           end
         end
 
@@ -818,10 +818,10 @@ module Spec::Support::Examples::Collections
           describe 'with a non-matching primary key' do
             let(:primary_key_value) { '00000000-0000-0000-0000-000000000000' }
             let(:expected_error) do
-              {
-                type:   Bronze::Collections::Errors::NOT_FOUND,
-                params: { selector: { primary_key => primary_key_value } }
-              }
+              Bronze::Errors.new.add(
+                Bronze::Collections::Errors::NOT_FOUND,
+                selector: { primary_key => primary_key_value }
+              )
             end
 
             it 'should not change the data' do
@@ -832,7 +832,7 @@ module Spec::Support::Examples::Collections
             it 'should return a failing result' do
               expect(call_method)
                 .to be_a_failing_result
-                .with_errors(expected_error)
+                .with_error(expected_error)
             end
           end
         end
@@ -843,10 +843,10 @@ module Spec::Support::Examples::Collections
           describe 'with a non-matching primary key' do
             let(:primary_key_value) { '00000000-0000-0000-0000-000000000000' }
             let(:expected_error) do
-              {
-                type:   Bronze::Collections::Errors::NOT_FOUND,
-                params: { selector: { primary_key => primary_key_value } }
-              }
+              Bronze::Errors.new.add(
+                Bronze::Collections::Errors::NOT_FOUND,
+                selector: { primary_key => primary_key_value }
+              )
             end
 
             it 'should not change the data' do
@@ -857,7 +857,7 @@ module Spec::Support::Examples::Collections
             it 'should return a failing result' do
               expect(call_method)
                 .to be_a_failing_result
-                .with_errors(expected_error)
+                .with_error(expected_error)
             end
           end
         end
@@ -1245,10 +1245,10 @@ module Spec::Support::Examples::Collections
         describe 'with a non-matching primary key' do
           let(:primary_key_value) { '00000000-0000-0000-0000-000000000000' }
           let(:expected_error) do
-            {
-              type:   Bronze::Collections::Errors::NOT_FOUND,
-              params: { selector: { primary_key => primary_key_value } }
-            }
+            Bronze::Errors.new.add(
+              Bronze::Collections::Errors::NOT_FOUND,
+              selector: { primary_key => primary_key_value }
+            )
           end
 
           it 'should not change the data' do
@@ -1261,7 +1261,7 @@ module Spec::Support::Examples::Collections
           it 'should return a failing result' do
             expect(call_method)
               .to be_a_failing_result
-              .with_errors(expected_error)
+              .with_error(expected_error)
           end
         end
 
